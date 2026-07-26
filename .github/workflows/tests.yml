@@ -209,6 +209,7 @@ jobs:
           resonith_lapped_fuzz
           resonith_lapped_packet_fuzz
           resonith_lapped_compact_fuzz
+          resonith_lapped_finite_fuzz
           --parallel
       - name: Generate deterministic valid corpus
         run: python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
@@ -251,6 +252,13 @@ jobs:
         run: >
           build/fuzz/resonith_lapped_compact_fuzz
           artifacts/fuzz_corpus/lapped_compact
+          -runs=5000
+          -max_len=65536
+          -timeout=10
+      - name: Run bounded finite-state mutation smoke test
+        run: >
+          build/fuzz/resonith_lapped_finite_fuzz
+          artifacts/fuzz_corpus/lapped_finite
           -runs=5000
           -max_len=65536
           -timeout=10

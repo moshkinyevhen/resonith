@@ -13,6 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
 from maf_p0.lpc_oracle import encode_lpc_liftpack_oracle  # noqa: E402
+from maf_p0.finite_state_oracle import encode_finite_state_lapped  # noqa: E402
 from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
 from maf_p0.lapped_streaming import (  # noqa: E402
     encode_lapped_compact_packet_stream,
@@ -38,12 +39,14 @@ def main() -> None:
     main0_directory = args.output_directory / "main0"
     seek_directory = args.output_directory / "seek"
     lapped_directory = args.output_directory / "lapped"
+    lapped_finite_directory = args.output_directory / "lapped_finite"
     lapped_compact_directory = args.output_directory / "lapped_compact"
     lapped_packet_directory = args.output_directory / "lapped_packet"
     liftpack_directory.mkdir(parents=True, exist_ok=True)
     main0_directory.mkdir(parents=True, exist_ok=True)
     seek_directory.mkdir(parents=True, exist_ok=True)
     lapped_directory.mkdir(parents=True, exist_ok=True)
+    lapped_finite_directory.mkdir(parents=True, exist_ok=True)
     lapped_compact_directory.mkdir(parents=True, exist_ok=True)
     lapped_packet_directory.mkdir(parents=True, exist_ok=True)
 
@@ -134,6 +137,33 @@ def main() -> None:
         (lapped_directory / f"{density}_density.rsc").write_bytes(
             encoded.payload
         )
+        if density == "adaptive":
+            coefficients = encoded.selected_coefficients
+            counts = np.count_nonzero(
+                coefficients,
+                axis=2,
+            ).astype(np.uint16)
+            positions = []
+            values = []
+            for channel in range(coefficients.shape[0]):
+                for frame in range(coefficients.shape[1]):
+                    selected = np.flatnonzero(
+                        coefficients[channel, frame]
+                    ).astype(np.uint16)
+                    positions.append(selected)
+                    values.append(
+                        coefficients[channel, frame, selected].astype(np.int8)
+                    )
+            finite = encode_finite_state_lapped(
+                encoded.selected_scales,
+                counts,
+                np.concatenate(positions),
+                np.concatenate(values),
+                half_window=32,
+            )
+            (lapped_finite_directory / "adaptive_fields.laf").write_bytes(
+                finite
+            )
         packeted = encode_lapped_packet_stream(
             lapped_samples,
             48_000,
