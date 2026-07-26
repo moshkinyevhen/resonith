@@ -740,7 +740,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-037 — Native full-byte RDO owns every state boundary
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / EXPERIMENTAL**
+- Status: **MEASURED KILL-GATE FAILED / EXPERIMENTAL**
 - Decision:
   - keep the one-Atom typed stream as a mandatory candidate;
   - propose additional fixed-duration and acoustic-change partitions;
@@ -760,3 +760,30 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
   - the one-state fallback prevents semantic confidence from forcing syntax;
   - local constant laws test whether state separation itself helps, without
     confounding the result with the already losing global continuous law.
+
+## R-038 — Additive Atom oracle before overlap syntax
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / RESEARCH**
+- Decision:
+  - retain state-partitioned decoding as a bounded representation capability,
+    but stop treating sequential replacement of the whole mix as a compression
+    mechanism after its one-second and long-form kill-gates both failed;
+  - test simultaneous full-lifetime periodic Atoms first in an encoder-side
+    matching-pursuit oracle;
+  - fit each additional Atom against the remaining objective residual, mix
+    Atom predictions in a wide integer accumulator, and keep one final
+    LiftPack Innovation;
+  - count prospective `BRAW`, `ATOM`, directory, hash, configuration, and
+    residual bytes by packing a complete canonical RSC1 envelope;
+  - compare one through four Atoms at one Innovation step on the pinned music
+    clips;
+  - add normative overlap/mixer syntax and native kernels only if at least one
+    extra Atom reduces complete bytes on two declared clips.
+- Rationale:
+  - real mixtures contain concurrent causes; replacing one model for the whole
+    mix cannot preserve a continuing source across another source's event;
+  - an oracle can falsify additive structure before increasing decoder attack
+    surface or hardware complexity;
+  - complete envelope accounting prevents a visually convincing source
+    decomposition from hiding Basis and Atom overhead.

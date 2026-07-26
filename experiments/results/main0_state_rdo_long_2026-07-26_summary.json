@@ -1,0 +1,31 @@
+{
+  "actions_run": "https://github.com/moshkinyevhen/resonith/actions/runs/30199317539",
+  "clips": {
+    "corelli-sonata-realization": {
+      "duration_seconds": 8.0,
+      "multi_state_extra_bytes": 749,
+      "nearest_multi_state": "adaptive-800-gain-4096",
+      "nearest_multi_state_bytes": 87460,
+      "one_state_bytes": 86711,
+      "selected_candidate": "one-state-gain-4096"
+    },
+    "emotional-piano-cc0": {
+      "duration_seconds": 8.0,
+      "multi_state_extra_bytes": 784,
+      "nearest_multi_state": "adaptive-800-gain-4096",
+      "nearest_multi_state_bytes": 108214,
+      "one_state_bytes": 107430,
+      "selected_candidate": "one-state-gain-4096"
+    },
+    "patro-de-bateria": {
+      "duration_seconds": 3.7245351473922903,
+      "multi_state_extra_bytes": 694,
+      "nearest_multi_state": "fixed-88200-gain-4096",
+      "nearest_multi_state_bytes": 43495,
+      "one_state_bytes": 42801,
+      "selected_candidate": "one-state-gain-4096"
+    }
+  },
+  "raw_report_sha256": "403f1c48141ed730e66196bc9004f97a7109bc11c9b0408dd0feb192329dea4b",
+  "status": "state-partition compression kill-gate failed; one-state fallback selected on every clip"
+}

@@ -83,10 +83,37 @@ The locally downloaded set is under
 answer key. This is an informal blind set; randomized presentation, trained
 listeners, anchors, statistical analysis, and a proper MUSHRA UI remain open.
 
-## 6. Next engineering gate
+## 6. State-partition kill gate
 
-The next bitstream stage is state-local multi-Basis/multi-Atom partitioning in
-typed RSC1. It must beat the one-Atom stream by complete native-decoded bytes
-on at least two declared pitched/music clips, while safely falling back on
-drums or noise. Only after that gate should simultaneous overlap and stereo
-expand the decoder.
+State-local multi-Basis/multi-Atom partitioning was then implemented in typed
+RSC1 and verified through the same native decoder. Both one-second and
+long-form runs kept the mandatory one-state fallback on every clip.
+
+Long-form closest competitors:
+
+| Clip | Duration | One state | Closest multi-state | Extra bytes |
+|---|---:|---:|---:|---:|
+| Corelli realization | 8.00 s | 86,711 | 87,460, adaptive 2-state | +749 |
+| Recorded piano | 8.00 s | 107,430 | 108,214, adaptive 2-state | +784 |
+| Recorded drums | 3.72 s | 42,801 | 43,495, fixed 2-state | +694 |
+
+Run:
+[30199317539](https://github.com/moshkinyevhen/resonith/actions/runs/30199317539).
+Raw report SHA-256:
+
+```text
+403f1c48141ed730e66196bc9004f97a7109bc11c9b0408dd0feb192329dea4b
+```
+
+This gate failed. Sequential states remain a valid bounded syntax and the
+native decoder correctly reuses maximum per-state workspace, but the encoder
+must not select them on this corpus. The failure also survived Basis
+amortization over eight seconds, so denser boundaries are not justified.
+
+## 7. Next engineering gate
+
+The next experiment is an encoder-side additive Atom oracle. It tests
+simultaneous long-lived causes by matching pursuit, wide integer mixing, one
+final LiftPack Innovation, and complete prospective RSC1 byte accounting.
+Normative overlap/mixer syntax is added only if an extra Atom wins on at least
+two declared clips.

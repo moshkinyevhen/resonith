@@ -1,5 +1,6 @@
 """MAF-P0: first end-to-end periodic audio codec prototype."""
 
+from .additive_oracle import AdditiveOracleResult, run_additive_atom_oracle
 from .codec import DecodeResult, EncodeResult, decode_bytes, encode_samples
 from .model import (
     encode_basis_latent,
@@ -29,6 +30,7 @@ from .stateful import (
 from .wav_io import read_pcm16_mono, write_pcm16_mono
 
 __all__ = [
+    "AdditiveOracleResult",
     "DecodeResult",
     "EncodeResult",
     "Main0DecodeResult",
@@ -56,5 +58,6 @@ __all__ = [
     "save_analysis_model",
     "train_linear_cibs",
     "read_pcm16_mono",
+    "run_additive_atom_oracle",
     "write_pcm16_mono",
 ]

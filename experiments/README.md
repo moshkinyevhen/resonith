@@ -39,6 +39,9 @@ reproducible command and independent decode.
   workspace accounting, and decoded WAV output.
 - `listening_set.py` — deterministic opaque WAV labels plus a separate answer
   key for immediate informal blind listening.
+- `additive_atom_oracle_benchmark.py` — R-038 matching-pursuit search over
+  simultaneous periodic Atoms, with complete prospective RSC1 byte accounting
+  and no decoder syntax change before the declared compression gate passes.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never
