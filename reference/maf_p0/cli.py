@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import time
 
 import numpy as np
 
@@ -16,6 +17,7 @@ from .model import (
     train_linear_cibs,
 )
 from .main0 import decode_main0_raw_stream
+from .lapped_oracle import decode_lapped_stream, encode_lapped_stream
 from .multichannel import (
     decode_main0_independent_stream,
     encode_main0_independent_rdo,
@@ -240,6 +242,55 @@ def _decode_main0(args: argparse.Namespace) -> None:
     )
 
 
+def _encode_lapped(args: argparse.Namespace) -> None:
+    """Encode PCM16 WAV through the prospective fixed/bounded LPF1 path."""
+
+    sample_rate, samples = read_pcm16_channels(args.input)
+    started = time.perf_counter()
+    result = encode_lapped_stream(
+        samples,
+        sample_rate,
+        coefficients_per_frame=args.average_coefficients,
+        half_window=args.half_window,
+        band_count=args.bands,
+        entropy_backend="bounded",
+        transform_backend="fixed",
+        density_backend=args.density,
+    )
+    encode_seconds = time.perf_counter() - started
+    Path(args.output).write_bytes(result.payload)
+    report = dict(result.report)
+    report["encode_wall_seconds"] = encode_seconds
+    report["output"] = str(args.output)
+    print(json.dumps(report, indent=2, default=_json_default))
+
+
+def _decode_lapped(args: argparse.Namespace) -> None:
+    """Decode prospective LPF1 through the independent Python reference."""
+
+    payload = Path(args.input).read_bytes()
+    started = time.perf_counter()
+    result = decode_lapped_stream(payload)
+    decode_seconds = time.perf_counter() - started
+    write_pcm16_channels(args.output, result.sample_rate, result.samples)
+    print(
+        json.dumps(
+            {
+                "sample_rate": result.sample_rate,
+                "frame_count": int(result.samples.shape[0]),
+                "output_channels": int(result.samples.shape[1]),
+                "half_window": result.half_window,
+                "band_count": result.band_count,
+                "transform_frame_count": result.frame_count,
+                "stream_bytes": len(payload),
+                "decode_wall_seconds": decode_seconds,
+                "output": str(args.output),
+            },
+            indent=2,
+        )
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="resonith")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -267,6 +318,34 @@ def build_parser() -> argparse.ArgumentParser:
     decode_main0.add_argument("output")
     decode_main0.add_argument("--model")
     decode_main0.set_defaults(function=_decode_main0)
+
+    encode_lapped = commands.add_parser(
+        "encode-lapped",
+        help="encode PCM16 WAV through the prospective fixed/bounded LPF1 path",
+    )
+    encode_lapped.add_argument("input")
+    encode_lapped.add_argument("output")
+    encode_lapped.add_argument(
+        "--average-coefficients",
+        type=int,
+        default=64,
+    )
+    encode_lapped.add_argument("--half-window", type=int, default=512)
+    encode_lapped.add_argument("--bands", type=int, default=24)
+    encode_lapped.add_argument(
+        "--density",
+        choices=("adaptive", "fixed"),
+        default="adaptive",
+    )
+    encode_lapped.set_defaults(function=_encode_lapped)
+
+    decode_lapped = commands.add_parser(
+        "decode-lapped",
+        help="decode a prospective LPF1 stream to PCM16 WAV",
+    )
+    decode_lapped.add_argument("input")
+    decode_lapped.add_argument("output")
+    decode_lapped.set_defaults(function=_decode_lapped)
 
     train = commands.add_parser("train-model")
     train.add_argument("output")

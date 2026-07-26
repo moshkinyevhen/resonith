@@ -55,7 +55,7 @@ The repository contains:
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 113 pure reference/security/integration tests, eight native decoder-in-loop
+- 114 pure reference/security/integration tests, eight native decoder-in-loop
   integration tests, ten native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1 mutation targets.
@@ -110,6 +110,23 @@ PYTHONPATH=reference python -m maf_p0 decode-main0 \
 The encoder RDO selects one aligned RSL2 block size by complete aggregate RSC1
 bytes. The decoder independently validates the container, channel instances,
 frame counts, and common block partition before emitting PCM.
+
+## Prospective lapped WAV listening
+
+The fixed-integer, bounded-entropy, adaptive-density research path is
+immediately testable on one-through-eight-channel PCM16 WAV:
+
+```sh
+PYTHONPATH=reference python -m maf_p0 encode-lapped \
+  input.wav output.rsc --average-coefficients 64
+PYTHONPATH=reference python -m maf_p0 decode-lapped \
+  output.rsc decoded.wav
+```
+
+The encoder prints complete RSC1 bytes, waveform diagnostics, selected
+coefficient-count range, table identity, and wall time. This path has passed
+objective and native portability gates but remains prospective until blinded
+listening and real-device timing pass.
 
 ## Implementation stack
 

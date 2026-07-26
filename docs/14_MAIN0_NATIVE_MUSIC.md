@@ -699,3 +699,10 @@ The count trajectory therefore earns a native implementation gate. It does
 not yet justify explicit transient classes or short-window syntax, and it is
 not a listening result. The compact record is
 [`lapped_density_2026-07-26_summary.json`](../experiments/results/lapped_density_2026-07-26_summary.json).
+
+LSE2 now shares the allocation-explicit native LPF1 path with fixed-density
+LSE1. Variable streams add only one caller-owned uint16 count array and one
+existing signed entropy field. The parser verifies the decoded count sum
+against the declared sparse total before positions or PCM are trusted.
+Python/native exact PCM parity and the complete cross-platform matrix passed
+in [run 30208161776](https://github.com/moshkinyevhen/resonith/actions/runs/30208161776).

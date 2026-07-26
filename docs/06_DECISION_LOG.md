@@ -1638,7 +1638,7 @@ new oscillator opcode.
 ## R-062 — Native LSE2 count-law extension
 
 - Date: 2026-07-26
-- Status: **IMPLEMENTED / CROSS-PLATFORM VERIFICATION PENDING / RESEARCH**
+- Status: **IMPLEMENTED / CROSS-PLATFORM VERIFIED / RESEARCH**
 - Decision:
   - extend the existing LPF1 native ABI with an optional caller-owned uint16
     transform-frame count array; fixed-density streams report zero count
@@ -1655,3 +1655,12 @@ new oscillator opcode.
     now tests the actual incremental decoder cost;
   - one optional count array and one existing signed entropy field are smaller
     and easier to verify than explicit acoustic-state or transient syntax.
+- Result:
+  - fixed LSE1 and variable LSE2 streams share one native parser, arithmetic
+    preflight, quarter-wave transform, and overlap renderer;
+  - Python/native exact PCM parity passes for both density modes, including the
+    dynamic 8,192-frame stereo bridge vector;
+  - all ten cross-platform jobs pass in GitHub Actions run 30208161776 after
+    retaining warnings-as-errors and the existing sanitizer build;
+  - explicit state and transient opcodes remain unjustified. Blinded listening
+    and real-device timing are still required.

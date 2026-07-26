@@ -31,6 +31,8 @@ The native Core:
 - independently inspects and decodes the prospective fixed/bounded LPF1
   research path through Q14/Q15 quarter-wave ROM, sparse Rice/packed fields,
   caller-owned overlap memory, and preflighted int64 arithmetic;
+- supports both fixed LSE1 density and implicit-state LSE2 count trajectories
+  through the same transform, entropy primitives, and output path;
 - validates and exports caller-owned byte/sample block indexes for bounded
   seek planning without decoding PCM or allocating memory;
 - builds and verifies optional source-bound `RSI1` seek sidecars with
