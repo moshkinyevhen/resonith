@@ -1183,7 +1183,7 @@ new oscillator opcode.
 ## R-051 — Held-out cached-Basis simultaneous-source gate
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING / RESEARCH**
+- Status: **MEASURED FAIL / CLOSED FOR MAIN-0 / RESEARCH**
 - Decision:
   - train one fixed mono CIBS-0 development registry model only from source
     intervals after the declared evaluation crops; never fit registry weights
@@ -1213,3 +1213,21 @@ new oscillator opcode.
     copy of the test audio;
   - the zero-Atom fallback and a non-trivial promotion margin enforce the
     project's simplicity rule: a mixer enters Main only for measured net gain.
+- Result:
+  - the deterministic development model used 120 held-out Basis examples,
+    occupied 5,160 serialized registry bytes, and was frozen as SHA-256
+    `80db262673b348baa6752aa3268c60a0bae2f675883b0de123f6404756a0f20e`;
+  - complete one-second candidates were evaluated on the three pinned music
+    crops with zero through four full-lifetime cached periodic Atoms, three
+    residual block sizes, and the previously accepted RSL2 fallback;
+  - complete-byte RDO selected zero Atoms on every clip. One Atom changed the
+    stream from 10,233 to 10,560 bytes on Corelli, 11,953 to 12,227 bytes on
+    piano, and 12,743 to 13,115 bytes on drums;
+  - the first cached Atom reduced RSL2 by only 57, 78, and 12 bytes
+    respectively, while `BCIB`, `ATOM`, and added directory records cost
+    384, 352, and 384 bytes. Further Atoms increased total size;
+  - the gate therefore produced zero winning clips and 0% selected mean
+    reduction. Simultaneous periodic mixing is not promoted to Main-0;
+  - `BCIB` remains useful executable infrastructure for future single-cause
+    or longer-lived Basis tests, but cached synthesis alone is not evidence
+    for an additive mixer opcode.

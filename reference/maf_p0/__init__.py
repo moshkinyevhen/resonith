@@ -5,6 +5,11 @@ from .analytic_oracle import (
     AnalyticOracleResult,
     run_analytic_oscillator_oracle,
 )
+from .cached_additive_oracle import (
+    CachedAdditiveOracleResult,
+    pack_registry_model,
+    run_cached_additive_oracle,
+)
 from .codec import DecodeResult, EncodeResult, decode_bytes, encode_samples
 from .model import (
     encode_basis_latent,
@@ -45,6 +50,7 @@ from .wav_io import read_pcm16_mono, write_pcm16_mono
 __all__ = [
     "AdditiveOracleResult",
     "AnalyticOracleResult",
+    "CachedAdditiveOracleResult",
     "DecodeResult",
     "EncodeResult",
     "Main0DecodeResult",
@@ -62,6 +68,7 @@ __all__ = [
     "pack_main0_lpc_residual_stream",
     "pack_main0_residual_stream",
     "pack_main0_state_stream",
+    "pack_registry_model",
     "decode_stateful_bytes",
     "encode_stateful_samples",
     "encode_stateful_rdo_samples",
@@ -80,6 +87,7 @@ __all__ = [
     "read_pcm16_mono",
     "run_additive_atom_oracle",
     "run_analytic_oscillator_oracle",
+    "run_cached_additive_oracle",
     "run_lpc_liftpack_oracle",
     "write_pcm16_mono",
 ]

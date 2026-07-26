@@ -488,3 +488,32 @@ This is implementation evidence, not compression evidence. A fixed model ROM
 must be trained without the evaluation segments, versioned, and reported
 separately. Simultaneous source syntax remains blocked until cached Basis reuse
 beats the complete RSL2 stream on held-out material.
+
+## 21. Held-out cached-Basis overlap result
+
+R-051 trained one fixed mono CIBS-0 model from 120 Basis examples extracted
+only after the declared evaluation crops. The serialized registry occupied
+5,160 bytes and was frozen before candidate ranking. On each one-second crop,
+complete-byte RDO compared zero through four full-lifetime cached periodic
+Atoms against the accepted zero-Atom RSL2 fallback.
+
+The fallback won every clip:
+
+| Crop | Zero Atoms | One Atom | RSL2 saving | Complete delta |
+| --- | ---: | ---: | ---: | ---: |
+| Corelli | 10,233 B | 10,560 B | 57 B | +327 B |
+| Piano | 11,953 B | 12,227 B | 78 B | +274 B |
+| Drums | 12,743 B | 13,115 B | 12 B | +372 B |
+
+The first Atom paid 88 bytes for `BCIB`, 104 or 136 bytes for `ATOM`, and
+160 additional envelope/directory bytes. Later Atoms increased the complete
+size further. This is a measured zero-win, 0% selected-mean result, so the
+simultaneous mixer remains outside Main-0.
+
+The result does not remove `BCIB`: the typed cached Basis path is executable
+and may still serve a future long-lifetime single-cause representation.
+It does show that replacing raw Basis bytes with a latent is insufficient by
+itself; a future source model must remove substantially more Innovation or
+amortize one state record across much longer useful lifetimes before it earns
+new decoder syntax. The reproducible compact record is
+[`cached_cibs_additive_2026-07-26_summary.json`](../experiments/results/cached_cibs_additive_2026-07-26_summary.json).

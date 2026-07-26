@@ -60,6 +60,12 @@ reproducible command and independent decode.
 - `subband_stereo_oracle_benchmark.py` — R-047 exact temporal Haar split with
   independently selected reversible channel lifting in low/high bands and
   only two unchanged RSL2 component streams.
+- `cached_cibs_additive_benchmark.py` — R-051 held-out CIBS registry training,
+  zero-through-four simultaneous cached periodic Atoms, complete prospective
+  RSC1 accounting, mandatory zero-Atom RSL2 fallback, and explicit model-ROM
+  amortization.
+- `results/cached_cibs_additive_2026-07-26_summary.json` — the reproducible
+  R-051 negative result that keeps simultaneous mixing out of Main-0.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

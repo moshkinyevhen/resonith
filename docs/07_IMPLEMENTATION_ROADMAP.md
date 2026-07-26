@@ -39,11 +39,17 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   Android NDK arm64-v8a build without platform-specific DSP source.
 - Variable block lifetimes and three bounded waveform-domain stereo families
   failed their declared promotion gates and added no Main syntax.
-- The next blocking milestone is a held-out complete-byte gate for simultaneous
-  sources that reuse cached/analytic Basis state. Model ROM is reported
-  separately and amortized; it is never treated as free per-stream knowledge.
-  Raw per-Atom Basis overlap already failed its declared gate and is not
-  promoted. New coding tools resume only through declared gates.
+- Held-out cached-Basis overlap has now also failed its complete-byte gate:
+  zero Atoms won all three clips because residual savings did not repay the
+  `BCIB`, `ATOM`, and directory records. Simultaneous periodic mixing is not
+  promoted.
+- The next blocking milestone is deployable channel transport and player
+  integration around the small winning `CONF` plus `RSL2` Truth path. Channel
+  support must initially multiplex independent mono substreams; a coupled
+  stereo transform can replace that fallback only after a new measured gate.
+- New compression tools resume only through declared complete-byte or
+  matched-listening gates. Model ROM is always reported separately and
+  amortized; it is never treated as free per-stream knowledge.
 
 Detailed measurements are in
 [10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) and

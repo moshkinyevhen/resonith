@@ -1,0 +1,67 @@
+{
+  "arithmetic_mean_reduction": 0.0,
+  "clip_count": 3,
+  "clips": {
+    "corelli-sonata-realization": {
+      "candidate_stream_bytes_by_atom_count": [
+        10233,
+        10560,
+        10930,
+        11325,
+        11694
+      ],
+      "first_atom_residual_byte_delta": -57,
+      "first_atom_total_byte_delta": 327,
+      "mono_pcm_sha256": "3bff60f0eefbebadcb301d5a65d2f155c2c06ce2cc2b4e3ddf8aa66ac3df8aad",
+      "sample_count": 44100,
+      "selected_atom_count": 0,
+      "selected_stream_sha256": "8c9ed7927635eddaa2b7cfe2e85f048504fafdd641eed99698b6c443e67b0a98"
+    },
+    "emotional-piano-cc0": {
+      "candidate_stream_bytes_by_atom_count": [
+        11953,
+        12227,
+        12616,
+        13117,
+        13518
+      ],
+      "first_atom_residual_byte_delta": -78,
+      "first_atom_total_byte_delta": 274,
+      "mono_pcm_sha256": "f3cc19c8d6bad55ba9d88c9a2874352631fb1ee0924dd464b5cad6d432ffd7df",
+      "sample_count": 44100,
+      "selected_atom_count": 0,
+      "selected_stream_sha256": "efd133a84cfc344cc63df41d3053e9242f553ac794cb780257f01f72c6c9127c"
+    },
+    "patro-de-bateria": {
+      "candidate_stream_bytes_by_atom_count": [
+        12743,
+        13115,
+        13488,
+        13904,
+        14266
+      ],
+      "first_atom_residual_byte_delta": -12,
+      "first_atom_total_byte_delta": 372,
+      "mono_pcm_sha256": "bf77f6cc6079979200b0c790401b72e09b3efba8200b182aa43c9a8ba696a7f9",
+      "sample_count": 44100,
+      "selected_atom_count": 0,
+      "selected_stream_sha256": "b8f2c5da9e9d58ac3c42077341ed0a4df0d5f0327ef809ffb5e6ae56c81d9ceb"
+    }
+  },
+  "command": "python experiments/cached_cibs_additive_benchmark.py --cache artifacts/real_music_source --maximum-seconds 1.0 --maximum-atoms 4 --analysis-period-candidates 16 --period-rdo-shortlist 8 --output-directory artifacts/cached_cibs_additive_local",
+  "gate_passed": false,
+  "gate_rule": "At least 3% complete-stream savings on two clips and at least 5% arithmetic-mean savings against zero-Atom RSL2.",
+  "maximum_atoms": 4,
+  "maximum_seconds_per_clip": 1.0,
+  "model": {
+    "basis_length": 256,
+    "id": "CIBS0-HELDOUT-MUSIC-R051",
+    "latent_elements": 16,
+    "registry_bytes": 5160,
+    "registry_sha256": "80db262673b348baa6752aa3268c60a0bae2f675883b0de123f6404756a0f20e",
+    "training_example_count": 120
+  },
+  "research_only": true,
+  "status": "compression gate failed; simultaneous mixing remains deferred",
+  "winning_clips": 0
+}
