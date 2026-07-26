@@ -28,6 +28,9 @@ class _Requirements(ctypes.Structure):
         ("basis_elements", ctypes.c_uint32),
         ("phase_knot_count", ctypes.c_uint32),
         ("gain_event_count", ctypes.c_uint32),
+        ("atom_count", ctypes.c_uint32),
+        ("basis_count", ctypes.c_uint32),
+        ("render_elements", ctypes.c_uint32),
         ("liftpack_scratch_elements", ctypes.c_size_t),
         ("output_channels", ctypes.c_uint16),
         ("reserved", ctypes.c_uint16),
@@ -61,6 +64,9 @@ class NativeMain0Requirements:
     basis_elements: int
     phase_knot_count: int
     gain_event_count: int
+    atom_count: int
+    basis_count: int
+    render_elements: int
     liftpack_scratch_elements: int
     output_channels: int
     workspace_bytes: int
@@ -135,7 +141,8 @@ class NativeMain0Decoder:
             int(requirements.basis_elements) * 2
             + int(requirements.phase_knot_count) * 12
             + int(requirements.gain_event_count) * 8
-            + int(requirements.sample_count) * 12
+            + int(requirements.render_elements) * 2
+            + int(requirements.sample_count) * 10
             + int(requirements.liftpack_scratch_elements) * 8
         )
 
@@ -160,6 +167,9 @@ class NativeMain0Decoder:
             int(native.basis_elements),
             int(native.phase_knot_count),
             int(native.gain_event_count),
+            int(native.atom_count),
+            int(native.basis_count),
+            int(native.render_elements),
             int(native.liftpack_scratch_elements),
             int(native.output_channels),
             workspace_bytes,
@@ -179,7 +189,7 @@ class NativeMain0Decoder:
         phase_origins = (ctypes.c_uint32 * requirements.phase_knot_count)()
         gain_positions = (ctypes.c_uint32 * requirements.gain_event_count)()
         gains = (ctypes.c_int32 * requirements.gain_event_count)()
-        unity = (ctypes.c_int16 * requirements.sample_count)()
+        unity = (ctypes.c_int16 * requirements.render_elements)()
         innovation = (ctypes.c_int64 * requirements.sample_count)()
         scratch = (
             ctypes.c_int64 * requirements.liftpack_scratch_elements
@@ -196,7 +206,7 @@ class NativeMain0Decoder:
             gains,
             requirements.gain_event_count,
             unity,
-            requirements.sample_count,
+            requirements.render_elements,
             innovation,
             requirements.sample_count,
             scratch,

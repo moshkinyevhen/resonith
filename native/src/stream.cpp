@@ -26,15 +26,14 @@ constexpr std::uint16_t kSchemaVersion = 1U;
 
 struct main0_sections {
     resonith_container_view view{};
-    resonith_container_section atom{};
-    resonith_container_section basis{};
     resonith_container_section config{};
     resonith_container_section innovation{};
     resonith_stream_config stream_config{};
-    resonith_periodic_atom_info atom_info{};
-    resonith_raw_basis_info basis_info{};
     resonith_liftpack_info innovation_info{};
 };
+
+constexpr std::uint8_t kAtomType[4] = {'A', 'T', 'O', 'M'};
+constexpr std::uint8_t kBasisType[4] = {'B', 'R', 'A', 'W'};
 
 std::uint16_t read_u16(const std::uint8_t* data) noexcept {
     return static_cast<std::uint16_t>(
@@ -142,10 +141,15 @@ resonith_status parse_main0(
         return RESONITH_STATUS_UNSUPPORTED_FEATURE;
     }
 
-    bool found_atom = false;
-    bool found_basis = false;
     bool found_config = false;
     bool found_innovation = false;
+    std::uint32_t atom_count = 0U;
+    std::uint32_t basis_count = 0U;
+
+    /*
+     * Integrity precedes typed interpretation. This first pass verifies each
+     * known payload exactly once and freezes the canonical instance registry.
+     */
     for (
         std::uint32_t index = 0;
         index < parsed->view.section_count;
@@ -169,9 +173,7 @@ resonith_status parse_main0(
             continue;
         }
         if (
-            section.instance_id != 0U
-            || section.schema_version != kSchemaVersion
-            || section.start_tick != 0U
+            section.schema_version != kSchemaVersion
         ) {
             return RESONITH_STATUS_UNSUPPORTED_FEATURE;
         }
@@ -186,22 +188,40 @@ resonith_status parse_main0(
         }
 
         if (type_is(section.type, "ATOM")) {
-            parsed->atom = section;
-            found_atom = true;
+            if (section.instance_id != atom_count) {
+                return RESONITH_STATUS_MALFORMED;
+            }
+            ++atom_count;
         } else if (type_is(section.type, "BRAW")) {
-            parsed->basis = section;
-            found_basis = true;
+            if (section.instance_id != basis_count) {
+                return RESONITH_STATUS_MALFORMED;
+            }
+            ++basis_count;
         } else if (type_is(section.type, "CONF")) {
+            if (
+                found_config
+                || section.instance_id != 0U
+                || section.start_tick != 0U
+            ) {
+                return RESONITH_STATUS_MALFORMED;
+            }
             parsed->config = section;
             found_config = true;
         } else {
+            if (
+                found_innovation
+                || section.instance_id != 0U
+                || section.start_tick != 0U
+            ) {
+                return RESONITH_STATUS_MALFORMED;
+            }
             parsed->innovation = section;
             found_innovation = true;
         }
     }
     if (
-        !found_atom
-        || !found_basis
+        atom_count == 0U
+        || basis_count == 0U
         || !found_config
         || !found_innovation
     ) {
@@ -216,22 +236,6 @@ resonith_status parse_main0(
     if (status != RESONITH_STATUS_OK) {
         return status;
     }
-    status = resonith_periodic_atom_inspect(
-        parsed->atom.payload,
-        parsed->atom.payload_size,
-        &parsed->atom_info
-    );
-    if (status != RESONITH_STATUS_OK) {
-        return status;
-    }
-    status = resonith_raw_basis_inspect(
-        parsed->basis.payload,
-        parsed->basis.payload_size,
-        &parsed->basis_info
-    );
-    if (status != RESONITH_STATUS_OK) {
-        return status;
-    }
     status = resonith_liftpack_inspect(
         parsed->innovation.payload,
         parsed->innovation.payload_size,
@@ -240,29 +244,120 @@ resonith_status parse_main0(
     if (status != RESONITH_STATUS_OK) {
         return status;
     }
-    if (
-        parsed->stream_config.output_channels != 1U
-        || parsed->basis_info.channels != 1U
-    ) {
+    if (parsed->stream_config.output_channels != 1U) {
         return RESONITH_STATUS_UNSUPPORTED_FEATURE;
     }
     if (
-        parsed->basis_info.samples_per_channel < 2U
-        || parsed->atom_info.basis_instance_id
-            != parsed->basis.instance_id
-        || parsed->atom_info.duration_samples
-            != parsed->stream_config.sample_count
-        || parsed->innovation_info.sample_count
+        parsed->innovation_info.sample_count
             != parsed->stream_config.sample_count
     ) {
         return RESONITH_STATUS_MALFORMED;
     }
 
+    std::uint32_t maximum_basis_elements = 0U;
+    for (std::uint32_t basis_id = 0U; basis_id < basis_count; ++basis_id) {
+        resonith_container_section basis{};
+        status = resonith_container_find_section(
+            &parsed->view,
+            kBasisType,
+            basis_id,
+            &basis
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        resonith_raw_basis_info basis_info{};
+        status = resonith_raw_basis_inspect(
+            basis.payload,
+            basis.payload_size,
+            &basis_info
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        if (
+            basis_info.channels != 1U
+            || basis_info.samples_per_channel < 2U
+            || basis.start_tick >= parsed->stream_config.sample_count
+        ) {
+            return basis_info.channels != 1U
+                ? RESONITH_STATUS_UNSUPPORTED_FEATURE
+                : RESONITH_STATUS_MALFORMED;
+        }
+        if (basis_info.total_elements > maximum_basis_elements) {
+            maximum_basis_elements = basis_info.total_elements;
+        }
+    }
+
+    std::uint64_t cursor = 0U;
+    std::uint32_t maximum_phase_knots = 0U;
+    std::uint32_t maximum_gain_events = 0U;
+    std::uint32_t maximum_atom_samples = 0U;
+    for (std::uint32_t atom_id = 0U; atom_id < atom_count; ++atom_id) {
+        resonith_container_section atom{};
+        status = resonith_container_find_section(
+            &parsed->view,
+            kAtomType,
+            atom_id,
+            &atom
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        if (atom.start_tick != cursor) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+        resonith_periodic_atom_info atom_info{};
+        status = resonith_periodic_atom_inspect(
+            atom.payload,
+            atom.payload_size,
+            &atom_info
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        if (atom_info.basis_instance_id >= basis_count) {
+            return RESONITH_STATUS_NOT_FOUND;
+        }
+        resonith_container_section basis{};
+        status = resonith_container_find_section(
+            &parsed->view,
+            kBasisType,
+            atom_info.basis_instance_id,
+            &basis
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        if (basis.start_tick > atom.start_tick) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+        cursor += atom_info.duration_samples;
+        if (cursor > parsed->stream_config.sample_count) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+        if (atom_info.phase_knot_count > maximum_phase_knots) {
+            maximum_phase_knots = atom_info.phase_knot_count;
+        }
+        if (atom_info.gain_event_count > maximum_gain_events) {
+            maximum_gain_events = atom_info.gain_event_count;
+        }
+        if (atom_info.duration_samples > maximum_atom_samples) {
+            maximum_atom_samples = atom_info.duration_samples;
+        }
+    }
+    if (cursor != parsed->stream_config.sample_count) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+
     requirements->timebase_hz = parsed->view.timebase_hz;
     requirements->sample_count = parsed->stream_config.sample_count;
-    requirements->basis_elements = parsed->basis_info.total_elements;
-    requirements->phase_knot_count = parsed->atom_info.phase_knot_count;
-    requirements->gain_event_count = parsed->atom_info.gain_event_count;
+    requirements->basis_elements = maximum_basis_elements;
+    requirements->phase_knot_count = maximum_phase_knots;
+    requirements->gain_event_count = maximum_gain_events;
+    requirements->atom_count = atom_count;
+    requirements->basis_count = basis_count;
+    requirements->render_elements = maximum_atom_samples;
     requirements->liftpack_scratch_elements =
         resonith_liftpack_required_scratch(&parsed->innovation_info);
     requirements->output_channels =
@@ -292,7 +387,7 @@ bool workspace_large_enough(
     return workspace.basis_capacity >= requirements.basis_elements
         && workspace.phase_capacity >= requirements.phase_knot_count
         && workspace.gain_capacity >= requirements.gain_event_count
-        && workspace.unity_capacity >= requirements.sample_count
+        && workspace.unity_capacity >= requirements.render_elements
         && workspace.innovation_capacity >= requirements.sample_count
         && workspace.liftpack_scratch_capacity
             >= requirements.liftpack_scratch_elements;
@@ -508,67 +603,6 @@ extern "C" resonith_status resonith_main0_decode(
         return RESONITH_STATUS_SCRATCH_TOO_SMALL;
     }
 
-    std::size_t basis_written = 0U;
-    status = resonith_raw_basis_decode(
-        parsed.basis.payload,
-        parsed.basis.payload_size,
-        workspace->basis,
-        workspace->basis_capacity,
-        &basis_written
-    );
-    if (
-        status != RESONITH_STATUS_OK
-        || basis_written != requirements.basis_elements
-    ) {
-        return status == RESONITH_STATUS_OK
-            ? RESONITH_STATUS_MALFORMED
-            : status;
-    }
-    resonith_periodic_atom_info atom{};
-    status = resonith_periodic_atom_decode(
-        parsed.atom.payload,
-        parsed.atom.payload_size,
-        workspace->phase_positions,
-        workspace->phase_increments_q32,
-        workspace->phase_capacity,
-        workspace->gain_positions,
-        workspace->gains_q15,
-        workspace->gain_capacity,
-        &atom
-    );
-    if (status != RESONITH_STATUS_OK) {
-        return status;
-    }
-
-    const resonith_phase_trajectory phase_source = {
-        workspace->phase_positions,
-        workspace->phase_increments_q32,
-        atom.phase_knot_count,
-        atom.phase_origin_q32,
-    };
-    resonith_prepared_phase_trajectory phase{};
-    status = resonith_phase_prepare(
-        &phase_source,
-        workspace->phase_origins_q32,
-        workspace->phase_capacity,
-        &phase
-    );
-    if (status != RESONITH_STATUS_OK) {
-        return status;
-    }
-    status = resonith_periodic_render(
-        workspace->basis,
-        basis_written,
-        &phase,
-        0U,
-        requirements.sample_count,
-        workspace->unity_prediction,
-        workspace->unity_capacity
-    );
-    if (status != RESONITH_STATUS_OK) {
-        return status;
-    }
-
     std::size_t innovation_written = 0U;
     status = resonith_liftpack_decode(
         parsed.innovation.payload,
@@ -588,29 +622,120 @@ extern "C" resonith_status resonith_main0_decode(
             : status;
     }
 
-    const resonith_gain_event_law gain_source = {
-        workspace->gain_positions,
-        workspace->gains_q15,
-        atom.gain_event_count,
-        atom.duration_samples,
-    };
-    resonith_prepared_gain_law gain{};
-    status = resonith_gain_prepare(&gain_source, &gain);
-    if (status != RESONITH_STATUS_OK) {
-        return status;
+    std::uint32_t output_cursor = 0U;
+    for (
+        std::uint32_t atom_id = 0U;
+        atom_id < requirements.atom_count;
+        ++atom_id
+    ) {
+        resonith_container_section atom_section{};
+        status = resonith_container_find_section(
+            &parsed.view,
+            kAtomType,
+            atom_id,
+            &atom_section
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        resonith_periodic_atom_info atom{};
+        status = resonith_periodic_atom_decode(
+            atom_section.payload,
+            atom_section.payload_size,
+            workspace->phase_positions,
+            workspace->phase_increments_q32,
+            workspace->phase_capacity,
+            workspace->gain_positions,
+            workspace->gains_q15,
+            workspace->gain_capacity,
+            &atom
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+
+        resonith_container_section basis_section{};
+        status = resonith_container_find_section(
+            &parsed.view,
+            kBasisType,
+            atom.basis_instance_id,
+            &basis_section
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        std::size_t basis_written = 0U;
+        status = resonith_raw_basis_decode(
+            basis_section.payload,
+            basis_section.payload_size,
+            workspace->basis,
+            workspace->basis_capacity,
+            &basis_written
+        );
+        if (status != RESONITH_STATUS_OK || basis_written < 2U) {
+            return status == RESONITH_STATUS_OK
+                ? RESONITH_STATUS_MALFORMED
+                : status;
+        }
+
+        const resonith_phase_trajectory phase_source = {
+            workspace->phase_positions,
+            workspace->phase_increments_q32,
+            atom.phase_knot_count,
+            atom.phase_origin_q32,
+        };
+        resonith_prepared_phase_trajectory phase{};
+        status = resonith_phase_prepare(
+            &phase_source,
+            workspace->phase_origins_q32,
+            workspace->phase_capacity,
+            &phase
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        status = resonith_periodic_render(
+            workspace->basis,
+            basis_written,
+            &phase,
+            0U,
+            atom.duration_samples,
+            workspace->unity_prediction,
+            workspace->unity_capacity
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+
+        const resonith_gain_event_law gain_source = {
+            workspace->gain_positions,
+            workspace->gains_q15,
+            atom.gain_event_count,
+            atom.duration_samples,
+        };
+        resonith_prepared_gain_law gain{};
+        status = resonith_gain_prepare(&gain_source, &gain);
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        status = resonith_compose_truth(
+            workspace->unity_prediction,
+            workspace->innovation_q + output_cursor,
+            parsed.stream_config.innovation_step,
+            &gain,
+            0U,
+            atom.duration_samples,
+            output + output_cursor,
+            output_capacity - output_cursor
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        output_cursor += atom.duration_samples;
     }
-    status = resonith_compose_truth(
-        workspace->unity_prediction,
-        workspace->innovation_q,
-        parsed.stream_config.innovation_step,
-        &gain,
-        0U,
-        requirements.sample_count,
-        output,
-        output_capacity
-    );
-    if (status == RESONITH_STATUS_OK) {
-        *samples_written = requirements.sample_count;
+    if (output_cursor != requirements.sample_count) {
+        return RESONITH_STATUS_MALFORMED;
     }
-    return status;
+    *samples_written = requirements.sample_count;
+    return RESONITH_STATUS_OK;
 }

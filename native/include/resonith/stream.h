@@ -35,6 +35,9 @@ typedef struct resonith_main0_requirements {
     uint32_t basis_elements;
     uint32_t phase_knot_count;
     uint32_t gain_event_count;
+    uint32_t atom_count;
+    uint32_t basis_count;
+    uint32_t render_elements;
     size_t liftpack_scratch_elements;
     uint16_t output_channels;
     uint16_t reserved;

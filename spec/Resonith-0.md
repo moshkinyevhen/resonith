@@ -146,22 +146,33 @@ strictly, and remain below `duration_samples`; there MUST be between one and
 1,000,000 events. Every gain is signed Q17.15 in
 \([-131072,131071]\).
 
-The RSC1 record start tick is the Atom lifetime origin. In the first executable
-subset it is zero. `duration_samples` MUST equal the `CONF` sample count, the
-referenced `BRAW` MUST be mono and contain at least two samples, and the
-`RSL1` decoded sample count MUST equal the same duration.
+The RSC1 record start tick is the Atom lifetime origin. Trajectory and gain
+positions remain local to that origin. The referenced `BRAW` MUST be mono and
+contain at least two samples. A referenced Basis record start tick MUST be no
+later than the Atom start tick.
 
 #### 4.1.4 First executable Main-0 stream
 
 A profile-zero, level-zero stream contains exactly one critical instance-zero
-record of each required type: `ATOM`, `BRAW`, `CONF`, and `RSL1`. Additional
-unknown non-critical sections MAY be skipped. Unknown critical sections,
-additional instances of a required type, unsupported schemas, or non-zero
-required-section start ticks MUST reject this subset.
+`CONF`, exactly one critical instance-zero `RSL1`, one or more critical
+`ATOM` records, and one or more critical `BRAW` records. `ATOM` instance IDs
+and `BRAW` instance IDs each form a consecutive zero-based sequence.
+
+Atoms are ordered by instance ID. The first MUST start at tick zero, every
+subsequent Atom MUST start exactly where the previous Atom ends, and the final
+Atom MUST end at the `CONF` sample count. Simultaneous overlap is not supported
+by this executable subset. Any number of Atoms MAY reference one immutable
+Basis. The `RSL1` decoded sample count MUST equal the `CONF` sample count.
+
+Additional unknown non-critical sections MAY be skipped. Unknown critical
+sections, unsupported schemas, non-canonical instance IDs, gaps, overlaps, or
+non-zero singleton-section start ticks MUST reject this subset.
 
 A decoder MUST verify all required section hashes and all cross-section
 lifetimes before rendering. It MUST be able to inspect the stream first,
-report exact workspace sizes, and then decode without hidden allocation.
+report the maximum per-Atom Basis, phase, gain, and render workspace plus the
+stream-wide Innovation workspace, and then reuse those buffers without hidden
+allocation.
 
 ## 5. State records
 

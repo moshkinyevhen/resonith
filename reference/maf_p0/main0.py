@@ -54,6 +54,15 @@ class Main0EncodeResult:
     report: dict
 
 
+@dataclass(frozen=True)
+class Main0State:
+    """One state-local periodic Atom and its immutable raw Basis."""
+
+    basis: np.ndarray
+    trajectory: PhaseTrajectory
+    gain_law: GainEventLaw
+
+
 def pack_main0_raw_stream(
     *,
     sample_rate: int,
@@ -66,28 +75,42 @@ def pack_main0_raw_stream(
 ) -> bytes:
     """Pack the first executable Main-0 subset using one raw periodic Basis."""
 
-    basis_vector = np.asarray(basis)
+    return pack_main0_state_stream(
+        sample_rate=sample_rate,
+        states=(Main0State(basis, trajectory, gain_law),),
+        innovation_q=innovation_q,
+        innovation_step=innovation_step,
+        residual_block_size=residual_block_size,
+    )
+
+
+def pack_main0_state_stream(
+    *,
+    sample_rate: int,
+    states: Sequence[Main0State],
+    innovation_q: np.ndarray,
+    innovation_step: int,
+    residual_block_size: int = 1024,
+) -> bytes:
+    """Pack a canonical state partition with content-deduplicated raw Bases."""
+
+    if not states:
+        raise ValueError("Main-0 requires at least one state")
     innovation = np.asarray(innovation_q)
-    if basis_vector.dtype != np.int16 or basis_vector.ndim != 1:
-        raise TypeError("Main-0 periodic Basis must be a mono int16 vector")
     if (
         innovation.ndim != 1
         or not np.issubdtype(innovation.dtype, np.signedinteger)
     ):
         raise TypeError("Main-0 Innovation must be a signed integer vector")
+    sample_count = sum(state.trajectory.sample_count for state in states)
     config = StreamConfig(
-        sample_count=trajectory.sample_count,
+        sample_count=sample_count,
         innovation_step=innovation_step,
         output_channels=1,
     )
-    if gain_law.sample_count != config.sample_count:
-        raise ValueError("Main-0 gain lifetime differs from the stream")
     if innovation.size != config.sample_count:
         raise ValueError("Main-0 Innovation length differs from the stream")
-    atom = PeriodicAtom(0, trajectory, gain_law)
     sections = [
-        RSC1Section("ATOM", pack_periodic_atom(atom)),
-        RSC1Section("BRAW", pack_braw(basis_vector.reshape(1, -1))),
         RSC1Section("CONF", pack_conf(config)),
         RSC1Section(
             "RSL1",
@@ -97,6 +120,46 @@ def pack_main0_raw_stream(
             ).payload,
         ),
     ]
+    basis_ids: dict[bytes, int] = {}
+    basis_payloads: list[bytes] = []
+    basis_births: list[int] = []
+    cursor = 0
+    for atom_id, state in enumerate(states):
+        basis_vector = np.asarray(state.basis)
+        if basis_vector.dtype != np.int16 or basis_vector.ndim != 1:
+            raise TypeError("Main-0 periodic Basis must be a mono int16 vector")
+        if state.gain_law.sample_count != state.trajectory.sample_count:
+            raise ValueError("Main-0 state gain and phase lifetimes differ")
+        basis_payload = pack_braw(basis_vector.reshape(1, -1))
+        basis_id = basis_ids.get(basis_payload)
+        if basis_id is None:
+            basis_id = len(basis_payloads)
+            basis_ids[basis_payload] = basis_id
+            basis_payloads.append(basis_payload)
+            basis_births.append(cursor)
+        atom = PeriodicAtom(
+            basis_id,
+            state.trajectory,
+            state.gain_law,
+        )
+        sections.append(
+            RSC1Section(
+                "ATOM",
+                pack_periodic_atom(atom),
+                instance_id=atom_id,
+                start_tick=cursor,
+            )
+        )
+        cursor += state.trajectory.sample_count
+    sections.extend(
+        RSC1Section(
+            "BRAW",
+            payload,
+            instance_id=basis_id,
+            start_tick=basis_births[basis_id],
+        )
+        for basis_id, payload in enumerate(basis_payloads)
+    )
     return pack_rsc1(sections, profile=0, level=0, timebase_hz=sample_rate)
 
 
@@ -107,46 +170,81 @@ def decode_main0_raw_stream(payload: bytes) -> Main0DecodeResult:
     if (info.profile, info.level) != (0, 0):
         raise ValueError("unsupported Resonith profile or level")
 
-    required: dict[bytes, RSC1Section] = {}
+    required: dict[bytes, list[RSC1Section]] = {
+        type_code: [] for type_code in REQUIRED_TYPES
+    }
     for section in info.sections:
         type_code = bytes(section.type_code)
         if type_code not in REQUIRED_TYPES:
             if section.flags & SECTION_CRITICAL:
                 raise ValueError("unknown critical Main-0 section")
             continue
-        if section.instance_id != 0:
-            raise ValueError("unsupported Main-0 section instance")
         if section.schema_version != 1:
             raise ValueError("unsupported Main-0 section schema")
-        if section.start_tick != 0:
-            raise ValueError("the executable Main-0 subset starts at tick zero")
-        required[type_code] = section
-    if required.keys() != REQUIRED_TYPES:
-        missing = sorted(REQUIRED_TYPES - required.keys())
+        required[type_code].append(section)
+    missing = sorted(
+        type_code
+        for type_code, sections in required.items()
+        if not sections
+    )
+    if missing:
         raise ValueError(f"missing required Main-0 section: {missing!r}")
 
-    config = unpack_conf(required[b"CONF"].payload)
+    if (
+        len(required[b"CONF"]) != 1
+        or required[b"CONF"][0].instance_id != 0
+        or required[b"CONF"][0].start_tick != 0
+        or len(required[b"RSL1"]) != 1
+        or required[b"RSL1"][0].instance_id != 0
+        or required[b"RSL1"][0].start_tick != 0
+    ):
+        raise ValueError("non-canonical singleton Main-0 section")
+    for type_code in (b"ATOM", b"BRAW"):
+        if [
+            section.instance_id for section in required[type_code]
+        ] != list(range(len(required[type_code]))):
+            raise ValueError("non-canonical Main-0 section instances")
+
+    config = unpack_conf(required[b"CONF"][0].payload)
     if config.output_channels != 1:
         raise ValueError("the executable Main-0 subset is mono")
-    basis = unpack_braw(required[b"BRAW"].payload)
-    if basis.shape[0] != 1:
-        raise ValueError("periodic Main-0 BRAW must contain one channel")
-    atom = unpack_periodic_atom(required[b"ATOM"].payload)
-    if atom.basis_instance_id != required[b"BRAW"].instance_id:
-        raise ValueError("ATOM references an unavailable Basis instance")
-    if atom.trajectory.sample_count != config.sample_count:
-        raise ValueError("ATOM lifetime differs from CONF")
+    bases: list[np.ndarray] = []
+    for section in required[b"BRAW"]:
+        basis = unpack_braw(section.payload)
+        if basis.shape[0] != 1 or basis.shape[1] < 2:
+            raise ValueError("periodic Main-0 BRAW must contain one Basis")
+        bases.append(basis[0])
     innovation = decode_liftpack(
-        required[b"RSL1"].payload,
+        required[b"RSL1"][0].payload,
         expected_count=config.sample_count,
     ).astype(np.int64, copy=False)
-    unity = render_basis_trajectory(basis[0], atom.trajectory)
-    output = compose_truth(
-        unity,
-        atom.gain_law,
-        innovation_q=innovation,
-        innovation_step=config.innovation_step,
-    )
+    output = np.empty(config.sample_count, dtype=np.int16)
+    cursor = 0
+    for section in required[b"ATOM"]:
+        if section.start_tick != cursor:
+            raise ValueError("Main-0 Atom states must exactly partition time")
+        atom = unpack_periodic_atom(section.payload)
+        if atom.basis_instance_id >= len(bases):
+            raise ValueError("ATOM references an unavailable Basis instance")
+        basis_section = required[b"BRAW"][atom.basis_instance_id]
+        if basis_section.start_tick > cursor:
+            raise ValueError("ATOM predates its referenced Basis")
+        end = cursor + atom.trajectory.sample_count
+        if end > config.sample_count:
+            raise ValueError("ATOM lifetime exceeds CONF")
+        unity = render_basis_trajectory(
+            bases[atom.basis_instance_id],
+            atom.trajectory,
+        )
+        output[cursor:end] = compose_truth(
+            unity,
+            atom.gain_law,
+            innovation_q=innovation[cursor:end],
+            innovation_step=config.innovation_step,
+        )
+        cursor = end
+    if cursor != config.sample_count:
+        raise ValueError("Main-0 Atom states do not cover CONF")
     output.flags.writeable = False
     return Main0DecodeResult(output, info.timebase_hz)
 

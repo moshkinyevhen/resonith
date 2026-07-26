@@ -708,3 +708,31 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
     without presenting a tiny corpus or waveform metric as a codec victory;
   - separation of the blinded manifest and key makes informal listening useful
     now and leaves a clean path to a later MUSHRA front end.
+
+## R-036 — State-partitioned typed RSC1 before simultaneous mixing
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / NORMATIVE-DRAFT**
+- Decision:
+  - extend the executable profile from one global periodic Atom to a canonical
+    sequence of one or more `ATOM` sections whose half-open lifetimes exactly
+    partition the configured sample timeline;
+  - assign consecutive instance IDs independently to `ATOM` and `BRAW`
+    sections and permit any number of Atoms to reference one immutable Basis;
+  - carry the absolute Atom birth in the RSC1 start tick and keep every
+    trajectory/gain position local to that Atom;
+  - require a referenced Basis start tick to be no later than the Atom birth;
+  - keep one stream-wide LiftPack Innovation so state selection cannot hide
+    residual or entropy overhead;
+  - discover maximum per-Atom Basis, phase, gain, and render workspace during
+    inspection, then reuse those bounded buffers while decoding the partition;
+  - retain the one-Atom stream as the zero-complexity RDO candidate;
+  - defer simultaneous overlapping Atoms until state-local partitioning proves
+    a complete-byte gain on licensed music.
+- Rationale:
+  - the first native music result showed that a richer global pitch law loses
+    to a constant law on whole mixtures;
+  - local states can change timbre and phase without adding a mixer, object
+    separator, or unbounded live-state bank;
+  - Basis instance reuse tests the central memory hypothesis directly: timbre
+    bytes are paid once even when multiple state-local Atoms invoke them.

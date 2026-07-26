@@ -24,9 +24,10 @@ The native Core:
   bounded saturating Truth-composition pass;
 - decodes minimal typed `BRAW` Basis payloads into aligned caller-owned
   host-endian memory without generic array metadata;
-- parses fixed `CONF` and periodic `ATOM` payloads, reports exact workspace
-  requirements, and orchestrates whole-container decode with no hidden
-  allocation;
+- parses fixed `CONF` and state-local periodic `ATOM` payloads, reports exact
+  maximum per-state workspace, reuses immutable Basis references across a
+  canonical state partition, and orchestrates whole-container decode with no
+  hidden allocation;
 - rejects non-canonical lengths, trailing bytes, non-zero padding, profile
   bound violations, and undersized buffers;
 - uses a portable scalar implementation with no third-party dependency;

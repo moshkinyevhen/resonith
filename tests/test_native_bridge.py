@@ -11,11 +11,18 @@ import numpy as np
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
-from maf_p0.main0 import encode_main0_periodic_rdo  # noqa: E402
+from maf_p0.composition import GainEventLaw  # noqa: E402
+from maf_p0.main0 import (  # noqa: E402
+    Main0State,
+    decode_main0_raw_stream,
+    encode_main0_periodic_rdo,
+    pack_main0_state_stream,
+)
 from maf_p0.native_core import (  # noqa: E402
     NativeCoreError,
     NativeMain0Decoder,
 )
+from maf_p0.periodic import constant_phase_trajectory  # noqa: E402
 
 
 class NativeBridgeTests(unittest.TestCase):
@@ -83,6 +90,42 @@ class NativeBridgeTests(unittest.TestCase):
         )
         with self.assertRaises(MemoryError):
             constrained.inspect(encoded.payload)
+
+    def test_state_partition_and_basis_reuse_match_reference(self) -> None:
+        basis = np.rint(
+            20_000.0
+            * np.sin(2.0 * np.pi * np.arange(64, dtype=np.float64) / 64.0)
+        ).astype(np.int16)
+        durations = (4000, 4192)
+        states = tuple(
+            Main0State(
+                basis.copy(),
+                constant_phase_trajectory(
+                    duration,
+                    0x0200_0000 + index * 0x0010_0000,
+                    phase_origin_q32=index * 0x1111_0000,
+                ),
+                GainEventLaw(
+                    np.asarray([0, duration // 2], dtype=np.uint32),
+                    np.asarray([32768, 24576 + index * 4096], dtype=np.int32),
+                    duration,
+                ),
+            )
+            for index, duration in enumerate(durations)
+        )
+        stream = pack_main0_state_stream(
+            sample_rate=48_000,
+            states=states,
+            innovation_q=np.zeros(sum(durations), dtype=np.int16),
+            innovation_step=1,
+            residual_block_size=256,
+        )
+        reference = decode_main0_raw_stream(stream)
+        native = self.decoder.decode(stream)
+        self.assertEqual(native.requirements.atom_count, 2)
+        self.assertEqual(native.requirements.basis_count, 1)
+        self.assertEqual(native.requirements.render_elements, max(durations))
+        np.testing.assert_array_equal(native.samples, reference.samples)
 
 
 if __name__ == "__main__":

@@ -110,7 +110,12 @@ LiftPack workspace element counts before any decode call.
 
 ## 7. What remains
 
-The first mono periodic path is complete. Main-0 still needs typed CIBS,
-transient, multi-Atom/multi-channel, Innovation indexing, and checkpoint
-payloads. Each new syntax must enter through the same inspect-first,
-caller-owned-memory decoder boundary; no generic metadata archive is added.
+The mono periodic path now supports a canonical state partition with
+content-deduplicated `BRAW` sections and multiple state-local `ATOM` sections.
+The decoder reuses maximum per-state workspace while one stream-wide `RSL1`
+preserves honest residual accounting.
+
+Main-0 still needs typed CIBS, transients, simultaneous Atom mixing,
+multi-channel output, Innovation indexing, and checkpoints. Each new syntax
+must enter through the same inspect-first, caller-owned-memory decoder
+boundary; no generic metadata archive is added.

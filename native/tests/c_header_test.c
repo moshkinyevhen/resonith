@@ -38,6 +38,9 @@ int main(void) {
         0U,
         0U,
         0U,
+        0U,
+        0U,
+        0U,
         0U
     };
     if (

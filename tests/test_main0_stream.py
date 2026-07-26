@@ -12,8 +12,10 @@ sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
 from maf_p0.composition import GainEventLaw, compose_truth  # noqa: E402
 from maf_p0.main0 import (  # noqa: E402
+    Main0State,
     decode_main0_raw_stream,
     pack_main0_raw_stream,
+    pack_main0_state_stream,
 )
 from maf_p0.periodic import PhaseTrajectory, render_basis_trajectory  # noqa: E402
 from maf_p0.rsc1 import RSC1Section, pack_rsc1, parse_rsc1  # noqa: E402
@@ -152,6 +154,68 @@ class Main0StreamTests(unittest.TestCase):
             [b"ATOM", b"BRAW", b"CONF", b"RSL1"],
         )
 
+    def test_state_partition_reuses_one_basis_and_covers_time_exactly(self) -> None:
+        first_phase = PhaseTrajectory(
+            np.asarray([0, 5, 17], dtype=np.int64),
+            self.trajectory.increments_q32[:3],
+            self.trajectory.phase_origin_q32,
+        )
+        second_phase = PhaseTrajectory(
+            np.asarray([0, 23], dtype=np.int64),
+            np.asarray([0x18000000, 0x18000000], dtype=np.uint32),
+            0x7777_0000,
+        )
+        first_gain = GainEventLaw(
+            np.asarray([0, 7], dtype=np.uint32),
+            np.asarray([32768, 24576], dtype=np.int32),
+            17,
+        )
+        second_gain = GainEventLaw(
+            np.asarray([0, 18], dtype=np.uint32),
+            np.asarray([-16384, 49152], dtype=np.int32),
+            23,
+        )
+        stream = pack_main0_state_stream(
+            sample_rate=48_000,
+            states=(
+                Main0State(self.basis, first_phase, first_gain),
+                Main0State(self.basis.copy(), second_phase, second_gain),
+            ),
+            innovation_q=self.innovation,
+            innovation_step=3,
+            residual_block_size=16,
+        )
+        parsed = parse_rsc1(stream)
+        atoms = [
+            section
+            for section in parsed.sections
+            if bytes(section.type_code) == b"ATOM"
+        ]
+        bases = [
+            section
+            for section in parsed.sections
+            if bytes(section.type_code) == b"BRAW"
+        ]
+        self.assertEqual([section.start_tick for section in atoms], [0, 17])
+        self.assertEqual(len(bases), 1)
+        decoded = decode_main0_raw_stream(stream)
+        first = compose_truth(
+            render_basis_trajectory(self.basis, first_phase),
+            first_gain,
+            innovation_q=self.innovation[:17],
+            innovation_step=3,
+        )
+        second = compose_truth(
+            render_basis_trajectory(self.basis, second_phase),
+            second_gain,
+            innovation_q=self.innovation[17:],
+            innovation_step=3,
+        )
+        np.testing.assert_array_equal(
+            decoded.samples,
+            np.concatenate((first, second)),
+        )
+
     def test_missing_or_unknown_critical_section_is_rejected(self) -> None:
         config_only = pack_rsc1([RSC1Section("CONF", pack_conf(StreamConfig(8, 1)))])
         with self.assertRaisesRegex(ValueError, "missing required"):
@@ -193,7 +257,7 @@ class Main0StreamTests(unittest.TestCase):
             )
             for section in parsed.sections
         ]
-        with self.assertRaisesRegex(ValueError, "lifetime"):
+        with self.assertRaisesRegex(ValueError, "lifetime|sample count"):
             decode_main0_raw_stream(
                 pack_rsc1(replaced, timebase_hz=parsed.timebase_hz)
             )

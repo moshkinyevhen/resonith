@@ -259,7 +259,10 @@ extern "C" resonith_status resonith_container_find_section(
         return RESONITH_STATUS_INVALID_ARGUMENT;
     }
     *section = {};
-    for (std::uint32_t index = 0; index < view->section_count; ++index) {
+    std::uint32_t lower = 0U;
+    std::uint32_t upper = view->section_count;
+    while (lower < upper) {
+        const std::uint32_t index = lower + (upper - lower) / 2U;
         const std::uint8_t* record = record_at(view, index);
         const int order = compare_key(
             record,
@@ -271,8 +274,10 @@ extern "C" resonith_status resonith_container_find_section(
             decode_section(view, record, section);
             return RESONITH_STATUS_OK;
         }
-        if (order > 0) {
-            break;
+        if (order < 0) {
+            lower = index + 1U;
+        } else {
+            upper = index;
         }
     }
     return RESONITH_STATUS_NOT_FOUND;

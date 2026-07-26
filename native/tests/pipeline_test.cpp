@@ -87,6 +87,9 @@ int main() {
                 && requirements.basis_elements == 16U
                 && requirements.phase_knot_count == 4U
                 && requirements.gain_event_count == 4U
+                && requirements.atom_count == 1U
+                && requirements.basis_count == 1U
+                && requirements.render_elements == 40U
                 && requirements.liftpack_scratch_elements == 32U
                 && requirements.output_channels == 1U,
             "whole Main-0 inspect"
