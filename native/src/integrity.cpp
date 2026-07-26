@@ -131,12 +131,8 @@ std::uint32_t crc32(const std::uint8_t* data, std::size_t size) noexcept {
     return ~crc;
 }
 
-void sha256(
-    const std::uint8_t* data,
-    std::size_t size,
-    std::uint8_t output[32]
-) noexcept {
-    std::array<std::uint32_t, 8> state = {
+void sha256_init(Sha256Context& context) noexcept {
+    context.state = {
         0x6a09e667U,
         0xbb67ae85U,
         0x3c6ef372U,
@@ -146,34 +142,93 @@ void sha256(
         0x1f83d9abU,
         0x5be0cd19U,
     };
+    context.buffer.fill(0U);
+    context.total_bytes = 0U;
+    context.buffered_bytes = 0U;
+}
 
-    std::size_t cursor = 0;
+void sha256_update(
+    Sha256Context& context,
+    const std::uint8_t* data,
+    std::size_t size
+) noexcept {
+    context.total_bytes += static_cast<std::uint64_t>(size);
+    std::size_t cursor = 0U;
+
+    if (context.buffered_bytes != 0U) {
+        const std::size_t needed = 64U - context.buffered_bytes;
+        const std::size_t copied = std::min(needed, size);
+        if (copied != 0U) {
+            std::memcpy(
+                context.buffer.data() + context.buffered_bytes,
+                data,
+                copied
+            );
+        }
+        context.buffered_bytes += copied;
+        cursor += copied;
+        if (context.buffered_bytes == 64U) {
+            compress_block(context.buffer.data(), context.state);
+            context.buffered_bytes = 0U;
+        }
+    }
+
     while (size - cursor >= 64U) {
-        compress_block(data + cursor, state);
+        compress_block(data + cursor, context.state);
         cursor += 64U;
     }
 
-    std::array<std::uint8_t, 128> tail{};
     const std::size_t remainder = size - cursor;
     if (remainder != 0U) {
-        std::memcpy(tail.data(), data + cursor, remainder);
+        std::memcpy(context.buffer.data(), data + cursor, remainder);
+        context.buffered_bytes = remainder;
     }
-    tail[remainder] = 0x80U;
-    const std::size_t padded_bytes = remainder < 56U ? 64U : 128U;
-    const std::uint64_t bit_length = static_cast<std::uint64_t>(size) * 8U;
+}
+
+void sha256_final(
+    Sha256Context& context,
+    std::uint8_t output[32]
+) noexcept {
+    const std::uint64_t bit_length = context.total_bytes * 8U;
+    context.buffer[context.buffered_bytes] = 0x80U;
+    ++context.buffered_bytes;
+    if (context.buffered_bytes > 56U) {
+        std::fill(
+            context.buffer.begin()
+                + static_cast<std::ptrdiff_t>(context.buffered_bytes),
+            context.buffer.end(),
+            0U
+        );
+        compress_block(context.buffer.data(), context.state);
+        context.buffered_bytes = 0U;
+    }
+    std::fill(
+        context.buffer.begin()
+            + static_cast<std::ptrdiff_t>(context.buffered_bytes),
+        context.buffer.begin() + 56,
+        0U
+    );
     for (unsigned index = 0; index < 8U; ++index) {
-        tail[padded_bytes - 1U - index] = static_cast<std::uint8_t>(
+        context.buffer[63U - index] = static_cast<std::uint8_t>(
             bit_length >> (index * 8U)
         );
     }
-    compress_block(tail.data(), state);
-    if (padded_bytes == 128U) {
-        compress_block(tail.data() + 64U, state);
-    }
+    compress_block(context.buffer.data(), context.state);
 
-    for (std::size_t index = 0; index < state.size(); ++index) {
-        write_be32(output + index * 4U, state[index]);
+    for (std::size_t index = 0; index < context.state.size(); ++index) {
+        write_be32(output + index * 4U, context.state[index]);
     }
+}
+
+void sha256(
+    const std::uint8_t* data,
+    std::size_t size,
+    std::uint8_t output[32]
+) noexcept {
+    Sha256Context context{};
+    sha256_init(context);
+    sha256_update(context, data, size);
+    sha256_final(context, output);
 }
 
 }  // namespace resonith::internal

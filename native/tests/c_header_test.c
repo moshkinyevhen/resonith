@@ -1,3 +1,4 @@
+#include "resonith/cibs.h"
 #include "resonith/container.h"
 #include "resonith/liftpack.h"
 
@@ -15,6 +16,13 @@ int main(void) {
         0U
     };
     resonith_liftpack_info info = {0U, 0U, 0U, 0U};
+    resonith_cibs_info cibs_info = {0U, 0U, 0U, 0U};
+    if (
+        resonith_cibs_inspect_model(NULL, NULL, &cibs_info)
+        != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
     if (
         resonith_container_open(NULL, 0U, &view)
         != RESONITH_STATUS_INVALID_ARGUMENT

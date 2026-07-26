@@ -211,3 +211,35 @@ Syntax CIBS remains, but a specific model version is rejected if:
 - model does not provide bit-exact output;
 - startup/ROM/scratch exceed level;
 - OOD worst decile is significantly worse than raw/lifting Basis.
+
+## 12. Executable native kernel
+
+The Golden Core now exposes the complete CIBS-0 synthesis envelope through a
+C99 ABI implemented in dependency-free C++20:
+
+- immutable caller-owned model-registry descriptors;
+- int8 projection and optional rank-1 through rank-4 adapter;
+- signed round-to-nearest with ties away from zero;
+- the canonical negative one-eighth activation;
+- up to four periodic channel-local refinement stages;
+- int16 saturation after projection, every refinement, and correction;
+- optional int32 objective correction;
+- incremental canonical Basis SHA-256;
+- atomic output commit only after an expected hash matches;
+- exact output, scratch, and integer-MAC accounting.
+
+Two `int64` planes sized to the final Basis plus at most four adapter elements
+are sufficient scratch. No allocation, I/O, logging, model loading, or
+floating point occurs in materialization.
+
+The first native vector deliberately uses
+`CIBS0-DEMO-NOT-NORMATIVE`. Python and C++ independently produce Basis hash:
+
+```text
+2c901e3a32e042a960d06d71dc5961171d7b6304c5e984f892904b34ef80782f
+```
+
+Adapter and saturating-correction paths have separate cross-language hashes.
+This proves the operator implementation; it does not accept the demo weights
+as a production model. Model registry entries remain subject to the kill
+conditions above.

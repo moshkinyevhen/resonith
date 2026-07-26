@@ -16,6 +16,8 @@ The native Core:
 - validates the complete stream envelope and CRC before decoding;
 - exposes zero-copy `RSC1` section views after a bounded linear validation
   pass and verifies section CRC-32 plus SHA-256 without dependencies;
+- materializes registered CIBS models once with bounded integer projection,
+  adapter, refinement, correction, and atomic Basis-hash verification;
 - rejects non-canonical lengths, trailing bytes, non-zero padding, profile
   bound violations, and undersized buffers;
 - uses a portable scalar implementation with no third-party dependency;
@@ -54,6 +56,10 @@ any byte drift between the Python and C++ sources. A second frozen stream
 exercises all four transforms and both entropy modes and is independently
 decoded by both implementations.
 
-This is not yet the full Resonith decoder. Container parsing, Basis
-materialization, Atom trajectories, transient rendering, gain laws, and
-multi-channel synthesis remain subsequent parity stages.
+`native/tests/cibs_test.cpp` executes the same demo projection, adapter,
+refinement, correction, and SHA-256 vectors as the Python CIBS oracle. The
+model is an operator conformance fixture and remains explicitly non-normative.
+
+This is not yet the full Resonith decoder. Typed Basis payload parsing, Atom
+trajectories, transient rendering, gain laws, and multi-channel synthesis
+remain subsequent parity stages.

@@ -5,6 +5,7 @@ project(resonith_core VERSION 0.1.0 LANGUAGES C CXX)
 option(RESONITH_WARNINGS_AS_ERRORS "Treat native-core warnings as errors" ON)
 
 add_library(resonith_core STATIC
+    src/cibs.cpp
     src/container.cpp
     src/integrity.cpp
     src/liftpack.cpp
@@ -67,4 +68,13 @@ if(BUILD_TESTING)
     set_target_properties(resonith_c_header_test PROPERTIES C_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_c_header_test)
     add_test(NAME c_header_compatibility COMMAND resonith_c_header_test)
+
+    add_executable(resonith_cibs_test
+        tests/cibs_test.cpp
+    )
+    target_compile_features(resonith_cibs_test PRIVATE cxx_std_20)
+    target_link_libraries(resonith_cibs_test PRIVATE Resonith::Core)
+    set_target_properties(resonith_cibs_test PROPERTIES CXX_EXTENSIONS OFF)
+    resonith_enable_warnings(resonith_cibs_test)
+    add_test(NAME cibs_conformance COMMAND resonith_cibs_test)
 endif()

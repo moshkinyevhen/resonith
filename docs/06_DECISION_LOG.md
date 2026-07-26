@@ -512,3 +512,29 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
     deterministic allocation-free parser;
   - independently hashed self-encoded sections support random access and
     bounded corruption domains.
+
+## R-028 — Registry-backed native CIBS materialization
+
+- Date: 2026-07-26
+- Status: **NORMATIVE-DRAFT / IMPLEMENTATION IN PROGRESS**
+- Decision:
+  - port the complete bounded CIBS-0 integer synthesis operator to the native
+    Golden Core before freezing a production model package;
+  - keep normative synthesis models in a versioned decoder registry rather
+    than repeating projection weights in every stream;
+  - let a typed Basis payload reference a registered model and carry only its
+    latent, optional bounded adapter/correction, lifetime, and expected
+    materialized-Basis hash;
+  - expose model tables as immutable caller-owned descriptors in the C ABI so
+    conformance models and future firmware registries use the same kernel;
+  - use two caller-owned `int64` work planes plus bounded adapter scratch;
+  - compute the canonical Basis SHA-256 incrementally and commit samples to
+    output only after an expected hash matches;
+  - preserve the Python rules exactly: signed round-to-nearest with ties away
+    from zero, negative one-eighth activation, per-stage int16 saturation,
+    periodic refinement boundaries, and channel-major sample order.
+- Scope:
+  - the current demo model remains explicitly non-normative and serves only as
+    the first cross-language conformance vector;
+  - model selection and training remain encoder-side research until measured
+    corpus evidence justifies freezing Main-0 registry entries.
