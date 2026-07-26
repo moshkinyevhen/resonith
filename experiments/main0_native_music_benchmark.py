@@ -72,6 +72,12 @@ def benchmark_clip(
     native = native_decoder.decode(resonith.payload)
     decode_seconds = time.perf_counter() - decode_start
     np.testing.assert_array_equal(native.samples, resonith.reconstructed)
+    stream_decode_seconds = None
+    if native.requirements.atom_count == 0:
+        stream_decode_start = time.perf_counter()
+        streamed = native_decoder.decode_streaming(resonith.payload)
+        stream_decode_seconds = time.perf_counter() - stream_decode_start
+        np.testing.assert_array_equal(streamed.samples, native.samples)
     resonith_path = output_directory / "resonith-main0-q64.wav"
     write_pcm16_mono(resonith_path, sample_rate, native.samples)
     resonith_report = {
@@ -83,6 +89,7 @@ def benchmark_clip(
         ),
         "encode_wall_seconds": encode_seconds,
         "native_decode_wall_seconds": decode_seconds,
+        "native_stream_decode_wall_seconds": stream_decode_seconds,
         "native_workspace_bytes": native.requirements.workspace_bytes,
         "decoded_pcm_sha256": _pcm_sha256(native.samples),
     }

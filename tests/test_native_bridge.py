@@ -114,6 +114,10 @@ class NativeBridgeTests(unittest.TestCase):
         self.assertEqual(native.requirements.gain_event_count, 0)
         self.assertEqual(native.requirements.render_elements, 0)
         np.testing.assert_array_equal(native.samples, reference.samples)
+        streamed = self.decoder.decode_streaming(stream)
+        np.testing.assert_array_equal(streamed.samples, native.samples)
+        self.assertEqual(streamed.sample_rate, native.sample_rate)
+        self.assertEqual(streamed.requirements, native.requirements)
 
     def test_state_partition_and_basis_reuse_match_reference(self) -> None:
         basis = np.rint(

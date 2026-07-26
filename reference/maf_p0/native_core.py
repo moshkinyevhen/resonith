@@ -57,6 +57,31 @@ class _Workspace(ctypes.Structure):
     ]
 
 
+class _PlayerView(ctypes.Structure):
+    _fields_ = [
+        ("innovation_data", ctypes.POINTER(ctypes.c_uint8)),
+        ("innovation_size", ctypes.c_size_t),
+        ("timebase_hz", ctypes.c_uint32),
+        ("sample_count", ctypes.c_uint32),
+        ("innovation_step", ctypes.c_uint32),
+        ("block_size", ctypes.c_uint32),
+        ("block_count", ctypes.c_uint32),
+        ("atom_count", ctypes.c_uint32),
+        ("liftpack_scratch_elements", ctypes.c_size_t),
+        ("output_channels", ctypes.c_uint16),
+        ("reserved", ctypes.c_uint16),
+    ]
+
+
+_Pcm16Callback = ctypes.CFUNCTYPE(
+    ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_uint32,
+    ctypes.POINTER(ctypes.c_int16),
+    ctypes.c_size_t,
+)
+
+
 @dataclass(frozen=True)
 class NativeMain0Requirements:
     timebase_hz: int
@@ -119,6 +144,25 @@ class NativeMain0Decoder:
             ctypes.POINTER(ctypes.c_size_t),
         ]
         self._library.resonith_main0_decode.restype = ctypes.c_int
+        self._library.resonith_main0_player_open.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(_PlayerView),
+        ]
+        self._library.resonith_main0_player_open.restype = ctypes.c_int
+        self._library.resonith_main0_player_stream.argtypes = [
+            ctypes.POINTER(_PlayerView),
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            _Pcm16Callback,
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        self._library.resonith_main0_player_stream.restype = ctypes.c_int
         self._library.resonith_status_string.argtypes = [ctypes.c_int]
         self._library.resonith_status_string.restype = ctypes.c_char_p
 
@@ -229,6 +273,79 @@ class NativeMain0Decoder:
         samples.flags.writeable = False
         return NativeMain0DecodeResult(
             samples,
+            requirements.timebase_hz,
+            requirements,
+        )
+
+    def decode_streaming(self, payload: bytes) -> NativeMain0DecodeResult:
+        """Decode the zero-Atom path through the one-block callback API."""
+
+        requirements = self.inspect(payload)
+        source = self._input_buffer(payload)
+        player = _PlayerView()
+        self._check(
+            self._library.resonith_main0_player_open(
+                source,
+                len(payload),
+                ctypes.byref(player),
+            )
+        )
+        if int(player.sample_count) != requirements.sample_count:
+            raise RuntimeError("native player metadata differs from inspect")
+
+        innovation = (ctypes.c_int64 * int(player.block_size))()
+        scratch = (
+            ctypes.c_int64 * int(player.liftpack_scratch_elements)
+        )()
+        block_output = (ctypes.c_int16 * int(player.block_size))()
+        result = np.empty(requirements.sample_count, dtype=np.int16)
+        callback_error: list[BaseException] = []
+
+        def collect(
+            _user: int,
+            sample_offset: int,
+            samples: ctypes.POINTER(ctypes.c_int16),
+            sample_count: int,
+        ) -> int:
+            try:
+                start = int(sample_offset)
+                count = int(sample_count)
+                end = start + count
+                if start < 0 or end > result.size:
+                    raise RuntimeError("native callback exceeds PCM extent")
+                result[start:end] = np.ctypeslib.as_array(
+                    samples,
+                    shape=(count,),
+                )
+                return 0
+            except BaseException as error:
+                callback_error.append(error)
+                return 7
+
+        callback = _Pcm16Callback(collect)
+        emitted = ctypes.c_size_t()
+        status = self._library.resonith_main0_player_stream(
+            ctypes.byref(player),
+            innovation,
+            int(player.block_size),
+            scratch,
+            int(player.liftpack_scratch_elements),
+            block_output,
+            int(player.block_size),
+            callback,
+            None,
+            ctypes.byref(emitted),
+        )
+        if callback_error:
+            raise RuntimeError("native PCM callback rejected a block") from (
+                callback_error[0]
+            )
+        self._check(status)
+        if emitted.value != requirements.sample_count:
+            raise RuntimeError("native player returned a partial PCM result")
+        result.flags.writeable = False
+        return NativeMain0DecodeResult(
+            result,
             requirements.timebase_hz,
             requirements,
         )
