@@ -1,0 +1,156 @@
+"""Command-line entry point for MAF-P0 experiments."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+import numpy as np
+
+from .codec import decode_bytes, encode_samples
+from .model import (
+    load_analysis_model,
+    save_analysis_model,
+    train_linear_cibs,
+)
+from .periodic import analyze_periodic_basis
+from .wav_io import read_pcm16_mono, write_pcm16_mono
+
+
+def _json_default(value):
+    if isinstance(value, float) and not np.isfinite(value):
+        return str(value)
+    raise TypeError(f"not JSON serializable: {value!r}")
+
+
+def _train(args: argparse.Namespace) -> None:
+    bases: list[np.ndarray] = []
+    sample_rate_expected: int | None = None
+    for path_text in args.inputs:
+        sample_rate, samples = read_pcm16_mono(path_text)
+        if sample_rate_expected is None:
+            sample_rate_expected = sample_rate
+        elif sample_rate != sample_rate_expected:
+            raise ValueError("all training WAV files must use one sample rate")
+        basis = analyze_periodic_basis(
+            samples,
+            sample_rate,
+            basis_length=args.basis_length,
+        ).basis
+        bases.append(basis.reshape(1, -1))
+    model = train_linear_cibs(
+        np.stack(bases),
+        latent_elements=args.latent,
+        model_id=args.model_id,
+    )
+    save_analysis_model(args.output, model)
+    print(
+        json.dumps(
+            {
+                "model": str(args.output),
+                "model_id": model.model_id,
+                "training_bases": len(bases),
+                "latent_elements": model.latent_elements,
+                "basis_length": model.output_length,
+                "package_bytes": Path(args.output).stat().st_size,
+            },
+            indent=2,
+        )
+    )
+
+
+def _encode(args: argparse.Namespace) -> None:
+    sample_rate, samples = read_pcm16_mono(args.input)
+    model = load_analysis_model(args.model) if args.model else None
+    result = encode_samples(
+        samples,
+        sample_rate,
+        basis_mode=args.mode,
+        cibs_model=model,
+        basis_length=args.basis_length,
+        gain_block_size=args.gain_block,
+        basis_correction_step=args.basis_q,
+        residual_step=args.residual_q,
+    )
+    Path(args.output).write_bytes(result.payload)
+    print(json.dumps(result.report, indent=2, default=_json_default))
+
+
+def _decode(args: argparse.Namespace) -> None:
+    model = load_analysis_model(args.model) if args.model else None
+    result = decode_bytes(Path(args.input).read_bytes(), cibs_model=model)
+    write_pcm16_mono(args.output, result.sample_rate, result.samples)
+    print(json.dumps(result.report, indent=2))
+
+
+def _benchmark(args: argparse.Namespace) -> None:
+    sample_rate, samples = read_pcm16_mono(args.input)
+    model = load_analysis_model(args.model)
+    reports = {}
+    for mode in ("raw", "cibs"):
+        result = encode_samples(
+            samples,
+            sample_rate,
+            basis_mode=mode,
+            cibs_model=model if mode == "cibs" else None,
+            basis_length=args.basis_length,
+            gain_block_size=args.gain_block,
+            basis_correction_step=args.basis_q,
+            residual_step=args.residual_q,
+        )
+        reports[mode] = result.report
+        if args.output_prefix:
+            Path(f"{args.output_prefix}.{mode}.maf0").write_bytes(result.payload)
+    reports["model_package_bytes"] = Path(args.model).stat().st_size
+    print(json.dumps(reports, indent=2, default=_json_default))
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="maf-p0")
+    commands = parser.add_subparsers(dest="command", required=True)
+
+    train = commands.add_parser("train-model")
+    train.add_argument("output")
+    train.add_argument("inputs", nargs="+")
+    train.add_argument("--basis-length", type=int, default=256)
+    train.add_argument("--latent", type=int, default=16)
+    train.add_argument("--model-id", default="CIBS0-P0-LINEAR")
+    train.set_defaults(function=_train)
+
+    encode = commands.add_parser("encode")
+    encode.add_argument("input")
+    encode.add_argument("output")
+    encode.add_argument("--mode", choices=("raw", "cibs"), default="cibs")
+    encode.add_argument("--model")
+    encode.add_argument("--basis-length", type=int, default=256)
+    encode.add_argument("--gain-block", type=int, default=1024)
+    encode.add_argument("--basis-q", type=int, default=1)
+    encode.add_argument("--residual-q", type=int, default=1)
+    encode.set_defaults(function=_encode)
+
+    decode = commands.add_parser("decode")
+    decode.add_argument("input")
+    decode.add_argument("output")
+    decode.add_argument("--model")
+    decode.set_defaults(function=_decode)
+
+    benchmark = commands.add_parser("benchmark")
+    benchmark.add_argument("input")
+    benchmark.add_argument("model")
+    benchmark.add_argument("--output-prefix")
+    benchmark.add_argument("--basis-length", type=int, default=256)
+    benchmark.add_argument("--gain-block", type=int, default=1024)
+    benchmark.add_argument("--basis-q", type=int, default=1)
+    benchmark.add_argument("--residual-q", type=int, default=1)
+    benchmark.set_defaults(function=_benchmark)
+    return parser
+
+
+def main() -> None:
+    args = build_parser().parse_args()
+    args.function(args)
+
+
+if __name__ == "__main__":
+    main()
