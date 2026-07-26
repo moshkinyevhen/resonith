@@ -79,6 +79,18 @@ jobs:
           --iterations 8
           --warmups 2
           --output artifacts/lapped_native_packet_timing/report.json
+      - name: Gate native transform packet resources
+        env:
+          RESONITH_NATIVE_CORE: ${{ github.workspace }}/build/native/libresonith_core_shared.so
+        run: >
+          python experiments/native_lapped_packet_timing.py
+          --cache artifacts/real_music_source
+          --maximum-seconds 3.0
+          --packet-seconds 0.25
+          --packet-mode transform
+          --iterations 8
+          --warmups 2
+          --output artifacts/lapped_native_transform_packet_timing/report.json
       - name: Gate lapped packet-loss containment
         run: >
           python experiments/lapped_packet_loss_gate.py
@@ -105,6 +117,11 @@ jobs:
         with:
           name: lapped-native-packet-timing-linux-x64
           path: artifacts/lapped_native_packet_timing/report.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v6
+        with:
+          name: lapped-native-transform-packet-timing-linux-x64
+          path: artifacts/lapped_native_transform_packet_timing/report.json
           if-no-files-found: error
       - uses: actions/upload-artifact@v6
         with:

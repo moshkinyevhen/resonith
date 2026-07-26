@@ -19,6 +19,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 from maf_p0.lapped_streaming import (  # noqa: E402
     decode_lapped_packet_stream,
     encode_lapped_packet_stream,
+    encode_lapped_transform_packet_stream,
 )
 from maf_p0.native_core import NativeMain0Decoder  # noqa: E402
 from packet_loss_benchmark import (  # noqa: E402
@@ -58,6 +59,11 @@ def main() -> None:
     )
     parser.add_argument("--maximum-seconds", type=float, default=3.0)
     parser.add_argument("--packet-seconds", type=float, default=1.0)
+    parser.add_argument(
+        "--packet-mode",
+        choices=("context", "transform"),
+        default="context",
+    )
     parser.add_argument("--iterations", type=int, default=8)
     parser.add_argument("--warmups", type=int, default=2)
     parser.add_argument("--half-window", type=int, default=512)
@@ -117,15 +123,25 @@ def main() -> None:
             * args.half_window,
         )
         budget = SELECTED_AVERAGE_BUDGETS.get(record["id"], 64)
-        encoded = encode_lapped_packet_stream(
-            samples,
-            sample_rate,
-            coefficients_per_frame=budget,
-            packet_frames=packet_frames,
-            half_window=args.half_window,
-            band_count=args.band_count,
-            density_backend="adaptive",
-        )
+        if args.packet_mode == "transform":
+            encoded = encode_lapped_transform_packet_stream(
+                samples,
+                sample_rate,
+                coefficients_per_frame=budget,
+                packet_frames=packet_frames,
+                half_window=args.half_window,
+                band_count=args.band_count,
+            )
+        else:
+            encoded = encode_lapped_packet_stream(
+                samples,
+                sample_rate,
+                coefficients_per_frame=budget,
+                packet_frames=packet_frames,
+                half_window=args.half_window,
+                band_count=args.band_count,
+                density_backend="adaptive",
+            )
         python = decode_lapped_packet_stream(encoded.payload)
         native = decoder.decode_lapped_packets(encoded.payload)
         np.testing.assert_array_equal(native.samples, python.samples)
@@ -156,6 +172,7 @@ def main() -> None:
             "source_pcm16_sha256": pcm_sha256(samples),
             "decoded_pcm16_sha256": pcm_sha256(native.samples),
             "average_coefficients": budget,
+            "packet_mode": args.packet_mode,
             "packet_frames": native.packet_frames,
             "packet_count": native.packet_count,
             "stream_bytes": len(encoded.payload),
@@ -190,6 +207,7 @@ def main() -> None:
             "machine": os.environ.get("RUNNER_ARCH", "unknown"),
         },
         "native_library": str(args.native_library),
+        "packet_mode": args.packet_mode,
         "iterations": args.iterations,
         "warmups": args.warmups,
         "gate": {

@@ -88,7 +88,8 @@ reproducible command and independent decode.
 - `native_lapped_frontier_timing.py` — R-070 six-budget end-to-end RDO timing
   with native analysis and candidate reconstruction.
 - `native_lapped_packet_timing.py` — R-073 release C++ LPS1 pull timing,
-  exact Python/native parity, and complete caller-owned workspace gate.
+  plus R-077 LPS2 transform-packet timing, exact Python/native parity, and
+  complete caller-owned workspace gates.
 - `results/native_lapped_packet_timing_2026-07-26_summary.json` — the R-073
   hosted x64 pass; physical-device energy and transport I/O remain open.
 - `lapped_packet_loss_gate.py` — R-074 authenticated-packet absence,

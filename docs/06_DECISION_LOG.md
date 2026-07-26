@@ -2103,3 +2103,20 @@ new oscillator opcode.
   - GitHub Actions run 30211517931 passed GCC, Clang, MSVC, Windows ARM64,
     Linux ARM64, macOS ARM64, Android ARM64, C99-header, sanitizer, and 5,000
     packet-fuzzer mutations seeded with valid LPS1 and LPS2 streams.
+
+## R-077 — Hosted native LPS2 resource gate
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - run the same release native timing and complete caller-owned workspace gate
+    as R-073 using 243.81 ms LPS2 transform-boundary packets;
+  - retain exact Python/native parity and the 2 MiB workspace ceiling;
+  - require at least 4x real-time decode on every pinned three-second clip;
+  - record this separately from LPS1 so shorter packet duration cannot hide a
+    resource regression behind the earlier one-second measurement.
+- Rationale:
+  - LPS2 removes bytes and nested parsing, but increases packet count from four
+    to thirteen in the chosen three-second sequence;
+  - only a complete host measurement can show whether repeated authentication,
+    entropy setup, and overlap clearing remain practical.
