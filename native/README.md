@@ -3,8 +3,9 @@
 Status: **EXECUTABLE MAIN-0 SUBSET**
 
 This directory contains the dependency-free portable C++20 implementation of
-the first frozen Resonith decoder primitive. The current subset validates and
-decodes `LiftPack-1` objective-innovation streams through a stable C99 ABI.
+the first frozen Resonith decoder primitives. The current subset validates the
+compact `RSC1` section container and decodes `LiftPack-1`
+objective-innovation streams through a stable C99 ABI.
 
 ## Runtime contract
 
@@ -13,6 +14,8 @@ The native Core:
 - performs no heap allocation, I/O, logging, locking, or global mutation;
 - writes only to caller-owned output and scratch buffers;
 - validates the complete stream envelope and CRC before decoding;
+- exposes zero-copy `RSC1` section views after a bounded linear validation
+  pass and verifies section CRC-32 plus SHA-256 without dependencies;
 - rejects non-canonical lengths, trailing bytes, non-zero padding, profile
   bound violations, and undersized buffers;
 - uses a portable scalar implementation with no third-party dependency;

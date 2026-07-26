@@ -37,12 +37,13 @@ The repository contains:
 - absolute continuous Q32 pitch/phase trajectories with random access;
 - bounded reversible integer-lifting transient events;
 - RAW and CIBS Basis banks plus the bounded `LiftPack-1` objective residual;
+- the compact deterministic `RSC1` typed section-container candidate;
 - a dependency-free C++20 `LiftPack-1` Golden Core behind a stable C99 ABI;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 44 Python reference/security/integration tests when the Opus tool is
+- 50 Python reference/security/integration tests when the Opus tool is
   configured, plus two native conformance targets built with GCC, Clang, and
   MSVC.
 
@@ -70,6 +71,7 @@ The first portable decoder subset is documented in
 - [MAF-P0/P1 executable prototypes and measured results](docs/10_MAF_P0_IMPLEMENTATION.md)
 - [Implementation language and runtime](docs/11_IMPLEMENTATION_LANGUAGE.md)
 - [LiftPack-1 and full-stream state RDO](docs/12_LIFTPACK_AND_STATE_RDO.md)
+- [RSC1 compact deterministic section container](docs/13_RSC1_CONTAINER.md)
 - [Primary sources](docs/REFERENCES.md)
 - [Resonith-0 normative draft](spec/Resonith-0.md)
 

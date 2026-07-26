@@ -1,5 +1,7 @@
+#include "resonith/container.h"
 #include "resonith/liftpack.h"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -47,6 +49,23 @@ constexpr std::array<std::uint8_t, 139> kAllModesStream = {
     0x23, 0x4c, 0xc9, 0x3a, 0x63, 0xd9, 0x65,
 };
 
+/*
+ * Canonical RSC1 header and directory for kConformanceStream. Keeping the
+ * payload in one array avoids duplicating the LiftPack bytes in the test.
+ */
+constexpr std::array<std::uint8_t, 112> kContainerPrefix = {
+    0x52, 0x53, 0x43, 0x31, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x80, 0xbb, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x50, 0x00, 0x00, 0x00,
+    0x50, 0x00, 0x00, 0x00, 0x66, 0x9f, 0x6b, 0xc4, 0x52, 0x53, 0x4c, 0x31,
+    0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x70, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0xcb, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xcb, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x1c, 0xdf, 0x44, 0x21, 0x6d, 0x58, 0x81, 0x21,
+    0x62, 0x38, 0x8d, 0xfe, 0x58, 0xc2, 0xb6, 0x02, 0x37, 0x2b, 0xf1, 0x44,
+    0xd3, 0x6a, 0xf0, 0x0f, 0x7a, 0x19, 0xcb, 0x39, 0x25, 0x0e, 0x0d, 0x92,
+    0x06, 0x09, 0xfe, 0xe6,
+};
+
 bool expect(bool condition, const char* message) {
     if (!condition) {
         std::fprintf(stderr, "FAIL: %s\n", message);
@@ -57,11 +76,75 @@ bool expect(bool condition, const char* message) {
 }  // namespace
 
 int main() {
+    std::array<std::uint8_t, 315> container_stream{};
+    std::copy(
+        kContainerPrefix.begin(),
+        kContainerPrefix.end(),
+        container_stream.begin()
+    );
+    std::copy(
+        kConformanceStream.begin(),
+        kConformanceStream.end(),
+        container_stream.begin()
+            + static_cast<std::ptrdiff_t>(kContainerPrefix.size())
+    );
+
+    resonith_container_view container{};
+    if (!expect(
+            resonith_container_open(
+                container_stream.data(),
+                container_stream.size(),
+                &container
+            ) == RESONITH_STATUS_OK
+                && container.section_count == 1U
+                && container.timebase_hz == 48'000U,
+            "RSC1 container inspection"
+        )) {
+        return 1;
+    }
+    constexpr std::array<std::uint8_t, 4> kResidualType = {
+        'R',
+        'S',
+        'L',
+        '1',
+    };
+    resonith_container_section residual_section{};
+    if (!expect(
+            resonith_container_find_section(
+                &container,
+                kResidualType.data(),
+                0U,
+                &residual_section
+            ) == RESONITH_STATUS_OK
+                && residual_section.payload_size == kConformanceStream.size(),
+            "RSC1 residual lookup"
+        )) {
+        return 1;
+    }
+    if (!expect(
+            resonith_container_verify_section(&residual_section)
+                == RESONITH_STATUS_OK,
+            "RSC1 residual integrity"
+        )) {
+        return 1;
+    }
+    resonith_container_section missing_section{};
+    if (!expect(
+            resonith_container_get_section(
+                &container,
+                1U,
+                &missing_section
+            ) == RESONITH_STATUS_NOT_FOUND,
+            "RSC1 section bound"
+        )) {
+        return 1;
+    }
+
     resonith_liftpack_info info{};
     if (!expect(
             resonith_liftpack_inspect(
-                kConformanceStream.data(),
-                kConformanceStream.size(),
+                residual_section.payload,
+                residual_section.payload_size,
                 &info
             ) == RESONITH_STATUS_OK,
             "conformance stream inspection"
@@ -82,8 +165,8 @@ int main() {
     std::size_t written = 0;
     if (!expect(
             resonith_liftpack_decode(
-                kConformanceStream.data(),
-                kConformanceStream.size(),
+                residual_section.payload,
+                residual_section.payload_size,
                 output.data(),
                 output.size(),
                 scratch.data(),
@@ -160,6 +243,39 @@ int main() {
             )) {
             return 1;
         }
+    }
+
+    auto damaged_directory = container_stream;
+    damaged_directory[40] ^= 0x01U;
+    if (!expect(
+            resonith_container_open(
+                damaged_directory.data(),
+                damaged_directory.size(),
+                &container
+            ) == RESONITH_STATUS_CHECKSUM_MISMATCH,
+            "RSC1 directory checksum rejection"
+        )) {
+        return 1;
+    }
+    auto damaged_payload = container_stream;
+    damaged_payload.back() ^= 0x01U;
+    if (!expect(
+            resonith_container_open(
+                damaged_payload.data(),
+                damaged_payload.size(),
+                &container
+            ) == RESONITH_STATUS_OK
+                && resonith_container_find_section(
+                    &container,
+                    kResidualType.data(),
+                    0U,
+                    &residual_section
+                ) == RESONITH_STATUS_OK
+                && resonith_container_verify_section(&residual_section)
+                    == RESONITH_STATUS_CHECKSUM_MISMATCH,
+            "RSC1 payload checksum rejection"
+        )) {
+        return 1;
     }
 
     auto corrupted = kConformanceStream;

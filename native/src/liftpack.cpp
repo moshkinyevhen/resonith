@@ -1,5 +1,7 @@
 #include "resonith/liftpack.h"
 
+#include "integrity.h"
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -39,18 +41,6 @@ std::uint32_t read_u32(const std::uint8_t* data) noexcept {
         | (static_cast<std::uint32_t>(data[1]) << 8U)
         | (static_cast<std::uint32_t>(data[2]) << 16U)
         | (static_cast<std::uint32_t>(data[3]) << 24U);
-}
-
-std::uint32_t crc32(const std::uint8_t* data, std::size_t size) noexcept {
-    std::uint32_t crc = 0xffff'ffffU;
-    for (std::size_t index = 0; index < size; ++index) {
-        crc ^= data[index];
-        for (unsigned bit = 0; bit < 8; ++bit) {
-            const std::uint32_t mask = 0U - (crc & 1U);
-            crc = (crc >> 1U) ^ (0xedb8'8320U & mask);
-        }
-    }
-    return ~crc;
 }
 
 std::size_t next_power_of_two(std::size_t value) noexcept {
@@ -311,7 +301,10 @@ extern "C" resonith_status resonith_liftpack_inspect(
         return RESONITH_STATUS_MALFORMED;
     }
     const std::size_t body_size = data_size - kChecksumBytes;
-    if (crc32(data, body_size) != read_u32(data + body_size)) {
+    if (
+        resonith::internal::crc32(data, body_size)
+        != read_u32(data + body_size)
+    ) {
         return RESONITH_STATUS_CHECKSUM_MISMATCH;
     }
     info->sample_count = sample_count;
@@ -454,30 +447,4 @@ extern "C" resonith_status resonith_liftpack_decode(
     }
     *samples_written = output_offset;
     return RESONITH_STATUS_OK;
-}
-
-extern "C" const char* resonith_status_string(resonith_status status) {
-    switch (status) {
-    case RESONITH_STATUS_OK:
-        return "ok";
-    case RESONITH_STATUS_INVALID_ARGUMENT:
-        return "invalid argument";
-    case RESONITH_STATUS_TRUNCATED:
-        return "truncated";
-    case RESONITH_STATUS_BAD_MAGIC:
-        return "bad magic";
-    case RESONITH_STATUS_UNSUPPORTED_VERSION:
-        return "unsupported version";
-    case RESONITH_STATUS_CHECKSUM_MISMATCH:
-        return "checksum mismatch";
-    case RESONITH_STATUS_PROFILE_BOUND:
-        return "profile bound";
-    case RESONITH_STATUS_MALFORMED:
-        return "malformed";
-    case RESONITH_STATUS_OUTPUT_TOO_SMALL:
-        return "output too small";
-    case RESONITH_STATUS_SCRATCH_TOO_SMALL:
-        return "scratch too small";
-    }
-    return "unknown status";
 }

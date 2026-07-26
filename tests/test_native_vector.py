@@ -14,6 +14,7 @@ REFERENCE_ROOT = REPOSITORY_ROOT / "reference"
 sys.path.insert(0, str(REFERENCE_ROOT))
 
 from maf_p0.residual import decode_liftpack, encode_liftpack  # noqa: E402
+from maf_p0.rsc1 import RSC1Section, pack_rsc1, parse_rsc1  # noqa: E402
 
 
 class NativeConformanceVectorTests(unittest.TestCase):
@@ -78,6 +79,25 @@ class NativeConformanceVectorTests(unittest.TestCase):
             )
         )
         np.testing.assert_array_equal(decode_liftpack(embedded), expected)
+
+    def test_cpp_rsc1_prefix_matches_the_python_container(self) -> None:
+        cpp_source = (
+            REPOSITORY_ROOT / "native" / "tests" / "liftpack_test.cpp"
+        ).read_text(encoding="utf-8")
+        residual = self._embedded_array(cpp_source, "kConformanceStream")
+        prefix = self._embedded_array(cpp_source, "kContainerPrefix")
+        embedded = prefix + residual
+        canonical = pack_rsc1(
+            [RSC1Section("RSL1", residual)],
+            timebase_hz=48_000,
+        )
+        self.assertEqual(embedded, canonical)
+        self.assertEqual(
+            hashlib.sha256(embedded).hexdigest(),
+            "d8fc786a31c43e30b6d0d612ac22730aaded9847bdc739e74119bc3ce9247c1d",
+        )
+        parsed = parse_rsc1(embedded)
+        self.assertEqual(parsed.sections[0].payload, residual)
 
 
 if __name__ == "__main__":

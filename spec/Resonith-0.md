@@ -1,6 +1,6 @@
 # Resonith-0 Bitstream and Decoding Process
 
-Version: 0.0.4
+Version: 0.0.5
 Status: **NORMATIVE-DRAFT**
 Architecture: **MAF - Memory-oriented Acoustic Field**
 
@@ -51,6 +51,51 @@ and is not included in \(\hat x[n]\) for objective/lossless conformance.
    output block.
 5. Transport packet boundary MUST NOT terminate atom implicitly.
 6. Render block size is an implementation choice and MUST NOT change the output.
+
+### 4.1 Resonith Section Container 1 (`RSC1`)
+
+`RSC1` is the executable Main-0 container candidate. It replaces the
+experimental JSON/zlib `MAF0` wrapper. All multi-byte integers are
+little-endian.
+
+The fixed 32-byte header contains, in order:
+
+- magic `RSC1`;
+- `u8 version_major = 1`, `u8 version_minor = 0`;
+- `u8 profile`, `u8 level`;
+- `u32 flags`, which is zero in Main-0;
+- `u32 timebase_hz`;
+- `u32 section_count`;
+- `u32 directory_record_bytes = 80`;
+- `u32 directory_bytes = section_count * 80`;
+- IEEE `u32 directory_crc32` over the directory bytes.
+
+The directory immediately follows the header. Its records are sorted strictly
+by the tuple `(type[4], instance_id)` and duplicate keys are prohibited. Each
+fixed 80-byte record contains:
+
+- four uppercase ASCII letter/digit bytes `type`;
+- `u16 schema_version`, which is non-zero;
+- `u16 flags`, where bit zero marks a critical section;
+- `u32 instance_id`;
+- `u64 start_tick`;
+- `u64 payload_offset`;
+- `u64 stored_bytes`;
+- `u64 raw_bytes`;
+- IEEE `u32 payload_crc32`;
+- 32 raw bytes of SHA-256 over the stored payload.
+
+Main-0 supports stored self-encoded payloads only, so `stored_bytes` MUST equal
+`raw_bytes`. Payloads MUST be tightly packed after the directory in canonical
+directory order; the final payload MUST end at the stream boundary. Each
+section is limited to 512 MiB, the sum of raw section bytes to 1 GiB, and the
+directory to 4,096 records.
+
+A decoder MUST validate the header, directory CRC, strict key order, sizes,
+offsets, feature flags, and complete stream coverage before exposing section
+views. It MUST validate both section CRC-32 and SHA-256 before passing that
+payload to a normative decoder primitive. Unknown critical types MUST cause
+profile rejection. Non-critical unknown types MAY be skipped.
 
 ## 5. State records
 

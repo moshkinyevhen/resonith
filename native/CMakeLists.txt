@@ -5,7 +5,10 @@ project(resonith_core VERSION 0.1.0 LANGUAGES C CXX)
 option(RESONITH_WARNINGS_AS_ERRORS "Treat native-core warnings as errors" ON)
 
 add_library(resonith_core STATIC
+    src/container.cpp
+    src/integrity.cpp
     src/liftpack.cpp
+    src/status.cpp
 )
 add_library(Resonith::Core ALIAS resonith_core)
 

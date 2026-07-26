@@ -483,3 +483,32 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
   - `../native/src/liftpack.cpp`;
   - `../native/tests/liftpack_test.cpp`;
   - `../native/README.md`.
+
+## R-027 — RSC1 compact deterministic section container
+
+- Date: 2026-07-26
+- Status: **NORMATIVE-DRAFT / IMPLEMENTATION IN PROGRESS**
+- Decision:
+  - do not port the experimental JSON/zlib `MAF0` research container into the
+    Golden Core;
+  - define `RSC1` as a compact fixed-record Resonith Section Container with a
+    32-byte header and sorted 80-byte directory records;
+  - keep Main-0 section payloads stored and self-encoded rather than wrapping
+    every section in a generic compression layer;
+  - require canonical `(type, instance_id)` ordering, unique keys, tightly
+    packed payload offsets, explicit profile bounds, a directory CRC-32, and
+    both CRC-32 and SHA-256 for every section;
+  - expose immutable zero-copy section views through the C ABI;
+  - validate structure in one bounded linear pass with no allocation;
+  - verify section content explicitly before a payload reaches a normative
+    decoder primitive;
+  - retain `MAF0` only as an encoder-research artifact until all executable
+    sections migrate to `RSC1`.
+- Rationale:
+  - a general JSON parser and zlib inflater would enlarge the trusted decoder,
+    obscure worst-case work and memory, and preserve array metadata that the
+    final typed section syntaxes do not need;
+  - sorted fixed records eliminate duplicate detection tables and allow a
+    deterministic allocation-free parser;
+  - independently hashed self-encoded sections support random access and
+    bounded corruption domains.

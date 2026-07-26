@@ -15,6 +15,7 @@
 | [10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) | MAF-P0/P1 executable codecs, Opus anchor, and measured results |
 | [11_IMPLEMENTATION_LANGUAGE.md](11_IMPLEMENTATION_LANGUAGE.md) | Native Golden Core, safe player runtime, portability, and quality gates |
 | [12_LIFTPACK_AND_STATE_RDO.md](12_LIFTPACK_AND_STATE_RDO.md) | Native residual entropy, state candidates, full-stream RDO, and real-music results |
+| [13_RSC1_CONTAINER.md](13_RSC1_CONTAINER.md) | Compact deterministic typed section container |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
 
 Normative draft:
