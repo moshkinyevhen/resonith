@@ -18,7 +18,7 @@ typedef struct resonith_liftpack_info {
 } resonith_liftpack_info;
 
 /*
- * Validates the LiftPack-1 stream envelope and CRC before exposing sizes.
+ * Validates a LiftPack-1 or LiftPack-2 stream envelope and CRC before sizes.
  * No allocation, logging, I/O, or global mutable state occurs.
  */
 RESONITH_API resonith_status resonith_liftpack_inspect(

@@ -154,8 +154,10 @@ later than the Atom start tick.
 #### 4.1.4 First executable Main-0 stream
 
 A profile-zero, level-zero stream contains exactly one critical instance-zero
-`CONF`, exactly one critical instance-zero `RSL1`, and either no model records
-or one or more critical `ATOM` plus one or more critical `BRAW` records.
+`CONF`, exactly one critical instance-zero Innovation section (`RSL1` or
+`RSL2`), and either no model records or one or more critical `ATOM` plus one or
+more critical `BRAW` records. Both Innovation section types in one stream are
+prohibited.
 `ATOM` and `BRAW` MUST be both absent or both present. When present, their
 instance IDs each form a consecutive zero-based sequence.
 
@@ -170,10 +172,10 @@ sample is:
 
 \[
 \hat{x}[n]=\operatorname{sat}_{16}
-\left(\operatorname{RSL1}[n]\cdot innovation\_step\right).
+\left(\operatorname{Innovation}[n]\cdot innovation\_step\right).
 \]
 
-The `RSL1` decoded sample count MUST equal the `CONF` sample count in both
+The decoded Innovation sample count MUST equal the `CONF` sample count in both
 forms.
 
 Additional unknown non-critical sections MAY be skipped. Unknown critical
@@ -490,6 +492,45 @@ A Main-0 decoder MUST reject:
 LiftPack blocks are independently reconstructible after their explicit stream
 header. The reference encoder competes every transform and entropy mode by
 actual payload size, but encoder search is non-normative.
+
+#### 6.6.2 `LiftPack-2`
+
+`LiftPack-2` uses section type and payload magic `RSL2`. Version 1 retains the
+LiftPack-1 stream header, block header, CRC, transform IDs 0 through 3, and
+entropy modes. It additionally defines transform ID `4` (`LPC`).
+
+An LPC block places the following bytes after its regular block header and
+before its entropy payload:
+
+- unsigned eight-bit `order` in \([1,16]\);
+- unsigned eight-bit `precision`, which MUST equal 12 in Main-0;
+- exactly `order` little-endian signed int16 predictor coefficients.
+
+The sum of absolute coefficient values MUST NOT exceed
+\(8\cdot2^{12}\). Order MUST be less than the block sample length. The entropy
+coefficient count remains equal to the original block length.
+
+Let decoded entropy values be \(e[n]\), Q12 coefficients be \(a_k\), and
+reconstructed values be \(x[n]\). For \(n<order\):
+
+\[
+x[n]=e[n].
+\]
+
+For later samples:
+
+\[
+p[n]=RoundAway\left(
+\frac{\sum_{k=1}^{order}a_{k-1}x[n-k]}{2^{12}}
+\right),\qquad
+x[n]=e[n]+p[n].
+\]
+
+`RoundAway` rounds to nearest with exact half cases away from zero. The decoder
+MUST use a wide signed accumulator, validate coefficient bounds before
+inverse prediction, and reject any reconstructed value outside the profile
+sample bound. An `RSL1` payload MUST reject transform ID 4. Main-0 permits
+exactly one of `RSL1` or `RSL2`, never both.
 
 ### 6.7 `SPATIAL`
 

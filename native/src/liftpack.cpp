@@ -3,6 +3,7 @@
 #include "integrity.h"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -26,8 +27,12 @@ constexpr std::uint8_t kTransformIdentity = 0;
 constexpr std::uint8_t kTransformDelta1 = 1;
 constexpr std::uint8_t kTransformDelta2 = 2;
 constexpr std::uint8_t kTransformHaar = 3;
+constexpr std::uint8_t kTransformLpc = 4;
 constexpr std::uint8_t kEntropyRice = 0;
 constexpr std::uint8_t kEntropyPacked = 1;
+constexpr std::uint8_t kLpcPrecision = 12;
+constexpr std::uint8_t kMaximumLpcOrder = 16;
+constexpr std::int64_t kMaximumLpcCoefficientSum = 8LL << kLpcPrecision;
 
 std::uint16_t read_u16(const std::uint8_t* data) noexcept {
     return static_cast<std::uint16_t>(
@@ -41,6 +46,14 @@ std::uint32_t read_u32(const std::uint8_t* data) noexcept {
         | (static_cast<std::uint32_t>(data[1]) << 8U)
         | (static_cast<std::uint32_t>(data[2]) << 16U)
         | (static_cast<std::uint32_t>(data[3]) << 24U);
+}
+
+std::int16_t read_i16(const std::uint8_t* data) noexcept {
+    const std::uint16_t raw = read_u16(data);
+    const std::int32_t value = raw <= 0x7fffU
+        ? static_cast<std::int32_t>(raw)
+        : static_cast<std::int32_t>(raw) - 0x1'0000;
+    return static_cast<std::int16_t>(value);
 }
 
 std::size_t next_power_of_two(std::size_t value) noexcept {
@@ -61,6 +74,14 @@ std::int64_t floor_divide_two(std::int64_t value) noexcept {
 bool in_input_range(std::int64_t value) noexcept {
     return value >= -kMaximumInputMagnitude
         && value <= kMaximumInputMagnitude;
+}
+
+std::int64_t round_lpc_q12(std::int64_t value) noexcept {
+    constexpr std::int64_t half = 1LL << (kLpcPrecision - 1U);
+    if (value >= 0) {
+        return (value + half) >> kLpcPrecision;
+    }
+    return -(((-value) + half) >> kLpcPrecision);
 }
 
 class BitReader {
@@ -265,6 +286,31 @@ resonith_status inverse_transform(
     return RESONITH_STATUS_OK;
 }
 
+resonith_status inverse_lpc(
+    const std::int64_t* residual,
+    std::size_t sample_count,
+    const std::array<std::int16_t, kMaximumLpcOrder>& coefficients,
+    std::uint8_t order,
+    std::int64_t* output
+) noexcept {
+    for (std::size_t index = 0; index < sample_count; ++index) {
+        std::int64_t value = residual[index];
+        if (index >= order) {
+            std::int64_t accumulator = 0;
+            for (std::uint8_t tap = 0; tap < order; ++tap) {
+                accumulator += static_cast<std::int64_t>(coefficients[tap])
+                    * output[index - static_cast<std::size_t>(tap) - 1U];
+            }
+            value += round_lpc_q12(accumulator);
+        }
+        if (!in_input_range(value)) {
+            return RESONITH_STATUS_PROFILE_BOUND;
+        }
+        output[index] = value;
+    }
+    return RESONITH_STATUS_OK;
+}
+
 }  // namespace
 
 extern "C" resonith_status resonith_liftpack_inspect(
@@ -278,7 +324,10 @@ extern "C" resonith_status resonith_liftpack_inspect(
     if (data_size < kStreamHeaderBytes + kChecksumBytes) {
         return RESONITH_STATUS_TRUNCATED;
     }
-    if (std::memcmp(data, "RSL1", 4) != 0) {
+    if (
+        std::memcmp(data, "RSL1", 4) != 0
+        && std::memcmp(data, "RSL2", 4) != 0
+    ) {
         return RESONITH_STATUS_BAD_MAGIC;
     }
     if (data[4] != kVersion) {
@@ -366,6 +415,7 @@ extern "C" resonith_status resonith_liftpack_decode(
     }
 
     const std::size_t body_size = data_size - kChecksumBytes;
+    const bool lpc_stream = std::memcmp(data, "RSL2", 4) == 0;
     std::size_t cursor = kStreamHeaderBytes;
     std::size_t output_offset = 0;
     for (std::uint32_t block = 0; block < info.block_count; ++block) {
@@ -387,7 +437,48 @@ extern "C" resonith_status resonith_liftpack_decode(
             return RESONITH_STATUS_MALFORMED;
         }
         std::size_t coefficient_count = length;
-        if (transform == kTransformHaar) {
+        std::uint8_t lpc_order = 0U;
+        std::array<std::int16_t, kMaximumLpcOrder> lpc_coefficients{};
+        if (transform == kTransformLpc) {
+            if (!lpc_stream || cursor > body_size || body_size - cursor < 2U) {
+                return lpc_stream
+                    ? RESONITH_STATUS_TRUNCATED
+                    : RESONITH_STATUS_UNSUPPORTED_FEATURE;
+            }
+            lpc_order = data[cursor];
+            const std::uint8_t precision = data[cursor + 1U];
+            cursor += 2U;
+            if (
+                lpc_order == 0U
+                || lpc_order > kMaximumLpcOrder
+                || lpc_order >= length
+                || precision != kLpcPrecision
+            ) {
+                return RESONITH_STATUS_PROFILE_BOUND;
+            }
+            const std::size_t coefficient_bytes =
+                2U * static_cast<std::size_t>(lpc_order);
+            if (
+                cursor > body_size
+                || coefficient_bytes > body_size - cursor
+            ) {
+                return RESONITH_STATUS_TRUNCATED;
+            }
+            std::int64_t coefficient_sum = 0;
+            for (std::uint8_t tap = 0U; tap < lpc_order; ++tap) {
+                const std::int16_t coefficient = read_i16(
+                    data + cursor + 2U * static_cast<std::size_t>(tap)
+                );
+                lpc_coefficients[tap] = coefficient;
+                coefficient_sum += coefficient >= 0
+                    ? coefficient
+                    : -static_cast<std::int64_t>(coefficient);
+            }
+            if (coefficient_sum > kMaximumLpcCoefficientSum) {
+                return RESONITH_STATUS_PROFILE_BOUND;
+            }
+            cursor += coefficient_bytes;
+        } else if (transform == kTransformHaar) {
             coefficient_count = next_power_of_two(length);
         } else if (
             transform != kTransformIdentity
@@ -428,14 +519,22 @@ extern "C" resonith_status resonith_liftpack_decode(
         if (reader.position() != bit_count) {
             return RESONITH_STATUS_MALFORMED;
         }
-        status = inverse_transform(
-            transform,
-            scratch,
-            coefficient_count,
-            length,
-            scratch + coefficient_count,
-            output + output_offset
-        );
+        status = transform == kTransformLpc
+            ? inverse_lpc(
+                scratch,
+                length,
+                lpc_coefficients,
+                lpc_order,
+                output + output_offset
+            )
+            : inverse_transform(
+                transform,
+                scratch,
+                coefficient_count,
+                length,
+                scratch + coefficient_count,
+                output + output_offset
+            );
         if (status != RESONITH_STATUS_OK) {
             return status;
         }

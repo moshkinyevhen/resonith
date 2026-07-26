@@ -50,6 +50,26 @@ constexpr std::array<std::uint8_t, 139> kAllModesStream = {
 };
 
 /*
+ * LiftPack-2 coverage vector: one order-4 Q12 LPC block with Rice-coded
+ * Innovation. The expected PCM below was produced by the normative signed
+ * nearest, ties-away inverse recurrence in Resonith-0 Section 6.6.2.
+ */
+constexpr std::array<std::uint8_t, 61> kLpcStream = {
+    0x52, 0x53, 0x4c, 0x32, 0x01, 0x20, 0x00, 0x1e, 0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x1e, 0x00, 0x04, 0x00, 0x04, 0xb4, 0x00, 0x00, 0x00,
+    0x04, 0x0c, 0x00, 0x08, 0x00, 0x04, 0x00, 0xfe, 0x00, 0x01, 0xff, 0x0f,
+    0x7f, 0x73, 0xf2, 0x9f, 0x01, 0x22, 0x90, 0x01, 0x04, 0x08, 0x80, 0x80,
+    0x21, 0x40, 0x00, 0x40, 0x04, 0x32, 0x80, 0x00, 0x01, 0x2d, 0x1f, 0x51,
+    0x1e,
+};
+
+constexpr std::array<std::int64_t, 30> kLpcExpected = {
+    100, -50, 25, 75, 56, 42, 26, 23, 14, 12,
+    9, 7, 4, 3, 4, 3, 0, 1, 0, -1,
+    -1, -1, 0, -1, 2, -1, 0, 0, 0, -1,
+};
+
+/*
  * Canonical RSC1 header and directory for kConformanceStream. Keeping the
  * payload in one array avoids duplicating the LiftPack bytes in the test.
  */
@@ -243,6 +263,25 @@ int main() {
             )) {
             return 1;
         }
+    }
+
+    std::array<std::int64_t, kLpcExpected.size()> lpc_output{};
+    written = 0;
+    if (!expect(
+            resonith_liftpack_decode(
+                kLpcStream.data(),
+                kLpcStream.size(),
+                lpc_output.data(),
+                lpc_output.size(),
+                scratch.data(),
+                scratch.size(),
+                &written
+            ) == RESONITH_STATUS_OK
+                && written == lpc_output.size()
+                && lpc_output == kLpcExpected,
+            "LiftPack-2 LPC inverse and signed rounding"
+        )) {
+        return 1;
     }
 
     auto damaged_directory = container_stream;

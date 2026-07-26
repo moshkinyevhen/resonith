@@ -26,6 +26,7 @@ from .main0 import (
     encode_main0_periodic_rdo,
     encode_main0_state_rdo,
     pack_main0_raw_stream,
+    pack_main0_lpc_residual_stream,
     pack_main0_residual_stream,
     pack_main0_state_stream,
 )
@@ -56,6 +57,7 @@ __all__ = [
     "encode_main0_state_rdo",
     "encode_samples",
     "pack_main0_raw_stream",
+    "pack_main0_lpc_residual_stream",
     "pack_main0_residual_stream",
     "pack_main0_state_stream",
     "decode_stateful_bytes",

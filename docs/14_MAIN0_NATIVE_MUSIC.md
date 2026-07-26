@@ -207,3 +207,35 @@ Raw report SHA-256:
 Every clip selected `residual-only`; the periodic and sequential-state
 candidates remain legal but lost RDO. Block-size RDO changes no decoder syntax
 and is now the default unrestricted Main-0 encoder search.
+
+## 11. Bounded LPC research gate
+
+R-042 added one prospective integer LPC transform to the residual competition.
+It retained the existing LiftPack transforms and entropy coders, fitted LPC
+coefficients only in the encoder, quantized them to Q12, and verified exact
+prospective decoding before counting complete RSC1 bytes. The gate required a
+win beyond the already optimized RSL1 block-size anchor on at least two clips.
+
+| Clip | RSL1 anchor | LPC candidate | Reduction | Selected block |
+|---|---:|---:|---:|---:|
+| Corelli realization | 10,930 bytes | 10,233 bytes | 6.38% | 16,384 |
+| Recorded piano | 12,740 bytes | 11,953 bytes | 6.18% | 32,768 |
+| Recorded drums | 14,011 bytes | 12,743 bytes | 9.05% | 4,096 |
+
+Run:
+[30200626416](https://github.com/moshkinyevhen/resonith/actions/runs/30200626416).
+Raw report SHA-256:
+
+```text
+aa28153b943a530697df821f87e1bce05854c65416a49fb36ed8f95e2f49127d
+```
+
+The gate passed three of three. Order 16 was never selected in a winning
+stream; selected blocks used orders 4, 8, or 12. This is evidence for the
+bounded predictor, not for a larger maximum order. R-043 therefore promotes
+the exact tested syntax as `LiftPack-2`/`RSL2`; it does not add a second
+entropy coder or an open-ended predictor.
+
+Canonical compact evidence:
+[`../experiments/results/lpc_liftpack_oracle_2026-07-26_summary.json`](../experiments/results/lpc_liftpack_oracle_2026-07-26_summary.json).
+Native cross-compiler verification remains a separate publication gate.

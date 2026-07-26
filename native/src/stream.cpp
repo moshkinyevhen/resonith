@@ -87,7 +87,8 @@ bool known_type(const std::uint8_t type[4]) noexcept {
     return type_is(type, "ATOM")
         || type_is(type, "BRAW")
         || type_is(type, "CONF")
-        || type_is(type, "RSL1");
+        || type_is(type, "RSL1")
+        || type_is(type, "RSL2");
 }
 
 resonith_status validate_atom_records(

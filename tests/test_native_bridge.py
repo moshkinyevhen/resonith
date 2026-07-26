@@ -17,7 +17,7 @@ from maf_p0.main0 import (  # noqa: E402
     decode_main0_raw_stream,
     encode_main0_periodic_rdo,
     encode_main0_state_rdo,
-    pack_main0_residual_stream,
+    pack_main0_lpc_residual_stream,
     pack_main0_state_stream,
 )
 from maf_p0.native_core import (  # noqa: E402
@@ -66,7 +66,7 @@ class NativeBridgeTests(unittest.TestCase):
             phase_knot_interval=4096,
         )
         self.assertEqual(encoded.report["native_decoder_gate"], "verified")
-        self.assertEqual(encoded.report["candidate_count"], 5)
+        self.assertEqual(encoded.report["candidate_count"], 10)
         native = self.decoder.decode(encoded.payload)
         np.testing.assert_array_equal(native.samples, encoded.reconstructed)
         np.testing.assert_array_equal(native.samples, self.samples)
@@ -98,11 +98,12 @@ class NativeBridgeTests(unittest.TestCase):
             [-20_000, -10_923, -1, 0, 1, 10_922, 20_000],
             dtype=np.int32,
         )
-        stream = pack_main0_residual_stream(
+        stream = pack_main0_lpc_residual_stream(
             sample_rate=48_000,
             innovation_q=innovation,
             innovation_step=3,
             residual_block_size=16,
+            lpc_orders=(4,),
         )
         reference = decode_main0_raw_stream(stream)
         native = self.decoder.decode(stream)
@@ -163,7 +164,7 @@ class NativeBridgeTests(unittest.TestCase):
             adaptive_change_penalties=(),
         )
         self.assertEqual(encoded.report["native_decoder_gate"], "verified")
-        self.assertEqual(encoded.report["candidate_count"], 6)
+        self.assertEqual(encoded.report["candidate_count"], 12)
         self.assertGreater(encoded.report["one_state_bytes"], 0)
         self.assertIn(
             encoded.report["residual_block_size"],

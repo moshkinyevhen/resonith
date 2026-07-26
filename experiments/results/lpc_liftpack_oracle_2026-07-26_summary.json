@@ -1,0 +1,43 @@
+{
+  "actions_run": "https://github.com/moshkinyevhen/resonith/actions/runs/30200626416",
+  "clips": {
+    "corelli-sonata-realization": {
+      "lpc_order_counts": {
+        "12": 1,
+        "16": 0,
+        "4": 0,
+        "8": 2
+      },
+      "reduction_vs_rsl1": 0.06376944190301925,
+      "rsl1_anchor_bytes": 10930,
+      "selected_block_size": 16384,
+      "stream_bytes": 10233
+    },
+    "emotional-piano-cc0": {
+      "lpc_order_counts": {
+        "12": 1,
+        "16": 0,
+        "4": 1,
+        "8": 0
+      },
+      "reduction_vs_rsl1": 0.06177394034536887,
+      "rsl1_anchor_bytes": 12740,
+      "selected_block_size": 32768,
+      "stream_bytes": 11953
+    },
+    "patro-de-bateria": {
+      "lpc_order_counts": {
+        "12": 3,
+        "16": 0,
+        "4": 2,
+        "8": 6
+      },
+      "reduction_vs_rsl1": 0.09050032117621865,
+      "rsl1_anchor_bytes": 14011,
+      "selected_block_size": 4096,
+      "stream_bytes": 12743
+    }
+  },
+  "raw_report_sha256": "aa28153b943a530697df821f87e1bce05854c65416a49fb36ed8f95e2f49127d",
+  "status": "R-042 research gate passed 3/3; R-043 promotion required native verification"
+}

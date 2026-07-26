@@ -872,7 +872,7 @@ new oscillator opcode.
 ## R-042 — Bounded integer LPC oracle before LiftPack-2 syntax
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / RESEARCH**
+- Status: **MEASURED 3/3 PASSED / PROMOTING**
 - Decision:
   - test block-local finite-order linear prediction as an additional exact
     Truth transform before assigning a new LiftPack transform ID;
@@ -895,3 +895,31 @@ new oscillator opcode.
     semantic decoder dependency;
   - an oracle prevents a familiar lossless-audio technique from entering the
     Core merely because it is conventional.
+
+## R-043 — LiftPack-2 exact LPC block syntax
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING / NORMATIVE-DRAFT**
+- Decision:
+  - define critical section `RSL2` with payload magic `RSL2`, retaining the
+    bounded LiftPack stream and block headers;
+  - retain transform IDs 0 through 3 unchanged and assign transform ID 4 to
+    block-local integer LPC;
+  - place `u8 order`, `u8 precision`, then `order` little-endian signed int16
+    coefficients between the block header and entropy payload;
+  - freeze Main-0 LPC precision at Q12, order at 1 through 16, and absolute
+    coefficient sum at no more than \(8\cdot2^{12}\);
+  - copy the first `order` entropy-decoded values as seed samples, then predict
+    from already reconstructed samples with nearest, ties-away signed Q12
+    rounding and add the exact residual;
+  - accept exactly one of `RSL1` or `RSL2` in a Main-0 stream;
+  - keep scratch asymptotics and allocation ownership unchanged;
+  - make both residual versions compete in native-decoder-gated complete-byte
+    RDO.
+- Rationale:
+  - the licensed R-042 gate reduced complete block-size-optimized streams by
+    6.18% to 9.05% and won all three declared clips;
+  - orders 4, 8, and 12 were selected while order 16 was never selected,
+    validating a small bounded decoder kernel;
+  - a separate section/version preserves rejection by older Main-0 decoders
+    instead of silently extending `RSL1` semantics.

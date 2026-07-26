@@ -22,6 +22,8 @@ The native Core:
   slices with callback-size-independent Q16 interpolation;
 - applies sparse absolute Q17.15 gain events and objective Innovation in one
   bounded saturating Truth-composition pass;
+- decodes bounded LiftPack-1 and LiftPack-2 residuals, including Main-0 Q12
+  LPC with an order-16 ceiling;
 - decodes minimal typed `BRAW` Basis payloads into aligned caller-owned
   host-endian memory without generic array metadata;
 - parses fixed `CONF` and state-local periodic `ATOM` payloads, reports exact
@@ -65,9 +67,9 @@ before creating caller-owned arrays.
 
 ## Conformance anchor
 
-`native/tests/liftpack_test.cpp` embeds the canonical 203-byte stream from the
-Python Golden Encoder and checks all 192 reconstructed coefficients. Its
-SHA-256 is:
+`native/tests/liftpack_test.cpp` embeds the canonical 203-byte LiftPack-1
+stream from the Python Golden Encoder and checks all 192 reconstructed
+coefficients. Its SHA-256 is:
 
 ```text
 6d58812162388dfe58c2b602372bf144d36af00f7a19cb39250e0d920609fee6
@@ -76,7 +78,8 @@ SHA-256 is:
 `tests/test_native_vector.py` independently regenerates the packet and rejects
 any byte drift between the Python and C++ sources. A second frozen stream
 exercises all four transforms and both entropy modes and is independently
-decoded by both implementations.
+decoded by both implementations. A third vector exercises LiftPack-2 LPC and
+its signed nearest, ties-away Q12 inverse recurrence.
 
 `native/tests/cibs_test.cpp` executes the same demo projection, adapter,
 refinement, correction, and SHA-256 vectors as the Python CIBS oracle. The

@@ -14,6 +14,7 @@ from maf_p0.composition import GainEventLaw, compose_truth  # noqa: E402
 from maf_p0.main0 import (  # noqa: E402
     Main0State,
     decode_main0_raw_stream,
+    pack_main0_lpc_residual_stream,
     pack_main0_raw_stream,
     pack_main0_residual_stream,
     pack_main0_state_stream,
@@ -174,6 +175,26 @@ class Main0StreamTests(unittest.TestCase):
             [b"CONF", b"RSL1"],
         )
 
+    def test_lpc_truth_stream_is_exact_before_outer_quantizer(self) -> None:
+        stream = pack_main0_lpc_residual_stream(
+            sample_rate=48_000,
+            innovation_q=self.innovation,
+            innovation_step=3,
+            residual_block_size=16,
+            lpc_orders=(4,),
+        )
+        decoded = decode_main0_raw_stream(stream)
+        expected = np.clip(
+            self.innovation * 3,
+            -32768,
+            32767,
+        ).astype(np.int16)
+        np.testing.assert_array_equal(decoded.samples, expected)
+        self.assertEqual(
+            [bytes(section.type_code) for section in parse_rsc1(stream).sections],
+            [b"CONF", b"RSL2"],
+        )
+
     def test_state_partition_reuses_one_basis_and_covers_time_exactly(self) -> None:
         first_phase = PhaseTrajectory(
             np.asarray([0, 5, 17], dtype=np.int64),
@@ -238,7 +259,7 @@ class Main0StreamTests(unittest.TestCase):
 
     def test_missing_or_unknown_critical_section_is_rejected(self) -> None:
         config_only = pack_rsc1([RSC1Section("CONF", pack_conf(StreamConfig(8, 1)))])
-        with self.assertRaisesRegex(ValueError, "missing required"):
+        with self.assertRaisesRegex(ValueError, "exactly one"):
             decode_main0_raw_stream(config_only)
         unknown = pack_rsc1([RSC1Section("ZZZZ", b"critical")])
         with self.assertRaisesRegex(ValueError, "unknown critical"):
