@@ -71,6 +71,71 @@ jobs:
           --build-config Release
           --output-on-failure
 
+  native-linux-arm64:
+    name: Native / Linux ARM64 / GCC
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure
+        run: >
+          cmake -S native -B build/native
+          -DCMAKE_BUILD_TYPE=Release
+          -DRESONITH_WARNINGS_AS_ERRORS=ON
+      - name: Build
+        run: cmake --build build/native --parallel
+      - name: Test
+        run: ctest --test-dir build/native --output-on-failure
+
+  native-macos-arm64:
+    name: Native / macOS ARM64 / AppleClang
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure
+        run: >
+          cmake -S native -B build/native
+          -DCMAKE_BUILD_TYPE=Release
+          -DRESONITH_WARNINGS_AS_ERRORS=ON
+      - name: Build
+        run: cmake --build build/native --parallel
+      - name: Test
+        run: ctest --test-dir build/native --output-on-failure
+
+  native-windows-arm64:
+    name: Native / Windows ARM64 / MSVC
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure
+        run: >
+          cmake -S native -B build/native
+          -A ARM64
+          -DRESONITH_WARNINGS_AS_ERRORS=ON
+      - name: Build
+        run: cmake --build build/native --config Release --parallel
+      - name: Test
+        run: >
+          ctest --test-dir build/native
+          --build-config Release
+          --output-on-failure
+
+  native-android-arm64:
+    name: Native / Android ARM64 / NDK
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure Android arm64-v8a
+        run: >
+          cmake -S native -B build/android-arm64
+          -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake"
+          -DANDROID_ABI=arm64-v8a
+          -DANDROID_PLATFORM=android-24
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_TESTING=OFF
+          -DRESONITH_WARNINGS_AS_ERRORS=ON
+      - name: Build
+        run: cmake --build build/android-arm64 --parallel
+
   native-python-bridge:
     name: Native decoder-in-loop / Python
     runs-on: ubuntu-latest
