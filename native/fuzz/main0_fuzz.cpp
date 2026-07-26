@@ -1,4 +1,5 @@
 #include "resonith/stream.h"
+#include "resonith/multichannel.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -34,6 +35,12 @@ struct CallbackOracle {
     std::size_t cursor;
 };
 
+struct InterleavedCallbackOracle {
+    const std::vector<std::int16_t>* expected;
+    std::size_t frame_cursor;
+    std::uint16_t channels;
+};
+
 resonith_status compare_callback(
     void* user,
     std::uint32_t sample_offset,
@@ -60,12 +67,130 @@ resonith_status compare_callback(
     return RESONITH_STATUS_OK;
 }
 
+resonith_status compare_interleaved_callback(
+    void* user,
+    std::uint32_t frame_offset,
+    const std::int16_t* samples,
+    std::size_t frame_count,
+    std::uint16_t channels
+) {
+    auto* oracle = static_cast<InterleavedCallbackOracle*>(user);
+    if (
+        oracle == nullptr
+        || oracle->expected == nullptr
+        || samples == nullptr
+        || channels != oracle->channels
+        || frame_offset != oracle->frame_cursor
+        || oracle->frame_cursor > oracle->expected->size() / channels
+        || frame_count
+            > (oracle->expected->size() / channels) - oracle->frame_cursor
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    const std::size_t sample_offset = oracle->frame_cursor * channels;
+    const std::size_t sample_count = frame_count * channels;
+    for (std::size_t index = 0U; index < sample_count; ++index) {
+        if (samples[index] != (*oracle->expected)[sample_offset + index]) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+    }
+    oracle->frame_cursor += frame_count;
+    return RESONITH_STATUS_OK;
+}
+
+void fuzz_multichannel(
+    const std::uint8_t* data,
+    std::size_t size
+) {
+    resonith_multichannel_requirements requirements{};
+    if (
+        resonith_multichannel_inspect(data, size, &requirements)
+            != RESONITH_STATUS_OK
+        || requirements.frame_count > kFuzzMaximumSamples
+        || requirements.innovation_elements > kFuzzMaximumWorkspaceElements
+        || requirements.liftpack_scratch_elements
+            > kFuzzMaximumWorkspaceElements
+        || requirements.output_elements > kFuzzMaximumWorkspaceElements
+        || requirements.output_block_elements > kFuzzMaximumWorkspaceElements
+    ) {
+        return;
+    }
+
+    std::vector<std::int64_t> innovation(
+        requirements.innovation_elements
+    );
+    std::vector<std::int64_t> scratch(
+        requirements.liftpack_scratch_elements
+    );
+    std::vector<std::int16_t> output(requirements.output_elements);
+    std::size_t frames_written = 0U;
+    const resonith_status decode_status = resonith_multichannel_decode(
+        data,
+        size,
+        optional_data(innovation),
+        innovation.size(),
+        optional_data(scratch),
+        scratch.size(),
+        optional_data(output),
+        output.size(),
+        &frames_written
+    );
+    if (decode_status != RESONITH_STATUS_OK) {
+        return;
+    }
+    if (frames_written != requirements.frame_count) {
+        __builtin_trap();
+    }
+
+    resonith_multichannel_player_view player{};
+    if (
+        resonith_multichannel_player_open(data, size, &player)
+            != RESONITH_STATUS_OK
+        || player.frame_count != requirements.frame_count
+        || player.output_channels != requirements.output_channels
+    ) {
+        __builtin_trap();
+    }
+    std::vector<std::int64_t> block_innovation(
+        requirements.block_size
+    );
+    std::vector<std::int16_t> block_output(
+        requirements.output_block_elements
+    );
+    InterleavedCallbackOracle oracle = {
+        &output,
+        0U,
+        requirements.output_channels,
+    };
+    std::size_t frames_emitted = 0U;
+    if (
+        resonith_multichannel_player_stream(
+            &player,
+            optional_data(block_innovation),
+            block_innovation.size(),
+            optional_data(scratch),
+            scratch.size(),
+            optional_data(block_output),
+            block_output.size(),
+            compare_interleaved_callback,
+            &oracle,
+            &frames_emitted
+        ) != RESONITH_STATUS_OK
+        || frames_emitted != requirements.frame_count
+        || oracle.frame_cursor != requirements.frame_count
+    ) {
+        __builtin_trap();
+    }
+}
+
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(
     const std::uint8_t* data,
     std::size_t size
 ) {
+    fuzz_multichannel(data, size);
+
     resonith_main0_requirements requirements{};
     if (
         resonith_main0_inspect(data, size, &requirements)

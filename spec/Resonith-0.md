@@ -150,9 +150,10 @@ The payload is exactly 16 bytes:
 | `flags` | `u16` | zero |
 | `reserved` | `u32` | zero |
 
-`timebase_hz` in the RSC1 header is the PCM sample rate. The first executable
-Main-0 subset has profile zero, level zero, exactly one output channel, and one
-critical `CONF` record with instance ID and start tick zero.
+`timebase_hz` in the RSC1 header is the PCM sample rate. `sample_count` is the
+number of PCM frames; it equals the number of samples only for mono. Every
+executable Main-0 subset has profile zero, level zero, and one critical `CONF`
+record with instance ID and start tick zero.
 
 #### 4.1.4 Periodic Atom section (`ATOM`, schema 1)
 
@@ -224,6 +225,52 @@ allocation. The zero-Atom form reports zero for every model workspace and
 requires only Innovation, LiftPack scratch, and output storage. The CIBS form
 additionally reports the maximum CIBS-0 staging requirement across referenced
 `BCIB` records.
+
+#### 4.1.6 Independent-channel Main-0 stream
+
+The independent-channel subset carries one through eight residual-only output
+channels without a coupled prediction or render graph. It contains exactly one
+canonical `CONF` and exactly `output_channels` critical `RSL2` records. No
+`RSL1`, `ATOM`, `BRAW`, or `BCIB` record is permitted in this subset.
+
+`RSL2` instance IDs MUST be the consecutive channel indices
+\(0,\ldots,output\_channels-1\), and every record start tick MUST be zero.
+Every residual MUST declare the `CONF` frame count. All residuals MUST have
+identical LiftPack block size and block count. The common partition makes every
+decoded block an aligned interval of PCM frames even though each channel
+retains independent transform, LPC, and entropy decisions inside that block.
+
+For frame \(n\) and channel \(c\), output is:
+
+\[
+\hat{x}[n,c]=\operatorname{sat}_{16}
+\left(\operatorname{Innovation}_c[n]\cdot innovation\_step\right).
+\]
+
+Canonical channel order is:
+
+| Count | Ordered channels |
+| ---: | --- |
+| 1 | `MONO` |
+| 2 | `FL`, `FR` |
+| 3 | `FL`, `FR`, `FC` |
+| 4 | `FL`, `FR`, `BL`, `BR` |
+| 5 | `FL`, `FR`, `FC`, `BL`, `BR` |
+| 6 | `FL`, `FR`, `FC`, `LFE`, `BL`, `BR` |
+| 7 | `FL`, `FR`, `FC`, `LFE`, `BC`, `SL`, `SR` |
+| 8 | `FL`, `FR`, `FC`, `LFE`, `BL`, `BR`, `SL`, `SR` |
+
+Custom speaker layouts, object metadata, and scene rendering are not part of
+this minimum subset. They require a later spatial profile and MUST NOT change
+standalone decoding of the base channels.
+
+A whole-stream decoder MUST report one channel-sized Innovation region, the
+maximum LiftPack scratch across channels, and
+`sample_count * output_channels` interleaved output elements. It MUST validate
+and decode every channel before the first whole-stream PCM write. A streaming
+decoder MAY reuse one block-sized Innovation region, one maximum scratch
+region, and one interleaved block. It emits a callback only after all channels
+for that block have reconstructed with equal frame offset and length.
 
 ## 5. State records
 

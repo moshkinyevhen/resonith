@@ -1231,3 +1231,40 @@ new oscillator opcode.
   - `BCIB` remains useful executable infrastructure for future single-cause
     or longer-lived Basis tests, but cached synthesis alone is not evidence
     for an additive mixer opcode.
+
+## R-052 — Independent-channel Main-0 transport
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING / NORMATIVE-DRAFT**
+- Decision:
+  - extend the residual-only Main-0 subset to one through eight output channels
+    without adding a second container, codec dispatch layer, or coupled DSP
+    transform;
+  - retain one `CONF` record and store exactly one critical `RSL2` instance per
+    output channel. Instance IDs are consecutive canonical channel indices;
+  - require every channel to share the RSC1 sample rate, frame count,
+    Innovation step, LiftPack block size, and block count so callback playback
+    can emit aligned interleaved frames with bounded memory;
+  - derive the base speaker order from `output_channels`; custom objects and
+    arbitrary layouts remain outside Main-0 rather than adding metadata to the
+    minimum fallback;
+  - keep existing mono APIs and ABI unchanged. Add explicit multichannel
+    inspect, interleaved whole-decode, player-open, and callback functions;
+  - use one channel-sized int64 Innovation buffer, one maximum LiftPack scratch
+    region, and one interleaved output block. Channel residuals decode
+    sequentially, so workspace does not scale by the full programme duration;
+  - make the encoder choose one common residual block partition by complete
+    aggregate bytes across all channels and independently verify the packed
+    stream;
+  - treat independent channels as the mandatory functional fallback. Coupled
+    stereo or spatial coding may replace it only after a separate
+    complete-byte or matched-listening gate.
+- Rationale:
+  - the codec cannot become deployable while the executable Core is mono-only;
+  - earlier waveform stereo transforms lost their gates, but that does not
+    justify delaying correct stereo transport or embedding another codec;
+  - independent channel residuals reuse the winning RSL2 kernel, preserve
+    exact isolation and random block boundaries, and add only directory
+    records plus interleaving;
+  - aligned partitions make the real-time contract simple enough for desktop,
+    mobile, embedded, and later hardware decoders.

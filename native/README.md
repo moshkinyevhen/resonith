@@ -4,8 +4,9 @@ Status: **EXECUTABLE MAIN-0 SUBSET**
 
 This directory contains the dependency-free portable C++20 implementation of
 the first frozen Resonith decoder primitives. The current subset validates the
-compact `RSC1` section container and decodes the first complete mono Main-0
-stream through a stable C99 ABI.
+compact `RSC1` section container and decodes complete mono model-bearing and
+one-through-eight-channel residual-only Main-0 streams through a stable C99
+ABI.
 
 ## Runtime contract
 
@@ -34,6 +35,9 @@ The native Core:
 - opens immutable Main-0 player views, decodes independently seeded zero-Atom
   Truth blocks directly to PCM16, and streams complete model-bearing state
   partitions with output-atomic block failure;
+- validates aligned independent-channel RSL2 partitions and emits canonical
+  interleaved PCM through one allocation-free callback using one channel block
+  plus one interleaved output block;
 - decodes minimal typed `BRAW` Basis payloads into aligned caller-owned
   host-endian memory without generic array metadata;
 - parses fixed `CONF` and state-local periodic `ATOM` payloads, reports exact
@@ -161,6 +165,10 @@ Python independently decodes the same stream and checks the exact PCM vector.
 The test also proves that a rejected undersized workspace leaves output PCM
 unchanged.
 
+The native Python bridge independently generates an aligned stereo RSC1
+stream, then requires whole native decode, interleaved callback decode, and the
+Python decoder to produce identical frames.
+
 This is not yet the full Resonith decoder. Promoted transient rendering,
-gated simultaneous-Atom mixing, and multi-channel synthesis remain subsequent
+gated source-specific models, and spatial/object synthesis remain subsequent
 parity stages.

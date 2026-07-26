@@ -18,6 +18,7 @@ from maf_p0.main0 import (  # noqa: E402
     pack_main0_lpc_residual_stream,
     pack_main0_state_stream,
 )
+from maf_p0.multichannel import pack_main0_independent_stream  # noqa: E402
 from maf_p0.composition import GainEventLaw  # noqa: E402
 from maf_p0.periodic import constant_phase_trajectory  # noqa: E402
 from maf_p0.residual import encode_liftpack  # noqa: E402
@@ -61,6 +62,16 @@ def main() -> None:
             sample_rate=48_000,
             innovation_q=tonal,
             innovation_step=3,
+            residual_block_size=64,
+            lpc_orders=(4, 8, 12, 16),
+        )
+    )
+    stereo = np.stack((tonal, np.roll(tonal, 19)), axis=1)
+    (main0_directory / "independent_stereo.rsc").write_bytes(
+        pack_main0_independent_stream(
+            sample_rate=48_000,
+            innovation_q=stereo,
+            innovation_step=1,
             residual_block_size=64,
             lpc_orders=(4, 8, 12, 16),
         )

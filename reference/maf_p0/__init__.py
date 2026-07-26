@@ -36,7 +36,18 @@ from .main0 import (
     pack_main0_residual_stream,
     pack_main0_state_stream,
 )
-from .native_core import NativeMain0Decoder
+from .multichannel import (
+    IndependentChannelDecodeResult,
+    IndependentChannelEncodeResult,
+    decode_main0_independent_stream,
+    encode_main0_independent_rdo,
+    pack_main0_independent_stream,
+)
+from .native_core import (
+    NativeMain0Decoder,
+    NativeMultichannelDecodeResult,
+    NativeMultichannelRequirements,
+)
 from .periodic import PhaseTrajectory
 from .residual import ResidualPacket, decode_liftpack, encode_liftpack
 from .segmentation import SegmentationResult, segment_acoustic_states
@@ -56,18 +67,25 @@ __all__ = [
     "Main0DecodeResult",
     "Main0EncodeResult",
     "Main0State",
+    "IndependentChannelDecodeResult",
+    "IndependentChannelEncodeResult",
     "LPCOracleResult",
     "NativeMain0Decoder",
+    "NativeMultichannelDecodeResult",
+    "NativeMultichannelRequirements",
     "decode_bytes",
     "decode_main0_raw_stream",
+    "decode_main0_independent_stream",
     "encode_main0_periodic_rdo",
     "encode_main0_state_rdo",
+    "encode_main0_independent_rdo",
     "encode_samples",
     "pack_main0_cibs_stream",
     "pack_main0_raw_stream",
     "pack_main0_lpc_residual_stream",
     "pack_main0_residual_stream",
     "pack_main0_state_stream",
+    "pack_main0_independent_stream",
     "pack_registry_model",
     "decode_stateful_bytes",
     "encode_stateful_samples",

@@ -82,6 +82,39 @@ class _PlayerView(ctypes.Structure):
     ]
 
 
+class _MultichannelRequirements(ctypes.Structure):
+    _fields_ = [
+        ("timebase_hz", ctypes.c_uint32),
+        ("frame_count", ctypes.c_uint32),
+        ("block_count", ctypes.c_uint32),
+        ("block_size", ctypes.c_uint16),
+        ("output_channels", ctypes.c_uint16),
+        ("innovation_elements", ctypes.c_size_t),
+        ("liftpack_scratch_elements", ctypes.c_size_t),
+        ("output_elements", ctypes.c_size_t),
+        ("output_block_elements", ctypes.c_size_t),
+    ]
+
+
+class _MultichannelPlayerView(ctypes.Structure):
+    _fields_ = [
+        (
+            "innovation_data",
+            ctypes.POINTER(ctypes.c_uint8) * 8,
+        ),
+        ("innovation_size", ctypes.c_size_t * 8),
+        ("stream_data", ctypes.POINTER(ctypes.c_uint8)),
+        ("stream_size", ctypes.c_size_t),
+        ("timebase_hz", ctypes.c_uint32),
+        ("frame_count", ctypes.c_uint32),
+        ("block_count", ctypes.c_uint32),
+        ("block_size", ctypes.c_uint16),
+        ("output_channels", ctypes.c_uint16),
+        ("innovation_step", ctypes.c_uint32),
+        ("liftpack_scratch_elements", ctypes.c_size_t),
+    ]
+
+
 class _CibsRefinementStage(ctypes.Structure):
     _fields_ = [
         ("kernels", ctypes.POINTER(ctypes.c_int8)),
@@ -201,6 +234,15 @@ _Pcm16Callback = ctypes.CFUNCTYPE(
     ctypes.c_size_t,
 )
 
+_Pcm16InterleavedCallback = ctypes.CFUNCTYPE(
+    ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_uint32,
+    ctypes.POINTER(ctypes.c_int16),
+    ctypes.c_size_t,
+    ctypes.c_uint16,
+)
+
 
 @dataclass(frozen=True)
 class NativeMain0Requirements:
@@ -222,6 +264,27 @@ class NativeMain0DecodeResult:
     samples: np.ndarray
     sample_rate: int
     requirements: NativeMain0Requirements
+
+
+@dataclass(frozen=True)
+class NativeMultichannelRequirements:
+    timebase_hz: int
+    frame_count: int
+    block_count: int
+    block_size: int
+    output_channels: int
+    innovation_elements: int
+    liftpack_scratch_elements: int
+    output_elements: int
+    output_block_elements: int
+    workspace_bytes: int
+
+
+@dataclass(frozen=True)
+class NativeMultichannelDecodeResult:
+    samples: np.ndarray
+    sample_rate: int
+    requirements: NativeMultichannelRequirements
 
 
 class NativeMain0Decoder:
@@ -336,6 +399,45 @@ class NativeMain0Decoder:
         self._library.resonith_main0_player_stream_complete_with_registry.restype = (
             ctypes.c_int
         )
+        self._library.resonith_multichannel_inspect.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(_MultichannelRequirements),
+        ]
+        self._library.resonith_multichannel_inspect.restype = ctypes.c_int
+        self._library.resonith_multichannel_decode.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        self._library.resonith_multichannel_decode.restype = ctypes.c_int
+        self._library.resonith_multichannel_player_open.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(_MultichannelPlayerView),
+        ]
+        self._library.resonith_multichannel_player_open.restype = ctypes.c_int
+        self._library.resonith_multichannel_player_stream.argtypes = [
+            ctypes.POINTER(_MultichannelPlayerView),
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            _Pcm16InterleavedCallback,
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        self._library.resonith_multichannel_player_stream.restype = (
+            ctypes.c_int
+        )
         self._library.resonith_status_string.argtypes = [ctypes.c_int]
         self._library.resonith_status_string.restype = ctypes.c_char_p
 
@@ -411,6 +513,185 @@ class NativeMain0Decoder:
     ) -> NativeMain0Requirements:
         registry = _CibsRegistryOwner(cibs_models) if cibs_models else None
         return self._inspect_native(payload, registry)
+
+    def inspect_multichannel(
+        self,
+        payload: bytes,
+    ) -> NativeMultichannelRequirements:
+        """Inspect the independent-channel Main-0 subset."""
+
+        source = self._input_buffer(payload)
+        native = _MultichannelRequirements()
+        status = self._library.resonith_multichannel_inspect(
+            source,
+            len(payload),
+            ctypes.byref(native),
+        )
+        self._check(status)
+        workspace_bytes = (
+            int(native.innovation_elements) * 8
+            + int(native.liftpack_scratch_elements) * 8
+            + int(native.output_block_elements) * 2
+        )
+        if workspace_bytes > self._max_workspace_bytes:
+            raise MemoryError(
+                "native multichannel workspace exceeds the host ceiling"
+            )
+        return NativeMultichannelRequirements(
+            int(native.timebase_hz),
+            int(native.frame_count),
+            int(native.block_count),
+            int(native.block_size),
+            int(native.output_channels),
+            int(native.innovation_elements),
+            int(native.liftpack_scratch_elements),
+            int(native.output_elements),
+            int(native.output_block_elements),
+            workspace_bytes,
+        )
+
+    def decode_multichannel(
+        self,
+        payload: bytes,
+    ) -> NativeMultichannelDecodeResult:
+        """Decode independent channels to a frames-by-channels PCM matrix."""
+
+        requirements = self.inspect_multichannel(payload)
+        source = self._input_buffer(payload)
+        innovation = (
+            ctypes.c_int64 * requirements.innovation_elements
+        )()
+        scratch = (
+            ctypes.c_int64 * requirements.liftpack_scratch_elements
+        )()
+        output = (ctypes.c_int16 * requirements.output_elements)()
+        written = ctypes.c_size_t()
+        status = self._library.resonith_multichannel_decode(
+            source,
+            len(payload),
+            innovation,
+            requirements.innovation_elements,
+            scratch,
+            requirements.liftpack_scratch_elements,
+            output,
+            requirements.output_elements,
+            ctypes.byref(written),
+        )
+        self._check(status)
+        if written.value != requirements.frame_count:
+            raise RuntimeError(
+                "native multichannel decoder returned partial PCM"
+            )
+        samples = np.ctypeslib.as_array(output).reshape(
+            requirements.frame_count,
+            requirements.output_channels,
+        ).copy()
+        samples.flags.writeable = False
+        return NativeMultichannelDecodeResult(
+            samples,
+            requirements.timebase_hz,
+            requirements,
+        )
+
+    def decode_multichannel_streaming(
+        self,
+        payload: bytes,
+    ) -> NativeMultichannelDecodeResult:
+        """Decode aligned channel blocks through the interleaved callback."""
+
+        requirements = self.inspect_multichannel(payload)
+        source = self._input_buffer(payload)
+        player = _MultichannelPlayerView()
+        self._check(
+            self._library.resonith_multichannel_player_open(
+                source,
+                len(payload),
+                ctypes.byref(player),
+            )
+        )
+        if (
+            int(player.frame_count) != requirements.frame_count
+            or int(player.output_channels) != requirements.output_channels
+        ):
+            raise RuntimeError(
+                "native multichannel player differs from inspect"
+            )
+
+        innovation = (ctypes.c_int64 * requirements.block_size)()
+        scratch = (
+            ctypes.c_int64 * requirements.liftpack_scratch_elements
+        )()
+        block_output = (
+            ctypes.c_int16 * requirements.output_block_elements
+        )()
+        result = np.empty(
+            (
+                requirements.frame_count,
+                requirements.output_channels,
+            ),
+            dtype=np.int16,
+        )
+        callback_error: list[BaseException] = []
+
+        def collect(
+            _user: int,
+            frame_offset: int,
+            samples: ctypes.POINTER(ctypes.c_int16),
+            frame_count: int,
+            channels: int,
+        ) -> int:
+            try:
+                start = int(frame_offset)
+                count = int(frame_count)
+                channel_count = int(channels)
+                end = start + count
+                if (
+                    start < 0
+                    or end > result.shape[0]
+                    or channel_count != result.shape[1]
+                ):
+                    raise RuntimeError(
+                        "native interleaved callback exceeds PCM extent"
+                    )
+                block = np.ctypeslib.as_array(
+                    samples,
+                    shape=(count * channel_count,),
+                ).reshape(count, channel_count)
+                result[start:end] = block
+                return 0
+            except BaseException as error:
+                callback_error.append(error)
+                return 7
+
+        callback = _Pcm16InterleavedCallback(collect)
+        emitted = ctypes.c_size_t()
+        status = self._library.resonith_multichannel_player_stream(
+            ctypes.byref(player),
+            innovation,
+            requirements.block_size,
+            scratch,
+            requirements.liftpack_scratch_elements,
+            block_output,
+            requirements.output_block_elements,
+            callback,
+            None,
+            ctypes.byref(emitted),
+        )
+        if callback_error:
+            raise RuntimeError(
+                "native interleaved PCM callback rejected a block"
+            ) from callback_error[0]
+        self._check(status)
+        if emitted.value != requirements.frame_count:
+            raise RuntimeError(
+                "native multichannel player returned partial PCM"
+            )
+        result.flags.writeable = False
+        return NativeMultichannelDecodeResult(
+            result,
+            requirements.timebase_hz,
+            requirements,
+        )
 
     def decode(
         self,

@@ -26,6 +26,10 @@ from maf_p0.native_core import (  # noqa: E402
     NativeCoreError,
     NativeMain0Decoder,
 )
+from maf_p0.multichannel import (  # noqa: E402
+    decode_main0_independent_stream,
+    encode_main0_independent_rdo,
+)
 from maf_p0.periodic import constant_phase_trajectory  # noqa: E402
 
 
@@ -231,6 +235,27 @@ class NativeBridgeTests(unittest.TestCase):
         )
         native = self.decoder.decode(encoded.payload)
         np.testing.assert_array_equal(native.samples, encoded.reconstructed)
+
+    def test_independent_stereo_whole_and_callback_decode(self) -> None:
+        right = np.roll(self.samples, 37)
+        stereo = np.stack((self.samples, right), axis=1)
+        encoded = encode_main0_independent_rdo(
+            stereo,
+            48_000,
+            innovation_step=1,
+            residual_block_sizes=(256, 512),
+        )
+        reference = decode_main0_independent_stream(encoded.payload)
+        native = self.decoder.decode_multichannel(encoded.payload)
+        streamed = self.decoder.decode_multichannel_streaming(encoded.payload)
+
+        self.assertEqual(native.requirements.output_channels, 2)
+        self.assertEqual(
+            native.requirements.output_block_elements,
+            native.requirements.block_size * 2,
+        )
+        np.testing.assert_array_equal(native.samples, reference.samples)
+        np.testing.assert_array_equal(streamed.samples, native.samples)
 
 
 if __name__ == "__main__":

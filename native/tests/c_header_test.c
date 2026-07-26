@@ -3,6 +3,7 @@
 #include "resonith/composition.h"
 #include "resonith/container.h"
 #include "resonith/liftpack.h"
+#include "resonith/multichannel.h"
 #include "resonith/seek.h"
 #include "resonith/stream.h"
 #include "resonith/trajectory.h"
@@ -57,6 +58,8 @@ int main(void) {
     resonith_prepared_gain_law gain_law = {NULL, NULL, 0U, 0U};
     resonith_main0_requirements requirements = {0};
     resonith_main0_player_view player = {0};
+    resonith_multichannel_requirements multichannel_requirements = {0};
+    resonith_multichannel_player_view multichannel_player = {0};
     resonith_seek_index_view seek_view = {
         NULL,
         0U,
@@ -110,6 +113,15 @@ int main(void) {
     if (
         resonith_main0_inspect(NULL, 0U, &requirements)
         != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_multichannel_inspect(
+            NULL,
+            0U,
+            &multichannel_requirements
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
     ) {
         return 1;
     }
@@ -186,6 +198,15 @@ int main(void) {
     if (
         resonith_main0_player_open(NULL, 0U, &player)
             != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_multichannel_player_open(
+            NULL,
+            0U,
+            &multichannel_player
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
     ) {
         return 1;
     }
