@@ -129,6 +129,15 @@ class _LappedWorkspace(ctypes.Structure):
     ]
 
 
+class _LappedAnalysisRequirements(ctypes.Structure):
+    _fields_ = [
+        ("transform_frame_count", ctypes.c_uint32),
+        ("scale_elements", ctypes.c_size_t),
+        ("coefficient_elements", ctypes.c_size_t),
+        ("score_elements", ctypes.c_size_t),
+    ]
+
+
 class _MultichannelPlayerView(ctypes.Structure):
     _fields_ = [
         (
@@ -382,6 +391,14 @@ class NativeLappedDecodeResult:
     requirements: NativeLappedRequirements
 
 
+@dataclass(frozen=True)
+class NativeLappedAnalysisResult:
+    scales: np.ndarray
+    quantized_grid: np.ndarray
+    score_grid: np.ndarray
+    transform_frame_count: int
+
+
 class NativeMain0Decoder:
     """Allocation-explicit host wrapper around `resonith_main0_decode`."""
 
@@ -567,6 +584,31 @@ class NativeMain0Decoder:
             ctypes.POINTER(ctypes.c_size_t),
         ]
         self._library.resonith_lapped_decode.restype = ctypes.c_int
+        self._library.resonith_lapped_analyze_requirements.argtypes = [
+            ctypes.c_uint32,
+            ctypes.c_uint16,
+            ctypes.c_uint16,
+            ctypes.c_uint16,
+            ctypes.POINTER(_LappedAnalysisRequirements),
+        ]
+        self._library.resonith_lapped_analyze_requirements.restype = (
+            ctypes.c_int
+        )
+        self._library.resonith_lapped_analyze_pcm16.argtypes = [
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.c_uint32,
+            ctypes.c_uint16,
+            ctypes.c_uint16,
+            ctypes.c_uint16,
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_uint64),
+            ctypes.c_size_t,
+        ]
+        self._library.resonith_lapped_analyze_pcm16.restype = ctypes.c_int
         self._library.resonith_status_string.argtypes = [ctypes.c_int]
         self._library.resonith_status_string.restype = ctypes.c_char_p
 
@@ -766,6 +808,82 @@ class NativeMain0Decoder:
             samples,
             requirements.sample_rate,
             requirements,
+        )
+
+    def analyze_lapped(
+        self,
+        samples: np.ndarray,
+        *,
+        half_window: int = 512,
+        band_count: int = 24,
+    ) -> NativeLappedAnalysisResult:
+        """Run the allocation-explicit native fixed lapped analysis."""
+
+        source_view = np.asarray(samples)
+        if (
+            source_view.dtype != np.int16
+            or source_view.ndim != 2
+            or source_view.shape[0] == 0
+            or not 1 <= source_view.shape[1] <= 8
+        ):
+            raise TypeError(
+                "native lapped analysis requires frame-major PCM16"
+            )
+        source = np.ascontiguousarray(source_view)
+        native = _LappedAnalysisRequirements()
+        self._check(
+            self._library.resonith_lapped_analyze_requirements(
+                source.shape[0],
+                source.shape[1],
+                half_window,
+                band_count,
+                ctypes.byref(native),
+            )
+        )
+        workspace_bytes = (
+            int(native.scale_elements)
+            + 2 * int(native.coefficient_elements)
+            + 8 * int(native.score_elements)
+        )
+        if workspace_bytes > self._max_workspace_bytes:
+            raise MemoryError(
+                "native lapped analysis exceeds the configured host ceiling"
+            )
+        scales = np.empty(int(native.scale_elements), dtype=np.uint8)
+        quantized = np.empty(
+            int(native.coefficient_elements),
+            dtype=np.int16,
+        )
+        scores = np.empty(int(native.score_elements), dtype=np.uint64)
+        self._check(
+            self._library.resonith_lapped_analyze_pcm16(
+                source.ctypes.data_as(ctypes.POINTER(ctypes.c_int16)),
+                source.size,
+                source.shape[0],
+                source.shape[1],
+                half_window,
+                band_count,
+                scales.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)),
+                scales.size,
+                quantized.ctypes.data_as(ctypes.POINTER(ctypes.c_int16)),
+                quantized.size,
+                scores.ctypes.data_as(ctypes.POINTER(ctypes.c_uint64)),
+                scores.size,
+            )
+        )
+        transform_frames = int(native.transform_frame_count)
+        shape = (source.shape[1], transform_frames)
+        scales = scales.reshape(*shape, band_count)
+        quantized = quantized.reshape(*shape, half_window)
+        scores = scores.reshape(*shape, half_window)
+        scales.flags.writeable = False
+        quantized.flags.writeable = False
+        scores.flags.writeable = False
+        return NativeLappedAnalysisResult(
+            scales,
+            quantized,
+            scores,
+            transform_frames,
         )
 
     def decode_multichannel(

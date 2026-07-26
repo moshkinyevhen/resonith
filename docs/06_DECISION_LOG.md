@@ -1785,3 +1785,23 @@ new oscillator opcode.
   - this single-pass developer timing is directional, not a production encoder
     throughput claim. Native batched analysis and synthesis remain the next
     performance step.
+
+## R-067 — Allocation-explicit native forward analysis
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - expose the fixed Q15-window/Q14-cosine forward transform through the stable
+    C99 ABI without adding encoder policy to the decoder;
+  - preflight transform-frame, scale, coefficient, and score counts before any
+    output write;
+  - emit channel-major band scales, quantized coefficients, and exact unsigned
+    squared scores into caller-owned arrays;
+  - require exact parity with the Python Golden Encoder on both a frozen small
+    vector and a dynamic 8,192-frame stereo integration vector.
+- Rationale:
+  - R-066 identifies immutable analysis as the correct acceleration boundary;
+  - keeping selection and RDO outside the kernel permits CPU, CUDA, and future
+    teacher encoders to compete without changing the bitstream or decoder;
+  - an allocation-free scalar C ABI supplies a portable correctness anchor
+    before SIMD or GPU specialization.

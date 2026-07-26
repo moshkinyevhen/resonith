@@ -773,3 +773,19 @@ Its architectural value is larger than the Python number: immutable analysis
 is a safe unit for parallel candidate selection and a direct handoff boundary
 to a future batched C++/CUDA encoder. The compact record is
 [`lapped_frontier_timing_2026-07-26_summary.json`](../experiments/results/lapped_frontier_timing_2026-07-26_summary.json).
+
+## 32. Native forward-analysis boundary
+
+R-067 moves the fixed Q15/Q14 forward transform behind the same stable C99 ABI
+as the Golden Decoder. The caller first requests exact array sizes, then
+provides interleaved PCM16 and caller-owned output arrays. The kernel returns:
+
+- channel-major per-frame band scales;
+- the complete signed quantized coefficient grid;
+- exact unsigned squared transform scores for encoder-side selection.
+
+It does not choose a bitrate, density law, entropy mode, or perceptual policy.
+Those remain encoder/compiler decisions. This separation gives scalar C++,
+SIMD, CUDA, and large teacher encoders one exact output contract without
+expanding the player. Promotion requires Python/native parity across every
+compiler target before any throughput claim.

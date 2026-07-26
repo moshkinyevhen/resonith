@@ -20,6 +20,55 @@ bool expect(bool condition, const char* message) {
 }  // namespace
 
 int main() {
+    resonith_lapped_analysis_requirements analysis_requirements{};
+    if (!expect(
+            resonith_lapped_analyze_requirements(
+                96U,
+                2U,
+                32U,
+                4U,
+                &analysis_requirements
+            ) == RESONITH_STATUS_OK
+                && analysis_requirements.transform_frame_count == 4U
+                && analysis_requirements.scale_elements
+                    == kExpectedLappedScales.size()
+                && analysis_requirements.coefficient_elements
+                    == kExpectedLappedQuantized.size()
+                && analysis_requirements.score_elements
+                    == kExpectedLappedScores.size(),
+            "fixed LPF1 analysis requirements"
+        )) {
+        return 1;
+    }
+    std::array<std::uint8_t, kExpectedLappedScales.size()>
+        analyzed_scales{};
+    std::array<std::int16_t, kExpectedLappedQuantized.size()>
+        analyzed_quantized{};
+    std::array<std::uint64_t, kExpectedLappedScores.size()>
+        analyzed_scores{};
+    if (!expect(
+            resonith_lapped_analyze_pcm16(
+                kLappedSourcePcm.data(),
+                kLappedSourcePcm.size(),
+                96U,
+                2U,
+                32U,
+                4U,
+                analyzed_scales.data(),
+                analyzed_scales.size(),
+                analyzed_quantized.data(),
+                analyzed_quantized.size(),
+                analyzed_scores.data(),
+                analyzed_scores.size()
+            ) == RESONITH_STATUS_OK
+                && analyzed_scales == kExpectedLappedScales
+                && analyzed_quantized == kExpectedLappedQuantized
+                && analyzed_scores == kExpectedLappedScores,
+            "Python and native fixed LPF1 analysis parity"
+        )) {
+        return 1;
+    }
+
     resonith_lapped_requirements requirements{};
     if (!expect(
             resonith_lapped_inspect(

@@ -45,6 +45,45 @@ typedef struct resonith_lapped_workspace {
     size_t overlap_capacity;
 } resonith_lapped_workspace;
 
+typedef struct resonith_lapped_analysis_requirements {
+    uint32_t transform_frame_count;
+    size_t scale_elements;
+    size_t coefficient_elements;
+    size_t score_elements;
+} resonith_lapped_analysis_requirements;
+
+/*
+ * Computes allocation sizes for the fixed Q15/Q14 forward transform.
+ * `sample_frame_count` is the number of interleaved PCM frames, not elements.
+ */
+RESONITH_API resonith_status resonith_lapped_analyze_requirements(
+    uint32_t sample_frame_count,
+    uint16_t channels,
+    uint16_t half_window,
+    uint16_t band_count,
+    resonith_lapped_analysis_requirements* requirements
+);
+
+/*
+ * Produces channel-major transform frames. Scales are [channel, frame, band];
+ * quantized coefficients and squared objective scores are
+ * [channel, frame, coefficient]. The function allocates no memory.
+ */
+RESONITH_API resonith_status resonith_lapped_analyze_pcm16(
+    const int16_t* interleaved_input,
+    size_t input_elements,
+    uint32_t sample_frame_count,
+    uint16_t channels,
+    uint16_t half_window,
+    uint16_t band_count,
+    uint8_t* scales,
+    size_t scale_capacity,
+    int16_t* quantized_coefficients,
+    size_t coefficient_capacity,
+    uint64_t* squared_scores,
+    size_t score_capacity
+);
+
 /*
  * Validates RSC1, CONF, LPF1, bounded shape arithmetic, section integrity, and
  * entropy envelope lengths without allocating or exposing PCM.

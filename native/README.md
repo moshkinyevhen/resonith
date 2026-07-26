@@ -105,6 +105,12 @@ python -m unittest discover -s tests -p test_native_bridge.py -v
 The binding inspects exact workspace counts and applies a host memory ceiling
 before creating caller-owned arrays.
 
+The same C99 ABI now exposes allocation-explicit fixed Q15/Q14 forward
+analysis through `resonith_lapped_analyze_requirements` and
+`resonith_lapped_analyze_pcm16`. It emits immutable scale, quantized
+coefficient, and squared-score grids for encoder-side frontier searches; it
+does not pack policy or RDO decisions into the decoder Core.
+
 ## Sanitized fuzzing
 
 Clang builds the LiftPack, Main-0, seek-sidecar, and lapped-stream parsers and

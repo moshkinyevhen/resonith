@@ -1149,3 +1149,224 @@ extern "C" resonith_status resonith_lapped_decode(
     *frames_written = parsed.sample_count;
     return RESONITH_STATUS_OK;
 }
+
+extern "C" resonith_status resonith_lapped_analyze_requirements(
+    std::uint32_t sample_frame_count,
+    std::uint16_t channels,
+    std::uint16_t half_window,
+    std::uint16_t band_count,
+    resonith_lapped_analysis_requirements* requirements
+) {
+    if (requirements == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *requirements = {};
+    if (
+        sample_frame_count == 0U
+        || channels == 0U
+        || channels > kMaximumChannels
+        || half_window < 32U
+        || half_window > kMaximumHalfWindow
+        || (half_window & (half_window - 1U)) != 0U
+        || band_count == 0U
+        || band_count > kMaximumBands
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    std::array<std::uint16_t, kMaximumBands + 1U> edges{};
+    if (!build_band_edges(half_window, band_count, &edges)) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    const std::uint32_t transform_frames =
+        sample_frame_count / half_window + 1U;
+    std::size_t channel_frames = 0U;
+    std::size_t scale_elements = 0U;
+    std::size_t coefficient_elements = 0U;
+    if (
+        !checked_product(channels, transform_frames, &channel_frames)
+        || !checked_product(
+            channel_frames,
+            band_count,
+            &scale_elements
+        )
+        || !checked_product(
+            channel_frames,
+            half_window,
+            &coefficient_elements
+        )
+        || scale_elements > kMaximumSymbols
+        || coefficient_elements > kMaximumSymbols
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    requirements->transform_frame_count = transform_frames;
+    requirements->scale_elements = scale_elements;
+    requirements->coefficient_elements = coefficient_elements;
+    requirements->score_elements = coefficient_elements;
+    return RESONITH_STATUS_OK;
+}
+
+extern "C" resonith_status resonith_lapped_analyze_pcm16(
+    const std::int16_t* interleaved_input,
+    std::size_t input_elements,
+    std::uint32_t sample_frame_count,
+    std::uint16_t channels,
+    std::uint16_t half_window,
+    std::uint16_t band_count,
+    std::uint8_t* scales,
+    std::size_t scale_capacity,
+    std::int16_t* quantized_coefficients,
+    std::size_t coefficient_capacity,
+    std::uint64_t* squared_scores,
+    std::size_t score_capacity
+) {
+    if (
+        interleaved_input == nullptr
+        || scales == nullptr
+        || quantized_coefficients == nullptr
+        || squared_scores == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    resonith_lapped_analysis_requirements requirements{};
+    resonith_status status = resonith_lapped_analyze_requirements(
+        sample_frame_count,
+        channels,
+        half_window,
+        band_count,
+        &requirements
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    std::size_t required_input = 0U;
+    if (
+        !checked_product(sample_frame_count, channels, &required_input)
+        || input_elements < required_input
+        || scale_capacity < requirements.scale_elements
+        || coefficient_capacity < requirements.coefficient_elements
+        || score_capacity < requirements.score_elements
+    ) {
+        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    }
+    std::array<std::uint16_t, kMaximumBands + 1U> edges{};
+    if (!build_band_edges(half_window, band_count, &edges)) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    const std::uint32_t rom_stride = kRomHalfWindow / half_window;
+    std::array<std::int64_t, kMaximumHalfWindow> spectrum{};
+    for (std::uint16_t channel = 0U; channel < channels; ++channel) {
+        for (
+            std::uint32_t frame = 0U;
+            frame < requirements.transform_frame_count;
+            ++frame
+        ) {
+            for (
+                std::uint16_t coefficient = 0U;
+                coefficient < half_window;
+                ++coefficient
+            ) {
+                std::int64_t accumulator_q29 = 0;
+                for (
+                    std::uint32_t sample = 0U;
+                    sample < 2U * half_window;
+                    ++sample
+                ) {
+                    const std::int64_t source_frame =
+                        static_cast<std::int64_t>(frame) * half_window
+                        + sample
+                        - half_window;
+                    if (
+                        source_frame < 0
+                        || source_frame >= sample_frame_count
+                    ) {
+                        continue;
+                    }
+                    const std::int64_t input = interleaved_input[
+                        static_cast<std::size_t>(source_frame) * channels
+                        + channel
+                    ];
+                    const std::int64_t window_phase =
+                        (
+                            2LL * half_window
+                            - (2LL * sample + 1LL)
+                        )
+                        * rom_stride;
+                    const std::int64_t cosine_phase =
+                        static_cast<std::int64_t>(
+                            (2U * coefficient + 1U)
+                            * (2U * sample + 1U + half_window)
+                            * rom_stride
+                        );
+                    accumulator_q29 += input
+                        * quarter_lookup(
+                            kCosineQuarterQ15,
+                            window_phase
+                        )
+                        * quarter_lookup(
+                            kCosineQuarterQ14,
+                            cosine_phase
+                        );
+                }
+                spectrum[coefficient] = round_shift_signed(
+                    accumulator_q29,
+                    29U
+                );
+            }
+            const std::size_t frame_index =
+                static_cast<std::size_t>(channel)
+                    * requirements.transform_frame_count
+                + frame;
+            for (std::uint16_t band = 0U; band < band_count; ++band) {
+                std::uint64_t maximum = 1U;
+                for (
+                    std::uint16_t coefficient = edges[band];
+                    coefficient < edges[band + 1U];
+                    ++coefficient
+                ) {
+                    const std::int64_t value = spectrum[coefficient];
+                    const std::uint64_t magnitude =
+                        static_cast<std::uint64_t>(
+                            value < 0 ? -value : value
+                        );
+                    maximum = std::max(maximum, magnitude);
+                }
+                const std::uint64_t minimum_step =
+                    std::max<std::uint64_t>(1U, (maximum + 126U) / 127U);
+                std::uint8_t exponent = 0U;
+                std::uint64_t power = 1U;
+                while (power < minimum_step && exponent < 31U) {
+                    power <<= 1U;
+                    ++exponent;
+                }
+                scales[frame_index * band_count + band] = exponent;
+                for (
+                    std::uint16_t coefficient = edges[band];
+                    coefficient < edges[band + 1U];
+                    ++coefficient
+                ) {
+                    const std::int64_t value = spectrum[coefficient];
+                    const std::int64_t quantized = exponent == 0U
+                        ? value
+                        : round_shift_signed(value, exponent);
+                    const std::size_t output_index =
+                        frame_index * half_window + coefficient;
+                    quantized_coefficients[output_index] =
+                        static_cast<std::int16_t>(
+                            std::clamp<std::int64_t>(
+                                quantized,
+                                -127,
+                                127
+                            )
+                        );
+                    const std::uint64_t magnitude =
+                        static_cast<std::uint64_t>(
+                            value < 0 ? -value : value
+                        );
+                    squared_scores[output_index] = magnitude * magnitude;
+                }
+            }
+        }
+    }
+    return RESONITH_STATUS_OK;
+}
