@@ -2282,3 +2282,39 @@ new oscillator opcode.
     sequence-parser mutation target;
   - exact cross-decoder PCM and transactional two-record pulls are a subsequent
     gate, not implied by parser acceptance.
+- Result:
+  - `resonith_lapped_compact_open` exposes bounded maximum current,
+    one-record-lookahead, overlap, and output resources without allocation;
+  - `resonith_lapped_compact_decode_next` decodes two independent compact
+    entropy records into caller-owned workspaces and renders their shared
+    transform boundary with the unchanged integer kernel;
+  - the frozen Python-authored two-record vector equals monolithic adaptive
+    LPF1 PCM exactly; a corrupt lookahead writes no PCM and does not advance the
+    session;
+  - GitHub Actions run 30213319134 passed GCC, Clang, AppleClang, MSVC,
+    Linux/Windows ARM64, Android arm64-v8a, C99 header compilation, and the
+    sanitized compact parser/entropy/synthesis mutation gate;
+  - long-stream Python/native parity and hosted resource timing are tracked by
+    R-082.
+
+## R-082 — Hosted native LPS4 resource and parity gate
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - decode 3-second pinned real-music crops through the complete native LPS4
+    pull API with H512 and the R-080 approximately 40 ms record point;
+  - require exact Python/native PCM, at least 4x real-time hosted x64 decode,
+    and at most 2 MiB of complete current, lookahead, overlap, logical-output,
+    and host-wrapper workspace on every clip;
+  - time sequence preflight, every CRC and entropy revalidation, caller-array
+    creation, two-record field decode, integer synthesis, interleave, and NumPy
+    copy rather than timing an isolated kernel;
+  - record median, minimum, and maximum wall time and complete workspace bytes;
+    do not treat hosted x64 wall time as mobile energy or thermal evidence.
+- Rationale:
+  - R-080 establishes a rate/latency point and R-081 establishes bounded exact
+    semantics, but neither measures the complete native host path on real
+    music;
+  - the two-workspace design is accepted only if its explicit lookahead memory
+    remains small and throughput retains substantial realtime margin.

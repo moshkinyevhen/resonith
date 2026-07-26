@@ -18,6 +18,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
 from maf_p0.lapped_streaming import (  # noqa: E402
     decode_lapped_packet_stream,
+    encode_lapped_compact_packet_stream,
     encode_lapped_packet_stream,
     encode_lapped_transform_packet_stream,
 )
@@ -61,7 +62,7 @@ def main() -> None:
     parser.add_argument("--packet-seconds", type=float, default=1.0)
     parser.add_argument(
         "--packet-mode",
-        choices=("context", "transform"),
+        choices=("context", "transform", "compact"),
         default="context",
     )
     parser.add_argument("--iterations", type=int, default=8)
@@ -123,7 +124,16 @@ def main() -> None:
             * args.half_window,
         )
         budget = SELECTED_AVERAGE_BUDGETS.get(record["id"], 64)
-        if args.packet_mode == "transform":
+        if args.packet_mode == "compact":
+            encoded = encode_lapped_compact_packet_stream(
+                samples,
+                sample_rate,
+                coefficients_per_frame=budget,
+                packet_frames=packet_frames,
+                half_window=args.half_window,
+                band_count=args.band_count,
+            )
+        elif args.packet_mode == "transform":
             encoded = encode_lapped_transform_packet_stream(
                 samples,
                 sample_rate,
@@ -143,15 +153,26 @@ def main() -> None:
                 density_backend="adaptive",
             )
         python = decode_lapped_packet_stream(encoded.payload)
-        native = decoder.decode_lapped_packets(encoded.payload)
+        native = (
+            decoder.decode_lapped_compact_packets(encoded.payload)
+            if args.packet_mode == "compact"
+            else decoder.decode_lapped_packets(encoded.payload)
+        )
         np.testing.assert_array_equal(native.samples, python.samples)
 
         for _ in range(args.warmups):
-            decoder.decode_lapped_packets(encoded.payload)
+            if args.packet_mode == "compact":
+                decoder.decode_lapped_compact_packets(encoded.payload)
+            else:
+                decoder.decode_lapped_packets(encoded.payload)
         durations = []
         for _ in range(args.iterations):
             started = time.perf_counter()
-            repeated = decoder.decode_lapped_packets(encoded.payload)
+            repeated = (
+                decoder.decode_lapped_compact_packets(encoded.payload)
+                if args.packet_mode == "compact"
+                else decoder.decode_lapped_packets(encoded.payload)
+            )
             durations.append(time.perf_counter() - started)
             np.testing.assert_array_equal(repeated.samples, native.samples)
 
