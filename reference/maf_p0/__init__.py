@@ -12,6 +12,12 @@ from .model import (
     save_analysis_model,
     train_linear_cibs,
 )
+from .lpc_oracle import (
+    LPCOracleResult,
+    decode_lpc_liftpack_oracle,
+    encode_lpc_liftpack_oracle,
+    run_lpc_liftpack_oracle,
+)
 from .main0 import (
     Main0DecodeResult,
     Main0EncodeResult,
@@ -42,6 +48,7 @@ __all__ = [
     "Main0DecodeResult",
     "Main0EncodeResult",
     "Main0State",
+    "LPCOracleResult",
     "NativeMain0Decoder",
     "decode_bytes",
     "decode_main0_raw_stream",
@@ -57,7 +64,9 @@ __all__ = [
     "PhaseTrajectory",
     "ResidualPacket",
     "decode_liftpack",
+    "decode_lpc_liftpack_oracle",
     "encode_liftpack",
+    "encode_lpc_liftpack_oracle",
     "SegmentationResult",
     "segment_acoustic_states",
     "encode_basis_latent",
@@ -67,5 +76,6 @@ __all__ = [
     "read_pcm16_mono",
     "run_additive_atom_oracle",
     "run_analytic_oscillator_oracle",
+    "run_lpc_liftpack_oracle",
     "write_pcm16_mono",
 ]

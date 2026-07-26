@@ -177,3 +177,33 @@ simpler result is stronger: an identically zero predictor reduced the complete
 stream by 4.4% to 5.3% against the mandatory raw-Basis anchor on every clip.
 R-040 therefore makes `CONF` plus `RSL1` with no `ATOM`/`BRAW` a normative
 Main-0 form and a mandatory encoder candidate.
+
+## 10. Native zero-Atom and LiftPack block-size RDO
+
+The R-040 decoder path passed GCC, Clang, MSVC, all native conformance targets,
+and the Python-to-C++ decoder-in-loop tests in
+[run 30200277390](https://github.com/moshkinyevhen/resonith/actions/runs/30200277390).
+It reports zero model workspace and reconstructs the q64 Truth stream through
+the same native acceptance boundary.
+
+R-041 then evaluated the existing LiftPack-1 block sizes per complete typed
+candidate. It selected 32,768 samples for Corelli and piano, but 2,048 for
+drums:
+
+| Clip | Selected stream | Bitrate | Reduction vs one-state |
+|---|---:|---:|---:|
+| Corelli realization | 10,930 bytes | 87.44 kbit/s | 7.45% |
+| Recorded piano | 12,740 bytes | 101.92 kbit/s | 6.07% |
+| Recorded drums | 14,011 bytes | 112.09 kbit/s | 5.64% |
+
+Run:
+[30200401912](https://github.com/moshkinyevhen/resonith/actions/runs/30200401912).
+Raw report SHA-256:
+
+```text
+85f2d8d72713d434a987e994186fb8b3a0dcbc275a4aaed0f756363578abb7af
+```
+
+Every clip selected `residual-only`; the periodic and sequential-state
+candidates remain legal but lost RDO. Block-size RDO changes no decoder syntax
+and is now the default unrestricted Main-0 encoder search.

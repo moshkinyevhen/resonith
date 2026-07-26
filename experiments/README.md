@@ -45,6 +45,9 @@ reproducible command and independent decode.
 - `analytic_oscillator_oracle_benchmark.py` — R-039 fixed-ROM oscillator
   matching pursuit with one batched Atom bank, a zero-Atom residual anchor,
   and the measured raw-Basis envelope as competing full-byte baselines.
+- `lpc_liftpack_oracle_benchmark.py` — R-042 exact block-local integer LPC
+  with transmitted coefficient cost, independent prospective decode, and the
+  R-041 block-size-RDO `RSL1` stream as the complete-byte anchor.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

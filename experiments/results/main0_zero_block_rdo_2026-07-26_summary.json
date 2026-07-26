@@ -1,0 +1,28 @@
+{
+  "actions_run": "https://github.com/moshkinyevhen/resonith/actions/runs/30200401912",
+  "clips": {
+    "corelli-sonata-realization": {
+      "bitrate_kbps": 87.44,
+      "one_state_bytes": 11810,
+      "reduction_vs_one_state": 0.0745131244707875,
+      "residual_block_size": 32768,
+      "stream_bytes": 10930
+    },
+    "emotional-piano-cc0": {
+      "bitrate_kbps": 101.92,
+      "one_state_bytes": 13563,
+      "reduction_vs_one_state": 0.060679790606797956,
+      "residual_block_size": 32768,
+      "stream_bytes": 12740
+    },
+    "patro-de-bateria": {
+      "bitrate_kbps": 112.088,
+      "one_state_bytes": 14849,
+      "reduction_vs_one_state": 0.0564347767526433,
+      "residual_block_size": 2048,
+      "stream_bytes": 14011
+    }
+  },
+  "raw_report_sha256": "85f2d8d72713d434a987e994186fb8b3a0dcbc275a4aaed0f756363578abb7af",
+  "status": "zero-Atom and LiftPack block-size RDO selected on every clip"
+}

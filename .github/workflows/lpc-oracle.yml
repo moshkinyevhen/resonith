@@ -1,0 +1,33 @@
+name: Integer LPC Compression Oracle
+
+on:
+  workflow_dispatch:
+    inputs:
+      maximum_seconds:
+        description: Maximum licensed crop duration per clip
+        required: true
+        default: "1"
+
+permissions:
+  contents: read
+
+jobs:
+  oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install runtime dependency
+        run: python -m pip install numpy
+      - name: Run bounded integer LPC oracle
+        run: >
+          python experiments/lpc_liftpack_oracle_benchmark.py
+          --maximum-seconds ${{ inputs.maximum_seconds }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: lpc-liftpack-oracle-${{ github.sha }}
+          path: artifacts/lpc_liftpack_oracle
+          if-no-files-found: error

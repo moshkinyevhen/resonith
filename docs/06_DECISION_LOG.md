@@ -853,7 +853,7 @@ new oscillator opcode.
 ## R-041 — Full-byte LiftPack block-size RDO
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **IMPLEMENTED / NATIVE-GATED / MEASURED**
 - Decision:
   - permit the encoder to evaluate a bounded set of existing LiftPack-1 block
     sizes for every complete Main-0 candidate;
@@ -868,3 +868,30 @@ new oscillator opcode.
     large blocks while the drum clip prefers a smaller 2,048-sample block;
   - no universal fixed choice is best, and encoder-only RDO improves
     compression without increasing decoder ISA, state, or attack surface.
+
+## R-042 — Bounded integer LPC oracle before LiftPack-2 syntax
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / RESEARCH**
+- Decision:
+  - test block-local finite-order linear prediction as an additional exact
+    Truth transform before assigning a new LiftPack transform ID;
+  - derive predictor coefficients encoder-side, quantize them to a fixed
+    signed integer precision, and transmit the first samples plus exact
+    prediction residual;
+  - cap order, coefficient magnitude, coefficient-sum magnitude, block size,
+    intermediate arithmetic, and decoded sample magnitude;
+  - compete zero, fixed first/second difference, Haar, and LPC by actual block
+    payload bytes including predictor coefficients;
+  - wrap the prospective residual in a complete research RSC1 envelope and
+    verify exact inverse reconstruction;
+  - add native syntax only if LPC reduces complete bytes on at least two
+    licensed clips beyond R-041 block-size RDO.
+- Rationale:
+  - R-041 diagnostics show second difference winning almost every tonal block,
+    which is direct evidence that a slightly richer local predictor may reduce
+    the dominant `RSL1` payload;
+  - LPC is bounded sequential integer DSP with small metadata, not a neural or
+    semantic decoder dependency;
+  - an oracle prevents a familiar lossless-audio technique from entering the
+    Core merely because it is conventional.
