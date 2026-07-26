@@ -21,8 +21,18 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   the first licensed real-music corpus test are complete.
 - The portable Core now decodes a complete typed mono RSC1 stream through one
   allocation-free C API call.
-- The next blocking milestone is binding this whole-stream decoder into Python
-  encoder RDO, followed by typed transient integration and multi-Atom overlap.
+- Python encoder RDO is bound to the native whole-stream decoder and rejects
+  any cross-decoder PCM mismatch.
+- LiftPack-2 bounded integer LPC passed its declared three-clip byte gate and
+  is implemented in the native Core.
+- Exact block indexing, independent block decode, a linear forward cursor,
+  callback-oriented zero-Atom playback, and separate LiftPack/Main-0 sanitized
+  fuzz targets are implemented and cross-compiler verified.
+- Variable block lifetimes and three bounded waveform-domain stereo families
+  failed their declared promotion gates and added no Main syntax.
+- The next blocking milestone is an optional authenticated seek/checkpoint
+  sidecar followed by mobile/ARM build coverage and real-time callback
+  measurement. New coding tools resume only through declared gates.
 
 Detailed measurements are in
 [10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) and

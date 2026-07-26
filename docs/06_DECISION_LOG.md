@@ -1045,7 +1045,7 @@ new oscillator opcode.
 ## R-048 — Production streaming hardening before new Main opcodes
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **IMPLEMENTED CORE / CROSS-COMPILER VERIFIED / HARDENING CONTINUES**
 - Decision:
   - stop assigning compression syntax after the failed R-044 through R-047
     gates and harden the winning `CONF` plus `RSL2` Truth path;
@@ -1062,3 +1062,19 @@ new oscillator opcode.
     failed research modes in Main;
   - a small auditable Core is the project's accepted differentiator and is
     necessary before mobile/player integration or a public standard proposal.
+- Result:
+  - the allocation-free C ABI now validates and exports every LiftPack block
+    byte/sample interval and independently decodes any block;
+  - a mutable caller-owned cursor verifies the outer residual envelope once,
+    then parses and decodes each block in one linear forward pass;
+  - the zero-Atom Main-0 player opens an immutable RSC1 view, supports bounded
+    block seek, and emits canonical PCM16 blocks through an application
+    callback using only one-block work memory;
+  - separate ASan/UBSan/libFuzzer targets now exercise LiftPack internals and
+    the complete RSC1-to-PCM pipeline from valid RSL1, RSL2, zero-Atom, and
+    periodic-Atom seeds;
+  - GCC, Clang, MSVC, the Python/native decoder bridge, and both 5,000-mutation
+    smoke targets passed in runs 30202809934, 30203095386, and 30203223428;
+  - no compression opcode or mandatory index syntax was added. A serialized
+    seek/checkpoint table remains optional future work and must bind itself to
+    the verified residual identity before a decoder may trust its offsets.

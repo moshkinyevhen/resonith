@@ -119,9 +119,16 @@ always malformed.
 The mono periodic path now supports a canonical state partition with
 content-deduplicated `BRAW` sections and multiple state-local `ATOM` sections.
 The decoder reuses maximum per-state workspace while one stream-wide `RSL1`
-preserves honest residual accounting.
+or `RSL2` preserves honest residual accounting.
+
+The production zero-Atom path now has an allocation-free player view, exact
+block index extraction, independent block decode, and a single-pass mutable
+cursor. Applications can stream canonical PCM16 through a callback with one
+block of live work memory. Separate sanitized fuzz targets cover LiftPack and
+the complete typed container-to-PCM path.
 
 Main-0 still needs typed CIBS, transients, simultaneous Atom mixing,
-multi-channel output, Innovation indexing, and checkpoints. Each new syntax
-must enter through the same inspect-first, caller-owned-memory decoder
-boundary; no generic metadata archive is added.
+multi-channel output, and an independently authenticated optional serialized
+seek/checkpoint table. Each new syntax must enter through the same
+inspect-first, caller-owned-memory decoder boundary; no generic metadata
+archive is added.

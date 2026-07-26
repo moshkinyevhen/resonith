@@ -362,3 +362,31 @@ ec11fc6c9f58041f97d005365582c0af76acd54f3261ff4d7f11f6272150380f
 
 Canonical compact evidence:
 [`../experiments/results/subband_stereo_oracle_2026-07-26_summary.json`](../experiments/results/subband_stereo_oracle_2026-07-26_summary.json).
+
+## 16. Production streaming and malformed-input hardening
+
+R-048 deliberately added no compression syntax. The native Core now exports
+canonical LiftPack byte/sample indexes, independent block reconstruction, and
+a caller-owned forward cursor. The cursor verifies the residual envelope once,
+advances only after successful block reconstruction, and makes complete
+callback playback linear in stored bytes with one-block live workspace.
+
+The Main-0 player opens a verified immutable RSC1 view. On the winning
+zero-Atom Truth path it can either decode one requested block or stream every
+PCM16 block through a C callback. Exact tests compare block, cursor, callback,
+whole-native, and Python outputs.
+
+Hardening passed:
+
+- block index and random decode on GCC, Clang, MSVC, and the native Python
+  bridge in [run 30202809934](https://github.com/moshkinyevhen/resonith/actions/runs/30202809934);
+- the allocation-free player view in
+  [run 30202987460](https://github.com/moshkinyevhen/resonith/actions/runs/30202987460);
+- separate LiftPack and complete Main-0 ASan/UBSan/libFuzzer smoke targets in
+  [run 30203095386](https://github.com/moshkinyevhen/resonith/actions/runs/30203095386);
+- the linear cursor and callback player in
+  [run 30203223428](https://github.com/moshkinyevhen/resonith/actions/runs/30203223428).
+
+Each fuzz target executed 5,000 bounded mutations from deterministic valid
+seeds. These runs are a reproducible hardening checkpoint, not a claim that
+the parsers are free of every possible defect.

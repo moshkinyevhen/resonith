@@ -499,6 +499,18 @@ is not required for sequential decode, and MUST identify each block by its
 exact byte interval and output-sample interval. LPC blocks are independently
 decodable because their first `order` entropy values are literal seed samples.
 
+A sequential decoder SHOULD retain a caller-owned cursor containing the next
+byte offset, next output-sample offset, and next block number. It validates the
+outer checksum once, advances only after a complete block succeeds, and MUST
+reject final byte or sample coverage that differs from the stream header. This
+makes callback-sized playback linear in stored bytes with one-block work
+memory. Callback partitioning MUST NOT change reconstructed PCM.
+
+An out-of-band or optional serialized index is never required to recover
+Truth. Before trusting serialized offsets, a player MUST verify the index
+independently and bind it to the exact verified LiftPack payload identity.
+Absence or rejection of the index changes seek work only.
+
 #### 6.6.2 `LiftPack-2`
 
 `LiftPack-2` uses section type and payload magic `RSL2`. Version 1 retains the

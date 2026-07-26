@@ -40,6 +40,8 @@ The repository contains:
   residuals with exact block-local integer LPC;
 - the compact deterministic `RSC1` typed section-container candidate;
 - a dependency-free C++20 whole-RSC1 Golden Core behind a stable C99 ABI;
+- allocation-free block indexing, random block decode, linear residual
+  cursors, and callback-oriented zero-Atom PCM playback;
 - an explicit shared-Core Python bridge that gates typed-stream RDO on the
   production decoder and exact cross-decoder PCM equality;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
@@ -47,8 +49,8 @@ The repository contains:
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
 - 86 pure reference/security/integration tests, five native decoder-in-loop
-  integration tests, and seven native conformance targets built with GCC,
-  Clang, and MSVC.
+  integration tests, eight native conformance targets built with GCC, Clang,
+  and MSVC, and separate sanitized LiftPack/Main-0 mutation targets.
 
 All current MAF-P1/Opus results are deliberately labeled diagnostics, not
 general codec claims. See
