@@ -2894,7 +2894,7 @@ new oscillator opcode.
 ## R-098 — Native LPS5 transport integration gate
 
 - Date: 2026-07-26
-- Status: **IN PROGRESS**
+- Status: **PASS**
 - Decision:
   - reuse the existing allocation-free compact streaming ABI for LPS4 and
     LPS5 instead of adding a parallel player interface;
@@ -2911,3 +2911,9 @@ new oscillator opcode.
     must pass with warnings as errors;
   - Python/native LPS5 decoder-in-loop parity and sanitized compact-stream
     mutation tests must pass before the status changes to PASS.
+- Evidence:
+  - commit `6268a99` passed the complete cross-platform test matrix, native
+    decoder-in-loop parity, and ASan/UBSan/libFuzzer mutation smoke suite:
+    <https://github.com/moshkinyevhen/resonith/actions/runs/30219506924>;
+  - the same commit passed the release native decode/analysis/RDO benchmark:
+    <https://github.com/moshkinyevhen/resonith/actions/runs/30219506918>.
