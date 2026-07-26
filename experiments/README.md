@@ -42,6 +42,9 @@ reproducible command and independent decode.
 - `additive_atom_oracle_benchmark.py` — R-038 matching-pursuit search over
   simultaneous periodic Atoms, with complete prospective RSC1 byte accounting
   and no decoder syntax change before the declared compression gate passes.
+- `analytic_oscillator_oracle_benchmark.py` — R-039 fixed-ROM oscillator
+  matching pursuit with one batched Atom bank, a zero-Atom residual anchor,
+  and the measured raw-Basis envelope as competing full-byte baselines.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

@@ -117,3 +117,37 @@ simultaneous long-lived causes by matching pursuit, wide integer mixing, one
 final LiftPack Innovation, and complete prospective RSC1 byte accounting.
 Normative overlap/mixer syntax is added only if an extra Atom wins on at least
 two declared clips.
+
+## 8. Additive raw-Basis kill gate
+
+The R-038 oracle searched autocorrelation fundamentals and subharmonics,
+shortlisted candidates by objective residual energy, and ranked the survivors
+by complete prospective RSC1 bytes. A two-period synthetic mixture selected
+two Atoms and reduced 6,572 bytes to 5,198 bytes, proving that the search can
+recover useful concurrent periodic causes.
+
+The licensed one-second clips all selected one Atom:
+
+| Clip | One Atom | Two Atoms | Four Atoms | Best residual change |
+|---|---:|---:|---:|---:|
+| Corelli realization | 12,042 | 12,857 | 14,340 | -150 bytes |
+| Recorded piano | 14,167 | 14,960 | 16,510 | -142 bytes |
+| Recorded drums | 14,964 | 15,834 | 17,504 | +92 bytes |
+
+GitHub Actions run:
+[30199790029](https://github.com/moshkinyevhen/resonith/actions/runs/30199790029).
+The downloaded raw report SHA-256 is:
+
+```text
+7c6321d4b7265adfd9a62a5b8e1565a2ecd207393c288a3b916cf55927abd7de
+```
+
+This kill gate failed zero of three. Each extra full-lifetime periodic Atom
+paid for a new 520-byte `BRAW`, an `ATOM` payload, and two directory records,
+while barely changing LiftPack. Main-0 therefore does not gain overlapping
+raw-Basis syntax from this experiment.
+
+R-039 tests the narrower remaining explanation: useful tonal structure may
+exist, but its representation must be an analytic or cached decoder Basis and
+many records must share one directory entry. That experiment remains
+encoder-side until its own complete-byte gate passes.

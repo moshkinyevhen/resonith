@@ -764,7 +764,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-038 — Additive Atom oracle before overlap syntax
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / RESEARCH**
+- Status: **MEASURED KILL-GATE FAILED / RESEARCH**
 - Decision:
   - retain state-partitioned decoding as a bounded representation capability,
     but stop treating sequential replacement of the whole mix as a compression
@@ -787,3 +787,34 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
     surface or hardware complexity;
   - complete envelope accounting prevents a visually convincing source
     decomposition from hiding Basis and Atom overhead.
+
+The licensed one-second run selected one Atom on all three clips. Additional
+Atoms changed LiftPack by between +54 and -150 bytes while adding roughly 800
+bytes of Basis, Atom, and directory cost each. This rejects simultaneous
+full-lifetime arbitrary raw Bases as the next normative mechanism; it does not
+reject cheaper analytic or cached Basis families.
+
+## R-039 — Batched analytic oscillator oracle before new Core syntax
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / RESEARCH**
+- Decision:
+  - test a fixed decoder-ROM sinusoidal Basis with no per-stream `BRAW`;
+  - derive a bounded spectral frequency shortlist and estimate phase
+    encoder-side, while the prospective renderer remains deterministic integer
+    Basis lookup, absolute Q32 phase, sparse Q17.15 gain, and wide mixing;
+  - batch all oscillator records into one prospective bank section so
+    directory overhead is paid once rather than once per Atom;
+  - compare zero through a bounded number of oscillator Atoms with one final
+    LiftPack Innovation and complete RSC1 envelope accounting;
+  - compare the winning analytic envelope with the measured raw-Basis oracle;
+  - add a normative oscillator bank only if it beats the best raw-Basis
+    envelope on at least two declared licensed clips.
+- Rationale:
+  - R-038 showed that the residual saving of concurrent causes is smaller than
+    the metadata of an arbitrary 256-sample Basis;
+  - a shared analytic Basis turns the same hypothesis into a much cheaper
+    decoder operation and batched syntax removes repeated 80-byte directory
+    records;
+  - this isolates whether the failure was caused by metadata granularity or by
+    an absence of useful stable tonal structure.

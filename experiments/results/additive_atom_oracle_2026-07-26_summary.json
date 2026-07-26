@@ -1,0 +1,24 @@
+{
+  "actions_run": "https://github.com/moshkinyevhen/resonith/actions/runs/30199790029",
+  "clips": {
+    "corelli-sonata-realization": {
+      "candidate_bytes": [12042, 12857, 13619, 14340],
+      "candidate_residual_bytes": [11018, 11017, 10963, 10868],
+      "selected_atom_count": 1
+    },
+    "emotional-piano-cc0": {
+      "candidate_bytes": [14167, 14960, 15657, 16510],
+      "candidate_residual_bytes": [13143, 13120, 13001, 13038],
+      "selected_atom_count": 1
+    },
+    "patro-de-bateria": {
+      "candidate_bytes": [14964, 15834, 16680, 17504],
+      "candidate_residual_bytes": [13940, 13994, 14024, 14032],
+      "selected_atom_count": 1
+    }
+  },
+  "gate_passed": false,
+  "raw_report_sha256": "7c6321d4b7265adfd9a62a5b8e1565a2ecd207393c288a3b916cf55927abd7de",
+  "status": "simultaneous full-lifetime raw-Basis compression gate failed",
+  "winning_clips": 0
+}
