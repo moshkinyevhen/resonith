@@ -38,6 +38,9 @@ The native Core:
 - validates aligned independent-channel RSL2 partitions and emits canonical
   interleaved PCM through one allocation-free callback using one channel block
   plus one interleaved output block;
+- exposes a caller-owned pull session with one forward cursor per channel;
+  cursor state commits only after every channel reconstructs the same block,
+  making the primitive suitable for device callbacks and bounded ring buffers;
 - decodes minimal typed `BRAW` Basis payloads into aligned caller-owned
   host-endian memory without generic array metadata;
 - parses fixed `CONF` and state-local periodic `ATOM` payloads, reports exact

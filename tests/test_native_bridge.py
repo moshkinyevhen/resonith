@@ -248,6 +248,7 @@ class NativeBridgeTests(unittest.TestCase):
         reference = decode_main0_independent_stream(encoded.payload)
         native = self.decoder.decode_multichannel(encoded.payload)
         streamed = self.decoder.decode_multichannel_streaming(encoded.payload)
+        pulled = self.decoder.decode_multichannel_pull(encoded.payload)
 
         self.assertEqual(native.requirements.output_channels, 2)
         self.assertEqual(
@@ -256,6 +257,7 @@ class NativeBridgeTests(unittest.TestCase):
         )
         np.testing.assert_array_equal(native.samples, reference.samples)
         np.testing.assert_array_equal(streamed.samples, native.samples)
+        np.testing.assert_array_equal(pulled.samples, native.samples)
 
 
 if __name__ == "__main__":

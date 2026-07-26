@@ -115,6 +115,43 @@ class _MultichannelPlayerView(ctypes.Structure):
     ]
 
 
+class _LiftpackInfo(ctypes.Structure):
+    _fields_ = [
+        ("sample_count", ctypes.c_uint32),
+        ("block_count", ctypes.c_uint32),
+        ("block_size", ctypes.c_uint16),
+        ("reserved", ctypes.c_uint16),
+    ]
+
+
+class _LiftpackCursor(ctypes.Structure):
+    _fields_ = [
+        ("data", ctypes.POINTER(ctypes.c_uint8)),
+        ("data_size", ctypes.c_size_t),
+        ("byte_offset", ctypes.c_size_t),
+        ("sample_offset", ctypes.c_uint32),
+        ("next_block", ctypes.c_uint32),
+        ("info", _LiftpackInfo),
+        ("lpc_stream", ctypes.c_uint8),
+        ("reserved", ctypes.c_uint8 * 7),
+    ]
+
+
+class _MultichannelSession(ctypes.Structure):
+    _fields_ = [
+        ("cursors", _LiftpackCursor * 8),
+        ("frame_count", ctypes.c_uint32),
+        ("block_count", ctypes.c_uint32),
+        ("next_block", ctypes.c_uint32),
+        ("next_frame", ctypes.c_uint32),
+        ("innovation_step", ctypes.c_uint32),
+        ("state_tag", ctypes.c_uint32),
+        ("block_size", ctypes.c_uint16),
+        ("output_channels", ctypes.c_uint16),
+        ("liftpack_scratch_elements", ctypes.c_size_t),
+    ]
+
+
 class _CibsRefinementStage(ctypes.Structure):
     _fields_ = [
         ("kernels", ctypes.POINTER(ctypes.c_int8)),
@@ -423,6 +460,25 @@ class NativeMain0Decoder:
             ctypes.POINTER(_MultichannelPlayerView),
         ]
         self._library.resonith_multichannel_player_open.restype = ctypes.c_int
+        self._library.resonith_multichannel_session_open.argtypes = [
+            ctypes.POINTER(_MultichannelPlayerView),
+            ctypes.POINTER(_MultichannelSession),
+        ]
+        self._library.resonith_multichannel_session_open.restype = ctypes.c_int
+        self._library.resonith_multichannel_session_decode_next.argtypes = [
+            ctypes.POINTER(_MultichannelSession),
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int64),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_uint32),
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        self._library.resonith_multichannel_session_decode_next.restype = (
+            ctypes.c_int
+        )
         self._library.resonith_multichannel_player_stream.argtypes = [
             ctypes.POINTER(_MultichannelPlayerView),
             ctypes.POINTER(ctypes.c_int64),
@@ -685,6 +741,131 @@ class NativeMain0Decoder:
         if emitted.value != requirements.frame_count:
             raise RuntimeError(
                 "native multichannel player returned partial PCM"
+            )
+        result.flags.writeable = False
+        return NativeMultichannelDecodeResult(
+            result,
+            requirements.timebase_hz,
+            requirements,
+        )
+
+    def decode_multichannel_pull(
+        self,
+        payload: bytes,
+    ) -> NativeMultichannelDecodeResult:
+        """Decode one device-sized block at a time through mutable pull state."""
+
+        requirements = self.inspect_multichannel(payload)
+        source = self._input_buffer(payload)
+        player = _MultichannelPlayerView()
+        self._check(
+            self._library.resonith_multichannel_player_open(
+                source,
+                len(payload),
+                ctypes.byref(player),
+            )
+        )
+        session = _MultichannelSession()
+        self._check(
+            self._library.resonith_multichannel_session_open(
+                ctypes.byref(player),
+                ctypes.byref(session),
+            )
+        )
+        innovation = (ctypes.c_int64 * requirements.block_size)()
+        scratch = (
+            ctypes.c_int64 * requirements.liftpack_scratch_elements
+        )()
+        block_output = (
+            ctypes.c_int16 * requirements.output_block_elements
+        )()
+        rejected_offset = ctypes.c_uint32(99)
+        rejected_frames = ctypes.c_size_t(99)
+        rejected = (
+            self._library.resonith_multichannel_session_decode_next(
+                ctypes.byref(session),
+                innovation,
+                requirements.block_size,
+                scratch,
+                requirements.liftpack_scratch_elements,
+                block_output,
+                requirements.output_block_elements - 1,
+                ctypes.byref(rejected_offset),
+                ctypes.byref(rejected_frames),
+            )
+        )
+        if (
+            rejected != 8
+            or rejected_offset.value != 0
+            or rejected_frames.value != 0
+            or session.next_block != 0
+        ):
+            raise RuntimeError(
+                "native pull session advanced after rejected output capacity"
+            )
+        result = np.empty(
+            (
+                requirements.frame_count,
+                requirements.output_channels,
+            ),
+            dtype=np.int16,
+        )
+        for expected_block in range(requirements.block_count):
+            frame_offset = ctypes.c_uint32()
+            frames_written = ctypes.c_size_t()
+            status = (
+                self._library
+                .resonith_multichannel_session_decode_next(
+                    ctypes.byref(session),
+                    innovation,
+                    requirements.block_size,
+                    scratch,
+                    requirements.liftpack_scratch_elements,
+                    block_output,
+                    requirements.output_block_elements,
+                    ctypes.byref(frame_offset),
+                    ctypes.byref(frames_written),
+                )
+            )
+            self._check(status)
+            start = int(frame_offset.value)
+            count = int(frames_written.value)
+            end = start + count
+            if (
+                int(session.next_block) != expected_block + 1
+                or count == 0
+                or end > requirements.frame_count
+            ):
+                raise RuntimeError(
+                    "native pull session returned a non-canonical block"
+                )
+            block = np.ctypeslib.as_array(
+                block_output,
+                shape=(requirements.output_block_elements,),
+            )[: count * requirements.output_channels].reshape(
+                count,
+                requirements.output_channels,
+            )
+            result[start:end] = block
+
+        final_offset = ctypes.c_uint32(99)
+        final_frames = ctypes.c_size_t(99)
+        status = (
+            self._library.resonith_multichannel_session_decode_next(
+                ctypes.byref(session),
+                innovation,
+                requirements.block_size,
+                scratch,
+                requirements.liftpack_scratch_elements,
+                block_output,
+                requirements.output_block_elements,
+                ctypes.byref(final_offset),
+                ctypes.byref(final_frames),
+            )
+        )
+        if status != 11 or final_offset.value != 0 or final_frames.value != 0:
+            raise RuntimeError(
+                "native pull session did not report canonical end-of-stream"
             )
         result.flags.writeable = False
         return NativeMultichannelDecodeResult(

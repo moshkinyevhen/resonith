@@ -46,7 +46,7 @@ The repository contains:
   materialized hashes and shared non-overlapping CIBS/LiftPack staging;
 - one-through-eight-channel residual-only Main-0 transport with aligned
   per-channel RSL2 partitions, bounded interleaved whole decode, and
-  allocation-free interleaved callback playback;
+  allocation-free push and transactional pull playback;
 - an optional source-bound `RSI1` seek sidecar whose rejection never affects
   sequential Truth decode;
 - an explicit shared-Core Python bridge that gates typed-stream RDO on the

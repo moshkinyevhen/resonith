@@ -1286,3 +1286,34 @@ new oscillator opcode.
     run 30205820034;
   - the reference CLI now accepts ordinary one-through-eight-channel PCM16 WAV
     for `encode-main0` and writes validated PCM16 WAV through `decode-main0`.
+
+## R-053 — Pull-oriented realtime player session
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING / NORMATIVE-DRAFT**
+- Decision:
+  - add a mutable caller-owned multichannel session that borrows the immutable
+    verified player view and retains one forward LiftPack cursor per channel;
+  - expose one `decode_next` operation that reconstructs exactly one aligned
+    interleaved PCM block and reports its frame offset and length;
+  - perform no allocation, I/O, logging, locking, clock access, or global
+    mutation in session initialization or the block decode path;
+  - stage cursor advances in local copies and commit session state only after
+    every channel reconstructs the same frame interval. A failed block leaves
+    the session retryable and reports zero frames;
+  - return `NOT_FOUND` after the canonical final block without changing
+    session state;
+  - leave device APIs outside the Core. WASAPI, AAudio/Oboe, CoreAudio, ALSA,
+    WebAudio, and embedded DMA adapters consume the same pull contract;
+  - require pull output to equal whole decode and push-callback output before
+    the API is considered executable.
+- Rationale:
+  - a push function that decodes the entire stream is useful for tests and
+    conversion but cannot directly feed a device callback or bounded ring
+    buffer;
+  - a small cursor session is the minimum cross-platform player primitive and
+    avoids placing platform threads, locks, or device ownership in normative
+    codec code;
+  - transactional cursor commit prevents one damaged channel from advancing
+    ahead of the others and preserves deterministic retry/concealment policy
+    for the application.

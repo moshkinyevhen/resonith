@@ -60,6 +60,7 @@ int main(void) {
     resonith_main0_player_view player = {0};
     resonith_multichannel_requirements multichannel_requirements = {0};
     resonith_multichannel_player_view multichannel_player = {0};
+    resonith_multichannel_session multichannel_session = {0};
     resonith_seek_index_view seek_view = {
         NULL,
         0U,
@@ -206,6 +207,14 @@ int main(void) {
             NULL,
             0U,
             &multichannel_player
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_multichannel_session_open(
+            NULL,
+            &multichannel_session
         ) != RESONITH_STATUS_INVALID_ARGUMENT
     ) {
         return 1;

@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "resonith/liftpack.h"
 #include "resonith/status.h"
 
 #ifdef __cplusplus
@@ -52,6 +53,23 @@ typedef struct resonith_multichannel_player_view {
 } resonith_multichannel_player_view;
 
 /*
+ * Mutable caller-owned pull state. It borrows immutable residual bytes through
+ * its cursors and is neither thread-safe nor shared between playback heads.
+ */
+typedef struct resonith_multichannel_session {
+    resonith_liftpack_cursor cursors[RESONITH_MAIN0_MAX_CHANNELS];
+    uint32_t frame_count;
+    uint32_t block_count;
+    uint32_t next_block;
+    uint32_t next_frame;
+    uint32_t innovation_step;
+    uint32_t state_tag;
+    uint16_t block_size;
+    uint16_t output_channels;
+    size_t liftpack_scratch_elements;
+} resonith_multichannel_session;
+
+/*
  * Receives one aligned block of canonical interleaved PCM16 frames.
  * Returning a non-OK status stops delivery before the frame counter advances.
  */
@@ -97,6 +115,34 @@ RESONITH_API resonith_status resonith_multichannel_player_open(
     const uint8_t* data,
     size_t data_size,
     resonith_multichannel_player_view* view
+);
+
+/*
+ * Initializes one transactional forward playback head from a verified view.
+ * On failure, `session` is zeroed.
+ */
+RESONITH_API resonith_status resonith_multichannel_session_open(
+    const resonith_multichannel_player_view* view,
+    resonith_multichannel_session* session
+);
+
+/*
+ * Pulls exactly one aligned interleaved block.
+ *
+ * Cursor advances are committed only when all channels succeed. On failure or
+ * end-of-stream, both output counters are zero. NOT_FOUND denotes canonical
+ * end-of-stream and is not a malformed-stream condition.
+ */
+RESONITH_API resonith_status resonith_multichannel_session_decode_next(
+    resonith_multichannel_session* session,
+    int64_t* innovation_q,
+    size_t innovation_capacity,
+    int64_t* liftpack_scratch,
+    size_t liftpack_scratch_capacity,
+    int16_t* interleaved_output,
+    size_t output_capacity,
+    uint32_t* frame_offset,
+    size_t* frames_written
 );
 
 /*

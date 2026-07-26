@@ -13,6 +13,7 @@
 namespace {
 
 constexpr std::uint16_t kSchemaVersion = 1U;
+constexpr std::uint32_t kSessionTag = 0x31534d52U;
 
 struct multichannel_sections {
     resonith_container_view container{};
@@ -432,6 +433,203 @@ extern "C" resonith_status resonith_multichannel_player_open(
     return RESONITH_STATUS_OK;
 }
 
+extern "C" resonith_status resonith_multichannel_session_open(
+    const resonith_multichannel_player_view* view,
+    resonith_multichannel_session* session
+) {
+    if (session == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *session = {};
+    if (view == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+
+    multichannel_sections parsed{};
+    resonith_multichannel_requirements requirements{};
+    resonith_status status = parse_multichannel(
+        view->stream_data,
+        view->stream_size,
+        &parsed,
+        &requirements
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    if (!view_matches(*view, parsed, requirements)) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    for (
+        std::uint16_t channel = 0U;
+        channel < requirements.output_channels;
+        ++channel
+    ) {
+        status = resonith_liftpack_cursor_open(
+            parsed.residuals[channel].payload,
+            parsed.residuals[channel].payload_size,
+            &session->cursors[channel]
+        );
+        if (status != RESONITH_STATUS_OK) {
+            *session = {};
+            return status;
+        }
+    }
+    session->frame_count = requirements.frame_count;
+    session->block_count = requirements.block_count;
+    session->next_block = 0U;
+    session->next_frame = 0U;
+    session->innovation_step = parsed.stream_config.innovation_step;
+    session->state_tag = kSessionTag;
+    session->block_size = requirements.block_size;
+    session->output_channels = requirements.output_channels;
+    session->liftpack_scratch_elements =
+        requirements.liftpack_scratch_elements;
+    return RESONITH_STATUS_OK;
+}
+
+extern "C" resonith_status resonith_multichannel_session_decode_next(
+    resonith_multichannel_session* session,
+    std::int64_t* innovation_q,
+    std::size_t innovation_capacity,
+    std::int64_t* liftpack_scratch,
+    std::size_t liftpack_scratch_capacity,
+    std::int16_t* interleaved_output,
+    std::size_t output_capacity,
+    std::uint32_t* frame_offset,
+    std::size_t* frames_written
+) {
+    if (frame_offset == nullptr || frames_written == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *frame_offset = 0U;
+    *frames_written = 0U;
+    if (
+        session == nullptr
+        || innovation_q == nullptr
+        || liftpack_scratch == nullptr
+        || interleaved_output == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    if (
+        session->state_tag != kSessionTag
+        || session->output_channels == 0U
+        || session->output_channels > RESONITH_MAIN0_MAX_CHANNELS
+        || session->block_size == 0U
+        || session->innovation_step == 0U
+        || session->next_block > session->block_count
+        || session->next_frame > session->frame_count
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    if (session->next_block == session->block_count) {
+        return session->next_frame == session->frame_count
+            ? RESONITH_STATUS_NOT_FOUND
+            : RESONITH_STATUS_MALFORMED;
+    }
+    const std::size_t output_elements =
+        static_cast<std::size_t>(session->block_size)
+        * session->output_channels;
+    if (
+        innovation_capacity < session->block_size
+        || liftpack_scratch_capacity
+            < session->liftpack_scratch_elements
+    ) {
+        return RESONITH_STATUS_SCRATCH_TOO_SMALL;
+    }
+    if (output_capacity < output_elements) {
+        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    }
+
+    /*
+     * Decode against cursor copies. Earlier channels can touch caller-owned
+     * staging/output, but no playback state advances until every channel has
+     * reconstructed the same canonical interval.
+     */
+    resonith_liftpack_cursor
+        candidates[RESONITH_MAIN0_MAX_CHANNELS]{};
+    for (
+        std::uint16_t channel = 0U;
+        channel < session->output_channels;
+        ++channel
+    ) {
+        candidates[channel] = session->cursors[channel];
+        if (
+            candidates[channel].next_block != session->next_block
+            || candidates[channel].info.sample_count
+                != session->frame_count
+            || candidates[channel].info.block_count
+                != session->block_count
+            || candidates[channel].info.block_size
+                != session->block_size
+        ) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+    }
+
+    std::uint32_t common_offset = 0U;
+    std::size_t common_frames = 0U;
+    for (
+        std::uint16_t channel = 0U;
+        channel < session->output_channels;
+        ++channel
+    ) {
+        std::uint32_t channel_offset = 0U;
+        std::size_t channel_frames = 0U;
+        const resonith_status status =
+            resonith_liftpack_cursor_decode_next(
+                &candidates[channel],
+                innovation_q,
+                innovation_capacity,
+                liftpack_scratch,
+                liftpack_scratch_capacity,
+                &channel_offset,
+                &channel_frames
+            );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        if (channel == 0U) {
+            common_offset = channel_offset;
+            common_frames = channel_frames;
+            if (common_offset != session->next_frame) {
+                return RESONITH_STATUS_MALFORMED;
+            }
+        } else if (
+            channel_offset != common_offset
+            || channel_frames != common_frames
+        ) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+        for (std::size_t frame = 0U; frame < channel_frames; ++frame) {
+            const std::size_t output_index =
+                frame * session->output_channels + channel;
+            interleaved_output[output_index] = scale_innovation(
+                innovation_q[frame],
+                session->innovation_step
+            );
+        }
+    }
+    if (
+        common_frames == 0U
+        || common_frames > session->frame_count - session->next_frame
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    for (
+        std::uint16_t channel = 0U;
+        channel < session->output_channels;
+        ++channel
+    ) {
+        session->cursors[channel] = candidates[channel];
+    }
+    ++session->next_block;
+    session->next_frame += static_cast<std::uint32_t>(common_frames);
+    *frame_offset = common_offset;
+    *frames_written = common_frames;
+    return RESONITH_STATUS_OK;
+}
+
 extern "C" resonith_status resonith_multichannel_player_stream(
     const resonith_multichannel_player_view* view,
     std::int64_t* innovation_q,
@@ -458,105 +656,62 @@ extern "C" resonith_status resonith_multichannel_player_stream(
         return RESONITH_STATUS_INVALID_ARGUMENT;
     }
 
-    multichannel_sections parsed{};
-    resonith_multichannel_requirements requirements{};
-    resonith_status status = parse_multichannel(
-        view->stream_data,
-        view->stream_size,
-        &parsed,
-        &requirements
+    resonith_multichannel_session session{};
+    resonith_status status = resonith_multichannel_session_open(
+        view,
+        &session
     );
     if (status != RESONITH_STATUS_OK) {
         return status;
     }
-    if (!view_matches(*view, parsed, requirements)) {
-        return RESONITH_STATUS_MALFORMED;
-    }
     if (
-        innovation_capacity < requirements.block_size
+        innovation_capacity < session.block_size
         || liftpack_scratch_capacity
-            < requirements.liftpack_scratch_elements
+            < session.liftpack_scratch_elements
     ) {
         return RESONITH_STATUS_SCRATCH_TOO_SMALL;
     }
-    if (output_capacity < requirements.output_block_elements) {
+    const std::size_t output_elements =
+        static_cast<std::size_t>(session.block_size)
+        * session.output_channels;
+    if (output_capacity < output_elements) {
         return RESONITH_STATUS_OUTPUT_TOO_SMALL;
-    }
-
-    resonith_liftpack_cursor
-        cursors[RESONITH_MAIN0_MAX_CHANNELS]{};
-    for (
-        std::uint16_t channel = 0U;
-        channel < requirements.output_channels;
-        ++channel
-    ) {
-        status = resonith_liftpack_cursor_open(
-            parsed.residuals[channel].payload,
-            parsed.residuals[channel].payload_size,
-            &cursors[channel]
-        );
-        if (status != RESONITH_STATUS_OK) {
-            return status;
-        }
     }
 
     for (
         std::uint32_t block = 0U;
-        block < requirements.block_count;
+        block < session.block_count;
         ++block
     ) {
         std::uint32_t common_offset = 0U;
         std::size_t common_frames = 0U;
-        for (
-            std::uint16_t channel = 0U;
-            channel < requirements.output_channels;
-            ++channel
-        ) {
-            std::uint32_t frame_offset = 0U;
-            std::size_t block_frames = 0U;
-            status = resonith_liftpack_cursor_decode_next(
-                &cursors[channel],
-                innovation_q,
-                innovation_capacity,
-                liftpack_scratch,
-                liftpack_scratch_capacity,
-                &frame_offset,
-                &block_frames
-            );
-            if (status != RESONITH_STATUS_OK) {
-                return status;
-            }
-            if (channel == 0U) {
-                common_offset = frame_offset;
-                common_frames = block_frames;
-            } else if (
-                frame_offset != common_offset
-                || block_frames != common_frames
-            ) {
-                return RESONITH_STATUS_MALFORMED;
-            }
-            for (std::size_t frame = 0U; frame < block_frames; ++frame) {
-                const std::size_t output_index =
-                    frame * requirements.output_channels + channel;
-                interleaved_output[output_index] = scale_innovation(
-                    innovation_q[frame],
-                    parsed.stream_config.innovation_step
-                );
-            }
+        status = resonith_multichannel_session_decode_next(
+            &session,
+            innovation_q,
+            innovation_capacity,
+            liftpack_scratch,
+            liftpack_scratch_capacity,
+            interleaved_output,
+            output_capacity,
+            &common_offset,
+            &common_frames
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
         }
         status = callback(
             user,
             common_offset,
             interleaved_output,
             common_frames,
-            requirements.output_channels
+            session.output_channels
         );
         if (status != RESONITH_STATUS_OK) {
             return status;
         }
         *frames_emitted += common_frames;
     }
-    return *frames_emitted == requirements.frame_count
+    return *frames_emitted == session.frame_count
         ? RESONITH_STATUS_OK
         : RESONITH_STATUS_MALFORMED;
 }

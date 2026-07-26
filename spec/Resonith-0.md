@@ -272,6 +272,13 @@ decoder MAY reuse one block-sized Innovation region, one maximum scratch
 region, and one interleaved block. It emits a callback only after all channels
 for that block have reconstructed with equal frame offset and length.
 
+A pull decoder MAY retain one forward LiftPack cursor per channel in
+caller-owned state. `decode_next` MUST reconstruct exactly one common block.
+It MUST commit every channel cursor, `next_block`, and `next_frame` atomically
+only after all channels succeed. A rejected block reports zero output frames
+and leaves the session retryable. End-of-stream is reported only after the
+declared block and frame counts are both exhausted.
+
 ## 5. State records
 
 ### 5.1 `STREAM_CONFIG`
