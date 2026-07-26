@@ -1,4 +1,5 @@
 #include "resonith/lapped.h"
+#include "resonith/lapped_packet.h"
 
 #include <algorithm>
 #include <array>
@@ -65,6 +66,99 @@ int main() {
                 && analyzed_quantized == kExpectedLappedQuantized
                 && analyzed_scores == kExpectedLappedScores,
             "Python and native fixed LPF1 analysis parity"
+        )) {
+        return 1;
+    }
+
+    resonith_lapped_packet_session packet_session{};
+    resonith_lapped_packet_requirements packet_requirements{};
+    if (!expect(
+            resonith_lapped_packet_open(
+                kLappedPacketStream.data(),
+                kLappedPacketStream.size(),
+                &packet_session,
+                &packet_requirements
+            ) == RESONITH_STATUS_OK
+                && packet_requirements.frame_count == 96U
+                && packet_requirements.packet_frames == 64U
+                && packet_requirements.packet_count == 2U
+                && packet_requirements.maximum_child.scale_elements == 40U
+                && packet_requirements.maximum_child.position_elements == 80U
+                && packet_requirements.maximum_child_output_elements == 256U
+                && packet_requirements.maximum_logical_output_elements == 128U,
+            "LPS1 preflight and maximum workspace"
+        )) {
+        return 1;
+    }
+    std::array<std::uint8_t, 40> packet_scales{};
+    std::array<std::uint16_t, 1> packet_counts{};
+    std::array<std::uint16_t, 80> packet_positions{};
+    std::array<std::int8_t, 80> packet_coefficients{};
+    std::array<std::int64_t, 192> packet_overlap{};
+    resonith_lapped_workspace packet_workspace = {
+        packet_scales.data(),
+        packet_scales.size(),
+        packet_counts.data(),
+        0U,
+        packet_positions.data(),
+        packet_positions.size(),
+        packet_coefficients.data(),
+        packet_coefficients.size(),
+        packet_overlap.data(),
+        packet_overlap.size(),
+    };
+    std::array<std::int16_t, 256> child_output{};
+    std::array<std::int16_t, 128> logical_output{};
+    std::array<std::int16_t, 192> packet_pcm{};
+    for (std::uint32_t packet = 0U; packet < 2U; ++packet) {
+        std::uint32_t logical_start = 99U;
+        std::size_t logical_frames = 99U;
+        if (!expect(
+                resonith_lapped_packet_decode_next(
+                    &packet_session,
+                    &packet_workspace,
+                    child_output.data(),
+                    child_output.size(),
+                    logical_output.data(),
+                    logical_output.size(),
+                    &logical_start,
+                    &logical_frames
+                ) == RESONITH_STATUS_OK
+                    && logical_start == (packet == 0U ? 0U : 64U)
+                    && logical_frames == (packet == 0U ? 64U : 32U),
+                "LPS1 transactional packet decode"
+            )) {
+            return 1;
+        }
+        std::copy_n(
+            logical_output.begin(),
+            logical_frames * 2U,
+            packet_pcm.begin()
+                + static_cast<std::ptrdiff_t>(logical_start * 2U)
+        );
+    }
+    if (!expect(
+            packet_pcm == kExpectedLappedPcm,
+            "LPS1 fixed-density output equals monolithic LPF1"
+        )) {
+        return 1;
+    }
+    std::uint32_t logical_start = 99U;
+    std::size_t logical_frames = 99U;
+    if (!expect(
+            resonith_lapped_packet_decode_next(
+                &packet_session,
+                &packet_workspace,
+                child_output.data(),
+                child_output.size(),
+                logical_output.data(),
+                logical_output.size(),
+                &logical_start,
+                &logical_frames
+            ) == RESONITH_STATUS_NOT_FOUND
+                && logical_start == 0U
+                && logical_frames == 0U,
+            "LPS1 canonical end of stream"
         )) {
         return 1;
     }

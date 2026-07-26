@@ -1936,3 +1936,22 @@ new oscillator opcode.
   - packet-local SHA-256 permits progressive authentication without waiting for
     an end-of-file digest. The native envelope parser, pull session, packet-loss
     behavior, and listening gate remain pending.
+
+## R-072 — Allocation-explicit native `LPS1` pull session
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - preflight the complete packet sequence, authenticating the header and every
+    child and reporting maximum child plus logical-output storage;
+  - retain only immutable input pointers, the next byte offset, packet index,
+    and logical frame offset in the caller-owned session;
+  - decode one complete child into caller-owned temporary PCM, trim context,
+    then atomically commit the logical interval and session cursor;
+  - return end-of-stream explicitly and leave the cursor/output count unchanged
+    on every rejected packet.
+- Rationale:
+  - the Python gate proves the representation, but bounded-memory playback
+    requires a native pull API rather than whole-file NumPy allocation;
+  - independent children let the implementation reuse the existing verified
+    LPF1 parser and decoder instead of adding a second transform path.
