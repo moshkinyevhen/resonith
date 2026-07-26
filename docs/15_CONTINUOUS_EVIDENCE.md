@@ -13,12 +13,18 @@ The minimum gate uses:
 | Role | Source | Canonical PCM input |
 |---|---|---|
 | Speech | LibriSpeech `1272-128104-0000`, CC BY 4.0 | mono PCM16, 16 kHz, 5.855 s |
+| Fast music | Emotional piano, CC0 | stereo PCM16, 44.1 kHz, 8 s |
 | Long music | Mozart, *Die Zauberflöte*, K. 620 — Overture, Musopen Symphony, public domain | stereo PCM16, 48 kHz, 400.773 s |
 
 Source downloads, deterministic PCM conversion, licenses, URLs, sample counts,
 and SHA-256 hashes belong in the benchmark manifest. A milestone MAY add
 material but MUST NOT silently replace these references after observing a
 result.
+
+Fast inner-loop experiments MAY run speech plus Emotional piano first. A
+material milestone, version, performance claim, or release MUST also complete
+the full Mozart run and preserve all three adjacent original/Resonith/Opus
+listening triplets.
 
 ## 2. Compared streams
 
@@ -70,7 +76,7 @@ and Opus. It states wins and losses by metric and material.
 
 Every release publishes:
 
-- the two canonical input WAV files;
+- the three canonical input WAV files;
 - candidate `.resonith` and rate-matched `.opus` listening files;
 - decoded-PCM hashes and optionally decoded WAV files;
 - a human-readable report and machine-readable JSON;

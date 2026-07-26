@@ -46,7 +46,7 @@ version.
 ### Compatibility
 
 - Implementation version: `0.1.0-alpha.1`.
-- Normative-draft specification version: `0.0.8`.
+- Normative-draft specification version: `0.0.9`.
 - The public `.resonith` extension currently carries prospective LPS5
   research transport. Stable Main-0 bitstream compatibility is not yet frozen.
 

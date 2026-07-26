@@ -184,12 +184,12 @@ does not turn an informal or undersized panel into a MUSHRA claim.
 ## Continuous public evidence
 
 Every material Resonith milestone must be tested on the pinned LibriSpeech
-speech excerpt and the complete Mozart *Die Zauberflöte* overture. The released
-Resonith file is compared with both the preceding Resonith version and a
-current official Opus encode matched by complete container bytes. Reports use
-PCM from the real decoders and publish complete sizes, hashes, timings,
-waveform and multi-resolution spectral diagnostics, speech intelligibility,
-and any regressions.
+speech excerpt, Emotional piano reference, and complete Mozart
+*Die Zauberflöte* overture. The released Resonith file is compared with both
+the preceding Resonith version and a current official Opus encode matched by
+complete container bytes. Reports use PCM from the real decoders and publish
+complete sizes, hashes, timings, waveform and multi-resolution spectral
+diagnostics, speech intelligibility, and any regressions.
 
 An improvement is not released until its semantic version and English
 [`CHANGELOG.md`](CHANGELOG.md) entry link to reproducible evidence. The exact

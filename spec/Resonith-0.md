@@ -1,6 +1,6 @@
 # Resonith-0 Bitstream and Decoding Process
 
-Version: 0.0.8
+Version: 0.0.9
 Status: **NORMATIVE-DRAFT**
 Architecture: **MAF - Memory-oriented Acoustic Field**
 
@@ -1156,8 +1156,9 @@ it does not add work to a conforming decoder.
 Every material encoder, decoder, entropy, transport, Basis, allocation, or
 playback milestone MUST:
 
-1. rerun the pinned LibriSpeech `1272-128104-0000` speech reference and the
-   complete 400.773-second Mozart *Die Zauberflöte* overture;
+1. rerun the pinned LibriSpeech `1272-128104-0000` speech reference, the
+   eight-second Emotional piano reference, and the complete 400.773-second
+   Mozart *Die Zauberflöte* overture;
 2. account for the complete `.resonith` file and a current official Opus
    anchor matched by complete Ogg bytes from the identical PCM16 input;
 3. obtain evaluated PCM from the actual released decoders;

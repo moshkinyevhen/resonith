@@ -164,7 +164,8 @@ Every material milestone uses the same loop:
 
 1. implement one falsifiable change behind an ablation switch;
 2. run unit, conformance, corruption, and native decoder parity tests;
-3. encode the pinned LibriSpeech excerpt and complete Mozart overture;
+3. encode the pinned LibriSpeech excerpt, Emotional piano reference, and
+   complete Mozart overture;
 4. rate-match the current official Opus anchor by complete Ogg bytes;
 5. decode through the exact release decoder and measure waveform,
    multi-resolution spectral, log-mel, harmonic, and speech-intelligibility

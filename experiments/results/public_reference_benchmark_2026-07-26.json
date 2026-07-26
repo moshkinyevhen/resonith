@@ -43,7 +43,7 @@
   },
   "codec": {
     "implementation_version": "0.1.0-alpha.1",
-    "specification_version": "0.0.8",
+    "specification_version": "0.0.9",
     "transport": "prospective-LPS5"
   },
   "decoder": {

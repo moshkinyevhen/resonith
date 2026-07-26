@@ -78,9 +78,9 @@ After a change, verify:
 6. zero Cyrillic text in tracked public files;
 7. relevant tests, conformance hashes, and cross-platform build checks;
 8. source comments satisfy the signal-to-noise and debug-readability contract;
-9. every material codec milestone reruns the pinned speech and full-length
-   Mozart evidence gate against the preceding Resonith version and a
-   complete-byte-matched current official Opus anchor;
+9. every material codec milestone reruns the pinned speech, Emotional piano,
+   and full-length Mozart evidence gate against the preceding Resonith version
+   and a complete-byte-matched current official Opus anchor;
 10. evaluated PCM comes from the actual decoders and the machine report,
     listening files, losses, hashes, versions, source commit, and wall times
     are publishable;
