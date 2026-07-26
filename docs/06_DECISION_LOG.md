@@ -2069,3 +2069,25 @@ new oscillator opcode.
     roughly two thirds of the short-packet tax;
   - LPS2 remains prospective until its direct LSE2 path passes native parity,
     bounded-resource, and hostile-input gates.
+
+## R-076 — Direct bounded LSE2 native packet primitive
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - factor the existing native variable-density parser and fixed synthesis
+    kernel so they can decode either a complete LPF1/RSC1 stream or one direct
+    LSE2 payload under authenticated caller-supplied stream parameters;
+  - extend the same allocation-explicit packet session to distinguish LPS1
+    source-context and LPS2 transform-boundary records;
+  - preserve one workspace contract, one integer synthesis kernel, one status
+    model, and transactional session commit for both packet forms;
+  - require frozen-vector, dynamic Python/native, C99-header, cross-compiler,
+    sanitizer, and dedicated mutated-LPS2 corpus gates.
+- Rationale:
+  - wrapping every LSE2 packet back into an artificial container would restore
+    the header cost R-075 removed and would require hidden temporary storage;
+  - duplicating an LSE2 decoder inside the packet module would create two
+    security and arithmetic implementations;
+  - a parameterized selected-field primitive is the smallest reusable native
+    boundary and keeps the player allocation-free.

@@ -38,7 +38,8 @@ typedef struct resonith_lapped_packet_session {
     uint16_t half_window;
     uint16_t band_count;
     uint16_t output_channels;
-    uint16_t reserved;
+    uint8_t packet_mode;
+    uint8_t reserved;
 } resonith_lapped_packet_session;
 
 /*

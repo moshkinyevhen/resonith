@@ -16,6 +16,8 @@ constexpr std::size_t kPacketHeaderBytes = 12U;
 constexpr std::size_t kDigestBytes = 32U;
 constexpr std::size_t kMaximumStreamBytes = 512U << 20U;
 constexpr std::uint32_t kMaximumPacketCount = 1U << 20U;
+constexpr std::uint8_t kSourceContextMode = 1U;
+constexpr std::uint8_t kTransformBoundaryMode = 2U;
 
 std::uint16_t read_u16(const std::uint8_t* data) noexcept {
     return static_cast<std::uint16_t>(
@@ -70,13 +72,37 @@ resonith_status validate_child(
     const resonith_lapped_packet_session& session,
     resonith_lapped_requirements* child_requirements
 ) noexcept {
-    resonith_status status = resonith_lapped_inspect(
-        child,
-        child_size,
-        child_requirements
-    );
+    resonith_status status = session.packet_mode == kTransformBoundaryMode
+        ? resonith_lapped_selected_inspect(
+            child,
+            child_size,
+            session.sample_rate,
+            logical_count,
+            session.output_channels,
+            session.half_window,
+            session.band_count,
+            child_requirements
+        )
+        : resonith_lapped_inspect(
+            child,
+            child_size,
+            child_requirements
+        );
     if (status != RESONITH_STATUS_OK) {
         return status;
+    }
+    if (session.packet_mode == kTransformBoundaryMode) {
+        if (
+            child_requirements->frame_count != logical_count
+            || child_requirements->sample_rate != session.sample_rate
+            || child_requirements->half_window != session.half_window
+            || child_requirements->band_count != session.band_count
+            || child_requirements->output_channels
+                != session.output_channels
+        ) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+        return RESONITH_STATUS_OK;
     }
     if (
         logical_count
@@ -201,7 +227,9 @@ extern "C" resonith_status resonith_lapped_packet_open(
     ) {
         return RESONITH_STATUS_TRUNCATED;
     }
-    if (std::memcmp(data, "LPS1", 4U) != 0) {
+    const bool source_context = std::memcmp(data, "LPS1", 4U) == 0;
+    const bool transform_boundary = std::memcmp(data, "LPS2", 4U) == 0;
+    if (!source_context && !transform_boundary) {
         return RESONITH_STATUS_BAD_MAGIC;
     }
     if (data[4] != 1U) {
@@ -226,6 +254,9 @@ extern "C" resonith_status resonith_lapped_packet_open(
         read_u16(data + 16U),
         read_u16(data + 18U),
         read_u16(data + 6U),
+        transform_boundary
+            ? kTransformBoundaryMode
+            : kSourceContextMode,
         0U,
     };
     if (
@@ -390,14 +421,28 @@ extern "C" resonith_status resonith_lapped_packet_decode_next(
         return RESONITH_STATUS_OUTPUT_TOO_SMALL;
     }
     std::size_t child_frames = 0U;
-    status = resonith_lapped_decode(
-        child,
-        child_size,
-        workspace,
-        child_output,
-        child_output_capacity,
-        &child_frames
-    );
+    status = session->packet_mode == kTransformBoundaryMode
+        ? resonith_lapped_selected_decode(
+            child,
+            child_size,
+            session->sample_rate,
+            logical_count,
+            session->output_channels,
+            session->half_window,
+            session->band_count,
+            workspace,
+            child_output,
+            child_output_capacity,
+            &child_frames
+        )
+        : resonith_lapped_decode(
+            child,
+            child_size,
+            workspace,
+            child_output,
+            child_output_capacity,
+            &child_frames
+        );
     if (
         status != RESONITH_STATUS_OK
         || child_frames != child_requirements.frame_count
@@ -407,8 +452,10 @@ extern "C" resonith_status resonith_lapped_packet_decode_next(
             : status;
     }
     const std::size_t trim_elements =
-        static_cast<std::size_t>(session->half_window)
-        * session->output_channels;
+        session->packet_mode == kTransformBoundaryMode
+            ? 0U
+            : static_cast<std::size_t>(session->half_window)
+                * session->output_channels;
     std::copy_n(
         child_output + static_cast<std::ptrdiff_t>(trim_elements),
         logical_elements,

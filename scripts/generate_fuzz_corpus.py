@@ -14,7 +14,10 @@ sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
 from maf_p0.lpc_oracle import encode_lpc_liftpack_oracle  # noqa: E402
 from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
-from maf_p0.lapped_streaming import encode_lapped_packet_stream  # noqa: E402
+from maf_p0.lapped_streaming import (  # noqa: E402
+    encode_lapped_packet_stream,
+    encode_lapped_transform_packet_stream,
+)
 from maf_p0.main0 import (  # noqa: E402
     Main0State,
     pack_main0_lpc_residual_stream,
@@ -140,6 +143,17 @@ def main() -> None:
         (
             lapped_packet_directory / f"{density}_density.lps"
         ).write_bytes(packeted.payload)
+    transform_packeted = encode_lapped_transform_packet_stream(
+        lapped_samples,
+        48_000,
+        coefficients_per_frame=8,
+        packet_frames=64,
+        half_window=32,
+        band_count=4,
+    )
+    (lapped_packet_directory / "transform_boundary.lps").write_bytes(
+        transform_packeted.payload
+    )
 
 
 if __name__ == "__main__":

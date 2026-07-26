@@ -109,6 +109,36 @@ RESONITH_API resonith_status resonith_lapped_decode(
     size_t* frames_written
 );
 
+/*
+ * Validates or decodes one direct adaptive-density LSE2 field under parameters
+ * inherited from an authenticated packet envelope. The arithmetic and
+ * workspace are identical to the complete LPF1 path.
+ */
+RESONITH_API resonith_status resonith_lapped_selected_inspect(
+    const uint8_t* data,
+    size_t data_size,
+    uint32_t sample_rate,
+    uint32_t sample_count,
+    uint16_t channels,
+    uint16_t half_window,
+    uint16_t band_count,
+    resonith_lapped_requirements* requirements
+);
+
+RESONITH_API resonith_status resonith_lapped_selected_decode(
+    const uint8_t* data,
+    size_t data_size,
+    uint32_t sample_rate,
+    uint32_t sample_count,
+    uint16_t channels,
+    uint16_t half_window,
+    uint16_t band_count,
+    const resonith_lapped_workspace* workspace,
+    int16_t* output,
+    size_t output_capacity,
+    size_t* frames_written
+);
+
 #ifdef __cplusplus
 }
 #endif

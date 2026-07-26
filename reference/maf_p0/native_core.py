@@ -168,7 +168,8 @@ class _LappedPacketSession(ctypes.Structure):
         ("half_window", ctypes.c_uint16),
         ("band_count", ctypes.c_uint16),
         ("output_channels", ctypes.c_uint16),
-        ("reserved", ctypes.c_uint16),
+        ("packet_mode", ctypes.c_uint8),
+        ("reserved", ctypes.c_uint8),
     ]
 
 

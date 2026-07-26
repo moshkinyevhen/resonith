@@ -200,6 +200,191 @@ bool valid_entropy(std::uint8_t mode, std::uint8_t parameter) noexcept {
     );
 }
 
+resonith_status parse_sparse_fields(
+    parsed_lapped* parsed,
+    resonith_lapped_requirements* requirements
+) noexcept {
+    if (parsed == nullptr || requirements == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    const std::size_t sparse_header_bytes = parsed->variable_density
+        ? kVariableSparseHeaderBytes
+        : kSparseHeaderBytes;
+    if (
+        parsed->sparse == nullptr
+        || parsed->sparse_size < sparse_header_bytes
+    ) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+
+    const std::uint8_t* sparse = parsed->sparse;
+    const char* expected_sparse_magic = parsed->variable_density
+        ? "LSE2"
+        : "LSE1";
+    if (std::memcmp(sparse, expected_sparse_magic, 4U) != 0) {
+        return RESONITH_STATUS_BAD_MAGIC;
+    }
+    if (sparse[4] != kSparseVersion) {
+        return RESONITH_STATUS_UNSUPPORTED_VERSION;
+    }
+    parsed->scale_entropy = sparse[6U];
+    parsed->scale_parameter = sparse[7U];
+    std::uint32_t declared_sparse_elements = 0U;
+    if (parsed->variable_density) {
+        parsed->count_entropy = sparse[8U];
+        parsed->count_parameter = sparse[9U];
+        parsed->position_parameter = sparse[10U];
+        parsed->value_entropy = sparse[11U];
+        parsed->value_parameter = sparse[12U];
+        declared_sparse_elements = read_u32(sparse + 22U);
+        parsed->scale_bits = read_u32(sparse + 26U);
+        parsed->count_bits = read_u32(sparse + 30U);
+        parsed->position_bits = read_u32(sparse + 34U);
+        parsed->value_bits = read_u32(sparse + 38U);
+        if (
+            sparse[5U] != 0U
+            || sparse[13U] != 0U
+            || read_u32(sparse + 14U) != parsed->transform_frames
+            || read_u16(sparse + 18U) != parsed->channels
+            || read_u16(sparse + 20U) != parsed->band_count
+            || !valid_entropy(
+                parsed->count_entropy,
+                parsed->count_parameter
+            )
+        ) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+    } else {
+        parsed->position_parameter = sparse[8U];
+        parsed->value_entropy = sparse[9U];
+        parsed->value_parameter = sparse[10U];
+        parsed->coefficients_per_frame = read_u16(sparse + 20U);
+        parsed->scale_bits = read_u32(sparse + 22U);
+        parsed->position_bits = read_u32(sparse + 26U);
+        parsed->value_bits = read_u32(sparse + 30U);
+        if (
+            sparse[5U] != 0U
+            || sparse[11U] != 0U
+            || read_u32(sparse + 12U) != parsed->transform_frames
+            || read_u16(sparse + 16U) != parsed->channels
+            || read_u16(sparse + 18U) != parsed->band_count
+            || parsed->coefficients_per_frame == 0U
+            || parsed->coefficients_per_frame > parsed->half_window
+        ) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+    }
+    if (
+        !valid_entropy(parsed->scale_entropy, parsed->scale_parameter)
+        || !valid_entropy(parsed->value_entropy, parsed->value_parameter)
+        || parsed->position_parameter
+            > static_cast<std::uint8_t>(
+                log2_power_of_two(parsed->half_window)
+            )
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+
+    const std::size_t scale_bytes = bit_bytes(parsed->scale_bits);
+    const std::size_t count_bytes = bit_bytes(parsed->count_bits);
+    const std::size_t position_bytes = bit_bytes(parsed->position_bits);
+    const std::size_t value_bytes = bit_bytes(parsed->value_bits);
+    if (
+        scale_bytes > parsed->sparse_size - sparse_header_bytes
+        || count_bytes
+            > parsed->sparse_size - sparse_header_bytes - scale_bytes
+        || position_bytes
+            > parsed->sparse_size
+                - sparse_header_bytes
+                - scale_bytes
+                - count_bytes
+        || value_bytes
+            != parsed->sparse_size
+                - sparse_header_bytes
+                - scale_bytes
+                - count_bytes
+                - position_bytes
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    parsed->scale_payload = sparse + sparse_header_bytes;
+    parsed->count_payload = parsed->scale_payload + scale_bytes;
+    parsed->position_payload = parsed->count_payload + count_bytes;
+    parsed->value_payload = parsed->position_payload + position_bytes;
+
+    std::size_t channel_frames = 0U;
+    std::size_t scale_elements = 0U;
+    std::size_t sparse_elements = 0U;
+    std::size_t output_elements = 0U;
+    if (
+        !checked_product(
+            parsed->channels,
+            parsed->transform_frames,
+            &channel_frames
+        )
+        || !checked_product(
+            channel_frames,
+            parsed->band_count,
+            &scale_elements
+        )
+        || !checked_product(
+            parsed->sample_count,
+            parsed->channels,
+            &output_elements
+        )
+        || scale_elements > kMaximumSymbols
+        || parsed->sample_count
+            > std::numeric_limits<std::size_t>::max()
+                - 2U * parsed->half_window
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    if (parsed->variable_density) {
+        sparse_elements = declared_sparse_elements;
+        std::size_t maximum_sparse_elements = 0U;
+        if (
+            !checked_product(
+                channel_frames,
+                parsed->half_window,
+                &maximum_sparse_elements
+            )
+            || sparse_elements > maximum_sparse_elements
+        ) {
+            return RESONITH_STATUS_PROFILE_BOUND;
+        }
+    } else if (
+        !checked_product(
+            channel_frames,
+            parsed->coefficients_per_frame,
+            &sparse_elements
+        )
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    if (sparse_elements > kMaximumSymbols) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    requirements->sample_rate = parsed->sample_rate;
+    requirements->frame_count = parsed->sample_count;
+    requirements->transform_frame_count = parsed->transform_frames;
+    requirements->half_window = parsed->half_window;
+    requirements->band_count = parsed->band_count;
+    requirements->coefficients_per_frame =
+        parsed->coefficients_per_frame;
+    requirements->output_channels = parsed->channels;
+    requirements->scale_elements = scale_elements;
+    requirements->count_elements = parsed->variable_density
+        ? channel_frames
+        : 0U;
+    requirements->position_elements = sparse_elements;
+    requirements->coefficient_elements = sparse_elements;
+    requirements->overlap_elements =
+        static_cast<std::size_t>(parsed->sample_count)
+        + 2U * parsed->half_window;
+    requirements->output_elements = output_elements;
+    return RESONITH_STATUS_OK;
+}
+
 resonith_status parse_lapped(
     const std::uint8_t* data,
     std::size_t data_size,
@@ -342,180 +527,59 @@ resonith_status parse_lapped(
     }
     parsed->sparse = lapped + kLappedHeaderBytes;
     parsed->sparse_size = sparse_bytes;
-    const std::size_t sparse_header_bytes = parsed->variable_density
-        ? kVariableSparseHeaderBytes
-        : kSparseHeaderBytes;
-    if (parsed->sparse_size < sparse_header_bytes) {
+    return parse_sparse_fields(parsed, requirements);
+}
+
+resonith_status parse_selected_lapped(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    std::uint32_t sample_rate,
+    std::uint32_t sample_count,
+    std::uint16_t channels,
+    std::uint16_t half_window,
+    std::uint16_t band_count,
+    parsed_lapped* parsed,
+    resonith_lapped_requirements* requirements
+) noexcept {
+    if (
+        data == nullptr
+        || parsed == nullptr
+        || requirements == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *parsed = {};
+    *requirements = {};
+    if (
+        data_size < kVariableSparseHeaderBytes
+        || data_size > kMaximumPayloadBytes
+    ) {
         return RESONITH_STATUS_TRUNCATED;
     }
-
-    const std::uint8_t* sparse = parsed->sparse;
-    const char* expected_sparse_magic = parsed->variable_density
-        ? "LSE2"
-        : "LSE1";
-    if (std::memcmp(sparse, expected_sparse_magic, 4U) != 0) {
-        return RESONITH_STATUS_BAD_MAGIC;
-    }
-    if (sparse[4] != kSparseVersion) {
-        return RESONITH_STATUS_UNSUPPORTED_VERSION;
-    }
-    parsed->scale_entropy = sparse[6U];
-    parsed->scale_parameter = sparse[7U];
-    std::uint32_t declared_sparse_elements = 0U;
-    if (parsed->variable_density) {
-        parsed->count_entropy = sparse[8U];
-        parsed->count_parameter = sparse[9U];
-        parsed->position_parameter = sparse[10U];
-        parsed->value_entropy = sparse[11U];
-        parsed->value_parameter = sparse[12U];
-        declared_sparse_elements = read_u32(sparse + 22U);
-        parsed->scale_bits = read_u32(sparse + 26U);
-        parsed->count_bits = read_u32(sparse + 30U);
-        parsed->position_bits = read_u32(sparse + 34U);
-        parsed->value_bits = read_u32(sparse + 38U);
-        if (
-            sparse[5U] != 0U
-            || sparse[13U] != 0U
-            || read_u32(sparse + 14U) != parsed->transform_frames
-            || read_u16(sparse + 18U) != parsed->channels
-            || read_u16(sparse + 20U) != parsed->band_count
-            || !valid_entropy(
-                parsed->count_entropy,
-                parsed->count_parameter
-            )
-        ) {
-            return RESONITH_STATUS_MALFORMED;
-        }
-    } else {
-        parsed->position_parameter = sparse[8U];
-        parsed->value_entropy = sparse[9U];
-        parsed->value_parameter = sparse[10U];
-        parsed->coefficients_per_frame = read_u16(sparse + 20U);
-        parsed->scale_bits = read_u32(sparse + 22U);
-        parsed->position_bits = read_u32(sparse + 26U);
-        parsed->value_bits = read_u32(sparse + 30U);
-        if (
-            sparse[5U] != 0U
-            || sparse[11U] != 0U
-            || read_u32(sparse + 12U) != parsed->transform_frames
-            || read_u16(sparse + 16U) != parsed->channels
-            || read_u16(sparse + 18U) != parsed->band_count
-            || parsed->coefficients_per_frame == 0U
-            || parsed->coefficients_per_frame > parsed->half_window
-        ) {
-            return RESONITH_STATUS_MALFORMED;
-        }
-    }
     if (
-        !valid_entropy(parsed->scale_entropy, parsed->scale_parameter)
-        || !valid_entropy(parsed->value_entropy, parsed->value_parameter)
-        || parsed->position_parameter
-            > static_cast<std::uint8_t>(
-                log2_power_of_two(parsed->half_window)
-            )
-    ) {
-        return RESONITH_STATUS_MALFORMED;
-    }
-
-    const std::size_t scale_bytes = bit_bytes(parsed->scale_bits);
-    const std::size_t count_bytes = bit_bytes(parsed->count_bits);
-    const std::size_t position_bytes = bit_bytes(parsed->position_bits);
-    const std::size_t value_bytes = bit_bytes(parsed->value_bits);
-    if (
-        scale_bytes > parsed->sparse_size - sparse_header_bytes
-        || count_bytes
-            > parsed->sparse_size - sparse_header_bytes - scale_bytes
-        || position_bytes
-            > parsed->sparse_size
-                - sparse_header_bytes
-                - scale_bytes
-                - count_bytes
-        || value_bytes
-            != parsed->sparse_size
-                - sparse_header_bytes
-                - scale_bytes
-                - count_bytes
-                - position_bytes
-    ) {
-        return RESONITH_STATUS_MALFORMED;
-    }
-    parsed->scale_payload = sparse + sparse_header_bytes;
-    parsed->count_payload = parsed->scale_payload + scale_bytes;
-    parsed->position_payload = parsed->count_payload + count_bytes;
-    parsed->value_payload = parsed->position_payload + position_bytes;
-
-    std::size_t channel_frames = 0U;
-    std::size_t scale_elements = 0U;
-    std::size_t sparse_elements = 0U;
-    std::size_t output_elements = 0U;
-    if (
-        !checked_product(
-            parsed->channels,
-            parsed->transform_frames,
-            &channel_frames
-        )
-        || !checked_product(
-            channel_frames,
-            parsed->band_count,
-            &scale_elements
-        )
-        || !checked_product(
-            parsed->sample_count,
-            parsed->channels,
-            &output_elements
-        )
-        || scale_elements > kMaximumSymbols
-        || sparse_elements > kMaximumSymbols
-        || parsed->sample_count
-            > std::numeric_limits<std::size_t>::max()
-                - 2U * parsed->half_window
+        sample_rate == 0U
+        || sample_count == 0U
+        || channels == 0U
+        || channels > kMaximumChannels
+        || half_window < 32U
+        || half_window > kMaximumHalfWindow
+        || !is_power_of_two(half_window)
+        || kRomHalfWindow % half_window != 0U
+        || band_count == 0U
+        || band_count > kMaximumBands
     ) {
         return RESONITH_STATUS_PROFILE_BOUND;
     }
-    if (parsed->variable_density) {
-        sparse_elements = declared_sparse_elements;
-        std::size_t maximum_sparse_elements = 0U;
-        if (
-            !checked_product(
-                channel_frames,
-                parsed->half_window,
-                &maximum_sparse_elements
-            )
-            || sparse_elements > maximum_sparse_elements
-        ) {
-            return RESONITH_STATUS_PROFILE_BOUND;
-        }
-    } else if (
-        !checked_product(
-            channel_frames,
-            parsed->coefficients_per_frame,
-            &sparse_elements
-        )
-    ) {
-        return RESONITH_STATUS_PROFILE_BOUND;
-    }
-    if (sparse_elements > kMaximumSymbols) {
-        return RESONITH_STATUS_PROFILE_BOUND;
-    }
-    requirements->sample_rate = parsed->sample_rate;
-    requirements->frame_count = parsed->sample_count;
-    requirements->transform_frame_count = parsed->transform_frames;
-    requirements->half_window = parsed->half_window;
-    requirements->band_count = parsed->band_count;
-    requirements->coefficients_per_frame =
-        parsed->coefficients_per_frame;
-    requirements->output_channels = parsed->channels;
-    requirements->scale_elements = scale_elements;
-    requirements->count_elements = parsed->variable_density
-        ? channel_frames
-        : 0U;
-    requirements->position_elements = sparse_elements;
-    requirements->coefficient_elements = sparse_elements;
-    requirements->overlap_elements =
-        static_cast<std::size_t>(parsed->sample_count)
-        + 2U * parsed->half_window;
-    requirements->output_elements = output_elements;
-    return RESONITH_STATUS_OK;
+    parsed->sparse = data;
+    parsed->sparse_size = data_size;
+    parsed->sample_rate = sample_rate;
+    parsed->sample_count = sample_count;
+    parsed->transform_frames = sample_count / half_window + 1U;
+    parsed->channels = channels;
+    parsed->half_window = half_window;
+    parsed->band_count = band_count;
+    parsed->variable_density = true;
+    return parse_sparse_fields(parsed, requirements);
 }
 
 bool decode_unsigned(
@@ -1066,6 +1130,60 @@ void render_channel(
     }
 }
 
+resonith_status decode_parsed_lapped(
+    const parsed_lapped& parsed,
+    const resonith_lapped_requirements& requirements,
+    const resonith_lapped_workspace& workspace,
+    std::int16_t* output,
+    std::size_t output_capacity,
+    std::size_t* frames_written
+) noexcept {
+    if (output_capacity < requirements.output_elements) {
+        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    }
+    if (
+        workspace.scales == nullptr
+        || workspace.positions == nullptr
+        || workspace.coefficients == nullptr
+        || workspace.overlap_q29 == nullptr
+        || workspace.scale_capacity < requirements.scale_elements
+        || (
+            requirements.count_elements != 0U
+            && (
+                workspace.counts == nullptr
+                || workspace.count_capacity < requirements.count_elements
+            )
+        )
+        || workspace.position_capacity < requirements.position_elements
+        || workspace.coefficient_capacity
+            < requirements.coefficient_elements
+        || workspace.overlap_capacity < requirements.overlap_elements
+    ) {
+        return RESONITH_STATUS_SCRATCH_TOO_SMALL;
+    }
+    resonith_status status = decode_fields(
+        parsed,
+        requirements,
+        workspace
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    status = validate_synthesis_bounds(parsed, workspace);
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    for (
+        std::uint16_t channel = 0U;
+        channel < parsed.channels;
+        ++channel
+    ) {
+        render_channel(parsed, workspace, channel, output);
+    }
+    *frames_written = parsed.sample_count;
+    return RESONITH_STATUS_OK;
+}
+
 }  // namespace
 
 extern "C" resonith_status resonith_lapped_inspect(
@@ -1108,46 +1226,89 @@ extern "C" resonith_status resonith_lapped_decode(
     if (status != RESONITH_STATUS_OK) {
         return status;
     }
-    if (output_capacity < requirements.output_elements) {
-        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    return decode_parsed_lapped(
+        parsed,
+        requirements,
+        *workspace,
+        output,
+        output_capacity,
+        frames_written
+    );
+}
+
+extern "C" resonith_status resonith_lapped_selected_inspect(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    std::uint32_t sample_rate,
+    std::uint32_t sample_count,
+    std::uint16_t channels,
+    std::uint16_t half_window,
+    std::uint16_t band_count,
+    resonith_lapped_requirements* requirements
+) {
+    if (data == nullptr || requirements == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
     }
+    parsed_lapped parsed{};
+    return parse_selected_lapped(
+        data,
+        data_size,
+        sample_rate,
+        sample_count,
+        channels,
+        half_window,
+        band_count,
+        &parsed,
+        requirements
+    );
+}
+
+extern "C" resonith_status resonith_lapped_selected_decode(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    std::uint32_t sample_rate,
+    std::uint32_t sample_count,
+    std::uint16_t channels,
+    std::uint16_t half_window,
+    std::uint16_t band_count,
+    const resonith_lapped_workspace* workspace,
+    std::int16_t* output,
+    std::size_t output_capacity,
+    std::size_t* frames_written
+) {
     if (
-        workspace->scales == nullptr
-        || workspace->positions == nullptr
-        || workspace->coefficients == nullptr
-        || workspace->overlap_q29 == nullptr
-        || workspace->scale_capacity < requirements.scale_elements
-        || (
-            requirements.count_elements != 0U
-            && (
-                workspace->counts == nullptr
-                || workspace->count_capacity < requirements.count_elements
-            )
-        )
-        || workspace->position_capacity < requirements.position_elements
-        || workspace->coefficient_capacity
-            < requirements.coefficient_elements
-        || workspace->overlap_capacity < requirements.overlap_elements
+        data == nullptr
+        || workspace == nullptr
+        || output == nullptr
+        || frames_written == nullptr
     ) {
-        return RESONITH_STATUS_SCRATCH_TOO_SMALL;
+        return RESONITH_STATUS_INVALID_ARGUMENT;
     }
-    status = decode_fields(parsed, requirements, *workspace);
+    *frames_written = 0U;
+    parsed_lapped parsed{};
+    resonith_lapped_requirements requirements{};
+    resonith_status status = parse_selected_lapped(
+        data,
+        data_size,
+        sample_rate,
+        sample_count,
+        channels,
+        half_window,
+        band_count,
+        &parsed,
+        &requirements
+    );
     if (status != RESONITH_STATUS_OK) {
         return status;
     }
-    status = validate_synthesis_bounds(parsed, *workspace);
-    if (status != RESONITH_STATUS_OK) {
-        return status;
-    }
-    for (
-        std::uint16_t channel = 0U;
-        channel < parsed.channels;
-        ++channel
-    ) {
-        render_channel(parsed, *workspace, channel, output);
-    }
-    *frames_written = parsed.sample_count;
-    return RESONITH_STATUS_OK;
+    return decode_parsed_lapped(
+        parsed,
+        requirements,
+        *workspace,
+        output,
+        output_capacity,
+        frames_written
+    );
 }
 
 extern "C" resonith_status resonith_lapped_analyze_requirements(

@@ -91,7 +91,7 @@ int main() {
         return 1;
     }
     std::array<std::uint8_t, 40> packet_scales{};
-    std::array<std::uint16_t, 1> packet_counts{};
+    std::array<std::uint16_t, 8> packet_counts{};
     std::array<std::uint16_t, 80> packet_positions{};
     std::array<std::int8_t, 80> packet_coefficients{};
     std::array<std::int64_t, 192> packet_overlap{};
@@ -159,6 +159,61 @@ int main() {
                 && logical_start == 0U
                 && logical_frames == 0U,
             "LPS1 canonical end of stream"
+        )) {
+        return 1;
+    }
+
+    packet_session = {};
+    packet_requirements = {};
+    if (!expect(
+            resonith_lapped_packet_open(
+                kLappedTransformPacketStream.data(),
+                kLappedTransformPacketStream.size(),
+                &packet_session,
+                &packet_requirements
+            ) == RESONITH_STATUS_OK
+                && packet_session.packet_mode == 2U
+                && packet_requirements.frame_count == 96U
+                && packet_requirements.packet_count == 2U
+                && packet_requirements.maximum_child.count_elements <= 8U
+                && packet_requirements.maximum_child.position_elements <= 80U
+                && packet_requirements.maximum_child_output_elements <= 128U,
+            "LPS2 direct LSE2 preflight"
+        )) {
+        return 1;
+    }
+    packet_workspace.count_capacity = packet_counts.size();
+    packet_pcm.fill(0);
+    for (std::uint32_t packet = 0U; packet < 2U; ++packet) {
+        logical_start = 99U;
+        logical_frames = 99U;
+        if (!expect(
+                resonith_lapped_packet_decode_next(
+                    &packet_session,
+                    &packet_workspace,
+                    child_output.data(),
+                    child_output.size(),
+                    logical_output.data(),
+                    logical_output.size(),
+                    &logical_start,
+                    &logical_frames
+                ) == RESONITH_STATUS_OK
+                    && logical_start == (packet == 0U ? 0U : 64U)
+                    && logical_frames == (packet == 0U ? 64U : 32U),
+                "LPS2 transactional direct-field decode"
+            )) {
+            return 1;
+        }
+        std::copy_n(
+            logical_output.begin(),
+            logical_frames * 2U,
+            packet_pcm.begin()
+                + static_cast<std::ptrdiff_t>(logical_start * 2U)
+        );
+    }
+    if (!expect(
+            packet_pcm == kExpectedAdaptiveLappedPcm,
+            "LPS2 output equals monolithic adaptive LPF1"
         )) {
         return 1;
     }
