@@ -294,3 +294,16 @@
   - перед первым public push обязательны tests, secret/PII scan и проверка
     tracked files;
   - CI запускает reference tests на каждом push и pull request.
+
+## R-020 — Публичный repository Resonith создан
+
+- Дата: 2026-07-26
+- Статус: **IMPLEMENTED**
+- Результат:
+  - public repository:
+    `https://github.com/moshkinyevhen/resonith`;
+  - default branch: `main`;
+  - initial public commit: `68073e5`;
+  - CI запускает девять reference tests;
+  - repo-local `post-commit` auto-push включён и подлежит проверке этим
+    последующим commit.
