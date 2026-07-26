@@ -79,6 +79,17 @@ RESONITH_API resonith_status resonith_lapped_compact_sequence_open(
 );
 
 /*
+ * Derives a conservative receiver memory ceiling from sequence context alone.
+ *
+ * Unlike complete-stream preflight, this operation needs no packet record and
+ * therefore supports allocation before independently transported data arrives.
+ */
+RESONITH_API resonith_status resonith_lapped_compact_sequence_requirements(
+    const resonith_lapped_compact_sequence* sequence,
+    resonith_lapped_compact_requirements* requirements
+);
+
+/*
  * Fully preflights an LPS4 sequence without writing PCM or allocating memory.
  *
  * The operation verifies the sequence SHA-256, every derived record length and

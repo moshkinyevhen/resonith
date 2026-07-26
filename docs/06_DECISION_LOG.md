@@ -2545,3 +2545,28 @@ new oscillator opcode.
     the worst p99 was 15.90 ms and the worst single callback was 20.71 ms;
   - these figures establish physical Windows feasibility only. Android
     temperature, sustained timing, power, and energy remain unmeasured.
+
+## R-088 — Header-only receiver workspace contract
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - expose conservative maximum current, lookahead, and logical-output
+    requirements derived only from the authenticated LPS4 sequence context;
+  - require no packet record, complete stream, heap allocation, or entropy
+    inspection to establish the receiver memory ceiling;
+  - preserve the existing complete-stream preflight as the tighter
+    content-dependent allocation option for files;
+  - use the same public requirement structures and arithmetic bounds for both
+    paths.
+- Rationale:
+  - a QUIC datagram or SRTP receiver must allocate before arbitrary records
+    arrive and cannot depend on a complete-file scan;
+  - leaving allocation to undocumented profile arithmetic would make the C ABI
+    easy to misuse and undermine the bounded-decoder claim;
+  - a small conservative difference is preferable to per-packet allocation or
+    trusting unverified record metadata.
+- Gate:
+  - header-only maxima cover every exact requirement from complete preflight;
+  - frozen stateless decode succeeds using only header-derived workspace;
+  - overflow, invalid context, C99, cross-platform, and hostile-input gates pass.

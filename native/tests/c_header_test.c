@@ -97,6 +97,14 @@ int main(void) {
         return 1;
     }
     if (
+        resonith_lapped_compact_sequence_requirements(
+            NULL,
+            &compact_requirements
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
         resonith_lapped_compact_open(
             NULL,
             0U,

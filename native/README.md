@@ -141,6 +141,11 @@ missing record does not contaminate later Truth. Cryptographic transport
 integration, physical-device, reordering/loss-scheduling, and listening gates
 remain prospective.
 
+`resonith_lapped_compact_sequence_requirements()` derives a conservative
+receiver workspace ceiling from that context alone. A datagram receiver can
+therefore allocate once before any record arrives. Complete-stream preflight
+remains available when a file host wants tighter content-dependent sizes.
+
 ## Physical-device callback benchmark
 
 `resonith_lapped_device_bench` is built from the same portable source on

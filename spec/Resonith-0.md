@@ -416,6 +416,11 @@ stateless record-pair pull, cross-platform, and hostile-input gates. The
 stateless Core mapping accepts an authenticated 60-byte sequence context,
 explicit packet index, exact current record, and exact immediate lookahead
 record; it derives all logical shape rather than trusting record metadata.
+Before records arrive, a receiver MUST be able to derive conservative maximum
+current, immediate-lookahead, overlap, and logical-output storage solely from
+the authenticated sequence context. It MUST NOT need a complete stream or
+unverified record fields to establish its memory ceiling. A file decoder MAY
+use complete-stream preflight to obtain tighter content-dependent requirements.
 Cryptographic transport integration, physical-device resource measurements,
 reordered/lost-packet scheduling, and listening still MUST pass before LPS4
 becomes mandatory.

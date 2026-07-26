@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <vector>
 
 namespace {
 
@@ -381,6 +382,84 @@ int main() {
         )) {
         return 1;
     }
+    resonith_lapped_compact_requirements header_requirements{};
+    if (!expect(
+            resonith_lapped_compact_sequence_requirements(
+                &compact_sequence,
+                &header_requirements
+            ) == RESONITH_STATUS_OK
+                && header_requirements.maximum_current.scale_elements
+                    >= compact_requirements.maximum_current.scale_elements
+                && header_requirements.maximum_current.count_elements
+                    >= compact_requirements.maximum_current.count_elements
+                && header_requirements.maximum_current.position_elements
+                    >= compact_requirements.maximum_current.position_elements
+                && header_requirements.maximum_current.coefficient_elements
+                    >= compact_requirements.maximum_current
+                        .coefficient_elements
+                && header_requirements.maximum_current.overlap_elements
+                    >= compact_requirements.maximum_current.overlap_elements
+                && header_requirements.maximum_lookahead.position_elements
+                    >= compact_requirements.maximum_lookahead.position_elements
+                && header_requirements.maximum_logical_output_elements
+                    >= compact_requirements.maximum_logical_output_elements,
+            "LPS4 header-only requirements cover exact preflight"
+        )) {
+        return 1;
+    }
+    const auto& header_current = header_requirements.maximum_current;
+    const auto& header_lookahead = header_requirements.maximum_lookahead;
+    std::vector<std::uint8_t> header_current_scales(
+        header_current.scale_elements
+    );
+    std::vector<std::uint16_t> header_current_counts(
+        header_current.count_elements
+    );
+    std::vector<std::uint16_t> header_current_positions(
+        header_current.position_elements
+    );
+    std::vector<std::int8_t> header_current_coefficients(
+        header_current.coefficient_elements
+    );
+    std::vector<std::int64_t> header_current_overlap(
+        header_current.overlap_elements
+    );
+    resonith_lapped_workspace header_current_workspace = {
+        header_current_scales.data(),
+        header_current_scales.size(),
+        header_current_counts.data(),
+        header_current_counts.size(),
+        header_current_positions.data(),
+        header_current_positions.size(),
+        header_current_coefficients.data(),
+        header_current_coefficients.size(),
+        header_current_overlap.data(),
+        header_current_overlap.size(),
+    };
+    std::vector<std::uint8_t> header_lookahead_scales(
+        header_lookahead.scale_elements
+    );
+    std::vector<std::uint16_t> header_lookahead_counts(
+        header_lookahead.count_elements
+    );
+    std::vector<std::uint16_t> header_lookahead_positions(
+        header_lookahead.position_elements
+    );
+    std::vector<std::int8_t> header_lookahead_coefficients(
+        header_lookahead.coefficient_elements
+    );
+    resonith_lapped_workspace header_lookahead_workspace = {
+        header_lookahead_scales.data(),
+        header_lookahead_scales.size(),
+        header_lookahead_counts.data(),
+        header_lookahead_counts.size(),
+        header_lookahead_positions.data(),
+        header_lookahead_positions.size(),
+        header_lookahead_coefficients.data(),
+        header_lookahead_coefficients.size(),
+        nullptr,
+        0U,
+    };
 
     logical_output.fill(1234);
     logical_start = 99U;
@@ -425,8 +504,8 @@ int main() {
                 compact_first_size,
                 compact_transport_corrupted.data() + compact_second_offset,
                 compact_second_size,
-                &packet_workspace,
-                &compact_lookahead_workspace,
+                &header_current_workspace,
+                &header_lookahead_workspace,
                 logical_output.data(),
                 logical_output.size(),
                 &logical_start,
@@ -453,8 +532,8 @@ int main() {
                 compact_first_size,
                 kLappedCompactPacketStream.data() + compact_second_offset,
                 compact_second_size,
-                &packet_workspace,
-                &compact_lookahead_workspace,
+                &header_current_workspace,
+                &header_lookahead_workspace,
                 logical_output.data(),
                 logical_output.size(),
                 &logical_start,
@@ -481,7 +560,7 @@ int main() {
                 compact_first_size + 1U,
                 kLappedCompactPacketStream.data() + compact_second_offset,
                 compact_second_size,
-                &packet_workspace,
+                &header_current_workspace,
                 &compact_lookahead_workspace,
                 logical_output.data(),
                 logical_output.size(),
@@ -508,7 +587,7 @@ int main() {
                 compact_second_size,
                 nullptr,
                 0U,
-                &packet_workspace,
+                &header_current_workspace,
                 nullptr,
                 logical_output.data(),
                 logical_output.size(),

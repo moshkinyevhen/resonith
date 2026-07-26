@@ -152,6 +152,39 @@ extern "C" int LLVMFuzzerTestOneInput(
     ) {
         __builtin_trap();
     }
+    resonith_lapped_compact_requirements header_requirements{};
+    const resonith_status header_requirement_status =
+        resonith_lapped_compact_sequence_requirements(
+            &sequence,
+            &header_requirements
+        );
+    if (
+        header_requirement_status == RESONITH_STATUS_OK
+        && (
+            header_requirements.maximum_current.scale_elements
+                < requirements.maximum_current.scale_elements
+            || header_requirements.maximum_current.count_elements
+                < requirements.maximum_current.count_elements
+            || header_requirements.maximum_current.position_elements
+                < requirements.maximum_current.position_elements
+            || header_requirements.maximum_current.coefficient_elements
+                < requirements.maximum_current.coefficient_elements
+            || header_requirements.maximum_current.overlap_elements
+                < requirements.maximum_current.overlap_elements
+            || header_requirements.maximum_lookahead.scale_elements
+                < requirements.maximum_lookahead.scale_elements
+            || header_requirements.maximum_lookahead.count_elements
+                < requirements.maximum_lookahead.count_elements
+            || header_requirements.maximum_lookahead.position_elements
+                < requirements.maximum_lookahead.position_elements
+            || header_requirements.maximum_lookahead.coefficient_elements
+                < requirements.maximum_lookahead.coefficient_elements
+            || header_requirements.maximum_logical_output_elements
+                < requirements.maximum_logical_output_elements
+        )
+    ) {
+        __builtin_trap();
+    }
     std::vector<std::size_t> record_offsets;
     std::vector<std::size_t> record_sizes;
     record_offsets.reserve(requirements.packet_count);
