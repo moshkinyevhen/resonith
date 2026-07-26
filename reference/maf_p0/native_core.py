@@ -138,6 +138,20 @@ class _LappedAnalysisRequirements(ctypes.Structure):
     ]
 
 
+class _LappedFiniteRequirements(ctypes.Structure):
+    _fields_ = [
+        ("transform_frame_count", ctypes.c_uint32),
+        ("channels", ctypes.c_uint16),
+        ("band_count", ctypes.c_uint16),
+        ("half_window", ctypes.c_uint16),
+        ("gap_threshold", ctypes.c_uint16),
+        ("scale_elements", ctypes.c_size_t),
+        ("count_elements", ctypes.c_size_t),
+        ("position_elements", ctypes.c_size_t),
+        ("coefficient_elements", ctypes.c_size_t),
+    ]
+
+
 class _LappedPacketRequirements(ctypes.Structure):
     _fields_ = [
         ("sample_rate", ctypes.c_uint32),
@@ -469,6 +483,16 @@ class NativeLappedAnalysisResult:
 
 
 @dataclass(frozen=True)
+class NativeLappedFiniteResult:
+    scales: np.ndarray
+    counts: np.ndarray
+    positions: np.ndarray
+    values: np.ndarray
+    gap_threshold: int
+    workspace_bytes: int
+
+
+@dataclass(frozen=True)
 class NativeLappedPacketDecodeResult:
     samples: np.ndarray
     sample_rate: int
@@ -687,6 +711,20 @@ class NativeMain0Decoder:
             ctypes.c_size_t,
         ]
         self._library.resonith_lapped_analyze_pcm16.restype = ctypes.c_int
+        self._library.resonith_lapped_finite_inspect.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.c_uint16,
+            ctypes.POINTER(_LappedFiniteRequirements),
+        ]
+        self._library.resonith_lapped_finite_inspect.restype = ctypes.c_int
+        self._library.resonith_lapped_finite_decode.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.c_uint16,
+            ctypes.POINTER(_LappedWorkspace),
+        ]
+        self._library.resonith_lapped_finite_decode.restype = ctypes.c_int
         self._library.resonith_lapped_packet_open.argtypes = [
             byte_pointer,
             ctypes.c_size_t,
@@ -921,6 +959,98 @@ class NativeMain0Decoder:
             samples,
             requirements.sample_rate,
             requirements,
+        )
+
+    def decode_lapped_finite(
+        self,
+        payload: bytes,
+        *,
+        half_window: int,
+    ) -> NativeLappedFiniteResult:
+        """Decode LAF1 fields through the allocation-explicit native oracle."""
+
+        if not 2 <= half_window <= 1024:
+            raise ValueError("native LAF1 half-window exceeds the profile")
+        source = self._input_buffer(payload)
+        requirements = _LappedFiniteRequirements()
+        self._check(
+            self._library.resonith_lapped_finite_inspect(
+                source,
+                len(payload),
+                half_window,
+                ctypes.byref(requirements),
+            )
+        )
+        workspace_bytes = (
+            int(requirements.scale_elements)
+            + 2 * int(requirements.count_elements)
+            + 2 * int(requirements.position_elements)
+            + int(requirements.coefficient_elements)
+        )
+        if workspace_bytes > self._max_workspace_bytes:
+            raise MemoryError(
+                "native LAF1 workspace exceeds the configured host ceiling"
+            )
+        scales = (
+            ctypes.c_uint8 * max(1, int(requirements.scale_elements))
+        )()
+        counts = (
+            ctypes.c_uint16 * max(1, int(requirements.count_elements))
+        )()
+        positions = (
+            ctypes.c_uint16 * max(1, int(requirements.position_elements))
+        )()
+        values = (
+            ctypes.c_int8 * max(1, int(requirements.coefficient_elements))
+        )()
+        workspace = _LappedWorkspace(
+            scales,
+            int(requirements.scale_elements),
+            counts,
+            int(requirements.count_elements),
+            positions,
+            int(requirements.position_elements),
+            values,
+            int(requirements.coefficient_elements),
+            None,
+            0,
+        )
+        self._check(
+            self._library.resonith_lapped_finite_decode(
+                source,
+                len(payload),
+                half_window,
+                ctypes.byref(workspace),
+            )
+        )
+        scale_grid = np.ctypeslib.as_array(scales)[
+            : int(requirements.scale_elements)
+        ].copy().reshape(
+            int(requirements.channels),
+            int(requirements.transform_frame_count),
+            int(requirements.band_count),
+        )
+        count_grid = np.ctypeslib.as_array(counts)[
+            : int(requirements.count_elements)
+        ].copy().reshape(
+            int(requirements.channels),
+            int(requirements.transform_frame_count),
+        )
+        position_array = np.ctypeslib.as_array(positions)[
+            : int(requirements.position_elements)
+        ].copy()
+        value_array = np.ctypeslib.as_array(values)[
+            : int(requirements.coefficient_elements)
+        ].copy()
+        for array in (scale_grid, count_grid, position_array, value_array):
+            array.flags.writeable = False
+        return NativeLappedFiniteResult(
+            scale_grid,
+            count_grid,
+            position_array,
+            value_array,
+            int(requirements.gap_threshold),
+            workspace_bytes,
         )
 
     def analyze_lapped(

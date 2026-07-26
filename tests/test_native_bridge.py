@@ -12,6 +12,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
 from maf_p0.composition import GainEventLaw  # noqa: E402
+from maf_p0.finite_state_oracle import (  # noqa: E402
+    decode_finite_state_lapped,
+    encode_finite_state_lapped,
+)
 from maf_p0.main0 import (  # noqa: E402
     Main0State,
     decode_main0_raw_stream,
@@ -300,6 +304,75 @@ class NativeBridgeTests(unittest.TestCase):
                     native.samples,
                     encoded.reconstruction,
                 )
+
+    def test_finite_state_sparse_fields_match_native_core(self) -> None:
+        scales = np.asarray(
+            [
+                [[1, 2, 3], [1, 3, 3], [0, 3, 4]],
+                [[2, 2, 4], [2, 2, 4], [2, 3, 4]],
+            ],
+            dtype=np.uint8,
+        )
+        counts = np.asarray([[3, 3, 3], [2, 2, 3]], dtype=np.uint16)
+        positions = np.asarray(
+            [
+                1, 7, 50,
+                1, 8, 50,
+                8, 50, 63,
+                2, 9,
+                2, 9,
+                2, 10, 60,
+            ],
+            dtype=np.uint16,
+        )
+        values = np.asarray(
+            [
+                4, -7, 2,
+                3, -6, 1,
+                -5, 2, 7,
+                -4, 7,
+                -3, 6,
+                -2, 5, -1,
+            ],
+            dtype=np.int8,
+        )
+        payload = encode_finite_state_lapped(
+            scales,
+            counts,
+            positions,
+            values,
+            half_window=64,
+        )
+        reference = decode_finite_state_lapped(
+            payload,
+            half_window=64,
+            expected_channels=2,
+            expected_frames=3,
+            expected_bands=3,
+        )
+        native = self.decoder.decode_lapped_finite(
+            payload,
+            half_window=64,
+        )
+
+        np.testing.assert_array_equal(native.scales, reference.scales)
+        np.testing.assert_array_equal(native.counts, reference.counts)
+        np.testing.assert_array_equal(native.positions, reference.positions)
+        np.testing.assert_array_equal(native.values, reference.values)
+        self.assertEqual(native.gap_threshold, reference.gap_threshold)
+        self.assertEqual(
+            native.workspace_bytes,
+            scales.size + 2 * counts.size + 3 * positions.size,
+        )
+
+        constrained = NativeMain0Decoder(
+            self.library,
+            max_workspace_bytes=1,
+        )
+        with self.assertRaises(MemoryError):
+            constrained.decode_lapped_finite(payload, half_window=64)
+        with self.assertRaises(NativeCoreError):
+            self.decoder.decode_lapped_finite(payload + b"\0", half_window=64)
 
     def test_fixed_lapped_analysis_matches_native_core(self) -> None:
         right = np.roll(self.samples, 37)

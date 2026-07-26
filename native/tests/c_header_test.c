@@ -5,6 +5,7 @@
 #include "resonith/liftpack.h"
 #include "resonith/lapped.h"
 #include "resonith/lapped_compact.h"
+#include "resonith/lapped_finite.h"
 #include "resonith/lapped_packet.h"
 #include "resonith/multichannel.h"
 #include "resonith/seek.h"
@@ -43,6 +44,7 @@ int main(void) {
     resonith_lapped_compact_requirements compact_requirements = {0};
     resonith_lapped_compact_sequence compact_sequence = {0};
     resonith_lapped_compact_session compact_session = {0};
+    resonith_lapped_finite_requirements finite_requirements = {0};
     resonith_lapped_packet_requirements packet_requirements = {0};
     resonith_lapped_packet_session packet_session = {0};
     resonith_cibs_info cibs_info = {0U, 0U, 0U, 0U};
@@ -84,6 +86,22 @@ int main(void) {
     if (
         resonith_cibs_inspect_model(NULL, NULL, &cibs_info)
         != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_lapped_finite_inspect(
+            NULL,
+            0U,
+            64U,
+            &finite_requirements
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+        || resonith_lapped_finite_decode(
+            NULL,
+            0U,
+            64U,
+            NULL
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
     ) {
         return 1;
     }

@@ -14,6 +14,7 @@ set(RESONITH_CORE_SOURCES
     src/integrity.cpp
     src/lapped.cpp
     src/lapped_compact.cpp
+    src/lapped_finite.cpp
     src/lapped_packet.cpp
     src/liftpack.cpp
     src/multichannel.cpp
