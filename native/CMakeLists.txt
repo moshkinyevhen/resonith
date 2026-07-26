@@ -3,8 +3,9 @@ cmake_minimum_required(VERSION 3.20)
 project(resonith_core VERSION 0.1.0 LANGUAGES C CXX)
 
 option(RESONITH_WARNINGS_AS_ERRORS "Treat native-core warnings as errors" ON)
+option(RESONITH_BUILD_FUZZERS "Build Clang libFuzzer security targets" OFF)
 
-add_library(resonith_core STATIC
+set(RESONITH_CORE_SOURCES
     src/basis.cpp
     src/cibs.cpp
     src/composition.cpp
@@ -14,6 +15,10 @@ add_library(resonith_core STATIC
     src/status.cpp
     src/stream.cpp
     src/trajectory.cpp
+)
+
+add_library(resonith_core STATIC
+    ${RESONITH_CORE_SOURCES}
 )
 add_library(Resonith::Core ALIAS resonith_core)
 
@@ -29,15 +34,7 @@ set_target_properties(resonith_core PROPERTIES
 )
 
 add_library(resonith_core_shared SHARED
-    src/basis.cpp
-    src/cibs.cpp
-    src/composition.cpp
-    src/container.cpp
-    src/integrity.cpp
-    src/liftpack.cpp
-    src/status.cpp
-    src/stream.cpp
-    src/trajectory.cpp
+    ${RESONITH_CORE_SOURCES}
 )
 add_library(Resonith::CoreShared ALIAS resonith_core_shared)
 target_compile_features(resonith_core_shared PUBLIC cxx_std_20)
@@ -80,6 +77,31 @@ resonith_enable_warnings(resonith_core_shared)
 if(MSVC)
     target_compile_options(resonith_core PRIVATE /permissive-)
     target_compile_options(resonith_core_shared PRIVATE /permissive-)
+endif()
+
+if(RESONITH_BUILD_FUZZERS)
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        message(FATAL_ERROR "RESONITH_BUILD_FUZZERS requires Clang")
+    endif()
+    add_executable(resonith_liftpack_fuzz
+        ${RESONITH_CORE_SOURCES}
+        fuzz/liftpack_fuzz.cpp
+    )
+    target_compile_features(resonith_liftpack_fuzz PRIVATE cxx_std_20)
+    target_include_directories(resonith_liftpack_fuzz
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    )
+    target_compile_options(resonith_liftpack_fuzz
+        PRIVATE -fsanitize=fuzzer,address,undefined
+    )
+    target_link_options(resonith_liftpack_fuzz
+        PRIVATE -fsanitize=fuzzer,address,undefined
+    )
+    set_target_properties(
+        resonith_liftpack_fuzz
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_liftpack_fuzz)
 endif()
 
 include(CTest)

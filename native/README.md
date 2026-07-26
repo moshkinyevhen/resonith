@@ -73,6 +73,25 @@ python -m unittest discover -s tests -p test_native_bridge.py -v
 The binding inspects exact workspace counts and applies a host memory ceiling
 before creating caller-owned arrays.
 
+## Sanitized fuzzing
+
+Clang builds the LiftPack envelope, block index, entropy parser, and inverse
+DSP directly into one ASan/UBSan/libFuzzer target:
+
+```sh
+cmake -S native -B build/fuzz \
+  -DBUILD_TESTING=OFF \
+  -DRESONITH_BUILD_FUZZERS=ON
+cmake --build build/fuzz --target resonith_liftpack_fuzz
+python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
+build/fuzz/resonith_liftpack_fuzz artifacts/fuzz_corpus -runs=5000
+```
+
+The harness caps host allocations after a successful envelope inspection; the
+Core itself remains allocation-free. CI starts from deterministic valid RSL1
+and RSL2/LPC seeds so mutations reach block, entropy, and inverse-DSP paths
+rather than stopping only at the outer CRC.
+
 ## Conformance anchor
 
 `native/tests/liftpack_test.cpp` embeds the canonical 203-byte LiftPack-1

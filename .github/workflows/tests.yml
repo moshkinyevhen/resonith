@@ -96,3 +96,35 @@ jobs:
           -s tests
           -p test_native_bridge.py
           -v
+
+  native-fuzz-smoke:
+    name: Native / Clang / ASan+UBSan+libFuzzer
+    runs-on: ubuntu-latest
+    env:
+      CC: clang
+      CXX: clang++
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install seed-generator dependency
+        run: python -m pip install numpy
+      - name: Configure sanitized fuzz target
+        run: >
+          cmake -S native -B build/fuzz
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          -DBUILD_TESTING=OFF
+          -DRESONITH_BUILD_FUZZERS=ON
+          -DRESONITH_WARNINGS_AS_ERRORS=ON
+      - name: Build sanitized fuzz target
+        run: cmake --build build/fuzz --target resonith_liftpack_fuzz --parallel
+      - name: Generate deterministic valid corpus
+        run: python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
+      - name: Run bounded mutation smoke test
+        run: >
+          build/fuzz/resonith_liftpack_fuzz
+          artifacts/fuzz_corpus
+          -runs=5000
+          -max_len=65536
+          -timeout=10
