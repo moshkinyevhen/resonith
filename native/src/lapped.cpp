@@ -1255,12 +1255,41 @@ extern "C" resonith_status resonith_lapped_analyze_pcm16(
     }
     const std::uint32_t rom_stride = kRomHalfWindow / half_window;
     std::array<std::int64_t, kMaximumHalfWindow> spectrum{};
+    std::array<std::int64_t, 2U * kMaximumHalfWindow> windowed_q15{};
     for (std::uint16_t channel = 0U; channel < channels; ++channel) {
         for (
             std::uint32_t frame = 0U;
             frame < requirements.transform_frame_count;
             ++frame
         ) {
+            for (
+                std::uint32_t sample = 0U;
+                sample < 2U * half_window;
+                ++sample
+            ) {
+                const std::int64_t source_frame =
+                    static_cast<std::int64_t>(frame) * half_window
+                    + sample
+                    - half_window;
+                std::int64_t input = 0;
+                if (
+                    source_frame >= 0
+                    && source_frame < sample_frame_count
+                ) {
+                    input = interleaved_input[
+                        static_cast<std::size_t>(source_frame) * channels
+                        + channel
+                    ];
+                }
+                const std::int64_t window_phase =
+                    (
+                        2LL * half_window
+                        - (2LL * sample + 1LL)
+                    )
+                    * rom_stride;
+                windowed_q15[sample] = input
+                    * quarter_lookup(kCosineQuarterQ15, window_phase);
+            }
             for (
                 std::uint16_t coefficient = 0U;
                 coefficient < half_window;
@@ -1272,37 +1301,13 @@ extern "C" resonith_status resonith_lapped_analyze_pcm16(
                     sample < 2U * half_window;
                     ++sample
                 ) {
-                    const std::int64_t source_frame =
-                        static_cast<std::int64_t>(frame) * half_window
-                        + sample
-                        - half_window;
-                    if (
-                        source_frame < 0
-                        || source_frame >= sample_frame_count
-                    ) {
-                        continue;
-                    }
-                    const std::int64_t input = interleaved_input[
-                        static_cast<std::size_t>(source_frame) * channels
-                        + channel
-                    ];
-                    const std::int64_t window_phase =
-                        (
-                            2LL * half_window
-                            - (2LL * sample + 1LL)
-                        )
-                        * rom_stride;
                     const std::int64_t cosine_phase =
                         static_cast<std::int64_t>(
                             (2U * coefficient + 1U)
                             * (2U * sample + 1U + half_window)
                             * rom_stride
                         );
-                    accumulator_q29 += input
-                        * quarter_lookup(
-                            kCosineQuarterQ15,
-                            window_phase
-                        )
+                    accumulator_q29 += windowed_q15[sample]
                         * quarter_lookup(
                             kCosineQuarterQ14,
                             cosine_phase

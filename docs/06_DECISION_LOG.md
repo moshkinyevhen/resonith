@@ -1845,3 +1845,21 @@ new oscillator opcode.
     and window multiplication inside every coefficient/sample MAC. The next
     kernel must hoist those operations once per transform frame, preserve exact
     arrays, and be remeasured before adding explicit SIMD or CUDA code.
+
+## R-069 — Hoist invariant forward-window work
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - materialize one signed Q15 windowed PCM block per channel and transform
+    frame on the stack;
+  - reuse that block for every coefficient dot product, removing repeated
+    padding branches, source indexing, window phase lookup, and window
+    multiplication from the inner MAC loop;
+  - preserve multiplication order and the Q29 accumulator exactly;
+  - require frozen-vector, dynamic Python/native parity, sanitizer, and timing
+    gates before accepting the rewrite.
+- Rationale:
+  - the same input sample and window value were recomputed `half_window` times;
+  - hoisting a mathematical invariant is simpler and more portable than adding
+    architecture intrinsics before the scalar dataflow is clean.
