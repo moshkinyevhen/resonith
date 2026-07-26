@@ -1,4 +1,5 @@
 #include "resonith/lapped.h"
+#include "resonith/lapped_compact.h"
 #include "resonith/lapped_packet.h"
 
 #include <algorithm>
@@ -214,6 +215,46 @@ int main() {
     if (!expect(
             packet_pcm == kExpectedAdaptiveLappedPcm,
             "LPS2 output equals monolithic adaptive LPF1"
+        )) {
+        return 1;
+    }
+
+    resonith_lapped_compact_session compact_session{};
+    resonith_lapped_compact_requirements compact_requirements{};
+    if (!expect(
+            resonith_lapped_compact_open(
+                kLappedCompactPacketStream.data(),
+                kLappedCompactPacketStream.size(),
+                &compact_session,
+                &compact_requirements
+            ) == RESONITH_STATUS_OK
+                && compact_requirements.frame_count == 96U
+                && compact_requirements.packet_frames == 64U
+                && compact_requirements.packet_count == 2U
+                && compact_requirements.maximum_current
+                    .transform_frame_count == 2U
+                && compact_requirements.maximum_current.scale_elements == 16U
+                && compact_requirements.maximum_current.count_elements == 4U
+                && compact_requirements.maximum_current.position_elements
+                    <= 32U
+                && compact_requirements.maximum_lookahead
+                    .transform_frame_count == 2U
+                && compact_requirements.maximum_logical_output_elements
+                    == 128U,
+            "LPS4 bounded compact preflight"
+        )) {
+        return 1;
+    }
+    auto compact_corrupted = kLappedCompactPacketStream;
+    compact_corrupted[compact_corrupted.size() - 5U] ^= 1U;
+    if (!expect(
+            resonith_lapped_compact_open(
+                compact_corrupted.data(),
+                compact_corrupted.size(),
+                &compact_session,
+                &compact_requirements
+            ) == RESONITH_STATUS_CHECKSUM_MISMATCH,
+            "LPS4 CRC corruption rejection"
         )) {
         return 1;
     }

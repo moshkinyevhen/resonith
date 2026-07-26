@@ -12,6 +12,7 @@ set(RESONITH_CORE_SOURCES
     src/container.cpp
     src/integrity.cpp
     src/lapped.cpp
+    src/lapped_compact.cpp
     src/lapped_packet.cpp
     src/liftpack.cpp
     src/multichannel.cpp
@@ -186,6 +187,26 @@ if(RESONITH_BUILD_FUZZERS)
         PROPERTIES CXX_EXTENSIONS OFF
     )
     resonith_enable_warnings(resonith_lapped_packet_fuzz)
+
+    add_executable(resonith_lapped_compact_fuzz
+        ${RESONITH_CORE_SOURCES}
+        fuzz/lapped_compact_fuzz.cpp
+    )
+    target_compile_features(resonith_lapped_compact_fuzz PRIVATE cxx_std_20)
+    target_include_directories(resonith_lapped_compact_fuzz
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    )
+    target_compile_options(resonith_lapped_compact_fuzz
+        PRIVATE -fsanitize=fuzzer,address,undefined
+    )
+    target_link_options(resonith_lapped_compact_fuzz
+        PRIVATE -fsanitize=fuzzer,address,undefined
+    )
+    set_target_properties(
+        resonith_lapped_compact_fuzz
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_lapped_compact_fuzz)
 endif()
 
 include(CTest)

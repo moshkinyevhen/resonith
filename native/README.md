@@ -122,6 +122,13 @@ on success. Both forms share the same entropy and integer synthesis kernel.
 The session borrows immutable input bytes and contains no hidden allocation or
 persistent transform state.
 
+`resonith_lapped_compact_open()` separately preflights prospective `LPS4`
+single-owner records. It verifies the sequence SHA-256, derived record lengths,
+every CRC-32, canonical padding, inherited shape, and maximum current plus
+one-record-lookahead resources without allocation. Native LPS4 PCM pulls remain
+prospective until the two-workspace boundary renderer passes cross-decoder and
+loss-scheduling gates.
+
 ## Sanitized fuzzing
 
 Clang builds the LiftPack, Main-0, seek-sidecar, and lapped-stream parsers and
@@ -133,7 +140,8 @@ cmake -S native -B build/fuzz \
   -DRESONITH_BUILD_FUZZERS=ON
 cmake --build build/fuzz \
   --target resonith_liftpack_fuzz resonith_main0_fuzz resonith_seek_fuzz \
-  resonith_lapped_fuzz resonith_lapped_packet_fuzz
+  resonith_lapped_fuzz resonith_lapped_packet_fuzz \
+  resonith_lapped_compact_fuzz
 python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
 build/fuzz/resonith_liftpack_fuzz \
   artifacts/fuzz_corpus/liftpack -runs=5000
@@ -145,12 +153,14 @@ build/fuzz/resonith_lapped_fuzz \
   artifacts/fuzz_corpus/lapped -runs=5000
 build/fuzz/resonith_lapped_packet_fuzz \
   artifacts/fuzz_corpus/lapped_packet -runs=5000
+build/fuzz/resonith_lapped_compact_fuzz \
+  artifacts/fuzz_corpus/lapped_compact -runs=5000
 ```
 
 The harnesses cap host allocations after a successful envelope inspection;
 the Core itself remains allocation-free. CI starts from deterministic valid
-RSL1, RSL2/LPC, zero-Atom, periodic-Atom, source-bound RSI1, and fixed- and
-adaptive-density LPF1, LPS1, and LPS2 seeds.
+RSL1, RSL2/LPC, zero-Atom, periodic-Atom, source-bound RSI1, fixed- and
+adaptive-density LPF1, LPS1, LPS2, and compact LPS4 seeds.
 Mutations therefore reach container, typed-section, seek, block, entropy,
 model-render, and inverse-DSP paths rather than stopping only at an outer
 checksum.

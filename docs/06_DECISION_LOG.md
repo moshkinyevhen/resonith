@@ -2248,3 +2248,37 @@ new oscillator opcode.
   - native compact parsing and scheduling, authenticated transport integration,
     physical-device measurements, and listening remain prospective. CRC-32 is
     not adversarial authentication.
+
+## R-081 — Separate bounded native LPS4 pull ABI
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - add a separate C99-compatible LPS4 session API instead of changing the
+    established LPS1/LPS2 packet-session layout or semantics;
+  - make `open` validate the sequence-header SHA-256, every derived record
+    length, every CRC-32, inherited transform shape, bounded arithmetic, exact
+    record coverage, and maximum caller-owned resources before exposing a
+    session;
+  - expose the current-record and one-record-lookahead requirements explicitly;
+    the eventual pull decoder receives two caller-owned field workspaces and
+    one caller-owned overlap/output workspace;
+  - keep `open` allocation-free and transactional. A failed pull writes no PCM
+    and does not advance the session;
+  - retain CRC-32 only as accidental-corruption detection. Transport
+    authentication and replay protection remain mandatory for adversarial
+    network input.
+- Rationale:
+  - LPS4 single ownership deliberately moves one transform boundary into the
+    following record. Hiding that dependency behind an internal allocation
+    would violate the real-time and embedded contract;
+  - a separate ABI keeps existing LPS1/LPS2 users source- and behavior-stable
+    while making the different LPS4 lookahead lifetime visible to hosts;
+  - full preflight converts hostile bit counts and record lengths into bounded
+    resource declarations before the audio callback.
+- Gate:
+  - frozen Python-authored LPS4 vectors, malformed-header and CRC rejection,
+    C-header compilation, x64/ARM64 cross-platform builds, and a sanitized
+    sequence-parser mutation target;
+  - exact cross-decoder PCM and transactional two-record pulls are a subsequent
+    gate, not implied by parser acceptance.

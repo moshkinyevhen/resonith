@@ -15,6 +15,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 from maf_p0.lpc_oracle import encode_lpc_liftpack_oracle  # noqa: E402
 from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
 from maf_p0.lapped_streaming import (  # noqa: E402
+    encode_lapped_compact_packet_stream,
     encode_lapped_packet_stream,
     encode_lapped_transform_packet_stream,
 )
@@ -37,11 +38,13 @@ def main() -> None:
     main0_directory = args.output_directory / "main0"
     seek_directory = args.output_directory / "seek"
     lapped_directory = args.output_directory / "lapped"
+    lapped_compact_directory = args.output_directory / "lapped_compact"
     lapped_packet_directory = args.output_directory / "lapped_packet"
     liftpack_directory.mkdir(parents=True, exist_ok=True)
     main0_directory.mkdir(parents=True, exist_ok=True)
     seek_directory.mkdir(parents=True, exist_ok=True)
     lapped_directory.mkdir(parents=True, exist_ok=True)
+    lapped_compact_directory.mkdir(parents=True, exist_ok=True)
     lapped_packet_directory.mkdir(parents=True, exist_ok=True)
 
     structured = np.concatenate(
@@ -153,6 +156,17 @@ def main() -> None:
     )
     (lapped_packet_directory / "transform_boundary.lps").write_bytes(
         transform_packeted.payload
+    )
+    compact_packeted = encode_lapped_compact_packet_stream(
+        lapped_samples,
+        48_000,
+        coefficients_per_frame=8,
+        packet_frames=64,
+        half_window=32,
+        band_count=4,
+    )
+    (lapped_compact_directory / "single_owner.lps").write_bytes(
+        compact_packeted.payload
     )
 
 
