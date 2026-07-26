@@ -1241,7 +1241,7 @@ class NativeMain0Decoder:
         self,
         payload: bytes,
     ) -> NativeLappedPacketDecodeResult:
-        """Decode an LPS4 sequence through the bounded two-workspace session."""
+        """Decode LPS4/LPS5 through the bounded two-workspace session."""
 
         source = self._input_buffer(payload)
         session = _LappedCompactSession()

@@ -1092,8 +1092,15 @@ def encode_lapped_finite_packet_stream(
         record_bytes.append(len(record) + 4)
 
     payload = bytes(body)
-    decoded = decode_lapped_packet_stream(payload)
-    if not np.array_equal(decoded.samples, monolithic.reconstruction):
+    if native_core is None:
+        decoded_samples = decode_lapped_packet_stream(payload).samples
+        verification_backend = "Python reference"
+    else:
+        decoded_samples = native_core.decode_lapped_compact_packets(
+            payload
+        ).samples
+        verification_backend = "native Golden Core"
+    if not np.array_equal(decoded_samples, monolithic.reconstruction):
         raise RuntimeError("LPS5 packet reconstruction differs from LPF1")
     report = {
         "status": "adaptive integer transport-framed research stream",
@@ -1112,6 +1119,7 @@ def encode_lapped_finite_packet_stream(
         "coefficients_per_frame": coefficients_per_frame,
         "density_backend": "adaptive-global",
         "entropy_backend": "bounded adaptive integer; reset per record",
+        "verification_backend": verification_backend,
         "packet_frames": packet_frames,
         "packet_count": packet_count,
         "packet_record_bytes": record_bytes,
@@ -1125,11 +1133,11 @@ def encode_lapped_finite_packet_stream(
         "exact_monolithic_reconstruction": True,
         **_quality_report(
             source.reshape(-1),
-            decoded.samples.reshape(-1),
+            decoded_samples.reshape(-1),
         ),
     }
     return LappedPacketEncodeResult(
         payload,
-        decoded.samples,
+        decoded_samples,
         report,
     )
