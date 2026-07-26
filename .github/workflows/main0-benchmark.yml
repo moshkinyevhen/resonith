@@ -2,6 +2,11 @@ name: Main-0 Licensed Music Benchmark
 
 on:
   workflow_dispatch:
+    inputs:
+      maximum_seconds:
+        description: Maximum licensed crop duration per clip
+        required: true
+        default: "1"
 
 permissions:
   contents: read
@@ -33,7 +38,7 @@ jobs:
         run: >
           python experiments/main0_native_music_benchmark.py
           --opus-tools /usr/bin
-          --maximum-seconds 1
+          --maximum-seconds ${{ inputs.maximum_seconds }}
       - uses: actions/upload-artifact@v6
         with:
           name: main0-native-music-${{ github.sha }}
