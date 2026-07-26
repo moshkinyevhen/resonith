@@ -2511,7 +2511,7 @@ new oscillator opcode.
 ## R-087 — Reproducible physical-host benchmark artifacts
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **PHYSICAL WINDOWS PASS / MOBILE PENDING**
 - Decision:
   - publish the warning-clean Windows x64 and Android arm64 callback benchmark
     executables as immutable artifacts of the same GitHub commit;
@@ -2531,3 +2531,17 @@ new oscillator opcode.
   - artifact publication succeeds from warning-as-error jobs;
   - all physical-host runs have zero deadline misses and stable PCM hashes;
   - desktop results MUST NOT be presented as phone energy or thermal evidence.
+- Result:
+  - GitHub Actions run 30214923144 published commit-bound Windows x64 and
+    Android arm64 executables; the Windows executable SHA-256 is
+    `7ca930346a5d4480cdb5a7dcae797147106610bedcaac05b5e02a24716cd3f38`;
+  - the current physical Windows host is an MSI MS-7885 with a 10-core,
+    20-thread Intel Xeon E5-2650 v3 and 34,254,712,832 bytes of RAM;
+  - three 3-second LPS4 streams each ran 100 measured passes after ten warmups,
+    producing 8,700 callback observations per clip and stable PCM hashes;
+  - complete decode speed was 9.81x through 12.33x realtime and caller
+    workspace was 29,516 through 37,754 bytes;
+  - all 26,100 callback observations met their individual logical deadline;
+    the worst p99 was 15.90 ms and the worst single callback was 20.71 ms;
+  - these figures establish physical Windows feasibility only. Android
+    temperature, sustained timing, power, and energy remain unmeasured.

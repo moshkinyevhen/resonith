@@ -1202,3 +1202,29 @@ raw sustained-run JSON before summarizing the worst callback tail.
 No physical phone is connected to the current development host, and ADB is not
 installed there. Therefore no mobile temperature, sustained deadline, power,
 or energy result is claimed yet.
+
+## 50. First physical-host callback result
+
+GitHub Actions run 30214923144 published the warning-clean Windows x64
+benchmark executable for commit `63a2be2`. Its SHA-256 is
+`7ca930346a5d4480cdb5a7dcae797147106610bedcaac05b5e02a24716cd3f38`.
+The exact artifact then ran on the current physical MSI MS-7885 host with a
+10-core, 20-thread Intel Xeon E5-2650 v3 at 2.30 GHz and 34.25 GB RAM.
+
+Each pinned 3-second LPS4 stream ran 100 measured complete passes after ten
+warmups. Every clip contains 87 approximately 34.83 ms logical records, giving
+8,700 callback observations per material and 26,100 total.
+
+| Crop | Median callback | p99 | Maximum | Realtime speed | Workspace | Misses |
+|---|---:|---:|---:|---:|---:|---:|
+| Corelli | 3.42 ms | 5.06 ms | 18.20 ms | 9.91x | 29,516 B | 0 |
+| Piano | 3.51 ms | 5.19 ms | 13.13 ms | 9.81x | 30,356 B | 0 |
+| Drums | 1.64 ms | 15.90 ms | 20.71 ms | 12.33x | 37,754 B | 0 |
+
+Every repeated PCM hash was stable and every callback met the deadline of its
+own logical interval. This is physical desktop feasibility, not a mobile power
+or thermal result. Scheduler outliers are retained in the maximum rather than
+discarded.
+
+The compact record is
+[`windows_x64_device_gate_2026-07-26_summary.json`](../experiments/results/windows_x64_device_gate_2026-07-26_summary.json).

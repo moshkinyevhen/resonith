@@ -133,6 +133,11 @@ coefficient-count range, table identity, and wall time. This path has passed
 objective and native portability gates but remains prospective until blinded
 listening and real-device timing pass.
 
+The first physical Windows x64 callback gate has passed 26,100 observations
+with zero deadline misses, 9.81x–12.33x realtime decode, and 29.5–37.8 KB
+caller workspace. This is desktop feasibility only; Android thermal and energy
+evidence remains open.
+
 The real-music experiment also emits a self-contained offline blind-listening
 application. It uses one Web Audio clock for the named reference, hidden
 reference, Resonith, Opus, and low-pass anchor, verifies every WAV hash, and

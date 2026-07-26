@@ -44,6 +44,9 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
 - Stateless LPS4 record-pair decode and the standalone callback-tail benchmark
   pass every cross-platform gate. An external ADB runner is ready for named
   phone temperature, frequency, deadline, and sustained-run evidence.
+- The exact CI-built Windows executable has completed 26,100 callback
+  observations on the current physical host with zero deadline misses,
+  9.81x-12.33x realtime decode, and 29.5-37.8 KB caller workspace.
 - Variable block lifetimes and three bounded waveform-domain stereo families
   failed their declared promotion gates and added no Main syntax.
 - Held-out cached-Basis overlap has now also failed its complete-byte gate:

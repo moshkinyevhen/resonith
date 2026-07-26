@@ -1,0 +1,75 @@
+{
+  "claim_scope": "Named physical Windows host callback timing; no phone, energy, or thermal claim",
+  "codec": "LPS4 fixed-integer bounded adaptive-density",
+  "device": {
+    "cpu": "Intel Xeon E5-2650 v3 @ 2.30 GHz",
+    "cpu_cores": 10,
+    "cpu_logical_processors": 20,
+    "memory_bytes": 34254712832,
+    "system_manufacturer": "MSI",
+    "system_model": "MS-7885",
+    "windows_architecture": "x64",
+    "windows_build": "22631",
+    "windows_version": "10.0.22631"
+  },
+  "executable": {
+    "artifact_name": "resonith-device-bench-windows-x64",
+    "artifact_run": 30214923144,
+    "commit": "63a2be29145d4b7b18ba6cb3880985a0bee2f4ad",
+    "sha256": "7ca930346a5d4480cdb5a7dcae797147106610bedcaac05b5e02a24716cd3f38"
+  },
+  "gate": {
+    "all_passes_exact": true,
+    "deadline_misses_total": 0,
+    "iterations_per_clip": 100,
+    "minimum_decode_realtime_speed": 9.805762392,
+    "warmups_per_clip": 10,
+    "worst_callback_seconds_maximum": 0.0207129,
+    "worst_callback_seconds_p99": 0.015902945
+  },
+  "results": {
+    "corelli-sonata-realization": {
+      "callback_observations": 8700,
+      "callback_seconds_max": 0.0181986,
+      "callback_seconds_median": 0.00342245,
+      "callback_seconds_min": 0.0010282,
+      "callback_seconds_p95": 0.004388605,
+      "callback_seconds_p99": 0.005062014,
+      "caller_workspace_bytes": 29516,
+      "deadline_misses": 0,
+      "decode_realtime_speed": 9.910454256,
+      "pcm_fnv1a64": "4c42b8d977199b60",
+      "stream_bytes": 47043,
+      "stream_sha256": "fc823381c827a4a3b4b8729b780df5ff25d539594e3b7673b1fd912a740bcd32"
+    },
+    "emotional-piano-cc0": {
+      "callback_observations": 8700,
+      "callback_seconds_max": 0.0131303,
+      "callback_seconds_median": 0.0035077,
+      "callback_seconds_min": 0.0011706,
+      "callback_seconds_p95": 0.00461094,
+      "callback_seconds_p99": 0.005189913,
+      "caller_workspace_bytes": 30356,
+      "deadline_misses": 0,
+      "decode_realtime_speed": 9.805762392,
+      "pcm_fnv1a64": "fa1c44510ac8b066",
+      "stream_bytes": 51863,
+      "stream_sha256": "954a098fd3c8098da25ee823c2839e047cd5fde6fa4a26077b6ae756a3d0d4fd"
+    },
+    "patro-de-bateria": {
+      "callback_observations": 8700,
+      "callback_seconds_max": 0.0207129,
+      "callback_seconds_median": 0.001644,
+      "callback_seconds_min": 0.0000554,
+      "callback_seconds_p95": 0.009767585,
+      "callback_seconds_p99": 0.015902945,
+      "caller_workspace_bytes": 37754,
+      "deadline_misses": 0,
+      "decode_realtime_speed": 12.32521368,
+      "pcm_fnv1a64": "3ff1ef95b9f0eaee",
+      "stream_bytes": 39235,
+      "stream_sha256": "9cfbadced5a485913496cd94d7130455b0ceeada18c54259c400795e9439a924"
+    }
+  },
+  "schema": "resonith-physical-host-device-gate-1"
+}
