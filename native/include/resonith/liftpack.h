@@ -62,6 +62,22 @@ RESONITH_API resonith_status resonith_liftpack_index_blocks(
 );
 
 /*
+ * Validates the complete stream envelope and all block envelopes, then
+ * decodes one independently seeded block. On failure, both outputs are zero.
+ */
+RESONITH_API resonith_status resonith_liftpack_decode_block(
+    const uint8_t* data,
+    size_t data_size,
+    uint32_t block_index,
+    int64_t* output,
+    size_t output_capacity,
+    int64_t* scratch,
+    size_t scratch_count,
+    uint32_t* sample_offset,
+    size_t* samples_written
+);
+
+/*
  * Decodes quantized objective residuals into caller-owned int64 storage.
  * Scratch and output must not overlap. On failure, samples_written is zero.
  */

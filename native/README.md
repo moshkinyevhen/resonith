@@ -46,8 +46,9 @@ mutable state.
 `resonith_liftpack_index_blocks()` validates each block envelope after the
 whole-stream CRC and emits exact byte offsets, sample offsets, transform IDs,
 entropy parameters, and LPC order. LiftPack blocks carry their own LPC seeds,
-so this index is the first allocation-free random-access primitive; a later
-player layer may cache it or serialize independently checked checkpoints.
+so `resonith_liftpack_decode_block()` can reconstruct one selected block into
+caller-owned memory without decoding earlier PCM. A player layer may cache the
+index or serialize independently checked checkpoints.
 
 ## Build and test
 

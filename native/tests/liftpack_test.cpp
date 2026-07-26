@@ -253,6 +253,52 @@ int main() {
             return 1;
         }
     }
+    std::array<std::int64_t, 64> block_output{};
+    std::uint32_t block_sample_offset = 99U;
+    std::size_t block_samples_written = 99U;
+    if (!expect(
+            resonith_liftpack_decode_block(
+                residual_section.payload,
+                residual_section.payload_size,
+                1U,
+                block_output.data(),
+                block_output.size(),
+                scratch.data(),
+                scratch.size(),
+                &block_sample_offset,
+                &block_samples_written
+            ) == RESONITH_STATUS_OK
+                && block_sample_offset == 64U
+                && block_samples_written == block_output.size()
+                && std::equal(
+                    block_output.begin(),
+                    block_output.end(),
+                    output.begin() + 64
+                ),
+            "independently seeded LiftPack-1 block decode"
+        )) {
+        return 1;
+    }
+    block_sample_offset = 99U;
+    block_samples_written = 99U;
+    if (!expect(
+            resonith_liftpack_decode_block(
+                residual_section.payload,
+                residual_section.payload_size,
+                3U,
+                block_output.data(),
+                block_output.size(),
+                scratch.data(),
+                scratch.size(),
+                &block_sample_offset,
+                &block_samples_written
+            ) == RESONITH_STATUS_NOT_FOUND
+                && block_sample_offset == 0U
+                && block_samples_written == 0U,
+            "LiftPack block-index bound"
+        )) {
+        return 1;
+    }
 
     std::array<std::int64_t, 64> all_modes_output{};
     written = 0;
@@ -339,6 +385,28 @@ int main() {
                 && lpc_index[0].byte_offset + lpc_index[0].byte_size
                     == kLpcStream.size() - 4U,
             "LiftPack-2 LPC block index"
+        )) {
+        return 1;
+    }
+    std::array<std::int64_t, kLpcExpected.size()> lpc_block_output{};
+    block_sample_offset = 99U;
+    block_samples_written = 99U;
+    if (!expect(
+            resonith_liftpack_decode_block(
+                kLpcStream.data(),
+                kLpcStream.size(),
+                0U,
+                lpc_block_output.data(),
+                lpc_block_output.size(),
+                scratch.data(),
+                scratch.size(),
+                &block_sample_offset,
+                &block_samples_written
+            ) == RESONITH_STATUS_OK
+                && block_sample_offset == 0U
+                && block_samples_written == kLpcExpected.size()
+                && lpc_block_output == kLpcExpected,
+            "independently seeded LiftPack-2 LPC block decode"
         )) {
         return 1;
     }

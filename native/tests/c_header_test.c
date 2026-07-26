@@ -112,5 +112,24 @@ int main(void) {
     ) {
         return 1;
     }
+    uint32_t block_sample_offset = 99U;
+    size_t block_samples_written = 99U;
+    if (
+        resonith_liftpack_decode_block(
+            NULL,
+            0U,
+            0U,
+            NULL,
+            0U,
+            NULL,
+            0U,
+            &block_sample_offset,
+            &block_samples_written
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+        || block_sample_offset != 0U
+        || block_samples_written != 0U
+    ) {
+        return 1;
+    }
     return resonith_status_string(status) == NULL ? 1 : 0;
 }

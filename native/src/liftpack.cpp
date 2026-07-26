@@ -576,6 +576,122 @@ extern "C" resonith_status resonith_liftpack_index_blocks(
     return RESONITH_STATUS_OK;
 }
 
+extern "C" resonith_status resonith_liftpack_decode_block(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    std::uint32_t block_index,
+    std::int64_t* output,
+    std::size_t output_capacity,
+    std::int64_t* scratch,
+    std::size_t scratch_count,
+    std::uint32_t* sample_offset,
+    std::size_t* samples_written
+) {
+    if (sample_offset == nullptr || samples_written == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *sample_offset = 0U;
+    *samples_written = 0U;
+    resonith_liftpack_info info{};
+    const resonith_status inspect_status = resonith_liftpack_inspect(
+        data,
+        data_size,
+        &info
+    );
+    if (inspect_status != RESONITH_STATUS_OK) {
+        return inspect_status;
+    }
+    if (block_index >= info.block_count) {
+        return RESONITH_STATUS_NOT_FOUND;
+    }
+    if (output == nullptr || scratch == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    const std::size_t required_scratch = resonith_liftpack_required_scratch(
+        &info
+    );
+    if (scratch_count < required_scratch) {
+        return RESONITH_STATUS_SCRATCH_TOO_SMALL;
+    }
+
+    const std::size_t body_size = data_size - kChecksumBytes;
+    const bool lpc_stream = std::memcmp(data, "RSL2", 4) == 0;
+    std::size_t cursor = kStreamHeaderBytes;
+    std::size_t current_sample_offset = 0U;
+    std::size_t target_sample_offset = 0U;
+    ParsedBlock target{};
+    for (std::uint32_t index = 0; index < info.block_count; ++index) {
+        const std::size_t expected_length = std::min<std::size_t>(
+            info.block_size,
+            info.sample_count - current_sample_offset
+        );
+        ParsedBlock parsed{};
+        const resonith_status status = parse_block(
+            data,
+            body_size,
+            lpc_stream,
+            expected_length,
+            cursor,
+            parsed
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        if (index == block_index) {
+            target = parsed;
+            target_sample_offset = current_sample_offset;
+        }
+        current_sample_offset += parsed.sample_count;
+    }
+    if (current_sample_offset != info.sample_count || cursor != body_size) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    if (output_capacity < target.sample_count) {
+        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    }
+
+    BitReader reader(
+        data + target.payload_offset,
+        target.payload_bytes,
+        target.bit_count
+    );
+    resonith_status status = decode_entropy(
+        reader,
+        target.entropy,
+        target.entropy_parameter,
+        target.coefficient_count,
+        scratch
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    if (reader.position() != target.bit_count) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    status = target.transform == kTransformLpc
+        ? inverse_lpc(
+            scratch,
+            target.sample_count,
+            target.lpc_coefficients,
+            target.lpc_order,
+            output
+        )
+        : inverse_transform(
+            target.transform,
+            scratch,
+            target.coefficient_count,
+            target.sample_count,
+            scratch + target.coefficient_count,
+            output
+        );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    *sample_offset = static_cast<std::uint32_t>(target_sample_offset);
+    *samples_written = target.sample_count;
+    return RESONITH_STATUS_OK;
+}
+
 extern "C" resonith_status resonith_liftpack_decode(
     const std::uint8_t* data,
     std::size_t data_size,
