@@ -226,7 +226,63 @@ The project should use CMake Presets as the portable native build contract,
 with Ninja in CI. Package managers may assist development, but the Core keeps
 zero mandatory third-party runtime dependencies.
 
-## 11. Evidence from current codecs
+## 11. Commenting and debug-readability contract
+
+Comments are part of the engineering interface. They MUST maximize useful
+debugging information for both human contributors and AI agents without
+turning source files into prose.
+
+### Required comments
+
+- Every public C ABI symbol, externally visible type, and non-obvious module
+  has a concise contract: inputs, outputs, ownership, lifetime, thread-safety,
+  error behavior, and resource bounds.
+- Every normative DSP kernel cites the applicable specification clause and
+  states Q-format, accumulator width, rounding, saturation, overflow, phase,
+  and aliasing assumptions.
+- Every Atom or Basis state mutation explains its preconditions, atomic commit
+  point, rollback behavior, and the invariant preserved after failure.
+- Every lock-free queue, SIMD path, and platform adapter explains its memory
+  ordering, real-time assumptions, and exact equivalence to the scalar path.
+- Every security boundary states what has already been validated and what
+  remains untrusted.
+- A non-trivial function is divided into a few named logical phases when this
+  makes control flow visibly easier to debug, for example:
+
+  ```cpp
+  // 1. Validate the complete BASIS_SET without mutating the Basis Bank.
+  // 2. Materialize and hash the candidate in bounded staging memory.
+  // 3. Commit atomically, or discard the candidate on any mismatch.
+  ```
+
+### Noise is prohibited
+
+- Do not restate syntax, types, or operations already obvious from the code.
+- Do not comment every line, use decorative ASCII banners, or duplicate the
+  specification inside source files.
+- Remove dead commented-out code; version control already preserves history.
+- A `TODO`, `FIXME`, temporary approximation, or unexplained constant MUST
+  include a tracked issue or decision identifier and an explicit removal gate.
+- Comments MUST be updated in the same commit as the behavior they describe.
+  A stale comment is treated as a defect.
+
+### Debug visibility
+
+- Complex pipelines expose optional structured trace events with stable IDs
+  for parse, validate, stage, synthesize, render, commit, fallback, and reject
+  phases.
+- Trace output is deterministic for a deterministic input, carries sample
+  timestamps and Atom/Basis IDs, and can be compared across implementations.
+- Logging is compiled out or disabled by default in the audio callback and
+  never changes scheduling, allocation, state, or decoded samples.
+- Assertions document internal invariants; malformed external input follows
+  checked error paths rather than assertions.
+
+Comment quantity is never a quality metric. Review evaluates whether a new
+contributor can identify the contract, invariants, state transition, numerical
+rules, and failure path without reading unrelated code.
+
+## 12. Evidence from current codecs
 
 - The Opus reference implementation is portable C and supports C89/C99,
   including a fixed-point build:

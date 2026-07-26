@@ -345,3 +345,28 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
     gates.
 - Canonical engineering document:
   `11_IMPLEMENTATION_LANGUAGE.md`.
+
+## R-023 — High-signal commenting and deterministic debug visibility
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / ENGINEERING DECISION**
+- Decision:
+  - source comments are a maintained engineering interface for human and AI
+    debugging;
+  - public APIs, normative DSP kernels, Atom/Basis transitions, fixed-point
+    and phase rules, security boundaries, concurrency, and real-time behavior
+    require concise contract comments;
+  - complex functions use a few named logical phases when this makes the
+    pipeline visibly easier to inspect;
+  - comments that merely restate code, line-by-line narration, decorative
+    banners, duplicated specifications, and dead commented-out code are
+    prohibited;
+  - every `TODO`, `FIXME`, approximation, and unexplained constant carries a
+    tracked issue or decision identifier and a removal gate;
+  - deterministic structured traces expose parse, validate, stage, synthesize,
+    render, commit, fallback, and reject phases, but are disabled by default in
+    the audio callback;
+  - stale comments fail review and must be updated with behavior in the same
+    commit.
+- Canonical contract:
+  section 11 of `11_IMPLEMENTATION_LANGUAGE.md`.

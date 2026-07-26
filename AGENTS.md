@@ -48,6 +48,23 @@ Never present a **TARGET** or **HYPOTHESIS** as a measured result.
 - Historical source material in another language must remain outside the
   public repository or be accompanied by a complete English record.
 
+## Source-comment contract
+
+- Comment intent, invariants, fixed-point and phase rules, ownership, state
+  transitions, real-time constraints, security boundaries, and non-obvious
+  tradeoffs.
+- Divide complex functions into a few named logical phases when this materially
+  improves navigation and debugging.
+- Do not narrate obvious syntax, comment every line, add decorative banners,
+  or leave dead code commented out.
+- Public APIs and normative DSP kernels require concise contract comments and
+  a link to the relevant specification clause.
+- `TODO` and `FIXME` comments require a tracked issue or decision identifier
+  and a removal gate.
+- Comment drift is a defect: behavior and comments change in the same commit.
+- Structured debug traces must be deterministic, optional, and absent from the
+  audio callback by default.
+
 ## Validation
 
 After a change, verify:
@@ -59,4 +76,5 @@ After a change, verify:
 5. absence of secrets, unnecessary personal data, and undocumented
    dependencies;
 6. zero Cyrillic text in tracked public files;
-7. relevant tests, conformance hashes, and cross-platform build checks.
+7. relevant tests, conformance hashes, and cross-platform build checks;
+8. source comments satisfy the signal-to-noise and debug-readability contract.
