@@ -12,6 +12,11 @@ from .lpc_oracle import (
     decode_lpc_liftpack_block,
     index_lpc_liftpack_blocks,
 )
+from .lapped_streaming import (
+    decode_lapped_packet_stream,
+    decode_lapped_packet_view,
+    index_lapped_packet_stream,
+)
 from .multichannel import decode_main0_independent_stream
 from .rsc1 import parse_rsc1
 from .stream_sections import unpack_conf
@@ -204,6 +209,119 @@ def simulate_aligned_packet_loss(
         "exact_outside_loss": exact_outside_loss,
         "all_recoverable_next_blocks_exact": all(
             item["next_block_exact"] is not False
+            for item in recovery_checks
+        ),
+        "recovery_checks": recovery_checks,
+        **_quality_report(
+            truth_result.samples.reshape(-1),
+            output.reshape(-1),
+        ),
+    }
+    return PacketLossSimulationResult(
+        reconstruction=output,
+        truth=truth_result.samples,
+        report=report,
+    )
+
+
+def simulate_lapped_packet_loss(
+    payload: bytes,
+    *,
+    lost_packets: tuple[int, ...] | list[int],
+    native_decoder=None,
+) -> PacketLossSimulationResult:
+    """Conceal absent LPS1 records without contaminating later Truth."""
+
+    info = index_lapped_packet_stream(payload)
+    truth_result = decode_lapped_packet_stream(
+        payload,
+        native_decoder=native_decoder,
+    )
+    packet_count = len(info.packets)
+    losses = tuple(sorted({int(value) for value in lost_packets}))
+    if any(packet < 0 or packet >= packet_count for packet in losses):
+        raise ValueError("lost LPS1 packet index exceeds the stream")
+    lost_set = frozenset(losses)
+    output = np.empty_like(truth_result.samples)
+    affected = np.zeros(info.total_frames, dtype=np.bool_)
+    lost_payload_bytes = 0
+
+    for packet in info.packets:
+        start = packet.logical_start
+        end = start + packet.logical_count
+        if packet.packet_index in lost_set:
+            previous = (
+                output[start - 1]
+                if start > 0
+                else np.zeros(info.channels, dtype=np.int16)
+            )
+            output[start:end] = _fade_last_frame(
+                previous,
+                packet.logical_count,
+            )
+            affected[start:end] = True
+            lost_payload_bytes += len(packet.child_payload)
+            continue
+        output[start:end] = decode_lapped_packet_view(
+            info,
+            packet,
+            native_decoder=native_decoder,
+        )
+
+    recovery_checks: list[dict] = []
+    for first, last in _loss_runs(losses):
+        next_packet = last + 1
+        if next_packet >= packet_count:
+            recovery_checks.append(
+                {
+                    "lost_packet_start": first,
+                    "lost_packet_end": last,
+                    "next_packet": None,
+                    "next_packet_exact": None,
+                }
+            )
+            continue
+        packet = info.packets[next_packet]
+        start = packet.logical_start
+        end = start + packet.logical_count
+        recovery_checks.append(
+            {
+                "lost_packet_start": first,
+                "lost_packet_end": last,
+                "next_packet": next_packet,
+                "next_packet_exact": bool(
+                    np.array_equal(
+                        output[start:end],
+                        truth_result.samples[start:end],
+                    )
+                ),
+            }
+        )
+
+    exact_outside_loss = bool(
+        np.array_equal(
+            output[~affected],
+            truth_result.samples[~affected],
+        )
+    )
+    output.flags.writeable = False
+    report = {
+        "status": "research LPS1 transport-loss containment simulation",
+        "loss_model": (
+            "authenticated packet record absent after transport demultiplexing"
+        ),
+        "concealment": "integer fade from last available frame to zero",
+        "truth_reference_uses_concealment": False,
+        "packet_count": packet_count,
+        "packet_frames": info.packet_frames,
+        "lost_packets": list(losses),
+        "loss_runs": [list(run) for run in _loss_runs(losses)],
+        "lost_packet_fraction": len(losses) / packet_count,
+        "affected_frames": int(np.count_nonzero(affected)),
+        "lost_child_payload_bytes": lost_payload_bytes,
+        "exact_outside_loss": exact_outside_loss,
+        "all_recoverable_next_packets_exact": all(
+            item["next_packet_exact"] is not False
             for item in recovery_checks
         ),
         "recovery_checks": recovery_checks,

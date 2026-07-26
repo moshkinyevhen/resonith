@@ -13,8 +13,11 @@ sys.path.insert(0, str(REPOSITORY_ROOT / "reference"))
 from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
 from maf_p0.lapped_streaming import (  # noqa: E402
     decode_lapped_packet_stream,
+    decode_lapped_packet_view,
     encode_lapped_packet_stream,
+    index_lapped_packet_stream,
 )
+from maf_p0.packet_loss import simulate_lapped_packet_loss  # noqa: E402
 
 
 class LappedStreamingTests(unittest.TestCase):
@@ -89,6 +92,44 @@ class LappedStreamingTests(unittest.TestCase):
                 half_window=128,
                 band_count=12,
             )
+
+    def test_packet_loss_is_exactly_contained(self) -> None:
+        source = self._stereo(4096)
+        encoded = encode_lapped_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+            density_backend="adaptive",
+        )
+        info = index_lapped_packet_stream(encoded.payload)
+        third = decode_lapped_packet_view(info, info.packets[2])
+        simulation = simulate_lapped_packet_loss(
+            encoded.payload,
+            lost_packets=(1,),
+        )
+
+        np.testing.assert_array_equal(
+            third,
+            simulation.truth[2048:3072],
+        )
+        np.testing.assert_array_equal(
+            simulation.reconstruction[:1024],
+            simulation.truth[:1024],
+        )
+        np.testing.assert_array_equal(
+            simulation.reconstruction[2048:],
+            simulation.truth[2048:],
+        )
+        self.assertTrue(simulation.report["exact_outside_loss"])
+        self.assertTrue(
+            simulation.report["all_recoverable_next_packets_exact"]
+        )
+        self.assertFalse(
+            simulation.report["truth_reference_uses_concealment"]
+        )
 
 
 if __name__ == "__main__":

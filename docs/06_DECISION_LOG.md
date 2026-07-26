@@ -1997,3 +1997,26 @@ new oscillator opcode.
     validation, allocation of caller arrays, entropy decode, integer
     synthesis, context trim, interleave, and NumPy copy;
   - physical-device power, thermal throttling, and transport I/O remain open.
+
+## R-074 — Packet loss never mutates lapped Truth
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - expose one independently authenticated LPS1 packet view after envelope
+    demultiplexing and decode each available child without earlier children;
+  - model loss only after authentication/demultiplexing, as a transport packet
+    that did not arrive, rather than weakening corruption rejection;
+  - fill a missing logical interval with deterministic bounded integer
+    concealment in the player output layer;
+  - never feed concealed PCM, inferred coefficients, or generative detail into
+    Truth state;
+  - require exact PCM equality to uninterrupted decode at every frame outside
+    lost packet intervals and at the first later available packet.
+- Rationale:
+  - independent context is valuable only if the decoder does not propagate a
+    missing packet through overlap, entropy, phase, or prediction state;
+  - transport loss and authenticated corruption are different conditions:
+    corruption must remain a hard error, while absence may be concealed;
+  - a simple exact containment gate should precede FEC or learned concealment,
+    both of which can improve missing audio without changing codec Truth.

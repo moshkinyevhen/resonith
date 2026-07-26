@@ -91,6 +91,9 @@ reproducible command and independent decode.
   exact Python/native parity, and complete caller-owned workspace gate.
 - `results/native_lapped_packet_timing_2026-07-26_summary.json` — the R-073
   hosted x64 pass; physical-device energy and transport I/O remain open.
+- `lapped_packet_loss_gate.py` — R-074 authenticated-packet absence,
+  deterministic output-only concealment, and exact later-Truth recovery on
+  pinned real music.
 - `results/native_lapped_frontier_timing_2026-07-26_summary.json` — the R-070
   exact native-RDO speedup over the shared-analysis Python path.
 - `results/native_lapped_analysis_timing_2026-07-26_summary.json` — the R-068

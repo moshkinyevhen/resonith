@@ -38,8 +38,12 @@ from .lapped_oracle import (
 from .lapped_streaming import (
     LappedPacketDecodeResult,
     LappedPacketEncodeResult,
+    LappedPacketStreamInfo,
+    LappedPacketView,
     decode_lapped_packet_stream,
+    decode_lapped_packet_view,
     encode_lapped_packet_stream,
+    index_lapped_packet_stream,
 )
 from .main0 import (
     Main0DecodeResult,
@@ -69,6 +73,7 @@ from .native_core import (
 from .packet_loss import (
     PacketLossSimulationResult,
     simulate_aligned_packet_loss,
+    simulate_lapped_packet_loss,
 )
 from .opus_anchor import run_opus_multichannel_anchor
 from .periodic import PhaseTrajectory
@@ -104,6 +109,8 @@ __all__ = [
     "LappedAnalysis",
     "LappedPacketDecodeResult",
     "LappedPacketEncodeResult",
+    "LappedPacketStreamInfo",
+    "LappedPacketView",
     "NativeMain0Decoder",
     "NativeMultichannelDecodeResult",
     "NativeMultichannelRequirements",
@@ -133,15 +140,18 @@ __all__ = [
     "decode_lpc_liftpack_block",
     "decode_lapped_stream",
     "decode_lapped_packet_stream",
+    "decode_lapped_packet_view",
     "encode_lapped_analysis",
     "encode_liftpack",
     "encode_lpc_liftpack_oracle",
     "encode_lapped_stream",
     "encode_lapped_packet_stream",
+    "index_lapped_packet_stream",
     "index_lpc_liftpack_blocks",
     "SegmentationResult",
     "segment_acoustic_states",
     "simulate_aligned_packet_loss",
+    "simulate_lapped_packet_loss",
     "encode_basis_latent",
     "load_analysis_model",
     "save_analysis_model",

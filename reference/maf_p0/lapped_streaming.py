@@ -44,6 +44,29 @@ class LappedPacketEncodeResult:
     report: dict
 
 
+@dataclass(frozen=True)
+class LappedPacketView:
+    """One authenticated independently decodable logical interval."""
+
+    packet_index: int
+    logical_start: int
+    logical_count: int
+    child_payload: bytes
+
+
+@dataclass(frozen=True)
+class LappedPacketStreamInfo:
+    """Authenticated LPS1 envelope and packet index."""
+
+    channels: int
+    sample_rate: int
+    total_frames: int
+    half_window: int
+    band_count: int
+    packet_frames: int
+    packets: tuple[LappedPacketView, ...]
+
+
 def _validate_header(
     channels: int,
     sample_rate: int,
@@ -77,6 +100,31 @@ def decode_lapped_packet_stream(
     native_decoder=None,
 ) -> LappedPacketDecodeResult:
     """Decode independently verifiable context packets to contiguous PCM."""
+
+    info = index_lapped_packet_stream(payload)
+    output = np.empty((info.total_frames, info.channels), dtype=np.int16)
+    for packet in info.packets:
+        block = decode_lapped_packet_view(
+            info,
+            packet,
+            native_decoder=native_decoder,
+        )
+        output[
+            packet.logical_start : packet.logical_start + packet.logical_count
+        ] = block
+    output.flags.writeable = False
+    return LappedPacketDecodeResult(
+        info.sample_rate,
+        output,
+        info.half_window,
+        info.band_count,
+        info.packet_frames,
+        len(info.packets),
+    )
+
+
+def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
+    """Authenticate an LPS1 envelope and expose immutable packet records."""
 
     if (
         not isinstance(payload, bytes)
@@ -113,9 +161,9 @@ def decode_lapped_packet_stream(
         packet_frames,
         packet_count,
     )
-    output = np.empty((total_frames, channels), dtype=np.int16)
     cursor = HEADER.size + DIGEST_BYTES
     expected_start = 0
+    packets: list[LappedPacketView] = []
     for packet_index in range(packet_count):
         if cursor + PACKET_HEADER.size > len(payload):
             raise ValueError("truncated LPS1 packet header")
@@ -143,43 +191,72 @@ def decode_lapped_packet_stream(
         ):
             raise ValueError("LPS1 packet integrity mismatch")
         cursor += DIGEST_BYTES
-        if native_decoder is None:
-            child = decode_lapped_stream(child_payload)
-            child_samples = child.samples
-            child_sample_rate = child.sample_rate
-            child_half_window = child.half_window
-            child_band_count = child.band_count
-        else:
-            native = native_decoder.decode_lapped(child_payload)
-            child_samples = native.samples
-            child_sample_rate = native.sample_rate
-            child_half_window = native.requirements.half_window
-            child_band_count = native.requirements.band_count
-        if (
-            child_sample_rate != sample_rate
-            or child_half_window != half_window
-            or child_band_count != band_count
-            or child_samples.shape != (
-                logical_count + 2 * half_window,
-                channels,
+        packets.append(
+            LappedPacketView(
+                packet_index,
+                logical_start,
+                logical_count,
+                child_payload,
             )
-        ):
-            raise ValueError("LPS1 child stream differs from its envelope")
-        output[logical_start : logical_start + logical_count] = child_samples[
-            half_window : half_window + logical_count
-        ]
+        )
         expected_start += logical_count
     if cursor != len(payload) or expected_start != total_frames:
         raise ValueError("trailing or incomplete LPS1 packet sequence")
-    output.flags.writeable = False
-    return LappedPacketDecodeResult(
+    return LappedPacketStreamInfo(
+        channels,
         sample_rate,
-        output,
+        total_frames,
         half_window,
         band_count,
         packet_frames,
-        packet_count,
+        tuple(packets),
     )
+
+
+def decode_lapped_packet_view(
+    info: LappedPacketStreamInfo,
+    packet: LappedPacketView,
+    *,
+    native_decoder=None,
+) -> np.ndarray:
+    """Decode one authenticated packet without using adjacent packet state."""
+
+    if not isinstance(info, LappedPacketStreamInfo):
+        raise TypeError("LPS1 stream info has an invalid type")
+    if (
+        not isinstance(packet, LappedPacketView)
+        or packet.packet_index < 0
+        or packet.packet_index >= len(info.packets)
+        or info.packets[packet.packet_index] != packet
+    ):
+        raise ValueError("LPS1 packet view is not part of this envelope")
+    if native_decoder is None:
+        child = decode_lapped_stream(packet.child_payload)
+        child_samples = child.samples
+        child_sample_rate = child.sample_rate
+        child_half_window = child.half_window
+        child_band_count = child.band_count
+    else:
+        native = native_decoder.decode_lapped(packet.child_payload)
+        child_samples = native.samples
+        child_sample_rate = native.sample_rate
+        child_half_window = native.requirements.half_window
+        child_band_count = native.requirements.band_count
+    if (
+        child_sample_rate != info.sample_rate
+        or child_half_window != info.half_window
+        or child_band_count != info.band_count
+        or child_samples.shape != (
+            packet.logical_count + 2 * info.half_window,
+            info.channels,
+        )
+    ):
+        raise ValueError("LPS1 child stream differs from its envelope")
+    logical = child_samples[
+        info.half_window : info.half_window + packet.logical_count
+    ]
+    logical.flags.writeable = False
+    return logical
 
 
 def encode_lapped_packet_stream(
