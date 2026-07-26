@@ -1,0 +1,44 @@
+{
+  "clips": {
+    "corelli-sonata-realization": {
+      "average_coefficients": 61,
+      "decode_realtime_factor_median": 0.058148781999999954,
+      "decode_wall_seconds_max": 0.05901916999999912,
+      "decode_wall_seconds_median": 0.058148781999999954,
+      "decode_wall_seconds_min": 0.05800434100000018,
+      "duration_seconds": 1.0,
+      "stream_bytes": 15844,
+      "workspace_bytes": 397358
+    },
+    "emotional-piano-cc0": {
+      "average_coefficients": 66,
+      "decode_realtime_factor_median": 0.052020229499998294,
+      "decode_wall_seconds_max": 0.05220731000000001,
+      "decode_wall_seconds_median": 0.052020229499998294,
+      "decode_wall_seconds_min": 0.05184237799999636,
+      "duration_seconds": 1.0,
+      "stream_bytes": 15257,
+      "workspace_bytes": 399968
+    },
+    "patro-de-bateria": {
+      "average_coefficients": 46,
+      "decode_realtime_factor_median": 0.04891429150000093,
+      "decode_wall_seconds_max": 0.04936214899999669,
+      "decode_wall_seconds_median": 0.04891429150000093,
+      "decode_wall_seconds_min": 0.04886740400000633,
+      "duration_seconds": 1.0,
+      "stream_bytes": 12514,
+      "workspace_bytes": 389528
+    }
+  },
+  "conclusion": "The allocation-explicit native decoder meets a one-stream real-time host deadline with 17.2x-20.4x measured margin; physical-device thermal and battery gates remain open.",
+  "github_actions_run": 30208323632,
+  "iterations": 10,
+  "platform": {
+    "machine": "X64",
+    "operating_system": "GitHub-hosted Linux"
+  },
+  "research_only": true,
+  "timing_scope": "ctypes call plus caller-array allocation, inspect, verify, entropy decode, synthesis, interleave, and NumPy copy",
+  "warmups": 2
+}

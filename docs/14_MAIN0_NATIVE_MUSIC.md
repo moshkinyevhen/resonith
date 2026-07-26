@@ -728,3 +728,24 @@ but they provide no evidence that short-window switching earns decoder state.
 Mixed-window syntax is therefore closed, preserving one regular transform.
 The compact record is
 [`window_transient_2026-07-26_summary.json`](../experiments/results/window_transient_2026-07-26_summary.json).
+
+## 30. Native host timing gate
+
+The release C++ LPF1 decoder was built and timed in GitHub Actions run
+30208323632 on the three pinned one-second stereo crops. Every sample first
+passed exact Python/native PCM parity. Timing includes the ctypes call,
+caller-array allocation, complete stream inspection and verification, entropy
+decode, integer synthesis, interleave, and a NumPy copy.
+
+| Crop | Stream bytes | Median decode | Real-time factor | Workspace |
+| --- | ---: | ---: | ---: | ---: |
+| Corelli | 15,844 | 58.15 ms | 0.0581x | 397,358 B |
+| Piano | 15,257 | 52.02 ms | 0.0520x | 399,968 B |
+| Drums | 12,514 | 48.91 ms | 0.0489x | 389,528 B |
+
+This is 17.2x-20.4x one-stream real-time margin on a hosted x64 runner despite
+including conservative binding overhead. It clears the first native deadline
+gate, but it is not a device-energy claim: physical Android/ARM64 thermal,
+battery, concurrency, and hostile-stream worst-case measurements remain open.
+The compact record is
+[`native_lapped_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_timing_2026-07-26_summary.json).

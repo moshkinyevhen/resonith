@@ -83,6 +83,8 @@ reproducible command and independent decode.
 - `native_lapped_timing.py` — R-063 release C++ decode timing, exact
   Python/native parity, and caller-owned workspace accounting on the pinned
   real-music crops.
+- `results/native_lapped_timing_2026-07-26_summary.json` — the R-063 hosted
+  x64 timing result; physical-device energy and thermal gates remain open.
 - `window_transient_gate.py` — R-064 all-long/all-short nearest-byte
   comparison using waveform, multi-resolution spectral, and onset-local
   pre-echo diagnostics before any mixed-window syntax.

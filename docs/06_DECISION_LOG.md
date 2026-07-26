@@ -1668,7 +1668,7 @@ new oscillator opcode.
 ## R-063 — Reproducible native lapped timing gate
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING / RESEARCH**
+- Status: **MEASURED HOST PASS / PHYSICAL DEVICE PENDING / RESEARCH**
 - Decision:
   - benchmark the release C++ decoder on the same pinned one-second stereo
     music crops and selected adaptive-density budgets used by the compression
@@ -1687,6 +1687,17 @@ new oscillator opcode.
     margin;
   - using real selected streams reveals parser, entropy, sparse-density, ROM
     lookup, overlap, interleave, and host binding costs together.
+- Result:
+  - GitHub Actions run 30208323632 decoded each one-second stereo crop in a
+    median 48.91-58.15 ms, or 0.049-0.058 times real time;
+  - the measured scope includes the ctypes call, caller-array allocation,
+    stream inspection and verification, entropy decode, synthesis, interleave,
+    and a NumPy copy rather than timing only an isolated kernel;
+  - exact caller-owned workspace was 389,528-399,968 bytes for the selected
+    one-second streams;
+  - this establishes ample x64 host deadline margin, not mobile energy,
+    concurrent-stream capacity, or worst-case hostile-stream performance.
+    Physical Android/ARM64 thermal and battery measurements remain open.
 
 ## R-064 — Short-window transient oracle before window-switch syntax
 
