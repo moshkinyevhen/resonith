@@ -59,6 +59,32 @@ class LappedOracleTests(unittest.TestCase):
         self.assertEqual(decoded.samples.shape, source.shape)
         self.assertEqual(decoded.sample_rate, 48000)
         self.assertGreater(encoded.report["snr_db"], 10.0)
+        self.assertIn("bounded sparse", encoded.report["entropy_backend"])
+
+    def test_zlib_comparator_reconstructs_identically(self) -> None:
+        source = self._stereo(2048)
+        bounded = encode_lapped_stream(
+            source,
+            48000,
+            coefficients_per_frame=32,
+            half_window=256,
+            band_count=16,
+            entropy_backend="bounded",
+        )
+        zlib_comparator = encode_lapped_stream(
+            source,
+            48000,
+            coefficients_per_frame=32,
+            half_window=256,
+            band_count=16,
+            entropy_backend="zlib",
+        )
+
+        np.testing.assert_array_equal(
+            bounded.reconstruction,
+            zlib_comparator.reconstruction,
+        )
+        self.assertNotEqual(bounded.payload, zlib_comparator.payload)
 
     def test_more_coefficients_improve_the_sanity_metric(self) -> None:
         source = self._stereo(2048)

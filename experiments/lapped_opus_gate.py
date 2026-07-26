@@ -47,6 +47,16 @@ def main() -> None:
     )
     parser.add_argument("--half-window", type=int, default=512)
     parser.add_argument("--band-count", type=int, default=24)
+    parser.add_argument(
+        "--entropy-backend",
+        choices=("bounded", "zlib"),
+        default="bounded",
+    )
+    parser.add_argument(
+        "--transform-backend",
+        choices=("fixed", "float"),
+        default="fixed",
+    )
     parser.add_argument("--opus-bitrate", type=int, default=96)
     parser.add_argument("--opus-tools", type=Path)
     parser.add_argument(
@@ -65,6 +75,7 @@ def main() -> None:
     listening_inputs: dict[str, dict[str, Path]] = {}
     snr_deltas: list[float] = []
     winning_clips = 0
+    table_hashes: set[str] = set()
     for record in manifest["sources"]:
         source_path = fetch_source(record, args.cache)
         sample_rate, full_samples, conversion = read_bounded_pcm16(source_path)
@@ -97,6 +108,8 @@ def main() -> None:
                 coefficients_per_frame=budget,
                 half_window=args.half_window,
                 band_count=args.band_count,
+                entropy_backend=args.entropy_backend,
+                transform_backend=args.transform_backend,
             )
             candidates.append(
                 (
@@ -105,6 +118,9 @@ def main() -> None:
                     time.perf_counter() - started,
                 )
             )
+            table_hash = encoded.report["fixed_table_sha256"]
+            if table_hash is not None:
+                table_hashes.add(table_hash)
         selected = min(
             candidates,
             key=lambda item: (
@@ -199,6 +215,11 @@ def main() -> None:
                     "compressed_grid_bytes": (
                         result.report["compressed_grid_bytes"]
                     ),
+                    "entropy_backend": result.report["entropy_backend"],
+                    "transform_backend": result.report["transform_backend"],
+                    "fixed_table_sha256": (
+                        result.report["fixed_table_sha256"]
+                    ),
                     "encode_wall_seconds": wall_seconds,
                 }
                 for budget, result, wall_seconds in candidates
@@ -207,6 +228,15 @@ def main() -> None:
 
     mean_snr_delta = sum(snr_deltas) / len(snr_deltas)
     sanity_gate_passed = winning_clips >= 2 and mean_snr_delta >= 0.0
+    promotion_blockers = [
+        "blinded listening scores",
+        "native independent decoder parity",
+        "native resource and timing gates",
+    ]
+    if args.entropy_backend != "bounded":
+        promotion_blockers.insert(1, "bounded context entropy replacing zlib")
+    if args.transform_backend != "fixed":
+        promotion_blockers.insert(1, "fixed-integer transform parity")
     listening_directory = args.output_directory / "listening"
     listening_manifest, _answer_key = create_blinded_listening_set(
         listening_inputs,
@@ -215,18 +245,17 @@ def main() -> None:
     )
     report = {
         "status": (
-            "objective sanity gate passed; integer/listening gates remain"
+            "objective sanity gate passed; native/listening gates remain"
             if sanity_gate_passed
             else "objective sanity gate failed; lapped design remains research"
         ),
         "research_only": True,
-        "entropy_proxy": "zlib level 9; non-normative",
-        "promotion_blockers": [
-            "blinded listening scores",
-            "bounded context entropy replacing zlib",
-            "fixed-integer transform parity",
-            "native resource and timing gates",
-        ],
+        "entropy_backend": args.entropy_backend,
+        "transform_backend": args.transform_backend,
+        "fixed_table_sha256": (
+            next(iter(table_hashes)) if len(table_hashes) == 1 else None
+        ),
+        "promotion_blockers": promotion_blockers,
         "gate_rule": (
             "nearest-byte point within 10% of Opus, non-negative waveform "
             "SNR delta on at least two clips, and non-negative mean delta"

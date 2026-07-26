@@ -1,0 +1,60 @@
+{
+  "clip_count": 3,
+  "clips": {
+    "corelli-sonata-realization": {
+      "fixed_bounded": {
+        "coefficients_per_frame": 64,
+        "snr_db_diagnostic": 25.82868303521371,
+        "stream_bytes": 16395
+      },
+      "objective_sanity_win": true,
+      "opus": {
+        "requested_bitrate_kbps": 96,
+        "snr_db_diagnostic": 21.199091295925868,
+        "stream_bytes": 15356
+      }
+    },
+    "emotional-piano-cc0": {
+      "fixed_bounded": {
+        "coefficients_per_frame": 64,
+        "snr_db_diagnostic": 38.3222059550676,
+        "stream_bytes": 14780
+      },
+      "objective_sanity_win": true,
+      "opus": {
+        "requested_bitrate_kbps": 96,
+        "snr_db_diagnostic": 26.455168629153558,
+        "stream_bytes": 15552
+      }
+    },
+    "patro-de-bateria": {
+      "fixed_bounded": {
+        "coefficients_per_frame": 48,
+        "snr_db_diagnostic": 28.031440598038884,
+        "stream_bytes": 12842
+      },
+      "objective_sanity_win": true,
+      "opus": {
+        "requested_bitrate_kbps": 96,
+        "snr_db_diagnostic": 21.80200191701985,
+        "stream_bytes": 12599
+      }
+    }
+  },
+  "command": "python experiments/lapped_opus_gate.py --cache artifacts/real_music_source --maximum-seconds 1.0 --coefficient-budgets 16 24 32 48 64 96 --half-window 512 --band-count 24 --entropy-backend bounded --transform-backend fixed --opus-bitrate 96 --opus-tools <opus-tools> --output-directory artifacts/lapped_fixed_bounded_gate_local",
+  "conclusion": "The bounded sparse syntax and deterministic fixed-integer transform retain the declared objective sanity gate on all three clips; native cross-decoder parity, resource timing, and blinded listening remain mandatory.",
+  "entropy_backend": "bounded sparse Rice/packed",
+  "fixed_table_sha256": "383e9d4337ac8d1b59e09701c021f6f2d32a639795bb2db88618d84edf2940d9",
+  "half_window": 512,
+  "mean_snr_delta_db_diagnostic": 7.575355915406973,
+  "objective_sanity_gate_passed": true,
+  "promotion_blockers": [
+    "blinded listening scores",
+    "native independent decoder parity",
+    "native resource and timing gates"
+  ],
+  "research_only": true,
+  "transform_backend": "Q15 window / Q14 cosine / int64 overlap-add",
+  "waveform_metrics_are_not_perceptual_equivalence": true,
+  "winning_clips": 3
+}

@@ -1481,3 +1481,79 @@ new oscillator opcode.
     floating-point transform arithmetic and zlib as a non-normative entropy
     proxy. Fixed-integer parity, bounded native entropy, resource timing, and
     blinded listening remain mandatory gates.
+
+## R-058 — One bounded sparse entropy path for lapped Innovation
+
+- Date: 2026-07-26
+- Status: **OBJECTIVE GATE PASSED / NATIVE AND LISTENING GATES PENDING / RESEARCH**
+- Decision:
+  - replace the R-057 zlib proxy with a prospective independently decoded
+    sparse syntax before changing transform arithmetic or adding perceptual
+    tools;
+  - transmit band-scale temporal deltas and signed nonzero values through the
+    existing bounded escaped-Rice/fixed-width entropy primitive;
+  - transmit sorted coefficient-position gaps through one bounded unsigned
+    escaped-Rice path, resetting the position predictor at every transform
+    frame;
+  - declare one fixed coefficient count per transform frame so no bitmap,
+    per-coefficient tag, adaptive probability table, or general-purpose
+    decompressor is required;
+  - select all entropy parameters by exact complete-byte RDO, validate zero
+    padding and complete bit consumption, and bound every count before
+    allocation;
+  - retain the R-057 zlib stream only as a research comparator. A bounded
+    result must preserve the nearest-byte Opus sanity gate before the design
+    advances to fixed-integer conversion.
+- Rationale:
+  - the sparse transform already identifies the data structure directly:
+    slowly changing band scales, sorted positions, and small signed values;
+  - coding those three fields explicitly tests whether the measured result
+    belongs to the representation rather than to a heavyweight external
+    compressor;
+  - reusing one Rice/packed primitive keeps the future hardware surface small
+    and preserves the project's single-entropy-layer rule.
+- Result:
+  - the bounded syntax independently reconstructs the exact scale, position,
+    and signed-value grids without zlib or another general decompressor;
+  - combined with the fixed kernel from R-059, it passes the same nearest-byte
+    gate on all three clips at 0.950x to 1.068x the complete Opus bytes;
+  - the remaining promotion blockers are native cross-decoder parity, measured
+    resource bounds, and blinded listening rather than entropy feasibility.
+
+## R-059 — Deterministic fixed-integer lapped kernel
+
+- Date: 2026-07-26
+- Status: **PYTHON BIT-EXACT GATE PASSED / NATIVE AND LISTENING GATES PENDING / RESEARCH**
+- Decision:
+  - freeze one prospective sine window in Q15 and one cosine transform table in
+    Q14 for each permitted power-of-two half-window;
+  - execute analysis, inverse transform, windowing, and overlap accumulation
+    with bounded int64 intermediates and one explicitly defined symmetric
+    rounding rule;
+  - identify the exact fixed table bytes by SHA-256 in every experiment and
+    eventually generate compiled ROM from reviewed repository data rather than
+    evaluating trigonometric functions in a production decoder;
+  - keep floating transform arithmetic only as the R-057 comparator and require
+    the fixed path to pass independent decode, overflow-bound, deterministic
+    hash, complete-byte, and real-music gates;
+  - do not require mathematically lossless MDCT inversion in the lossy path.
+    Exact PCM remains the separate RSL2 fallback; the lapped decoder must be
+    deterministic and bounded.
+- Rationale:
+  - integer table MACs map directly to scalar C++, SIMD, GPU integer dot
+    products, DSPs, and fixed-function silicon;
+  - accumulating both overlapping contributions before the final rounding
+    avoids platform-dependent floating state and prevents repeated rounding
+    from becoming an audible block-boundary mechanism;
+  - validating the transform before adding masking or window switching keeps
+    the next compression conclusion attributable to one change.
+- Result:
+  - Q15 window and Q14 cosine table MACs reconstruct deterministically through
+    the independent Python decoder and retain the R-057 compression result;
+  - at nearest complete bytes to Opus 96 kbit/s, the fixed bounded path used
+    16,395 versus 15,356 bytes on Corelli, 14,780 versus 15,552 bytes on piano,
+    and 12,842 versus 12,599 bytes on drums;
+  - waveform SNR diagnostic deltas were +4.63, +11.87, and +6.23 dB, for a
+    +7.58 dB mean. This is still not a perceptual quality claim;
+  - compiled ROM, native independent decode, overflow proofs, timing, and
+    listening remain required before any syntax promotion.

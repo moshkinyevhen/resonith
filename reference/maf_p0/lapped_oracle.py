@@ -11,7 +11,15 @@ import zlib
 import numpy as np
 
 from .codec import _quality_report
+from .fixed_lapped import (
+    analyze_fixed_lapped,
+    fixed_lapped_tables,
+    round_shift_signed,
+    synthesize_fixed_lapped_frame,
+    synthesis_output_shift,
+)
 from .rsc1 import SECTION_CRITICAL, RSC1Section, pack_rsc1, parse_rsc1
+from .sparse_entropy import decode_sparse_lapped, encode_sparse_lapped
 from .stream_sections import StreamConfig, pack_conf, unpack_conf
 
 
@@ -22,6 +30,10 @@ MAX_CHANNELS = 8
 MAX_HALF_WINDOW = 1024
 MAX_BANDS = 64
 MAX_RAW_BYTES = 512 << 20
+ENTROPY_ZLIB = 0
+ENTROPY_BOUNDED_SPARSE = 1
+FLAG_ENTROPY_MASK = 0x01
+FLAG_FIXED_TRANSFORM = 0x02
 
 
 @dataclass(frozen=True)
@@ -117,39 +129,76 @@ def _synthesize(
     sample_count: int,
     half_window: int,
     edges: tuple[int, ...],
+    fixed_transform: bool,
 ) -> np.ndarray:
     """Synthesize frame-major PCM through overlap-add and final rounding."""
 
     channels, frame_count, coefficient_count = coefficient_grid.shape
     if coefficient_count != half_window:
         raise ValueError("lapped coefficient grid shape mismatch")
-    window, matrix = _mdct_tables(half_window)
-    padded = np.zeros(
-        (sample_count + 2 * half_window, channels),
-        dtype=np.float64,
-    )
-    inverse_scale = 2.0 / half_window
-    for channel in range(channels):
-        for frame in range(frame_count):
-            coefficients = np.empty(half_window, dtype=np.float64)
-            for band, (start, end) in enumerate(
-                zip(edges[:-1], edges[1:], strict=True)
-            ):
-                coefficients[start:end] = (
-                    coefficient_grid[channel, frame, start:end].astype(
-                        np.float64
+    if fixed_transform:
+        padded_integer = np.zeros(
+            (sample_count + 2 * half_window, channels),
+            dtype=np.int64,
+        )
+        for channel in range(channels):
+            for frame in range(frame_count):
+                coefficients = np.empty(half_window, dtype=np.int64)
+                for band, (start, end) in enumerate(
+                    zip(edges[:-1], edges[1:], strict=True)
+                ):
+                    coefficients[start:end] = (
+                        coefficient_grid[channel, frame, start:end].astype(
+                            np.int64
+                        )
+                        * (1 << int(scale_grid[channel, frame, band]))
                     )
-                    * float(1 << int(scale_grid[channel, frame, band]))
+                start = frame * half_window
+                padded_integer[
+                    start : start + 2 * half_window,
+                    channel,
+                ] += synthesize_fixed_lapped_frame(
+                    coefficients,
+                    half_window,
                 )
-            start = frame * half_window
-            padded[start : start + 2 * half_window, channel] += (
-                inverse_scale * (coefficients @ matrix) * window
-            )
-    reconstruction = np.clip(
-        np.rint(padded[half_window : half_window + sample_count]),
-        -32768,
-        32767,
-    ).astype(np.int16)
+        rounded = round_shift_signed(
+            padded_integer[half_window : half_window + sample_count],
+            synthesis_output_shift(half_window),
+        )
+        reconstruction = np.clip(
+            rounded,
+            -32768,
+            32767,
+        ).astype(np.int16)
+    else:
+        window, matrix = _mdct_tables(half_window)
+        padded_float = np.zeros(
+            (sample_count + 2 * half_window, channels),
+            dtype=np.float64,
+        )
+        inverse_scale = 2.0 / half_window
+        for channel in range(channels):
+            for frame in range(frame_count):
+                coefficients = np.empty(half_window, dtype=np.float64)
+                for band, (start, end) in enumerate(
+                    zip(edges[:-1], edges[1:], strict=True)
+                ):
+                    coefficients[start:end] = (
+                        coefficient_grid[channel, frame, start:end].astype(
+                            np.float64
+                        )
+                        * float(1 << int(scale_grid[channel, frame, band]))
+                    )
+                start = frame * half_window
+                padded_float[
+                    start : start + 2 * half_window,
+                    channel,
+                ] += inverse_scale * (coefficients @ matrix) * window
+        reconstruction = np.clip(
+            np.rint(padded_float[half_window : half_window + sample_count]),
+            -32768,
+            32767,
+        ).astype(np.int16)
     reconstruction.flags.writeable = False
     return reconstruction
 
@@ -197,7 +246,11 @@ def decode_lapped_stream(payload: bytes) -> LappedDecodeResult:
     ) = HEADER.unpack_from(body)
     if magic != MAGIC or version != VERSION:
         raise ValueError("unsupported lapped research stream")
-    if flags != 0 or not 1 <= channels <= MAX_CHANNELS:
+    if flags & ~(FLAG_ENTROPY_MASK | FLAG_FIXED_TRANSFORM):
+        raise ValueError("unsupported lapped entropy backend")
+    entropy_backend = flags & FLAG_ENTROPY_MASK
+    fixed_transform = bool(flags & FLAG_FIXED_TRANSFORM)
+    if not 1 <= channels <= MAX_CHANNELS:
         raise ValueError("lapped research header exceeds the profile")
     edges = _band_edges(half_window, declared_band_count)
     band_count = len(edges) - 1
@@ -213,41 +266,67 @@ def decode_lapped_stream(payload: bytes) -> LappedDecodeResult:
         or channels != config.output_channels
         or config.innovation_step != 1
         or frame_count != expected_frames
-        or raw_bytes != expected_raw
     ):
         raise ValueError("lapped research cross-section mismatch")
-    raw = _decompress_exact(body[HEADER.size:], raw_bytes)
-    frame_bytes = band_count + half_window
-    scale_grid = np.empty(
-        (channels, frame_count, band_count),
-        dtype=np.uint8,
-    )
-    coefficient_grid = np.empty(
-        (channels, frame_count, half_window),
-        dtype=np.int8,
-    )
-    cursor = 0
-    for channel in range(channels):
-        for frame in range(frame_count):
-            scales_end = cursor + band_count
-            frame_end = cursor + frame_bytes
-            scale_grid[channel, frame] = np.frombuffer(
-                raw[cursor:scales_end],
-                dtype=np.uint8,
-            )
-            coefficient_grid[channel, frame] = np.frombuffer(
-                raw[scales_end:frame_end],
-                dtype=np.int8,
-            )
-            cursor = frame_end
-    if cursor != len(raw) or np.any(scale_grid > 31):
-        raise ValueError("invalid lapped scale grid")
+    if entropy_backend == ENTROPY_ZLIB:
+        if raw_bytes != expected_raw:
+            raise ValueError("lapped zlib grid length mismatch")
+        raw = _decompress_exact(body[HEADER.size:], raw_bytes)
+        frame_bytes = band_count + half_window
+        scale_grid = np.empty(
+            (channels, frame_count, band_count),
+            dtype=np.uint8,
+        )
+        coefficient_grid = np.empty(
+            (channels, frame_count, half_window),
+            dtype=np.int8,
+        )
+        cursor = 0
+        for channel in range(channels):
+            for frame in range(frame_count):
+                scales_end = cursor + band_count
+                frame_end = cursor + frame_bytes
+                scale_grid[channel, frame] = np.frombuffer(
+                    raw[cursor:scales_end],
+                    dtype=np.uint8,
+                )
+                coefficient_grid[channel, frame] = np.frombuffer(
+                    raw[scales_end:frame_end],
+                    dtype=np.int8,
+                )
+                cursor = frame_end
+        if cursor != len(raw) or np.any(scale_grid > 31):
+            raise ValueError("invalid lapped scale grid")
+    else:
+        sparse_payload = body[HEADER.size:]
+        if raw_bytes != len(sparse_payload):
+            raise ValueError("lapped sparse payload length mismatch")
+        sparse = decode_sparse_lapped(
+            sparse_payload,
+            half_window=half_window,
+            expected_channels=channels,
+            expected_frames=frame_count,
+            expected_bands=band_count,
+        )
+        scale_grid = sparse.scales
+        coefficient_grid = np.zeros(
+            (channels, frame_count, half_window),
+            dtype=np.int8,
+        )
+        channel_index = np.arange(channels)[:, None, None]
+        frame_index = np.arange(frame_count)[None, :, None]
+        coefficient_grid[
+            channel_index,
+            frame_index,
+            sparse.positions,
+        ] = sparse.values
     reconstruction = _synthesize(
         coefficient_grid,
         scale_grid,
         sample_count=sample_count,
         half_window=half_window,
         edges=edges,
+        fixed_transform=fixed_transform,
     )
     return LappedDecodeResult(
         sample_rate,
@@ -265,6 +344,8 @@ def encode_lapped_stream(
     coefficients_per_frame: int,
     half_window: int = 512,
     band_count: int = 24,
+    entropy_backend: str = "bounded",
+    transform_backend: str = "fixed",
 ) -> LappedEncodeResult:
     """Encode top-energy band-scaled MDCT coefficients with exact bytes."""
 
@@ -281,7 +362,15 @@ def encode_lapped_stream(
     if not 1 <= coefficients_per_frame <= half_window:
         raise ValueError("lapped coefficient budget exceeds the window")
     edges = _band_edges(half_window, band_count)
-    window, matrix = _mdct_tables(half_window)
+    if transform_backend == "float":
+        window, matrix = _mdct_tables(half_window)
+        table_sha256 = None
+        fixed_transform = False
+    elif transform_backend == "fixed":
+        _window, _matrix, table_sha256 = fixed_lapped_tables(half_window)
+        fixed_transform = True
+    else:
+        raise ValueError("unknown lapped transform backend")
     frame_count = source.shape[0] // half_window + 1
     padded = np.pad(
         source.astype(np.float64),
@@ -295,41 +384,64 @@ def encode_lapped_stream(
         (source.shape[1], frame_count, half_window),
         dtype=np.int8,
     )
+    selected_positions = np.empty(
+        (source.shape[1], frame_count, coefficients_per_frame),
+        dtype=np.uint16,
+    )
+    selected_values_grid = np.empty(
+        (source.shape[1], frame_count, coefficients_per_frame),
+        dtype=np.int8,
+    )
     nonzero_count = 0
     for channel in range(source.shape[1]):
         for frame in range(frame_count):
             start = frame * half_window
-            spectrum = (
-                padded[start : start + 2 * half_window, channel]
-                * window
-            ) @ matrix.T
+            if fixed_transform:
+                spectrum = analyze_fixed_lapped(
+                    padded[start : start + 2 * half_window, channel].astype(
+                        np.int64
+                    ),
+                    half_window,
+                )
+            else:
+                spectrum = (
+                    padded[start : start + 2 * half_window, channel]
+                    * window
+                ) @ matrix.T
             quantized = np.empty(half_window, dtype=np.int64)
             for band, (band_start, band_end) in enumerate(
                 zip(edges[:-1], edges[1:], strict=True)
             ):
                 maximum = max(
-                    1.0,
-                    float(np.max(np.abs(spectrum[band_start:band_end]))),
+                    1,
+                    int(np.max(np.abs(spectrum[band_start:band_end]))),
                 )
-                step = max(1.0, maximum / 127.0)
-                exponent = min(
-                    31,
-                    max(0, int(np.ceil(np.log2(step)))),
-                )
+                minimum_step = max(1, (maximum + 126) // 127)
+                exponent = min(31, (minimum_step - 1).bit_length())
                 scales[channel, frame, band] = exponent
-                quantized[band_start:band_end] = np.rint(
-                    spectrum[band_start:band_end] / float(1 << exponent)
-                ).astype(np.int64)
-            selected = np.argpartition(
+                if fixed_transform:
+                    quantized[band_start:band_end] = round_shift_signed(
+                        spectrum[band_start:band_end],
+                        exponent,
+                    ) if exponent else spectrum[band_start:band_end]
+                else:
+                    quantized[band_start:band_end] = np.rint(
+                        spectrum[band_start:band_end] / float(1 << exponent)
+                    ).astype(np.int64)
+            selected = np.sort(
+                np.argpartition(
                 np.abs(spectrum),
                 -coefficients_per_frame,
-            )[-coefficients_per_frame:]
+                )[-coefficients_per_frame:]
+            )
             selected_values = np.clip(
                 quantized[selected],
                 -127,
                 127,
             ).astype(np.int8)
             coefficients[channel, frame, selected] = selected_values
+            selected_positions[channel, frame] = selected
+            selected_values_grid[channel, frame] = selected_values
             nonzero_count += int(np.count_nonzero(selected_values))
 
     raw = bytearray()
@@ -337,21 +449,35 @@ def encode_lapped_stream(
         for frame in range(frame_count):
             raw += scales[channel, frame].tobytes()
             raw += coefficients[channel, frame].tobytes()
-    compressed = zlib.compress(bytes(raw), level=9)
+    if entropy_backend == "zlib":
+        entropy_id = ENTROPY_ZLIB
+        entropy_payload = zlib.compress(bytes(raw), level=9)
+        entropy_name = "zlib level 9; non-normative comparator"
+    elif entropy_backend == "bounded":
+        entropy_id = ENTROPY_BOUNDED_SPARSE
+        entropy_payload = encode_sparse_lapped(
+            scales,
+            selected_positions,
+            selected_values_grid,
+            half_window=half_window,
+        )
+        entropy_name = "bounded sparse Rice/packed research syntax"
+    else:
+        raise ValueError("unknown lapped entropy backend")
     inner = (
         HEADER.pack(
             MAGIC,
             VERSION,
-            0,
+            entropy_id | (FLAG_FIXED_TRANSFORM if fixed_transform else 0),
             source.shape[1],
             sample_rate,
             source.shape[0],
             half_window,
             band_count,
             frame_count,
-            len(raw),
+            len(raw) if entropy_id == ENTROPY_ZLIB else len(entropy_payload),
         )
-        + compressed
+        + entropy_payload
     )
     payload = pack_rsc1(
         [
@@ -375,7 +501,11 @@ def encode_lapped_stream(
     report = {
         "status": "research lapped Innovation; syntax is non-normative",
         "format_profile": "prospective-LPF1-RSC1-level-5",
-        "entropy_proxy": "zlib level 9; must be replaced before promotion",
+        "entropy_backend": entropy_name,
+        "transform_backend": (
+            "fixed Q15 window/Q14 cosine" if fixed_transform else "float64"
+        ),
+        "fixed_table_sha256": table_sha256,
         "stream_bytes": len(payload),
         "stream_sha256": hashlib.sha256(payload).hexdigest(),
         "sample_rate": sample_rate,
@@ -388,7 +518,7 @@ def encode_lapped_stream(
         "coefficients_per_frame": coefficients_per_frame,
         "nonzero_coefficients": nonzero_count,
         "raw_grid_bytes": len(raw),
-        "compressed_grid_bytes": len(compressed),
+        "compressed_grid_bytes": len(entropy_payload),
         **_quality_report(
             source.reshape(-1),
             decoded.samples.reshape(-1),

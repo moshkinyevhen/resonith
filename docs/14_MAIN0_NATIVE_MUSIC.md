@@ -626,3 +626,29 @@ converting analysis and synthesis to deterministic fixed-integer arithmetic,
 passing native memory/timing gates, and completing blinded listening. RSL2
 remains the exact Lossless and mandatory RDO fallback. The compact record is
 [`lapped_opus_gate_2026-07-26_summary.json`](../experiments/results/lapped_opus_gate_2026-07-26_summary.json).
+
+## 26. Bounded entropy and fixed-integer retention gate
+
+R-058 removes the zlib proxy. Each transform frame now carries a fixed count
+of sorted coefficient positions. Temporal band-scale deltas and signed values
+reuse bounded escaped-Rice/fixed-width coding; coefficient gaps use a bounded
+unsigned Rice form reset at every frame. No bitmap, adaptive probability
+table, or general decompressor is required.
+
+R-059 replaces decoder floating point with Q15 window and Q14 cosine ROM,
+int64 MACs, exact overlap accumulation, and symmetric final rounding. The
+prospective table bytes are identified by SHA-256 in the experiment report.
+
+The combined path retained the objective gate:
+
+| Crop | Fixed bounded | Opus | Byte ratio | SNR delta |
+| --- | ---: | ---: | ---: | ---: |
+| Corelli | 16,395 B | 15,356 B | 1.068x | +4.63 dB |
+| Piano | 14,780 B | 15,552 B | 0.950x | +11.87 dB |
+| Drums | 12,842 B | 12,599 B | 1.019x | +6.23 dB |
+
+This isolates the result from both zlib and floating-point reconstruction, but
+does not promote `LPF1`. The next engineering gate is an allocation-bounded
+native independent decoder using compiled reviewed ROM, followed by
+cross-decoder PCM equality and measured timing. Blinded listening remains
+mandatory because the SNR deltas are only waveform sanity diagnostics.
