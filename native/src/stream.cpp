@@ -792,3 +792,106 @@ extern "C" resonith_status resonith_main0_decode(
     *samples_written = requirements.sample_count;
     return RESONITH_STATUS_OK;
 }
+
+extern "C" resonith_status resonith_main0_player_open(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    resonith_main0_player_view* view
+) {
+    if (view == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *view = {};
+    main0_sections parsed{};
+    resonith_main0_requirements requirements{};
+    const resonith_status status = parse_main0(
+        data,
+        data_size,
+        &parsed,
+        &requirements
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    view->innovation_data = parsed.innovation.payload;
+    view->innovation_size = parsed.innovation.payload_size;
+    view->timebase_hz = requirements.timebase_hz;
+    view->sample_count = requirements.sample_count;
+    view->innovation_step = parsed.stream_config.innovation_step;
+    view->block_size = parsed.innovation_info.block_size;
+    view->block_count = parsed.innovation_info.block_count;
+    view->atom_count = requirements.atom_count;
+    view->liftpack_scratch_elements =
+        requirements.liftpack_scratch_elements;
+    view->output_channels = requirements.output_channels;
+    view->reserved = 0U;
+    return RESONITH_STATUS_OK;
+}
+
+extern "C" resonith_status resonith_main0_player_decode_block(
+    const resonith_main0_player_view* view,
+    std::uint32_t block_index,
+    std::int64_t* innovation_q,
+    std::size_t innovation_capacity,
+    std::int64_t* liftpack_scratch,
+    std::size_t liftpack_scratch_capacity,
+    std::int16_t* output,
+    std::size_t output_capacity,
+    std::uint32_t* sample_offset,
+    std::size_t* samples_written
+) {
+    if (sample_offset == nullptr || samples_written == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *sample_offset = 0U;
+    *samples_written = 0U;
+    if (
+        view == nullptr
+        || innovation_q == nullptr
+        || liftpack_scratch == nullptr
+        || output == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    if (
+        view->innovation_data == nullptr
+        || view->innovation_size == 0U
+        || view->innovation_step == 0U
+        || view->innovation_step > kMaximumInnovationStep
+        || view->output_channels != 1U
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    if (view->atom_count != 0U) {
+        return RESONITH_STATUS_UNSUPPORTED_FEATURE;
+    }
+
+    std::uint32_t decoded_offset = 0U;
+    std::size_t decoded_count = 0U;
+    const resonith_status status = resonith_liftpack_decode_block(
+        view->innovation_data,
+        view->innovation_size,
+        block_index,
+        innovation_q,
+        innovation_capacity,
+        liftpack_scratch,
+        liftpack_scratch_capacity,
+        &decoded_offset,
+        &decoded_count
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    if (output_capacity < decoded_count) {
+        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    }
+    for (std::size_t sample = 0U; sample < decoded_count; ++sample) {
+        output[sample] = scale_innovation(
+            innovation_q[sample],
+            view->innovation_step
+        );
+    }
+    *sample_offset = decoded_offset;
+    *samples_written = decoded_count;
+    return RESONITH_STATUS_OK;
+}

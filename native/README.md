@@ -26,6 +26,8 @@ The native Core:
   LPC with an order-16 ceiling;
 - validates and exports caller-owned byte/sample block indexes for bounded
   seek planning without decoding PCM or allocating memory;
+- opens immutable Main-0 player views and decodes independently seeded
+  zero-Atom Truth blocks directly to PCM16 with output-atomic failure;
 - decodes minimal typed `BRAW` Basis payloads into aligned caller-owned
   host-endian memory without generic array metadata;
 - parses fixed `CONF` and state-local periodic `ATOM` payloads, reports exact
@@ -49,6 +51,12 @@ entropy parameters, and LPC order. LiftPack blocks carry their own LPC seeds,
 so `resonith_liftpack_decode_block()` can reconstruct one selected block into
 caller-owned memory without decoding earlier PCM. A player layer may cache the
 index or serialize independently checked checkpoints.
+
+`resonith_main0_player_open()` verifies the complete typed RSC1 stream once.
+`resonith_main0_player_decode_block()` then exposes the production zero-Atom
+Truth path as bounded PCM16 callback-sized work without retaining decoder
+state. The view borrows immutable stream bytes; applications decide whether
+to keep an in-memory block index or a separately authenticated seek table.
 
 ## Build and test
 

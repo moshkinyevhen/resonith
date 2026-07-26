@@ -55,6 +55,19 @@ int main(void) {
         0U,
         0U
     };
+    resonith_main0_player_view player = {
+        NULL,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U
+    };
     if (
         resonith_cibs_inspect_model(NULL, NULL, &cibs_info)
         != RESONITH_STATUS_INVALID_ARGUMENT
@@ -128,6 +141,28 @@ int main(void) {
         ) != RESONITH_STATUS_INVALID_ARGUMENT
         || block_sample_offset != 0U
         || block_samples_written != 0U
+    ) {
+        return 1;
+    }
+    if (
+        resonith_main0_player_open(NULL, 0U, &player)
+            != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_main0_player_decode_block(
+            &player,
+            0U,
+            NULL,
+            0U,
+            NULL,
+            0U,
+            NULL,
+            0U,
+            &block_sample_offset,
+            &block_samples_written
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
     ) {
         return 1;
     }

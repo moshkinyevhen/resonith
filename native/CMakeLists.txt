@@ -174,4 +174,13 @@ if(BUILD_TESTING)
     set_target_properties(resonith_pipeline_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_pipeline_test)
     add_test(NAME causal_pipeline_conformance COMMAND resonith_pipeline_test)
+
+    add_executable(resonith_player_test
+        tests/player_test.cpp
+    )
+    target_compile_features(resonith_player_test PRIVATE cxx_std_20)
+    target_link_libraries(resonith_player_test PRIVATE Resonith::Core)
+    set_target_properties(resonith_player_test PROPERTIES CXX_EXTENSIONS OFF)
+    resonith_enable_warnings(resonith_player_test)
+    add_test(NAME block_player_conformance COMMAND resonith_player_test)
 endif()
