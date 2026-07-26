@@ -55,38 +55,8 @@ int main(void) {
         0U
     };
     resonith_prepared_gain_law gain_law = {NULL, NULL, 0U, 0U};
-    resonith_main0_requirements requirements = {
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U
-    };
-    resonith_main0_player_view player = {
-        NULL,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U,
-        NULL,
-        0U,
-        0U,
-        0U,
-        0U,
-        0U
-    };
+    resonith_main0_requirements requirements = {0};
+    resonith_main0_player_view player = {0};
     resonith_seek_index_view seek_view = {
         NULL,
         0U,

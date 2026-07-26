@@ -34,7 +34,8 @@ struct main0_sections {
 };
 
 constexpr std::uint8_t kAtomType[4] = {'A', 'T', 'O', 'M'};
-constexpr std::uint8_t kBasisType[4] = {'B', 'R', 'A', 'W'};
+constexpr std::uint8_t kRawBasisType[4] = {'B', 'R', 'A', 'W'};
+constexpr std::uint8_t kCibsBasisType[4] = {'B', 'C', 'I', 'B'};
 
 std::uint16_t read_u16(const std::uint8_t* data) noexcept {
     return static_cast<std::uint16_t>(
@@ -86,10 +87,53 @@ bool type_is(
 
 bool known_type(const std::uint8_t type[4]) noexcept {
     return type_is(type, "ATOM")
+        || type_is(type, "BCIB")
         || type_is(type, "BRAW")
         || type_is(type, "CONF")
         || type_is(type, "RSL1")
         || type_is(type, "RSL2");
+}
+
+resonith_status find_basis_section(
+    const resonith_container_view& view,
+    std::uint32_t basis_id,
+    resonith_container_section& section,
+    bool& is_cibs
+) noexcept {
+    resonith_container_section raw{};
+    resonith_container_section cibs{};
+    const resonith_status raw_status = resonith_container_find_section(
+        &view,
+        kRawBasisType,
+        basis_id,
+        &raw
+    );
+    const resonith_status cibs_status = resonith_container_find_section(
+        &view,
+        kCibsBasisType,
+        basis_id,
+        &cibs
+    );
+    if (
+        raw_status != RESONITH_STATUS_OK
+        && raw_status != RESONITH_STATUS_NOT_FOUND
+    ) {
+        return raw_status;
+    }
+    if (
+        cibs_status != RESONITH_STATUS_OK
+        && cibs_status != RESONITH_STATUS_NOT_FOUND
+    ) {
+        return cibs_status;
+    }
+    const bool has_raw = raw_status == RESONITH_STATUS_OK;
+    const bool has_cibs = cibs_status == RESONITH_STATUS_OK;
+    if (has_raw == has_cibs) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    section = has_cibs ? cibs : raw;
+    is_cibs = has_cibs;
+    return RESONITH_STATUS_OK;
 }
 
 resonith_status validate_atom_records(
@@ -142,6 +186,7 @@ resonith_status validate_atom_records(
 resonith_status parse_main0(
     const std::uint8_t* data,
     std::size_t data_size,
+    const resonith_cibs_registry* registry,
     main0_sections* parsed,
     resonith_main0_requirements* requirements
 ) {
@@ -213,10 +258,10 @@ resonith_status parse_main0(
                 return RESONITH_STATUS_MALFORMED;
             }
             ++atom_count;
-        } else if (type_is(section.type, "BRAW")) {
-            if (section.instance_id != basis_count) {
-                return RESONITH_STATUS_MALFORMED;
-            }
+        } else if (
+            type_is(section.type, "BRAW")
+            || type_is(section.type, "BCIB")
+        ) {
             ++basis_count;
         } else if (type_is(section.type, "CONF")) {
             if (
@@ -274,37 +319,68 @@ resonith_status parse_main0(
     }
 
     std::uint32_t maximum_basis_elements = 0U;
+    std::size_t maximum_cibs_scratch = 0U;
     for (std::uint32_t basis_id = 0U; basis_id < basis_count; ++basis_id) {
         resonith_container_section basis{};
-        status = resonith_container_find_section(
-            &parsed->view,
-            kBasisType,
+        bool is_cibs = false;
+        status = find_basis_section(
+            parsed->view,
             basis_id,
-            &basis
+            basis,
+            is_cibs
         );
         if (status != RESONITH_STATUS_OK) {
             return status;
         }
-        resonith_raw_basis_info basis_info{};
-        status = resonith_raw_basis_inspect(
-            basis.payload,
-            basis.payload_size,
-            &basis_info
-        );
-        if (status != RESONITH_STATUS_OK) {
-            return status;
+        std::uint32_t basis_elements = 0U;
+        std::uint32_t basis_length = 0U;
+        std::uint16_t basis_channels = 0U;
+        if (is_cibs) {
+            if (registry == nullptr) {
+                return RESONITH_STATUS_UNSUPPORTED_FEATURE;
+            }
+            resonith_cibs_basis_info basis_info{};
+            status = resonith_cibs_basis_inspect(
+                basis.payload,
+                basis.payload_size,
+                registry,
+                &basis_info
+            );
+            if (status != RESONITH_STATUS_OK) {
+                return status;
+            }
+            basis_elements = basis_info.output_elements;
+            basis_length = basis_info.output_length;
+            basis_channels = basis_info.channels;
+            maximum_cibs_scratch = std::max<std::size_t>(
+                maximum_cibs_scratch,
+                basis_info.scratch_elements
+            );
+        } else {
+            resonith_raw_basis_info basis_info{};
+            status = resonith_raw_basis_inspect(
+                basis.payload,
+                basis.payload_size,
+                &basis_info
+            );
+            if (status != RESONITH_STATUS_OK) {
+                return status;
+            }
+            basis_elements = basis_info.total_elements;
+            basis_length = basis_info.samples_per_channel;
+            basis_channels = basis_info.channels;
         }
         if (
-            basis_info.channels != 1U
-            || basis_info.samples_per_channel < 2U
+            basis_channels != 1U
+            || basis_length < 2U
             || basis.start_tick >= parsed->stream_config.sample_count
         ) {
-            return basis_info.channels != 1U
+            return basis_channels != 1U
                 ? RESONITH_STATUS_UNSUPPORTED_FEATURE
                 : RESONITH_STATUS_MALFORMED;
         }
-        if (basis_info.total_elements > maximum_basis_elements) {
-            maximum_basis_elements = basis_info.total_elements;
+        if (basis_elements > maximum_basis_elements) {
+            maximum_basis_elements = basis_elements;
         }
     }
 
@@ -339,11 +415,12 @@ resonith_status parse_main0(
             return RESONITH_STATUS_NOT_FOUND;
         }
         resonith_container_section basis{};
-        status = resonith_container_find_section(
-            &parsed->view,
-            kBasisType,
+        bool is_cibs = false;
+        status = find_basis_section(
+            parsed->view,
             atom_info.basis_instance_id,
-            &basis
+            basis,
+            is_cibs
         );
         if (status != RESONITH_STATUS_OK) {
             return status;
@@ -380,8 +457,10 @@ resonith_status parse_main0(
     requirements->atom_count = atom_count;
     requirements->basis_count = basis_count;
     requirements->render_elements = maximum_atom_samples;
-    requirements->liftpack_scratch_elements =
-        resonith_liftpack_required_scratch(&parsed->innovation_info);
+    requirements->liftpack_scratch_elements = std::max<std::size_t>(
+        resonith_liftpack_required_scratch(&parsed->innovation_info),
+        maximum_cibs_scratch
+    );
     requirements->output_channels =
         parsed->stream_config.output_channels;
     requirements->reserved = 0U;
@@ -441,8 +520,99 @@ struct player_atom_state {
     std::size_t basis_elements = 0U;
 };
 
+resonith_status load_basis(
+    const main0_sections& parsed,
+    const resonith_cibs_registry* registry,
+    std::uint32_t basis_id,
+    resonith_main0_workspace& workspace,
+    std::size_t& elements_written
+) {
+    elements_written = 0U;
+    resonith_container_section basis_section{};
+    bool is_cibs = false;
+    resonith_status status = find_basis_section(
+        parsed.view,
+        basis_id,
+        basis_section,
+        is_cibs
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    if (!is_cibs) {
+        return resonith_raw_basis_decode(
+            basis_section.payload,
+            basis_section.payload_size,
+            workspace.basis,
+            workspace.basis_capacity,
+            &elements_written
+        );
+    }
+    if (registry == nullptr) {
+        return RESONITH_STATUS_UNSUPPORTED_FEATURE;
+    }
+    return resonith_cibs_basis_materialize(
+        basis_section.payload,
+        basis_section.payload_size,
+        registry,
+        workspace.basis,
+        workspace.basis_capacity,
+        workspace.liftpack_scratch,
+        workspace.liftpack_scratch_capacity,
+        nullptr,
+        nullptr,
+        &elements_written
+    );
+}
+
+resonith_status preflight_cibs_bases(
+    const main0_sections& parsed,
+    const resonith_cibs_registry* registry,
+    std::uint32_t basis_count,
+    resonith_main0_workspace& workspace,
+    std::uint32_t& cached_basis_id,
+    std::size_t& cached_basis_elements
+) {
+    cached_basis_id = 0xffff'ffffU;
+    cached_basis_elements = 0U;
+    for (std::uint32_t basis_id = 0U; basis_id < basis_count; ++basis_id) {
+        resonith_container_section basis_section{};
+        bool is_cibs = false;
+        resonith_status status = find_basis_section(
+            parsed.view,
+            basis_id,
+            basis_section,
+            is_cibs
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        if (!is_cibs) {
+            continue;
+        }
+        status = load_basis(
+            parsed,
+            registry,
+            basis_id,
+            workspace,
+            cached_basis_elements
+        );
+        if (
+            status != RESONITH_STATUS_OK
+            || cached_basis_elements < 2U
+        ) {
+            return status == RESONITH_STATUS_OK
+                ? RESONITH_STATUS_MALFORMED
+                : status;
+        }
+        cached_basis_id = basis_id;
+    }
+    return RESONITH_STATUS_OK;
+}
+
 resonith_status prepare_player_atom(
     const main0_sections& parsed,
+    const resonith_cibs_registry* registry,
     std::uint32_t atom_id,
     resonith_main0_workspace& workspace,
     std::uint32_t& cached_basis_id,
@@ -476,23 +646,13 @@ resonith_status prepare_player_atom(
     }
 
     if (cached_basis_id != atom.basis_instance_id) {
-        resonith_container_section basis_section{};
-        status = resonith_container_find_section(
-            &parsed.view,
-            kBasisType,
-            atom.basis_instance_id,
-            &basis_section
-        );
-        if (status != RESONITH_STATUS_OK) {
-            return status;
-        }
         std::size_t basis_written = 0U;
-        status = resonith_raw_basis_decode(
-            basis_section.payload,
-            basis_section.payload_size,
-            workspace.basis,
-            workspace.basis_capacity,
-            &basis_written
+        status = load_basis(
+            parsed,
+            registry,
+            atom.basis_instance_id,
+            workspace,
+            basis_written
         );
         if (status != RESONITH_STATUS_OK || basis_written < 2U) {
             return status == RESONITH_STATUS_OK
@@ -710,16 +870,56 @@ extern "C" resonith_status resonith_main0_inspect(
     std::size_t data_size,
     resonith_main0_requirements* requirements
 ) {
+    return resonith_main0_inspect_with_registry(
+        data,
+        data_size,
+        nullptr,
+        requirements
+    );
+}
+
+extern "C" resonith_status resonith_main0_inspect_with_registry(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_cibs_registry* registry,
+    resonith_main0_requirements* requirements
+) {
     if (requirements == nullptr) {
         return RESONITH_STATUS_INVALID_ARGUMENT;
     }
     main0_sections parsed{};
-    return parse_main0(data, data_size, &parsed, requirements);
+    return parse_main0(
+        data,
+        data_size,
+        registry,
+        &parsed,
+        requirements
+    );
 }
 
 extern "C" resonith_status resonith_main0_decode(
     const std::uint8_t* data,
     std::size_t data_size,
+    resonith_main0_workspace* workspace,
+    std::int16_t* output,
+    std::size_t output_capacity,
+    std::size_t* samples_written
+) {
+    return resonith_main0_decode_with_registry(
+        data,
+        data_size,
+        nullptr,
+        workspace,
+        output,
+        output_capacity,
+        samples_written
+    );
+}
+
+extern "C" resonith_status resonith_main0_decode_with_registry(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_cibs_registry* registry,
     resonith_main0_workspace* workspace,
     std::int16_t* output,
     std::size_t output_capacity,
@@ -738,6 +938,7 @@ extern "C" resonith_status resonith_main0_decode(
     resonith_status status = parse_main0(
         data,
         data_size,
+        registry,
         &parsed,
         &requirements
     );
@@ -752,6 +953,20 @@ extern "C" resonith_status resonith_main0_decode(
     }
     if (!workspace_large_enough(*workspace, requirements)) {
         return RESONITH_STATUS_SCRATCH_TOO_SMALL;
+    }
+
+    std::uint32_t cached_basis_id = 0xffff'ffffU;
+    std::size_t cached_basis_elements = 0U;
+    status = preflight_cibs_bases(
+        parsed,
+        registry,
+        requirements.basis_count,
+        *workspace,
+        cached_basis_id,
+        cached_basis_elements
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
     }
 
     std::size_t innovation_written = 0U;
@@ -820,28 +1035,23 @@ extern "C" resonith_status resonith_main0_decode(
             return status;
         }
 
-        resonith_container_section basis_section{};
-        status = resonith_container_find_section(
-            &parsed.view,
-            kBasisType,
-            atom.basis_instance_id,
-            &basis_section
-        );
-        if (status != RESONITH_STATUS_OK) {
-            return status;
-        }
-        std::size_t basis_written = 0U;
-        status = resonith_raw_basis_decode(
-            basis_section.payload,
-            basis_section.payload_size,
-            workspace->basis,
-            workspace->basis_capacity,
-            &basis_written
-        );
-        if (status != RESONITH_STATUS_OK || basis_written < 2U) {
-            return status == RESONITH_STATUS_OK
-                ? RESONITH_STATUS_MALFORMED
-                : status;
+        if (cached_basis_id != atom.basis_instance_id) {
+            status = load_basis(
+                parsed,
+                registry,
+                atom.basis_instance_id,
+                *workspace,
+                cached_basis_elements
+            );
+            if (
+                status != RESONITH_STATUS_OK
+                || cached_basis_elements < 2U
+            ) {
+                return status == RESONITH_STATUS_OK
+                    ? RESONITH_STATUS_MALFORMED
+                    : status;
+            }
+            cached_basis_id = atom.basis_instance_id;
         }
 
         const resonith_phase_trajectory phase_source = {
@@ -862,7 +1072,7 @@ extern "C" resonith_status resonith_main0_decode(
         }
         status = resonith_periodic_render(
             workspace->basis,
-            basis_written,
+            cached_basis_elements,
             &phase,
             0U,
             atom.duration_samples,
@@ -911,6 +1121,20 @@ extern "C" resonith_status resonith_main0_player_open(
     std::size_t data_size,
     resonith_main0_player_view* view
 ) {
+    return resonith_main0_player_open_with_registry(
+        data,
+        data_size,
+        nullptr,
+        view
+    );
+}
+
+extern "C" resonith_status resonith_main0_player_open_with_registry(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_cibs_registry* registry,
+    resonith_main0_player_view* view
+) {
     if (view == nullptr) {
         return RESONITH_STATUS_INVALID_ARGUMENT;
     }
@@ -920,6 +1144,7 @@ extern "C" resonith_status resonith_main0_player_open(
     const resonith_status status = parse_main0(
         data,
         data_size,
+        registry,
         &parsed,
         &requirements
     );
@@ -1116,6 +1341,28 @@ extern "C" resonith_status resonith_main0_player_stream_complete(
     void* user,
     std::size_t* samples_emitted
 ) {
+    return resonith_main0_player_stream_complete_with_registry(
+        view,
+        nullptr,
+        workspace,
+        output,
+        output_capacity,
+        callback,
+        user,
+        samples_emitted
+    );
+}
+
+extern "C" resonith_status resonith_main0_player_stream_complete_with_registry(
+    const resonith_main0_player_view* view,
+    const resonith_cibs_registry* registry,
+    resonith_main0_workspace* workspace,
+    std::int16_t* output,
+    std::size_t output_capacity,
+    resonith_pcm16_callback callback,
+    void* user,
+    std::size_t* samples_emitted
+) {
     if (samples_emitted == nullptr) {
         return RESONITH_STATUS_INVALID_ARGUMENT;
     }
@@ -1142,6 +1389,7 @@ extern "C" resonith_status resonith_main0_player_stream_complete(
     resonith_status status = parse_main0(
         view->stream_data,
         view->stream_size,
+        registry,
         &parsed,
         &requirements
     );
@@ -1212,6 +1460,20 @@ extern "C" resonith_status resonith_main0_player_stream_complete(
         return RESONITH_STATUS_SCRATCH_TOO_SMALL;
     }
 
+    std::uint32_t cached_basis_id = 0xffff'ffffU;
+    std::size_t cached_basis_elements = 0U;
+    status = preflight_cibs_bases(
+        parsed,
+        registry,
+        requirements.basis_count,
+        *workspace,
+        cached_basis_id,
+        cached_basis_elements
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+
     resonith_liftpack_cursor cursor{};
     status = resonith_liftpack_cursor_open(
         view->innovation_data,
@@ -1223,8 +1485,6 @@ extern "C" resonith_status resonith_main0_player_stream_complete(
     }
 
     std::uint32_t next_atom_id = 0U;
-    std::uint32_t cached_basis_id = 0xffff'ffffU;
-    std::size_t cached_basis_elements = 0U;
     player_atom_state state{};
     bool state_ready = false;
     while (cursor.next_block < cursor.info.block_count) {
@@ -1264,6 +1524,7 @@ extern "C" resonith_status resonith_main0_player_stream_complete(
                     }
                     status = prepare_player_atom(
                         parsed,
+                        registry,
                         next_atom_id,
                         *workspace,
                         cached_basis_id,

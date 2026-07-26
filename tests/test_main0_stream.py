@@ -10,15 +10,18 @@ import numpy as np
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
+from cibs0 import materialize_basis  # noqa: E402
 from maf_p0.composition import GainEventLaw, compose_truth  # noqa: E402
 from maf_p0.main0 import (  # noqa: E402
     Main0State,
     decode_main0_raw_stream,
+    pack_main0_cibs_stream,
     pack_main0_lpc_residual_stream,
     pack_main0_raw_stream,
     pack_main0_residual_stream,
     pack_main0_state_stream,
 )
+from maf_p0.model import encode_basis_latent, train_linear_cibs  # noqa: E402
 from maf_p0.periodic import PhaseTrajectory, render_basis_trajectory  # noqa: E402
 from maf_p0.rsc1 import RSC1Section, pack_rsc1, parse_rsc1  # noqa: E402
 from maf_p0.stream_sections import (  # noqa: E402
@@ -154,6 +157,50 @@ class Main0StreamTests(unittest.TestCase):
         self.assertEqual(
             [bytes(section.type_code) for section in parse_rsc1(stream).sections],
             [b"ATOM", b"BRAW", b"CONF", b"RSL1"],
+        )
+
+    def test_registry_backed_bcib_matches_materialized_truth(self) -> None:
+        training = np.stack(
+            (
+                self.basis,
+                np.roll(self.basis, 1),
+                np.roll(self.basis, 3),
+                -self.basis,
+            )
+        ).astype(np.int16)[:, np.newaxis, :]
+        model = train_linear_cibs(
+            training,
+            latent_elements=3,
+            model_id="CIBS0-MAIN0-TEST",
+        )
+        latent = encode_basis_latent(self.basis.reshape(1, -1), model)
+        materialized = materialize_basis(latent, model)
+        stream = pack_main0_cibs_stream(
+            sample_rate=48_000,
+            model=model,
+            latent=latent,
+            trajectory=self.trajectory,
+            gain_law=self.gain,
+            innovation_q=self.innovation,
+            innovation_step=3,
+            residual_block_size=16,
+        )
+        with self.assertRaisesRegex(ValueError, "unavailable"):
+            decode_main0_raw_stream(stream)
+        decoded = decode_main0_raw_stream(stream, cibs_models=(model,))
+        direct = compose_truth(
+            render_basis_trajectory(
+                materialized.samples[0],
+                self.trajectory,
+            ),
+            self.gain,
+            innovation_q=self.innovation,
+            innovation_step=3,
+        )
+        np.testing.assert_array_equal(decoded.samples, direct)
+        self.assertEqual(
+            [bytes(section.type_code) for section in parse_rsc1(stream).sections],
+            [b"ATOM", b"BCIB", b"CONF", b"RSL1"],
         )
 
     def test_zero_atom_stream_is_saturated_dequantized_truth(self) -> None:

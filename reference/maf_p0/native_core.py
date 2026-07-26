@@ -6,8 +6,11 @@ import ctypes
 from dataclasses import dataclass
 import os
 from pathlib import Path
+from typing import Sequence
 
 import numpy as np
+
+from cibs0 import CIBS0Model
 
 
 DEFAULT_MAX_WORKSPACE_BYTES = 512 << 20
@@ -79,6 +82,117 @@ class _PlayerView(ctypes.Structure):
     ]
 
 
+class _CibsRefinementStage(ctypes.Structure):
+    _fields_ = [
+        ("kernels", ctypes.POINTER(ctypes.c_int8)),
+        ("kernel_width", ctypes.c_uint8),
+        ("shift", ctypes.c_uint8),
+        ("reserved", ctypes.c_uint16),
+    ]
+
+
+class _CibsModel(ctypes.Structure):
+    _fields_ = [
+        ("model_id", ctypes.POINTER(ctypes.c_uint8)),
+        ("model_id_bytes", ctypes.c_size_t),
+        ("projection", ctypes.POINTER(ctypes.c_int8)),
+        ("projection_bias", ctypes.POINTER(ctypes.c_int32)),
+        (
+            "refinement_stages",
+            ctypes.POINTER(_CibsRefinementStage),
+        ),
+        ("basis_channels", ctypes.c_uint32),
+        ("coarse_length", ctypes.c_uint32),
+        ("latent_elements", ctypes.c_uint32),
+        ("projection_shift", ctypes.c_uint8),
+        ("refinement_stage_count", ctypes.c_uint8),
+        ("reserved", ctypes.c_uint16),
+    ]
+
+
+class _CibsRegistry(ctypes.Structure):
+    _fields_ = [
+        ("models", ctypes.POINTER(_CibsModel)),
+        ("model_count", ctypes.c_size_t),
+    ]
+
+
+class _CibsRegistryOwner:
+    """Keep every immutable model table alive across one native call."""
+
+    def __init__(self, models: Sequence[CIBS0Model]) -> None:
+        self._model_ids: list[ctypes.Array] = []
+        self._projections: list[np.ndarray] = []
+        self._biases: list[np.ndarray] = []
+        self._kernels: list[list[np.ndarray]] = []
+        self._stage_arrays: list[ctypes.Array | None] = []
+        descriptors: list[_CibsModel] = []
+        for model in models:
+            model.validate()
+            model_id = model.model_id.encode("utf-8")
+            model_id_array = (ctypes.c_uint8 * len(model_id))(*model_id)
+            projection = np.ascontiguousarray(
+                model.projection,
+                dtype=np.int8,
+            )
+            bias = np.ascontiguousarray(
+                model.projection_bias,
+                dtype=np.int32,
+            )
+            kernels: list[np.ndarray] = []
+            stage_descriptors: list[_CibsRefinementStage] = []
+            for kernel, shift in zip(
+                model.refinement_kernels,
+                model.refinement_shifts,
+                strict=True,
+            ):
+                contiguous = np.ascontiguousarray(kernel, dtype=np.int8)
+                kernels.append(contiguous)
+                stage_descriptors.append(
+                    _CibsRefinementStage(
+                        contiguous.ctypes.data_as(
+                            ctypes.POINTER(ctypes.c_int8)
+                        ),
+                        int(contiguous.shape[1]),
+                        int(shift),
+                        0,
+                    )
+                )
+            stages = (
+                (_CibsRefinementStage * len(stage_descriptors))(
+                    *stage_descriptors
+                )
+                if stage_descriptors
+                else None
+            )
+            descriptors.append(
+                _CibsModel(
+                    model_id_array,
+                    len(model_id),
+                    projection.ctypes.data_as(
+                        ctypes.POINTER(ctypes.c_int8)
+                    ),
+                    bias.ctypes.data_as(
+                        ctypes.POINTER(ctypes.c_int32)
+                    ),
+                    stages,
+                    model.basis_channels,
+                    model.coarse_length,
+                    model.latent_elements,
+                    model.projection_shift,
+                    len(stage_descriptors),
+                    0,
+                )
+            )
+            self._model_ids.append(model_id_array)
+            self._projections.append(projection)
+            self._biases.append(bias)
+            self._kernels.append(kernels)
+            self._stage_arrays.append(stages)
+        self._models = (_CibsModel * len(descriptors))(*descriptors)
+        self.registry = _CibsRegistry(self._models, len(descriptors))
+
+
 _Pcm16Callback = ctypes.CFUNCTYPE(
     ctypes.c_int,
     ctypes.c_void_p,
@@ -141,6 +255,15 @@ class NativeMain0Decoder:
             ctypes.POINTER(_Requirements),
         ]
         self._library.resonith_main0_inspect.restype = ctypes.c_int
+        self._library.resonith_main0_inspect_with_registry.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(_CibsRegistry),
+            ctypes.POINTER(_Requirements),
+        ]
+        self._library.resonith_main0_inspect_with_registry.restype = (
+            ctypes.c_int
+        )
         self._library.resonith_main0_decode.argtypes = [
             byte_pointer,
             ctypes.c_size_t,
@@ -150,12 +273,31 @@ class NativeMain0Decoder:
             ctypes.POINTER(ctypes.c_size_t),
         ]
         self._library.resonith_main0_decode.restype = ctypes.c_int
+        self._library.resonith_main0_decode_with_registry.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(_CibsRegistry),
+            ctypes.POINTER(_Workspace),
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        self._library.resonith_main0_decode_with_registry.restype = ctypes.c_int
         self._library.resonith_main0_player_open.argtypes = [
             byte_pointer,
             ctypes.c_size_t,
             ctypes.POINTER(_PlayerView),
         ]
         self._library.resonith_main0_player_open.restype = ctypes.c_int
+        self._library.resonith_main0_player_open_with_registry.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(_CibsRegistry),
+            ctypes.POINTER(_PlayerView),
+        ]
+        self._library.resonith_main0_player_open_with_registry.restype = (
+            ctypes.c_int
+        )
         self._library.resonith_main0_player_stream.argtypes = [
             ctypes.POINTER(_PlayerView),
             ctypes.POINTER(ctypes.c_int64),
@@ -179,6 +321,19 @@ class NativeMain0Decoder:
             ctypes.POINTER(ctypes.c_size_t),
         ]
         self._library.resonith_main0_player_stream_complete.restype = (
+            ctypes.c_int
+        )
+        self._library.resonith_main0_player_stream_complete_with_registry.argtypes = [
+            ctypes.POINTER(_PlayerView),
+            ctypes.POINTER(_CibsRegistry),
+            ctypes.POINTER(_Workspace),
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            _Pcm16Callback,
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        self._library.resonith_main0_player_stream_complete_with_registry.restype = (
             ctypes.c_int
         )
         self._library.resonith_status_string.argtypes = [ctypes.c_int]
@@ -208,16 +363,27 @@ class NativeMain0Decoder:
             + int(requirements.liftpack_scratch_elements) * 8
         )
 
-    def inspect(self, payload: bytes) -> NativeMain0Requirements:
+    def _inspect_native(
+        self,
+        payload: bytes,
+        registry: _CibsRegistryOwner | None,
+    ) -> NativeMain0Requirements:
         source = self._input_buffer(payload)
         native = _Requirements()
-        self._check(
-            self._library.resonith_main0_inspect(
+        if registry is None:
+            status = self._library.resonith_main0_inspect(
                 source,
                 len(payload),
                 ctypes.byref(native),
             )
-        )
+        else:
+            status = self._library.resonith_main0_inspect_with_registry(
+                source,
+                len(payload),
+                ctypes.byref(registry.registry),
+                ctypes.byref(native),
+            )
+        self._check(status)
         workspace_bytes = self._workspace_bytes(native)
         if workspace_bytes > self._max_workspace_bytes:
             raise MemoryError(
@@ -237,8 +403,23 @@ class NativeMain0Decoder:
             workspace_bytes,
         )
 
-    def decode(self, payload: bytes) -> NativeMain0DecodeResult:
-        requirements = self.inspect(payload)
+    def inspect(
+        self,
+        payload: bytes,
+        *,
+        cibs_models: Sequence[CIBS0Model] = (),
+    ) -> NativeMain0Requirements:
+        registry = _CibsRegistryOwner(cibs_models) if cibs_models else None
+        return self._inspect_native(payload, registry)
+
+    def decode(
+        self,
+        payload: bytes,
+        *,
+        cibs_models: Sequence[CIBS0Model] = (),
+    ) -> NativeMain0DecodeResult:
+        registry = _CibsRegistryOwner(cibs_models) if cibs_models else None
+        requirements = self._inspect_native(payload, registry)
         source = self._input_buffer(payload)
 
         basis = (ctypes.c_int16 * requirements.basis_elements)()
@@ -275,8 +456,8 @@ class NativeMain0Decoder:
             requirements.liftpack_scratch_elements,
         )
         written = ctypes.c_size_t()
-        self._check(
-            self._library.resonith_main0_decode(
+        if registry is None:
+            status = self._library.resonith_main0_decode(
                 source,
                 len(payload),
                 ctypes.byref(workspace),
@@ -284,7 +465,17 @@ class NativeMain0Decoder:
                 requirements.sample_count,
                 ctypes.byref(written),
             )
-        )
+        else:
+            status = self._library.resonith_main0_decode_with_registry(
+                source,
+                len(payload),
+                ctypes.byref(registry.registry),
+                ctypes.byref(workspace),
+                output,
+                requirements.sample_count,
+                ctypes.byref(written),
+            )
+        self._check(status)
         if written.value != requirements.sample_count:
             raise RuntimeError("native decoder returned a partial PCM result")
         samples = np.ctypeslib.as_array(output).copy()
@@ -295,19 +486,34 @@ class NativeMain0Decoder:
             requirements,
         )
 
-    def decode_streaming(self, payload: bytes) -> NativeMain0DecodeResult:
+    def decode_streaming(
+        self,
+        payload: bytes,
+        *,
+        cibs_models: Sequence[CIBS0Model] = (),
+    ) -> NativeMain0DecodeResult:
         """Decode complete Main-0 through the one-block callback API."""
 
-        requirements = self.inspect(payload)
+        registry = _CibsRegistryOwner(cibs_models) if cibs_models else None
+        requirements = self._inspect_native(payload, registry)
         source = self._input_buffer(payload)
         player = _PlayerView()
-        self._check(
-            self._library.resonith_main0_player_open(
+        if registry is None:
+            open_status = self._library.resonith_main0_player_open(
                 source,
                 len(payload),
                 ctypes.byref(player),
             )
-        )
+        else:
+            open_status = (
+                self._library.resonith_main0_player_open_with_registry(
+                    source,
+                    len(payload),
+                    ctypes.byref(registry.registry),
+                    ctypes.byref(player),
+                )
+            )
+        self._check(open_status)
         if int(player.sample_count) != requirements.sample_count:
             raise RuntimeError("native player metadata differs from inspect")
 
@@ -378,15 +584,30 @@ class NativeMain0Decoder:
 
         callback = _Pcm16Callback(collect)
         emitted = ctypes.c_size_t()
-        status = self._library.resonith_main0_player_stream_complete(
-            ctypes.byref(player),
-            ctypes.byref(workspace),
-            block_output,
-            int(player.block_size),
-            callback,
-            None,
-            ctypes.byref(emitted),
-        )
+        if registry is None:
+            status = self._library.resonith_main0_player_stream_complete(
+                ctypes.byref(player),
+                ctypes.byref(workspace),
+                block_output,
+                int(player.block_size),
+                callback,
+                None,
+                ctypes.byref(emitted),
+            )
+        else:
+            status = (
+                self._library
+                .resonith_main0_player_stream_complete_with_registry(
+                    ctypes.byref(player),
+                    ctypes.byref(registry.registry),
+                    ctypes.byref(workspace),
+                    block_output,
+                    int(player.block_size),
+                    callback,
+                    None,
+                    ctypes.byref(emitted),
+                )
+            )
         if callback_error:
             raise RuntimeError("native PCM callback rejected a block") from (
                 callback_error[0]

@@ -17,9 +17,11 @@ from maf_p0.main0 import (  # noqa: E402
     decode_main0_raw_stream,
     encode_main0_periodic_rdo,
     encode_main0_state_rdo,
+    pack_main0_cibs_stream,
     pack_main0_lpc_residual_stream,
     pack_main0_state_stream,
 )
+from maf_p0.model import encode_basis_latent, train_linear_cibs  # noqa: E402
 from maf_p0.native_core import (  # noqa: E402
     NativeCoreError,
     NativeMain0Decoder,
@@ -155,6 +157,57 @@ class NativeBridgeTests(unittest.TestCase):
         self.assertEqual(native.requirements.render_elements, max(durations))
         np.testing.assert_array_equal(native.samples, reference.samples)
         streamed = self.decoder.decode_streaming(stream)
+        np.testing.assert_array_equal(streamed.samples, native.samples)
+
+    def test_registry_backed_bcib_whole_and_callback_decode(self) -> None:
+        basis = np.rint(
+            20_000.0
+            * np.sin(2.0 * np.pi * np.arange(64, dtype=np.float64) / 64.0)
+        ).astype(np.int16)
+        training = np.stack(
+            (basis, np.roll(basis, 1), np.roll(basis, 2), -basis)
+        ).astype(np.int16)[:, np.newaxis, :]
+        model = train_linear_cibs(
+            training,
+            latent_elements=3,
+            model_id="CIBS0-NATIVE-MAIN0-TEST",
+        )
+        latent = encode_basis_latent(basis.reshape(1, -1), model)
+        duration = 4096
+        trajectory = constant_phase_trajectory(duration, 0x0200_0000)
+        gain = GainEventLaw(
+            np.asarray([0, 2048], dtype=np.uint32),
+            np.asarray([32768, 24576], dtype=np.int32),
+            duration,
+        )
+        stream = pack_main0_cibs_stream(
+            sample_rate=48_000,
+            model=model,
+            latent=latent,
+            trajectory=trajectory,
+            gain_law=gain,
+            innovation_q=np.zeros(duration, dtype=np.int16),
+            innovation_step=1,
+            residual_block_size=16,
+        )
+        with self.assertRaises(NativeCoreError):
+            self.decoder.decode(stream)
+        reference = decode_main0_raw_stream(
+            stream,
+            cibs_models=(model,),
+        )
+        native = self.decoder.decode(stream, cibs_models=(model,))
+        self.assertEqual(native.requirements.atom_count, 1)
+        self.assertEqual(native.requirements.basis_count, 1)
+        self.assertGreaterEqual(
+            native.requirements.liftpack_scratch_elements,
+            model.output_elements * 2,
+        )
+        np.testing.assert_array_equal(native.samples, reference.samples)
+        streamed = self.decoder.decode_streaming(
+            stream,
+            cibs_models=(model,),
+        )
         np.testing.assert_array_equal(streamed.samples, native.samples)
 
     def test_complete_byte_state_rdo_keeps_one_state_fallback(self) -> None:

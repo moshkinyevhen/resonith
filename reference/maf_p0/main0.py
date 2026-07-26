@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING, Sequence
 
 import numpy as np
 
+from cibs0 import CIBS0Model, materialize_basis
+
 from .basis_section import pack_braw, unpack_braw
 from .codec import _quality_report, _quantize_signed
 from .composition import GainEventLaw, compose_truth
@@ -23,11 +25,14 @@ from .residual import decode_liftpack, encode_liftpack
 from .rsc1 import RSC1Section, SECTION_CRITICAL, pack_rsc1, parse_rsc1
 from .segmentation import segment_acoustic_states
 from .stream_sections import (
+    CachedCIBSBasis,
     PeriodicAtom,
     StreamConfig,
+    pack_bcib,
     pack_conf,
     pack_periodic_atom,
     unpack_conf,
+    unpack_bcib,
     unpack_periodic_atom,
 )
 
@@ -35,7 +40,9 @@ if TYPE_CHECKING:
     from .native_core import NativeMain0Decoder
 
 
-KNOWN_TYPES = frozenset({b"ATOM", b"BRAW", b"CONF", b"RSL1", b"RSL2"})
+KNOWN_TYPES = frozenset(
+    {b"ATOM", b"BCIB", b"BRAW", b"CONF", b"RSL1", b"RSL2"}
+)
 MANDATORY_TYPES = frozenset({b"CONF"})
 DEFAULT_RESIDUAL_BLOCK_SIZES = (1024, 2048, 4096, 8192, 16384, 32768)
 
@@ -169,6 +176,80 @@ def pack_main0_raw_stream(
     )
 
 
+def pack_main0_cibs_stream(
+    *,
+    sample_rate: int,
+    model: CIBS0Model,
+    latent: np.ndarray,
+    trajectory: PhaseTrajectory,
+    gain_law: GainEventLaw,
+    innovation_q: np.ndarray,
+    innovation_step: int,
+    residual_block_size: int = 1024,
+    residual_codec: str = "rsl1",
+    lpc_orders: tuple[int, ...] = (4, 8, 12, 16),
+) -> bytes:
+    """Pack one registry-backed latent-only BCIB periodic state."""
+
+    model.validate()
+    materialized = materialize_basis(np.asarray(latent), model)
+    if model.basis_channels != 1 or model.output_length < 2:
+        raise ValueError("Main-0 BCIB requires one periodic Basis channel")
+    if gain_law.sample_count != trajectory.sample_count:
+        raise ValueError("Main-0 state gain and phase lifetimes differ")
+    innovation = np.asarray(innovation_q)
+    if (
+        innovation.ndim != 1
+        or not np.issubdtype(innovation.dtype, np.signedinteger)
+    ):
+        raise TypeError("Main-0 Innovation must be a signed integer vector")
+    if innovation.size != trajectory.sample_count:
+        raise ValueError("Main-0 Innovation length differs from the stream")
+
+    config = StreamConfig(
+        sample_count=int(innovation.size),
+        innovation_step=innovation_step,
+        output_channels=1,
+    )
+    if residual_codec == "rsl1":
+        residual_type = "RSL1"
+        residual_payload = encode_liftpack(
+            innovation,
+            block_size=residual_block_size,
+        ).payload
+    elif residual_codec == "rsl2":
+        from .lpc_oracle import encode_lpc_liftpack_oracle
+
+        residual_type = "RSL2"
+        residual_payload, _ = encode_lpc_liftpack_oracle(
+            innovation,
+            block_size=residual_block_size,
+            lpc_orders=lpc_orders,
+        )
+    else:
+        raise ValueError("unknown Main-0 residual codec")
+
+    basis = CachedCIBSBasis(
+        model_id=model.model_id,
+        latent=np.asarray(latent),
+        channels=model.basis_channels,
+        samples_per_channel=model.output_length,
+        expected_sha256=bytes.fromhex(materialized.sha256),
+    )
+    atom = PeriodicAtom(0, trajectory, gain_law)
+    return pack_rsc1(
+        [
+            RSC1Section("ATOM", pack_periodic_atom(atom)),
+            RSC1Section("BCIB", pack_bcib(basis)),
+            RSC1Section("CONF", pack_conf(config)),
+            RSC1Section(residual_type, residual_payload),
+        ],
+        profile=0,
+        level=0,
+        timebase_hz=sample_rate,
+    )
+
+
 def pack_main0_state_stream(
     *,
     sample_rate: int,
@@ -261,8 +342,12 @@ def pack_main0_state_stream(
     return pack_rsc1(sections, profile=0, level=0, timebase_hz=sample_rate)
 
 
-def decode_main0_raw_stream(payload: bytes) -> Main0DecodeResult:
-    """Verify and decode the first executable mono Main-0 RSC1 subset."""
+def decode_main0_raw_stream(
+    payload: bytes,
+    *,
+    cibs_models: Sequence[CIBS0Model] = (),
+) -> Main0DecodeResult:
+    """Verify and decode executable mono Main-0 with raw or cached Basis."""
 
     info = parse_rsc1(payload)
     if (info.profile, info.level) != (0, 0):
@@ -301,22 +386,58 @@ def decode_main0_raw_stream(payload: bytes) -> Main0DecodeResult:
         or innovation_sections[0].start_tick != 0
     ):
         raise ValueError("Main-0 requires exactly one canonical Innovation")
-    for type_code in (b"ATOM", b"BRAW"):
-        if [
-            section.instance_id for section in required[type_code]
-        ] != list(range(len(required[type_code]))):
-            raise ValueError("non-canonical Main-0 section instances")
-    if bool(required[b"ATOM"]) != bool(required[b"BRAW"]):
+    if [
+        section.instance_id for section in required[b"ATOM"]
+    ] != list(range(len(required[b"ATOM"]))):
+        raise ValueError("non-canonical Main-0 Atom instances")
+    basis_by_id: dict[int, RSC1Section] = {}
+    for type_code in (b"BRAW", b"BCIB"):
+        for section in required[type_code]:
+            if section.instance_id in basis_by_id:
+                raise ValueError("duplicate Main-0 Basis instance")
+            basis_by_id[section.instance_id] = section
+    if sorted(basis_by_id) != list(range(len(basis_by_id))):
+        raise ValueError("non-canonical Main-0 Basis instances")
+    if bool(required[b"ATOM"]) != bool(basis_by_id):
         raise ValueError("Main-0 Atom and Basis sections must coexist")
 
     config = unpack_conf(required[b"CONF"][0].payload)
     if config.output_channels != 1:
         raise ValueError("the executable Main-0 subset is mono")
+    model_registry: dict[str, CIBS0Model] = {}
+    for model in cibs_models:
+        model.validate()
+        if model.model_id in model_registry:
+            raise ValueError("duplicate CIBS model registry ID")
+        model_registry[model.model_id] = model
     bases: list[np.ndarray] = []
-    for section in required[b"BRAW"]:
-        basis = unpack_braw(section.payload)
-        if basis.shape[0] != 1 or basis.shape[1] < 2:
-            raise ValueError("periodic Main-0 BRAW must contain one Basis")
+    basis_sections: list[RSC1Section] = []
+    for basis_id in range(len(basis_by_id)):
+        section = basis_by_id[basis_id]
+        basis_sections.append(section)
+        if bytes(section.type_code) == b"BRAW":
+            basis = unpack_braw(section.payload)
+            if basis.shape[0] != 1 or basis.shape[1] < 2:
+                raise ValueError("periodic Main-0 BRAW must contain one Basis")
+        else:
+            declaration = unpack_bcib(section.payload)
+            model = model_registry.get(declaration.model_id)
+            if model is None:
+                raise ValueError("BCIB references an unavailable CIBS model")
+            if (
+                model.basis_channels != declaration.channels
+                or model.output_length != declaration.samples_per_channel
+                or model.latent_elements != declaration.latent.size
+            ):
+                raise ValueError("BCIB declaration differs from its model")
+            materialized = materialize_basis(
+                declaration.latent,
+                model,
+                expected_sha256=declaration.expected_sha256.hex(),
+            )
+            basis = materialized.samples
+            if basis.shape[0] != 1:
+                raise ValueError("periodic Main-0 BCIB must contain one Basis")
         bases.append(basis[0])
     if required[b"RSL1"]:
         innovation = decode_liftpack(
@@ -348,7 +469,7 @@ def decode_main0_raw_stream(payload: bytes) -> Main0DecodeResult:
         atom = unpack_periodic_atom(section.payload)
         if atom.basis_instance_id >= len(bases):
             raise ValueError("ATOM references an unavailable Basis instance")
-        basis_section = required[b"BRAW"][atom.basis_instance_id]
+        basis_section = basis_sections[atom.basis_instance_id]
         if basis_section.start_tick > cursor:
             raise ValueError("ATOM predates its referenced Basis")
         end = cursor + atom.trajectory.sample_count

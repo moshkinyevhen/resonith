@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "resonith/cibs.h"
 #include "resonith/status.h"
 
 #ifdef __cplusplus
@@ -27,8 +28,10 @@ typedef struct resonith_periodic_atom_info {
 
 /*
  * Exact caller-owned memory needed by the executable mono Main-0 subset.
- * Counts are elements, never bytes. A zero-Atom Truth stream reports zero for
- * every model buffer. The RSC1 timebase is the PCM sample rate.
+ * Counts are elements, never bytes. `liftpack_scratch_elements` is the shared
+ * int64 staging capacity: max(LiftPack decode, CIBS materialization). The two
+ * operations never overlap. A zero-Atom Truth stream reports zero for every
+ * model buffer. The RSC1 timebase is the PCM sample rate.
  */
 typedef struct resonith_main0_requirements {
     uint32_t timebase_hz;
@@ -48,6 +51,8 @@ typedef struct resonith_main0_requirements {
  * Mutable decoder memory supplied by the application.
  *
  * Every region must be disjoint and remain valid for the complete call.
+ * `liftpack_scratch` is reused for registry-backed CIBS materialization before
+ * or between residual operations; it is never accessed concurrently by both.
  * Decode performs no allocation and leaves final PCM untouched until all
  * required RSC1 sections have passed integrity and cross-section checks.
  */
@@ -148,12 +153,35 @@ RESONITH_API resonith_status resonith_main0_inspect(
 );
 
 /*
+ * Registry-aware inspection for streams containing BCIB schema 1.
+ *
+ * The registry is immutable application state and is never copied or retained.
+ */
+RESONITH_API resonith_status resonith_main0_inspect_with_registry(
+    const uint8_t* data,
+    size_t data_size,
+    const resonith_cibs_registry* registry,
+    resonith_main0_requirements* requirements
+);
+
+/*
  * Executes RSC1 -> optional Basis/Atom prediction + Innovation -> mono PCM16.
  * See Resonith-0 sections 4.1.1, 5.1, and 5.5.
  */
 RESONITH_API resonith_status resonith_main0_decode(
     const uint8_t* data,
     size_t data_size,
+    resonith_main0_workspace* workspace,
+    int16_t* output,
+    size_t output_capacity,
+    size_t* samples_written
+);
+
+/* Executes Main-0 with BRAW and/or registry-backed BCIB Basis records. */
+RESONITH_API resonith_status resonith_main0_decode_with_registry(
+    const uint8_t* data,
+    size_t data_size,
+    const resonith_cibs_registry* registry,
     resonith_main0_workspace* workspace,
     int16_t* output,
     size_t output_capacity,
@@ -167,6 +195,14 @@ RESONITH_API resonith_status resonith_main0_decode(
 RESONITH_API resonith_status resonith_main0_player_open(
     const uint8_t* data,
     size_t data_size,
+    resonith_main0_player_view* view
+);
+
+/* Opens a complete Main-0 view with registry-backed BCIB validation. */
+RESONITH_API resonith_status resonith_main0_player_open_with_registry(
+    const uint8_t* data,
+    size_t data_size,
+    const resonith_cibs_registry* registry,
     resonith_main0_player_view* view
 );
 
@@ -219,6 +255,18 @@ RESONITH_API resonith_status resonith_main0_player_stream(
  */
 RESONITH_API resonith_status resonith_main0_player_stream_complete(
     const resonith_main0_player_view* view,
+    resonith_main0_workspace* workspace,
+    int16_t* output,
+    size_t output_capacity,
+    resonith_pcm16_callback callback,
+    void* user,
+    size_t* samples_emitted
+);
+
+/* Complete callback playback with BRAW and/or registry-backed BCIB Basis. */
+RESONITH_API resonith_status resonith_main0_player_stream_complete_with_registry(
+    const resonith_main0_player_view* view,
+    const resonith_cibs_registry* registry,
     resonith_main0_workspace* workspace,
     int16_t* output,
     size_t output_capacity,
