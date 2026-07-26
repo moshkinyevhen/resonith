@@ -26,6 +26,7 @@ constexpr std::uint8_t kMaximumRiceParameter = 20U;
 struct compact_record_view {
     const std::uint8_t* data = nullptr;
     std::size_t size = 0U;
+    std::size_t framed_size = 0U;
     std::size_t next_offset = 0U;
     std::uint32_t logical_count = 0U;
     resonith_lapped_requirements requirements{};
@@ -149,6 +150,89 @@ bool packed_size_matches(
         && bits == expected;
 }
 
+bool valid_sequence_shape(
+    const resonith_lapped_compact_sequence& sequence
+) noexcept {
+    return sequence.reserved == 0U
+        && sequence.sample_rate != 0U
+        && sequence.frame_count != 0U
+        && sequence.output_channels != 0U
+        && sequence.output_channels <= 8U
+        && sequence.half_window >= 32U
+        && sequence.half_window <= 1024U
+        && (sequence.half_window & (sequence.half_window - 1U)) == 0U
+        && sequence.band_count != 0U
+        && sequence.band_count <= 64U
+        && sequence.packet_frames >= sequence.half_window
+        && sequence.packet_frames % sequence.half_window == 0U
+        && sequence.packet_count != 0U
+        && sequence.packet_count <= kMaximumPacketCount
+        && sequence.packet_count
+            == sequence.frame_count / sequence.packet_frames
+                + (
+                    sequence.frame_count % sequence.packet_frames != 0U
+                        ? 1U
+                        : 0U
+                );
+}
+
+resonith_status parse_sequence_header(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    resonith_lapped_compact_sequence* sequence
+) noexcept {
+    if (data == nullptr || sequence == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *sequence = {};
+    if (data_size < kHeaderBytes + kDigestBytes) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+    if (std::memcmp(data, "LPS4", 4U) != 0) {
+        return RESONITH_STATUS_BAD_MAGIC;
+    }
+    if (data[4U] != 1U) {
+        return RESONITH_STATUS_UNSUPPORTED_VERSION;
+    }
+    if (data[5U] != 0U) {
+        return RESONITH_STATUS_UNSUPPORTED_FEATURE;
+    }
+    if (!digest_matches(data, kHeaderBytes, data + kHeaderBytes)) {
+        return RESONITH_STATUS_HASH_MISMATCH;
+    }
+
+    resonith_lapped_compact_sequence parsed = {
+        read_u32(data + 8U),
+        read_u32(data + 12U),
+        read_u32(data + 20U),
+        read_u32(data + 24U),
+        read_u16(data + 16U),
+        read_u16(data + 18U),
+        read_u16(data + 6U),
+        0U,
+    };
+    if (!valid_sequence_shape(parsed)) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    *sequence = parsed;
+    return RESONITH_STATUS_OK;
+}
+
+resonith_lapped_compact_sequence sequence_from_session(
+    const resonith_lapped_compact_session& session
+) noexcept {
+    return {
+        session.sample_rate,
+        session.frame_count,
+        session.packet_frames,
+        session.packet_count,
+        session.half_window,
+        session.band_count,
+        session.output_channels,
+        0U,
+    };
+}
+
 void maximize(
     resonith_lapped_requirements* maximum,
     const resonith_lapped_requirements& current
@@ -191,43 +275,46 @@ void maximize(
     );
 }
 
-resonith_status parse_record(
-    const resonith_lapped_compact_session& session,
-    std::size_t offset,
+resonith_status parse_record_bytes(
+    const resonith_lapped_compact_sequence& sequence,
+    const std::uint8_t* record,
+    std::size_t available,
     std::uint32_t packet_index,
+    bool exact_framing,
     compact_record_view* view
 ) noexcept {
-    if (view == nullptr || packet_index >= session.packet_count) {
+    if (
+        record == nullptr
+        || view == nullptr
+        || packet_index >= sequence.packet_count
+    ) {
         return RESONITH_STATUS_INVALID_ARGUMENT;
     }
     *view = {};
     if (
-        offset > session.data_size
-        || session.data_size - offset
-            < kCompactDescriptorBytes + kRecordCrcBytes
+        available < kCompactDescriptorBytes + kRecordCrcBytes
     ) {
         return RESONITH_STATUS_TRUNCATED;
     }
 
     const std::uint64_t logical_start_64 =
-        static_cast<std::uint64_t>(packet_index) * session.packet_frames;
-    if (logical_start_64 >= session.frame_count) {
+        static_cast<std::uint64_t>(packet_index) * sequence.packet_frames;
+    if (logical_start_64 >= sequence.frame_count) {
         return RESONITH_STATUS_MALFORMED;
     }
     const std::uint32_t logical_start =
         static_cast<std::uint32_t>(logical_start_64);
     const std::uint32_t logical_count = std::min(
-        session.packet_frames,
-        session.frame_count - logical_start
+        sequence.packet_frames,
+        sequence.frame_count - logical_start
     );
-    const bool final_packet = packet_index + 1U == session.packet_count;
+    const bool final_packet = packet_index + 1U == sequence.packet_count;
     const std::uint32_t transform_frames =
-        logical_count / session.half_window + (final_packet ? 1U : 0U);
+        logical_count / sequence.half_window + (final_packet ? 1U : 0U);
     if (transform_frames == 0U) {
         return RESONITH_STATUS_MALFORMED;
     }
 
-    const std::uint8_t* record = session.data + offset;
     const std::uint8_t scale_entropy = record[0U];
     const std::uint8_t scale_parameter = record[1U];
     const std::uint8_t count_entropy = record[2U];
@@ -246,7 +333,7 @@ resonith_status parse_record(
         !valid_entropy(scale_entropy, scale_parameter)
         || !valid_entropy(count_entropy, count_parameter)
         || !valid_entropy(value_entropy, value_parameter)
-        || position_parameter > log2_power_of_two(session.half_window)
+        || position_parameter > log2_power_of_two(sequence.half_window)
         || coefficient_count > kMaximumSymbols
     ) {
         return RESONITH_STATUS_MALFORMED;
@@ -259,28 +346,28 @@ resonith_status parse_record(
     std::size_t overlap_elements = 0U;
     if (
         !checked_product(
-            session.output_channels,
+            sequence.output_channels,
             transform_frames,
             &channel_frames
         )
         || !checked_product(
             channel_frames,
-            session.band_count,
+            sequence.band_count,
             &scale_elements
         )
         || !checked_product(
             channel_frames,
-            session.half_window,
+            sequence.half_window,
             &maximum_coefficients
         )
         || !checked_product(
             logical_count,
-            session.output_channels,
+            sequence.output_channels,
             &output_elements
         )
         || !checked_add(
             logical_count,
-            2U * session.half_window,
+            2U * sequence.half_window,
             &overlap_elements
         )
         || channel_frames > kMaximumSymbols
@@ -318,10 +405,14 @@ resonith_status parse_record(
     }
     if (
         record_size > kMaximumStreamBytes
-        || record_size > session.data_size - offset
-        || session.data_size - offset - record_size < kRecordCrcBytes
+        || record_size > available
+        || available - record_size < kRecordCrcBytes
     ) {
         return RESONITH_STATUS_TRUNCATED;
+    }
+    const std::size_t framed_size = record_size + kRecordCrcBytes;
+    if (exact_framing && framed_size != available) {
+        return RESONITH_STATUS_MALFORMED;
     }
     if (
         resonith::internal::crc32(record, record_size)
@@ -340,14 +431,14 @@ resonith_status parse_record(
 
     view->data = record;
     view->size = record_size;
-    view->next_offset = offset + record_size + kRecordCrcBytes;
+    view->framed_size = framed_size;
     view->logical_count = logical_count;
-    view->requirements.sample_rate = session.sample_rate;
+    view->requirements.sample_rate = sequence.sample_rate;
     view->requirements.frame_count = logical_count;
     view->requirements.transform_frame_count = transform_frames;
-    view->requirements.half_window = session.half_window;
-    view->requirements.band_count = session.band_count;
-    view->requirements.output_channels = session.output_channels;
+    view->requirements.half_window = sequence.half_window;
+    view->requirements.band_count = sequence.band_count;
+    view->requirements.output_channels = sequence.output_channels;
     view->requirements.scale_elements = scale_elements;
     view->requirements.count_elements = channel_frames;
     view->requirements.position_elements = coefficient_count;
@@ -357,7 +448,144 @@ resonith_status parse_record(
     return RESONITH_STATUS_OK;
 }
 
+resonith_status parse_record(
+    const resonith_lapped_compact_session& session,
+    std::size_t offset,
+    std::uint32_t packet_index,
+    compact_record_view* view
+) noexcept {
+    if (view == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *view = {};
+    if (offset > session.data_size) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+    const resonith_status status = parse_record_bytes(
+        sequence_from_session(session),
+        session.data + offset,
+        session.data_size - offset,
+        packet_index,
+        false,
+        view
+    );
+    if (status == RESONITH_STATUS_OK) {
+        view->next_offset = offset + view->framed_size;
+    }
+    return status;
+}
+
+resonith_status decode_record_views(
+    const resonith_lapped_compact_sequence& sequence,
+    std::uint32_t packet_index,
+    const compact_record_view& current,
+    const compact_record_view* lookahead,
+    const resonith_lapped_workspace& current_workspace,
+    const resonith_lapped_workspace* lookahead_workspace,
+    std::int16_t* logical_output,
+    std::size_t logical_output_capacity,
+    std::size_t* frames_written
+) noexcept {
+    if (
+        logical_output == nullptr
+        || frames_written == nullptr
+        || packet_index >= sequence.packet_count
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *frames_written = 0U;
+    if (logical_output_capacity < current.requirements.output_elements) {
+        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    }
+
+    const bool final_packet = packet_index + 1U == sequence.packet_count;
+    if (
+        (final_packet && (lookahead != nullptr || lookahead_workspace != nullptr))
+        || (
+            !final_packet
+            && (lookahead == nullptr || lookahead_workspace == nullptr)
+        )
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+
+    resonith_lapped_requirements decoded_current{};
+    resonith_status status =
+        resonith::internal::lapped_compact_fields_decode(
+            current.data,
+            current.size,
+            sequence.sample_rate,
+            current.logical_count,
+            current.requirements.transform_frame_count,
+            sequence.output_channels,
+            sequence.half_window,
+            sequence.band_count,
+            current_workspace,
+            &decoded_current
+        );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+
+    resonith_lapped_requirements decoded_lookahead{};
+    if (!final_packet) {
+        status = resonith::internal::lapped_compact_fields_decode(
+            lookahead->data,
+            lookahead->size,
+            sequence.sample_rate,
+            lookahead->logical_count,
+            lookahead->requirements.transform_frame_count,
+            sequence.output_channels,
+            sequence.half_window,
+            sequence.band_count,
+            *lookahead_workspace,
+            &decoded_lookahead
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+    }
+
+    std::size_t rendered_frames = 0U;
+    status = resonith::internal::lapped_render_chained(
+        decoded_current,
+        current_workspace,
+        final_packet ? nullptr : &decoded_lookahead,
+        final_packet ? nullptr : lookahead_workspace,
+        logical_output,
+        logical_output_capacity,
+        &rendered_frames
+    );
+    if (
+        status != RESONITH_STATUS_OK
+        || rendered_frames != current.logical_count
+    ) {
+        return status == RESONITH_STATUS_OK
+            ? RESONITH_STATUS_MALFORMED
+            : status;
+    }
+    *frames_written = rendered_frames;
+    return RESONITH_STATUS_OK;
+}
+
 }  // namespace
+
+extern "C" resonith_status resonith_lapped_compact_sequence_open(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    resonith_lapped_compact_sequence* sequence
+) {
+    if (data == nullptr || sequence == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    if (data_size != kHeaderBytes + kDigestBytes) {
+        *sequence = {};
+        return data_size < kHeaderBytes + kDigestBytes
+            ? RESONITH_STATUS_TRUNCATED
+            : RESONITH_STATUS_MALFORMED;
+    }
+    return parse_sequence_header(data, data_size, sequence);
+}
 
 extern "C" resonith_status resonith_lapped_compact_open(
     const std::uint8_t* data,
@@ -377,54 +605,30 @@ extern "C" resonith_status resonith_lapped_compact_open(
     ) {
         return RESONITH_STATUS_TRUNCATED;
     }
-    if (std::memcmp(data, "LPS4", 4U) != 0) {
-        return RESONITH_STATUS_BAD_MAGIC;
+    resonith_lapped_compact_sequence sequence{};
+    const resonith_status header_status = parse_sequence_header(
+        data,
+        data_size,
+        &sequence
+    );
+    if (header_status != RESONITH_STATUS_OK) {
+        return header_status;
     }
-    if (data[4U] != 1U) {
-        return RESONITH_STATUS_UNSUPPORTED_VERSION;
-    }
-    if (data[5U] != 0U) {
-        return RESONITH_STATUS_UNSUPPORTED_FEATURE;
-    }
-    if (!digest_matches(data, kHeaderBytes, data + kHeaderBytes)) {
-        return RESONITH_STATUS_HASH_MISMATCH;
-    }
-
     resonith_lapped_compact_session parsed = {
         data,
         data_size,
         kHeaderBytes + kDigestBytes,
         0U,
         0U,
-        read_u32(data + 8U),
-        read_u32(data + 12U),
-        read_u32(data + 20U),
-        read_u32(data + 24U),
-        read_u16(data + 16U),
-        read_u16(data + 18U),
-        read_u16(data + 6U),
+        sequence.sample_rate,
+        sequence.frame_count,
+        sequence.packet_frames,
+        sequence.packet_count,
+        sequence.half_window,
+        sequence.band_count,
+        sequence.output_channels,
         0U,
     };
-    if (
-        parsed.sample_rate == 0U
-        || parsed.frame_count == 0U
-        || parsed.output_channels == 0U
-        || parsed.output_channels > 8U
-        || parsed.half_window < 32U
-        || parsed.half_window > 1024U
-        || (parsed.half_window & (parsed.half_window - 1U)) != 0U
-        || parsed.band_count == 0U
-        || parsed.band_count > 64U
-        || parsed.packet_frames < parsed.half_window
-        || parsed.packet_frames % parsed.half_window != 0U
-        || parsed.packet_count == 0U
-        || parsed.packet_count > kMaximumPacketCount
-        || parsed.packet_count
-            != parsed.frame_count / parsed.packet_frames
-                + (parsed.frame_count % parsed.packet_frames != 0U ? 1U : 0U)
-    ) {
-        return RESONITH_STATUS_PROFILE_BOUND;
-    }
 
     resonith_lapped_requirements maximum_current{};
     resonith_lapped_requirements maximum_lookahead{};
@@ -507,9 +711,6 @@ extern "C" resonith_status resonith_lapped_compact_decode_next(
     if (status != RESONITH_STATUS_OK) {
         return status;
     }
-    if (logical_output_capacity < current.requirements.output_elements) {
-        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
-    }
 
     const bool final_packet =
         session->next_packet + 1U == session->packet_count;
@@ -529,47 +730,13 @@ extern "C" resonith_status resonith_lapped_compact_decode_next(
         }
     }
 
-    resonith_lapped_requirements decoded_current{};
-    status = resonith::internal::lapped_compact_fields_decode(
-        current.data,
-        current.size,
-        session->sample_rate,
-        current.logical_count,
-        current.requirements.transform_frame_count,
-        session->output_channels,
-        session->half_window,
-        session->band_count,
-        *current_workspace,
-        &decoded_current
-    );
-    if (status != RESONITH_STATUS_OK) {
-        return status;
-    }
-
-    resonith_lapped_requirements decoded_lookahead{};
-    if (!final_packet) {
-        status = resonith::internal::lapped_compact_fields_decode(
-            lookahead.data,
-            lookahead.size,
-            session->sample_rate,
-            lookahead.logical_count,
-            lookahead.requirements.transform_frame_count,
-            session->output_channels,
-            session->half_window,
-            session->band_count,
-            *lookahead_workspace,
-            &decoded_lookahead
-        );
-        if (status != RESONITH_STATUS_OK) {
-            return status;
-        }
-    }
-
     std::size_t rendered_frames = 0U;
-    status = resonith::internal::lapped_render_chained(
-        decoded_current,
+    status = decode_record_views(
+        sequence_from_session(*session),
+        session->next_packet,
+        current,
+        final_packet ? nullptr : &lookahead,
         *current_workspace,
-        final_packet ? nullptr : &decoded_lookahead,
         final_packet ? nullptr : lookahead_workspace,
         logical_output,
         logical_output_capacity,
@@ -589,5 +756,109 @@ extern "C" resonith_status resonith_lapped_compact_decode_next(
     session->next_offset = current.next_offset;
     ++session->next_packet;
     session->next_frame += current.logical_count;
+    return RESONITH_STATUS_OK;
+}
+
+extern "C" resonith_status resonith_lapped_compact_decode_record_pair(
+    const resonith_lapped_compact_sequence* sequence,
+    std::uint32_t packet_index,
+    const std::uint8_t* current_record,
+    std::size_t current_record_size,
+    const std::uint8_t* lookahead_record,
+    std::size_t lookahead_record_size,
+    const resonith_lapped_workspace* current_workspace,
+    const resonith_lapped_workspace* lookahead_workspace,
+    std::int16_t* logical_output,
+    std::size_t logical_output_capacity,
+    std::uint32_t* logical_start,
+    std::size_t* frames_written
+) {
+    if (
+        logical_start == nullptr
+        || frames_written == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *logical_start = 0U;
+    *frames_written = 0U;
+    if (
+        sequence == nullptr
+        || current_record == nullptr
+        || current_workspace == nullptr
+        || logical_output == nullptr
+        || !valid_sequence_shape(*sequence)
+        || packet_index >= sequence->packet_count
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+
+    const bool final_packet = packet_index + 1U == sequence->packet_count;
+    if (
+        (
+            final_packet
+            && (
+                lookahead_record != nullptr
+                || lookahead_record_size != 0U
+                || lookahead_workspace != nullptr
+            )
+        )
+        || (
+            !final_packet
+            && (
+                lookahead_record == nullptr
+                || lookahead_record_size == 0U
+                || lookahead_workspace == nullptr
+            )
+        )
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+
+    compact_record_view current{};
+    resonith_status status = parse_record_bytes(
+        *sequence,
+        current_record,
+        current_record_size,
+        packet_index,
+        true,
+        &current
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+
+    compact_record_view lookahead{};
+    if (!final_packet) {
+        status = parse_record_bytes(
+            *sequence,
+            lookahead_record,
+            lookahead_record_size,
+            packet_index + 1U,
+            true,
+            &lookahead
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+    }
+
+    std::size_t rendered_frames = 0U;
+    status = decode_record_views(
+        *sequence,
+        packet_index,
+        current,
+        final_packet ? nullptr : &lookahead,
+        *current_workspace,
+        final_packet ? nullptr : lookahead_workspace,
+        logical_output,
+        logical_output_capacity,
+        &rendered_frames
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+
+    *logical_start = packet_index * sequence->packet_frames;
+    *frames_written = rendered_frames;
     return RESONITH_STATUS_OK;
 }

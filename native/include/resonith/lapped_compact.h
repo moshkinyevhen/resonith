@@ -31,6 +31,24 @@ typedef struct resonith_lapped_compact_requirements {
     size_t maximum_logical_output_elements;
 } resonith_lapped_compact_requirements;
 
+/*
+ * Authenticated sequence context for independently transported LPS4 records.
+ *
+ * The fixed 60-byte sequence header is immutable for the lifetime of this
+ * context. A transport authenticates it once, then binds every record to the
+ * same context and its explicit packet index.
+ */
+typedef struct resonith_lapped_compact_sequence {
+    uint32_t sample_rate;
+    uint32_t frame_count;
+    uint32_t packet_frames;
+    uint32_t packet_count;
+    uint16_t half_window;
+    uint16_t band_count;
+    uint16_t output_channels;
+    uint16_t reserved;
+} resonith_lapped_compact_sequence;
+
 typedef struct resonith_lapped_compact_session {
     const uint8_t* data;
     size_t data_size;
@@ -46,6 +64,19 @@ typedef struct resonith_lapped_compact_session {
     uint16_t output_channels;
     uint16_t reserved;
 } resonith_lapped_compact_session;
+
+/*
+ * Validates exactly one 60-byte LPS4 sequence header and its SHA-256.
+ *
+ * This parser does not inspect packet records and performs no allocation.
+ * SHA-256 and per-record CRC-32 detect corruption; neither authenticates an
+ * untrusted transport.
+ */
+RESONITH_API resonith_status resonith_lapped_compact_sequence_open(
+    const uint8_t* data,
+    size_t data_size,
+    resonith_lapped_compact_sequence* sequence
+);
 
 /*
  * Fully preflights an LPS4 sequence without writing PCM or allocating memory.
@@ -70,6 +101,32 @@ RESONITH_API resonith_status resonith_lapped_compact_open(
  */
 RESONITH_API resonith_status resonith_lapped_compact_decode_next(
     resonith_lapped_compact_session* session,
+    const resonith_lapped_workspace* current_workspace,
+    const resonith_lapped_workspace* lookahead_workspace,
+    int16_t* logical_output,
+    size_t logical_output_capacity,
+    uint32_t* logical_start,
+    size_t* frames_written
+);
+
+/*
+ * Transactionally decodes one independently framed LPS4 record.
+ *
+ * `packet_index` supplies the record's position in `sequence`. Every byte of
+ * each supplied record must belong to that record. A non-final record requires
+ * its immediate successor as lookahead; a final record forbids lookahead.
+ *
+ * The transport MUST authenticate the sequence context, packet index, and
+ * record bytes, and MUST enforce replay policy before calling this function.
+ * Record CRC-32 is only an accidental-corruption check.
+ */
+RESONITH_API resonith_status resonith_lapped_compact_decode_record_pair(
+    const resonith_lapped_compact_sequence* sequence,
+    uint32_t packet_index,
+    const uint8_t* current_record,
+    size_t current_record_size,
+    const uint8_t* lookahead_record,
+    size_t lookahead_record_size,
     const resonith_lapped_workspace* current_workspace,
     const resonith_lapped_workspace* lookahead_workspace,
     int16_t* logical_output,

@@ -41,6 +41,7 @@ int main(void) {
     resonith_lapped_analysis_requirements lapped_analysis = {0};
     resonith_lapped_requirements lapped_requirements = {0};
     resonith_lapped_compact_requirements compact_requirements = {0};
+    resonith_lapped_compact_sequence compact_sequence = {0};
     resonith_lapped_compact_session compact_session = {0};
     resonith_lapped_packet_requirements packet_requirements = {0};
     resonith_lapped_packet_session packet_session = {0};
@@ -87,6 +88,15 @@ int main(void) {
         return 1;
     }
     if (
+        resonith_lapped_compact_sequence_open(
+            NULL,
+            0U,
+            &compact_sequence
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
         resonith_lapped_compact_open(
             NULL,
             0U,
@@ -99,6 +109,24 @@ int main(void) {
     if (
         resonith_lapped_compact_decode_next(
             &compact_session,
+            NULL,
+            NULL,
+            NULL,
+            0U,
+            NULL,
+            NULL
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_lapped_compact_decode_record_pair(
+            &compact_sequence,
+            0U,
+            NULL,
+            0U,
+            NULL,
+            0U,
             NULL,
             NULL,
             NULL,

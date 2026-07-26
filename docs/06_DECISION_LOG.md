@@ -2330,3 +2330,39 @@ new oscillator opcode.
     interleave, allocation, and NumPy copy;
   - physical-device energy, thermal behavior, authenticated transport I/O, and
     listening remain open.
+
+## R-083 — Stateless authenticated-transport LPS4 record mapping
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - expose an allocation-free native sequence-context parser for the exact
+    60-byte LPS4 header plus SHA-256;
+  - expose a stateless record-pair decoder keyed by explicit packet index. It
+    receives one transport-framed current record and, except for the final
+    packet, one following boundary record;
+  - derive logical start, logical count, transform ownership, and expected
+    record shape solely from the authenticated sequence context and packet
+    index; reject trailing bytes, wrong index, missing lookahead, CRC failure,
+    and non-canonical compact fields before PCM write;
+  - keep cryptographic authentication, replay protection, stream identity, and
+    packet ordering in the transport profile. The codec API MUST be called only
+    after those checks, and CRC-32 MUST NOT be represented as adversarial
+    authentication;
+  - make record-pair decode stateless so a lost record cannot contaminate later
+    Truth. Concealment remains output-only and is never fed into reference
+    fields.
+- Rationale:
+  - a full-file byte offset is not available when QUIC datagrams or SRTP
+    packets arrive independently;
+  - embedding keys, ciphers, replay windows, or network ordering inside the
+    codec Core would duplicate mature transports and expand the normative
+    decoder;
+  - explicit current-plus-next ownership makes the one-half-window dependency
+    visible while permitting parallel, random-access, and post-loss decode.
+- Gate:
+  - stateless and sequential native outputs are bit-identical;
+  - missing or corrupt lookahead writes no PCM, and a later valid record pair
+    still decodes exactly;
+  - exact framing, C99 compilation, cross-platform builds, and sanitized
+    mutation coverage pass before the mapping is recorded as accepted.

@@ -9,6 +9,27 @@ namespace {
 
 constexpr std::size_t kMaximumElements = 1U << 20U;
 constexpr std::uint32_t kMaximumPackets = 64U;
+constexpr std::size_t kSequenceHeaderBytes = 60U;
+constexpr std::size_t kCompactDescriptorBytes = 27U;
+constexpr std::size_t kRecordCrcBytes = 4U;
+
+std::uint32_t read_u32(const std::uint8_t* data) noexcept {
+    return static_cast<std::uint32_t>(data[0])
+        | (static_cast<std::uint32_t>(data[1]) << 8U)
+        | (static_cast<std::uint32_t>(data[2]) << 16U)
+        | (static_cast<std::uint32_t>(data[3]) << 24U);
+}
+
+std::size_t compact_record_size(const std::uint8_t* data) noexcept {
+    std::size_t size = kCompactDescriptorBytes + kRecordCrcBytes;
+    for (std::size_t field = 0U; field < 4U; ++field) {
+        size += (
+            static_cast<std::size_t>(read_u32(data + 11U + 4U * field))
+            + 7U
+        ) / 8U;
+    }
+    return size;
+}
 
 bool bounded(
     const resonith_lapped_compact_requirements& requirements
@@ -119,6 +140,47 @@ extern "C" int LLVMFuzzerTestOneInput(
     std::vector<std::int16_t> output(
         requirements.maximum_logical_output_elements
     );
+    std::vector<std::int16_t> stateless_output(output.size());
+
+    resonith_lapped_compact_sequence sequence{};
+    if (
+        resonith_lapped_compact_sequence_open(
+            data,
+            kSequenceHeaderBytes,
+            &sequence
+        ) != RESONITH_STATUS_OK
+    ) {
+        __builtin_trap();
+    }
+    std::vector<std::size_t> record_offsets;
+    std::vector<std::size_t> record_sizes;
+    record_offsets.reserve(requirements.packet_count);
+    record_sizes.reserve(requirements.packet_count);
+    std::size_t record_offset = kSequenceHeaderBytes;
+    for (
+        std::uint32_t packet = 0U;
+        packet < requirements.packet_count;
+        ++packet
+    ) {
+        if (
+            record_offset > size
+            || size - record_offset
+                < kCompactDescriptorBytes + kRecordCrcBytes
+        ) {
+            __builtin_trap();
+        }
+        const std::size_t record_size =
+            compact_record_size(data + record_offset);
+        if (record_size > size - record_offset) {
+            __builtin_trap();
+        }
+        record_offsets.push_back(record_offset);
+        record_sizes.push_back(record_size);
+        record_offset += record_size;
+    }
+    if (record_offset != size) {
+        __builtin_trap();
+    }
 
     std::uint32_t expected_start = 0U;
     for (
@@ -140,6 +202,38 @@ extern "C" int LLVMFuzzerTestOneInput(
             ) != RESONITH_STATUS_OK
             || logical_start != expected_start
             || frames_written == 0U
+        ) {
+            __builtin_trap();
+        }
+        std::uint32_t stateless_start = 1U;
+        std::size_t stateless_frames = 1U;
+        const bool final_packet =
+            packet + 1U == requirements.packet_count;
+        if (
+            resonith_lapped_compact_decode_record_pair(
+                &sequence,
+                packet,
+                data + record_offsets[packet],
+                record_sizes[packet],
+                final_packet ? nullptr : data + record_offsets[packet + 1U],
+                final_packet ? 0U : record_sizes[packet + 1U],
+                &current_workspace,
+                final_packet ? nullptr : &lookahead_workspace,
+                stateless_output.data(),
+                stateless_output.size(),
+                &stateless_start,
+                &stateless_frames
+            ) != RESONITH_STATUS_OK
+            || stateless_start != logical_start
+            || stateless_frames != frames_written
+            || !std::equal(
+                output.begin(),
+                output.begin()
+                    + static_cast<std::ptrdiff_t>(
+                        frames_written * sequence.output_channels
+                    ),
+                stateless_output.begin()
+            )
         ) {
             __builtin_trap();
         }

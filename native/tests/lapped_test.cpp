@@ -361,6 +361,179 @@ int main() {
         return 1;
     }
 
+    constexpr std::size_t compact_header_size = 60U;
+    const std::size_t compact_first_size = kLappedCompactRecordSizes[0U];
+    const std::size_t compact_second_offset =
+        compact_header_size + compact_first_size;
+    const std::size_t compact_second_size = kLappedCompactRecordSizes[1U];
+    resonith_lapped_compact_sequence compact_sequence{};
+    if (!expect(
+            resonith_lapped_compact_sequence_open(
+                kLappedCompactPacketStream.data(),
+                compact_header_size,
+                &compact_sequence
+            ) == RESONITH_STATUS_OK
+                && compact_sequence.sample_rate == 48000U
+                && compact_sequence.frame_count == 96U
+                && compact_sequence.packet_frames == 64U
+                && compact_sequence.packet_count == 2U,
+            "LPS4 authenticated sequence context"
+        )) {
+        return 1;
+    }
+
+    logical_output.fill(1234);
+    logical_start = 99U;
+    logical_frames = 99U;
+    if (!expect(
+            resonith_lapped_compact_decode_record_pair(
+                &compact_sequence,
+                0U,
+                kLappedCompactPacketStream.data() + compact_header_size,
+                compact_first_size,
+                nullptr,
+                0U,
+                &packet_workspace,
+                nullptr,
+                logical_output.data(),
+                logical_output.size(),
+                &logical_start,
+                &logical_frames
+            ) == RESONITH_STATUS_INVALID_ARGUMENT
+                && logical_start == 0U
+                && logical_frames == 0U
+                && std::all_of(
+                    logical_output.begin(),
+                    logical_output.end(),
+                    [](std::int16_t sample) { return sample == 1234; }
+                ),
+            "LPS4 stateless pull requires immediate lookahead"
+        )) {
+        return 1;
+    }
+
+    auto compact_transport_corrupted = kLappedCompactPacketStream;
+    compact_transport_corrupted[
+        compact_transport_corrupted.size() - 1U
+    ] ^= 1U;
+    logical_output.fill(1234);
+    if (!expect(
+            resonith_lapped_compact_decode_record_pair(
+                &compact_sequence,
+                0U,
+                compact_transport_corrupted.data() + compact_header_size,
+                compact_first_size,
+                compact_transport_corrupted.data() + compact_second_offset,
+                compact_second_size,
+                &packet_workspace,
+                &compact_lookahead_workspace,
+                logical_output.data(),
+                logical_output.size(),
+                &logical_start,
+                &logical_frames
+            ) == RESONITH_STATUS_CHECKSUM_MISMATCH
+                && logical_start == 0U
+                && logical_frames == 0U
+                && std::all_of(
+                    logical_output.begin(),
+                    logical_output.end(),
+                    [](std::int16_t sample) { return sample == 1234; }
+                ),
+            "LPS4 corrupt stateless lookahead writes no PCM"
+        )) {
+        return 1;
+    }
+
+    std::array<std::int16_t, 192> compact_stateless_pcm{};
+    if (!expect(
+            resonith_lapped_compact_decode_record_pair(
+                &compact_sequence,
+                0U,
+                kLappedCompactPacketStream.data() + compact_header_size,
+                compact_first_size,
+                kLappedCompactPacketStream.data() + compact_second_offset,
+                compact_second_size,
+                &packet_workspace,
+                &compact_lookahead_workspace,
+                logical_output.data(),
+                logical_output.size(),
+                &logical_start,
+                &logical_frames
+            ) == RESONITH_STATUS_OK
+                && logical_start == 0U
+                && logical_frames == 64U,
+            "LPS4 stateless first record pair"
+        )) {
+        return 1;
+    }
+    std::copy_n(
+        logical_output.begin(),
+        logical_frames * 2U,
+        compact_stateless_pcm.begin()
+    );
+
+    logical_output.fill(1234);
+    if (!expect(
+            resonith_lapped_compact_decode_record_pair(
+                &compact_sequence,
+                0U,
+                kLappedCompactPacketStream.data() + compact_header_size,
+                compact_first_size + 1U,
+                kLappedCompactPacketStream.data() + compact_second_offset,
+                compact_second_size,
+                &packet_workspace,
+                &compact_lookahead_workspace,
+                logical_output.data(),
+                logical_output.size(),
+                &logical_start,
+                &logical_frames
+            ) == RESONITH_STATUS_MALFORMED
+                && logical_start == 0U
+                && logical_frames == 0U
+                && std::all_of(
+                    logical_output.begin(),
+                    logical_output.end(),
+                    [](std::int16_t sample) { return sample == 1234; }
+                ),
+            "LPS4 stateless record rejects trailing bytes"
+        )) {
+        return 1;
+    }
+
+    if (!expect(
+            resonith_lapped_compact_decode_record_pair(
+                &compact_sequence,
+                1U,
+                kLappedCompactPacketStream.data() + compact_second_offset,
+                compact_second_size,
+                nullptr,
+                0U,
+                &packet_workspace,
+                nullptr,
+                logical_output.data(),
+                logical_output.size(),
+                &logical_start,
+                &logical_frames
+            ) == RESONITH_STATUS_OK
+                && logical_start == 64U
+                && logical_frames == 32U,
+            "LPS4 later stateless record survives earlier loss"
+        )) {
+        return 1;
+    }
+    std::copy_n(
+        logical_output.begin(),
+        logical_frames * 2U,
+        compact_stateless_pcm.begin()
+            + static_cast<std::ptrdiff_t>(logical_start * 2U)
+    );
+    if (!expect(
+            compact_stateless_pcm == kExpectedAdaptiveLappedPcm,
+            "LPS4 stateless output equals sequential and monolithic PCM"
+        )) {
+        return 1;
+    }
+
     resonith_lapped_requirements requirements{};
     if (!expect(
             resonith_lapped_inspect(

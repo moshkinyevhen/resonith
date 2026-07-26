@@ -251,6 +251,10 @@ constexpr std::array<std::uint8_t, 222> kLappedCompactPacketStream = {
     0xa4, 0x87, 0xdf, 0xef, 0x94, 0xea,
 };
 
+constexpr std::array<std::uint32_t, 2> kLappedCompactRecordSizes = {
+    73, 89,
+};
+
 constexpr std::array<std::int16_t, 192> kExpectedLappedPcm = {
     1341, 2012, 3811, 3821, 6892, 5467, 9701, 6674, 11466, 7493, 11855, 8121,
     11103, 8650, 9846, 8990, 8781, 9007, 8310, 8681, 8373, 8109, 8507, 7386,
