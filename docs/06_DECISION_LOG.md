@@ -2436,3 +2436,35 @@ new oscillator opcode.
     `a9573bd53b88796663796e46eb3924f2a08dda0fe29072db193088d6b140ffcb`;
   - 128 reference/security/integration tests, four subtests, and JavaScript
     syntax validation pass. Real listener scores remain pending.
+
+## R-085 — Standalone physical-device callback benchmark
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - add one dependency-free native executable that reads an LPS4 sequence,
+    preflights it once, allocates exactly the reported caller workspaces, and
+    then measures every transactional pull;
+  - keep file I/O, preflight, allocation, and JSON reporting outside the timed
+    callback interval;
+  - report per-pull minimum, median, p95, p99, maximum, deadline misses,
+    realtime speed, complete workspace bytes, and a deterministic PCM hash;
+  - repeat complete decode passes and require the same PCM hash and frame count
+    on every pass;
+  - compile the same source on desktop, ARM64, and Android. Platform-specific
+    battery, temperature, frequency, and process-affinity collection belongs
+    in an external runner, not the codec Core or timed callback.
+- Rationale:
+  - hosted Python/ctypes wall time includes allocation and wrapper work but does
+    not reveal callback-tail latency;
+  - a physical-device gate must execute the production C ABI directly and
+    remain usable on an Android shell, embedded Linux board, desktop, or CI
+    runner without a language runtime;
+  - separating telemetry from the decoder prevents platform APIs and thermal
+    policy from entering normative code.
+- Gate:
+  - the executable builds with warning-as-error on all existing native targets;
+  - the frozen LPS4 vector produces the same PCM hash across repeated passes;
+  - malformed input exits without timing or partial success;
+  - actual mobile energy and sustained thermal results remain pending until run
+    on named physical hardware.

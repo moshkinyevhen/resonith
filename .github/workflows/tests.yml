@@ -154,14 +154,17 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_TESTING=OFF \
             -DRESONITH_WARNINGS_AS_ERRORS=ON
-          cmake --build build/native --target resonith_core_shared --parallel
+          cmake --build build/native \
+            --target resonith_core_shared resonith_lapped_device_bench \
+            --parallel
       - name: Run native decoder-in-loop tests
         env:
           RESONITH_NATIVE_CORE: ${{ github.workspace }}/build/native/libresonith_core_shared.so
+          RESONITH_NATIVE_DEVICE_BENCH: ${{ github.workspace }}/build/native/resonith_lapped_device_bench
         run: >
           python -m unittest discover
           -s tests
-          -p test_native_bridge.py
+          -p "test_native*.py"
           -v
 
   native-fuzz-smoke:

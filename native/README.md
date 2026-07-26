@@ -128,7 +128,7 @@ every CRC-32, canonical padding, inherited shape, and maximum current plus
 one-record-lookahead resources without allocation.
 `resonith_lapped_compact_decode_next()` then decodes both caller-owned field
 workspaces and renders the shared transform boundary transactionally. Frozen,
-long-stream cross-decoder, hosted resource, and sanitized mutation gates pass;
+long-stream cross-decoder, hosted resource, and sanitized mutation gates pass.
 
 For independently transported records,
 `resonith_lapped_compact_sequence_open()` validates exactly the immutable
@@ -140,6 +140,22 @@ calling the Core. CRC-32 is not authentication. The mapping is stateless, so a
 missing record does not contaminate later Truth. Cryptographic transport
 integration, physical-device, reordering/loss-scheduling, and listening gates
 remain prospective.
+
+## Physical-device callback benchmark
+
+`resonith_lapped_device_bench` is built from the same portable source on
+desktop, ARM64, and Android targets. It preflights one LPS4 file and allocates
+the reported caller workspaces before timing. The measured interval contains
+only transactional pull decode. Its JSON result reports callback tail latency,
+deadline misses, realtime speed, memory, and a repeat-stable PCM hash:
+
+```sh
+build/native/resonith_lapped_device_bench input.lps 20 3
+```
+
+File I/O, allocation, and reporting are outside callback timing. External
+device runners may collect temperature, frequency, power, and battery data,
+but those platform APIs do not enter the codec Core.
 
 ## Sanitized fuzzing
 

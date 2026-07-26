@@ -4,6 +4,7 @@ project(resonith_core VERSION 0.1.0 LANGUAGES C CXX)
 
 option(RESONITH_WARNINGS_AS_ERRORS "Treat native-core warnings as errors" ON)
 option(RESONITH_BUILD_FUZZERS "Build Clang libFuzzer security targets" OFF)
+option(RESONITH_BUILD_TOOLS "Build native measurement tools" ON)
 
 set(RESONITH_CORE_SOURCES
     src/basis.cpp
@@ -82,6 +83,25 @@ resonith_enable_warnings(resonith_core_shared)
 if(MSVC)
     target_compile_options(resonith_core PRIVATE /permissive-)
     target_compile_options(resonith_core_shared PRIVATE /permissive-)
+endif()
+
+if(RESONITH_BUILD_TOOLS)
+    add_executable(resonith_lapped_device_bench
+        tools/lapped_device_bench.cpp
+    )
+    target_compile_features(
+        resonith_lapped_device_bench
+        PRIVATE cxx_std_20
+    )
+    target_link_libraries(
+        resonith_lapped_device_bench
+        PRIVATE Resonith::Core
+    )
+    set_target_properties(
+        resonith_lapped_device_bench
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_lapped_device_bench)
 endif()
 
 if(RESONITH_BUILD_FUZZERS)
