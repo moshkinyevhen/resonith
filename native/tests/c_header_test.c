@@ -3,6 +3,7 @@
 #include "resonith/composition.h"
 #include "resonith/container.h"
 #include "resonith/liftpack.h"
+#include "resonith/seek.h"
 #include "resonith/stream.h"
 #include "resonith/trajectory.h"
 
@@ -63,6 +64,16 @@ int main(void) {
         0U,
         0U,
         0U,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U
+    };
+    resonith_seek_index_view seek_view = {
+        NULL,
+        0U,
+        NULL,
         0U,
         0U,
         0U,
@@ -161,6 +172,17 @@ int main(void) {
             &block_sample_offset,
             &block_samples_written
         ) != RESONITH_STATUS_MALFORMED
+    ) {
+        return 1;
+    }
+    if (
+        resonith_seek_index_open(
+            NULL,
+            0U,
+            NULL,
+            0U,
+            &seek_view
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
     ) {
         return 1;
     }

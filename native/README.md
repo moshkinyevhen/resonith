@@ -26,6 +26,8 @@ The native Core:
   LPC with an order-16 ceiling;
 - validates and exports caller-owned byte/sample block indexes for bounded
   seek planning without decoding PCM or allocating memory;
+- builds and verifies optional source-bound `RSI1` seek sidecars with
+  independent CRC-32/SHA-256 integrity and exact entry/source equality;
 - opens immutable Main-0 player views and decodes independently seeded
   zero-Atom Truth blocks directly to PCM16 with output-atomic failure;
 - decodes minimal typed `BRAW` Basis payloads into aligned caller-owned

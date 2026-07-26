@@ -89,6 +89,15 @@ RESONITH_API resonith_status resonith_liftpack_cursor_open(
 );
 
 /*
+ * Parses and indexes exactly the next block without reconstructing samples.
+ * The cursor advances only after the complete block envelope is canonical.
+ */
+RESONITH_API resonith_status resonith_liftpack_cursor_index_next(
+    resonith_liftpack_cursor* cursor,
+    resonith_liftpack_block_info* entry
+);
+
+/*
  * Parses and decodes exactly the next block in linear time.
  * Returns NOT_FOUND after the canonical final block.
  */

@@ -1078,3 +1078,33 @@ new oscillator opcode.
   - no compression opcode or mandatory index syntax was added. A serialized
     seek/checkpoint table remains optional future work and must bind itself to
     the verified residual identity before a decoder may trust its offsets.
+
+## R-049 — Optional residual seek sidecar
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - define `RSI1` as an optional, non-Truth seek sidecar for one exact RSL1 or
+    RSL2 payload;
+  - bind the table to the complete source byte length and SHA-256, and protect
+    the sidecar header plus entries with its own CRC-32 and SHA-256;
+  - store canonical byte/sample intervals and the already normative transform,
+    entropy, and LPC metadata in fixed 32-byte entries;
+  - validate the source checksum, source identity, every source block
+    envelope, exact entry equality, and final byte/sample coverage before
+    exposing O(1) entry lookup;
+  - permit a decoder to reconstruct a selected independently seeded block in
+    time proportional to that block only after the verified view is open;
+  - make rejection or absence of `RSI1` fall back to linear scan or sequential
+    cursor decode without changing reconstructed Truth;
+  - cap Main-0 sidecars at 1,000,000 entries and require caller-owned output;
+    the Core performs no heap allocation.
+- Rationale:
+  - the LiftPack checksum authenticates accidental integrity only after
+    scanning the residual, while repeated seeks should not rescan all earlier
+    block envelopes;
+  - binding offsets to the exact residual digest prevents stale indexes from
+    silently targeting another stream;
+  - keeping the table outside mandatory Truth avoids adding bitrate to
+    sequential files and lets containers, HTTP manifests, and players choose
+    their own caching policy.

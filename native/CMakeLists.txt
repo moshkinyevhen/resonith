@@ -12,6 +12,7 @@ set(RESONITH_CORE_SOURCES
     src/container.cpp
     src/integrity.cpp
     src/liftpack.cpp
+    src/seek.cpp
     src/status.cpp
     src/stream.cpp
     src/trajectory.cpp
@@ -203,4 +204,13 @@ if(BUILD_TESTING)
     set_target_properties(resonith_player_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_player_test)
     add_test(NAME block_player_conformance COMMAND resonith_player_test)
+
+    add_executable(resonith_seek_test
+        tests/seek_test.cpp
+    )
+    target_compile_features(resonith_seek_test PRIVATE cxx_std_20)
+    target_link_libraries(resonith_seek_test PRIVATE Resonith::Core)
+    set_target_properties(resonith_seek_test PROPERTIES CXX_EXTENSIONS OFF)
+    resonith_enable_warnings(resonith_seek_test)
+    add_test(NAME seek_sidecar_conformance COMMAND resonith_seek_test)
 endif()

@@ -646,6 +646,90 @@ extern "C" resonith_status resonith_liftpack_cursor_open(
     return RESONITH_STATUS_OK;
 }
 
+extern "C" resonith_status resonith_liftpack_cursor_index_next(
+    resonith_liftpack_cursor* cursor,
+    resonith_liftpack_block_info* entry
+) {
+    if (entry == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *entry = {};
+    if (cursor == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    const std::size_t body_size = cursor->data_size >= kChecksumBytes
+        ? cursor->data_size - kChecksumBytes
+        : 0U;
+    if (
+        cursor->data == nullptr
+        || cursor->data_size < kStreamHeaderBytes + kChecksumBytes
+        || cursor->info.block_size < kMinimumBlockSize
+        || cursor->info.block_size > kMaximumBlockSize
+        || cursor->next_block > cursor->info.block_count
+        || cursor->sample_offset > cursor->info.sample_count
+        || cursor->byte_offset < kStreamHeaderBytes
+        || cursor->byte_offset > body_size
+        || cursor->lpc_stream > 1U
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    if (cursor->next_block == cursor->info.block_count) {
+        return (
+                cursor->sample_offset == cursor->info.sample_count
+                && cursor->byte_offset == body_size
+            )
+            ? RESONITH_STATUS_NOT_FOUND
+            : RESONITH_STATUS_MALFORMED;
+    }
+
+    const std::size_t expected_length = std::min<std::size_t>(
+        cursor->info.block_size,
+        cursor->info.sample_count - cursor->sample_offset
+    );
+    std::size_t next_byte_offset = cursor->byte_offset;
+    ParsedBlock parsed{};
+    const resonith_status status = parse_block(
+        cursor->data,
+        body_size,
+        cursor->lpc_stream != 0U,
+        expected_length,
+        next_byte_offset,
+        parsed
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    const std::uint32_t next_sample_offset =
+        cursor->sample_offset + parsed.sample_count;
+    const std::uint32_t next_block = cursor->next_block + 1U;
+    if (
+        next_block == cursor->info.block_count
+        && (
+            next_sample_offset != cursor->info.sample_count
+            || next_byte_offset != body_size
+        )
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+
+    *entry = resonith_liftpack_block_info{
+        static_cast<std::uint64_t>(parsed.byte_offset),
+        static_cast<std::uint64_t>(parsed.byte_size),
+        cursor->sample_offset,
+        parsed.bit_count,
+        parsed.sample_count,
+        parsed.transform,
+        parsed.entropy,
+        parsed.entropy_parameter,
+        parsed.lpc_order,
+        0U,
+    };
+    cursor->byte_offset = next_byte_offset;
+    cursor->sample_offset = next_sample_offset;
+    cursor->next_block = next_block;
+    return RESONITH_STATUS_OK;
+}
+
 extern "C" resonith_status resonith_liftpack_cursor_decode_next(
     resonith_liftpack_cursor* cursor,
     std::int64_t* output,
