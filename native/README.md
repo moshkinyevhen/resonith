@@ -157,6 +157,23 @@ File I/O, allocation, and reporting are outside callback timing. External
 device runners may collect temperature, frequency, power, and battery data,
 but those platform APIs do not enter the codec Core.
 
+For a physical Android arm64-v8a device, the external runner verifies local and
+device-side hashes, refuses ambiguous device selection, executes sustained
+native runs, and records available thermal zones, CPU frequencies, and battery
+state:
+
+```sh
+python experiments/android_device_gate.py \
+  --benchmark build/android-arm64/resonith_lapped_device_bench \
+  --stream input.lps \
+  --iterations 50 --warmups 5 --sustained-runs 5 \
+  --output artifacts/android-device/report.json
+```
+
+Pass `--serial` when multiple authorized devices are attached. Missing vendor
+sensors remain missing in the report; battery state is not represented as an
+energy measurement.
+
 ## Sanitized fuzzing
 
 Clang builds the LiftPack, Main-0, seek-sidecar, and lapped-stream parsers and

@@ -19,6 +19,10 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   CI with full container-byte and executable-provenance accounting.
 - `LiftPack-1`, acoustic change-point proposals, full-stream boundary RDO, and
   the first licensed real-music corpus test are complete.
+- The fixed-integer bounded adaptive-density lapped candidate now has a
+  synchronized offline blind-listening harness, a hidden reference, an explicit
+  low-pass anchor, strict result validation, and three real-music trials
+  rate-matched to complete Opus bytes within 1.10%.
 - The portable Core now decodes a complete typed mono RSC1 stream through one
   allocation-free C API call.
 - Python encoder RDO is bound to the native whole-stream decoder and rejects
@@ -37,16 +41,17 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   paths with preflighted Basis hashes and shared LiftPack/CIBS scratch.
 - The same Core passes native Linux, Windows, and macOS ARM64 tests and an
   Android NDK arm64-v8a build without platform-specific DSP source.
+- Stateless LPS4 record-pair decode and the standalone callback-tail benchmark
+  pass every cross-platform gate. An external ADB runner is ready for named
+  phone temperature, frequency, deadline, and sustained-run evidence.
 - Variable block lifetimes and three bounded waveform-domain stereo families
   failed their declared promotion gates and added no Main syntax.
 - Held-out cached-Basis overlap has now also failed its complete-byte gate:
   zero Atoms won all three clips because residual savings did not repay the
   `BCIB`, `ATOM`, and directory records. Simultaneous periodic mixing is not
   promoted.
-- The next blocking milestone is deployable channel transport and player
-  integration around the small winning `CONF` plus `RSL2` Truth path. Channel
-  support must initially multiplex independent mono substreams; a coupled
-  stereo transform can replace that fallback only after a new measured gate.
+- The next blocking evidence is real blinded listening and named physical-phone
+  timing. No new lossy syntax is promoted while these gates are open.
 - New compression tools resume only through declared complete-byte or
   matched-listening gates. Model ROM is always reported separately and
   amortized; it is never treated as free per-stream knowledge.

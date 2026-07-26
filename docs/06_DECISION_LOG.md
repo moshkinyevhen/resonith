@@ -2440,7 +2440,7 @@ new oscillator opcode.
 ## R-085 — Standalone physical-device callback benchmark
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **HARNESS PASS / PHYSICAL RUN PENDING**
 - Decision:
   - add one dependency-free native executable that reads an LPS4 sequence,
     preflights it once, allocates exactly the reported caller workspaces, and
@@ -2468,3 +2468,42 @@ new oscillator opcode.
   - malformed input exits without timing or partial success;
   - actual mobile energy and sustained thermal results remain pending until run
     on named physical hardware.
+- Result:
+  - `resonith_lapped_device_bench` executes the public LPS4 pull ABI directly,
+    allocates only the preflighted workspaces, excludes I/O and allocation from
+    callback timing, and emits machine-readable JSON;
+  - a Python-authored deterministic LPS4 vector passes two measured decodes
+    with one warmup, stable PCM hash, exact frame count, and valid callback
+    observation count; a CRC-corrupt variant exits before timing;
+  - GitHub Actions run 30214660610 passed the tool and its integration test on
+    GCC, Clang, AppleClang, MSVC, Linux/Windows/macOS ARM64, Android arm64-v8a,
+    C99, decoder-in-loop, and sanitizer/fuzzer jobs;
+  - actual phone temperature, power, frequency, and sustained callback-tail
+    measurements remain pending.
+
+## R-086 — External Android sustained-run telemetry
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - keep ADB, Android properties, thermal zones, CPU frequencies, and battery
+    telemetry in a Python experiment runner outside the native Core;
+  - bind each report to local and device-side SHA-256 of the exact LPS4 stream
+    and benchmark executable;
+  - run multiple complete native benchmark sessions, preserving every raw JSON
+    result and pre/post telemetry snapshot;
+  - summarize worst p99/max callback, total deadline misses, minimum realtime
+    speed, and observed thermal delta without inventing unavailable power data;
+  - require an explicit device serial when more than one authorized device is
+    connected and never select an unauthorized or offline device.
+- Rationale:
+  - one short callback run can hide warm-up, DVFS, and thermal throttling;
+  - vendor thermal-zone names and permissions vary, so missing sensors must be
+    represented as missing evidence rather than zero temperature;
+  - reproducible stream and executable hashes are necessary before comparing
+    devices or builds.
+- Gate:
+  - telemetry parsing and sustained-summary arithmetic pass deterministic tests;
+  - the runner refuses ambiguous device selection and hash mismatch;
+  - a named physical phone report is required before any mobile energy or
+    thermal claim.

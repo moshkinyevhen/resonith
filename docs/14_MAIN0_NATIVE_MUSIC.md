@@ -1174,3 +1174,31 @@ opened.
 
 The compact reproducible record is
 [`lapped_blind_listening_r084_2026-07-26_summary.json`](../experiments/results/lapped_blind_listening_r084_2026-07-26_summary.json).
+
+## 49. Physical-device callback gate
+
+`resonith_lapped_device_bench` is a dependency-free native executable built
+from the same source for desktop, ARM64, and Android. It preflights one LPS4
+sequence and allocates the exact reported workspaces before timing. Each
+observation then contains only the public transactional pull call.
+
+The JSON output records minimum, median, p95, p99, and maximum callback time,
+deadline misses, total realtime speed, caller workspace, stream bytes, and a
+repeat-stable PCM hash. Complete repeated passes must agree on frame count and
+hash. Malformed input fails during preflight without producing a timing result.
+
+GitHub Actions run
+[30214660610](https://github.com/moshkinyevhen/resonith/actions/runs/30214660610)
+passed the executable and integration test on GCC, Clang, AppleClang, MSVC,
+Linux/Windows/macOS ARM64, Android arm64-v8a, C99, decoder-in-loop, and
+sanitizer/fuzzer jobs.
+
+The external Android runner adds evidence without contaminating the Core. It
+selects exactly one authorized device, verifies local and device-side SHA-256
+for both executable and stream, records named device properties, captures
+available thermal zones, CPU frequencies, and battery state, and preserves all
+raw sustained-run JSON before summarizing the worst callback tail.
+
+No physical phone is connected to the current development host, and ADB is not
+installed there. Therefore no mobile temperature, sustained deadline, power,
+or energy result is claimed yet.
