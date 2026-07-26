@@ -16,6 +16,8 @@ version.
   or default-encoder behavior changed.
 - Closed R-104 after its recursive voiced long-term predictor improved
   log-mel detail but failed SNR, STOI, and ESTOI. No decoder syntax was added.
+- Closed R-105 after sparse harmonic Basis transport approached equal size and
+  improved log-mel detail but still slightly reduced STOI and ESTOI.
 
 ### Research
 

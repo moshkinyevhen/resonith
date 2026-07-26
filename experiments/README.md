@@ -85,6 +85,10 @@ reproducible command and independent decode.
   with an independently parsed prospective decoder and complete-byte RDO.
 - `results/voiced_predictive_2026-07-27.json` — the R-104 negative speech
   result that keeps recursive long-term prediction out of Main.
+- `harmonic_basis_gate.py` — R-105 fixed-ROM, sparse-event, nonrecursive
+  harmonic Basis RDO over lifetime and harmonic-count candidates.
+- `results/harmonic_basis_2026-07-27.json` — the R-105 near-equal-byte
+  negative result that requires continuous trajectories before reconsideration.
 - `results/lapped_density_2026-07-26_summary.json` — R-061 closest-byte
   fixed/variable-density comparison showing implicit acoustic-state
   localization without a separate classifier.

@@ -3130,3 +3130,50 @@ new oscillator opcode.
   - the next voiced experiment must use a nonrecursive excitation/harmonic
     Basis with absolute phase or a genuinely closed-loop analysis-by-synthesis
     design. Copying lossy reconstructed history is not sufficient.
+
+## R-105 — Nonrecursive harmonic excitation Basis oracle
+
+- Date: 2026-07-27
+- Status: **RESEARCH — CLOSED / SPEECH FAST GATE FAILED**
+- Hypothesis:
+  - replace recursive sample-history prediction with a short immutable
+    harmonic Basis rendered from an absolute local phase;
+  - one pitch increment plus a small bank of signed sine/cosine amplitudes
+    describes the coherent part of each voiced interval, while the unchanged
+    lapped path codes only Innovation;
+  - because the renderer never references degraded past PCM, reconstruction
+    error cannot circulate around a pitch recurrence.
+- Constraints:
+  - the prospective decoder uses one frozen Q15 sine ROM, a 32-bit phase
+    accumulator, bounded int16 harmonic coefficients, signed integer rounding,
+    and saturation;
+  - harmonic count, state size, coefficient magnitude, interval count, payload
+    size, and residual configuration are preflighted;
+  - intervals whose exact fixed renderer would overflow the PCM residual use
+    a zero-harmonic fallback;
+  - every candidate includes the complete Basis parameter envelope, checksum,
+    residual stream, independent parser, and actual synthesis output.
+- Fast gate:
+  - RDO competes two, four, and six harmonics and 64, 128, and 256 ms-class
+    lifetimes against the unchanged 17,744-byte speech transform anchor;
+  - complete bytes must match within 0.5%, STOI and ESTOI must both improve,
+    SNR may not regress by more than 0.5 dB, and log-mel RMSE may not regress by
+    more than 5%;
+  - failure adds no Main syntax and directs the next experiment toward
+    excitation–resonator factorization or learned cached Basis analysis.
+- Result:
+  - the initial fixed-width envelope nearly passed but spent 309 bytes on 23
+    blocks although only nine were active;
+  - sparse active-block transport plus exact signed 12-bit sine/cosine pairs
+    reduced the selected Basis envelope to 114 bytes and retained the same
+    64-coefficient transform budget;
+  - the final two-harmonic, 4,096-sample candidate produced 17,825 bytes,
+    0.456% above the 17,744-byte baseline, with 39.1% active blocks;
+  - SNR changed from 19.619 to 19.534 dB and log-mel RMSE improved from 3.8249
+    to 3.7157, but STOI fell from 0.94989 to 0.94855 and ESTOI from 0.90297 to
+    0.90257;
+  - shorter lifetimes improved log-mel detail further but caused larger
+    intelligibility losses; more harmonics did not reverse the tradeoff;
+  - the strict gate therefore fails, no HBR1 syntax enters Main, and the next
+    oracle must test continuous pitch, phase, and amplitude trajectories
+    across voiced regions instead of restarting a static fit per block.

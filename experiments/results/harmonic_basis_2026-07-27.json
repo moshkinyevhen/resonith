@@ -1,0 +1,252 @@
+{
+  "decision": "R-105",
+  "energy": {
+    "bytes": 17744,
+    "coefficients_per_frame": 64,
+    "metrics": {
+      "spectral": {
+        "log_mel_rmse": 3.824907831178985,
+        "log_spectral_distance_db": 30.4922679367686,
+        "magnitude_cosine_similarity": 0.9836168006223431,
+        "multiresolution_stft": {
+          "1024": {
+            "log_magnitude_mae": 2.747713194240054,
+            "spectral_convergence": 0.0813625391283082
+          },
+          "256": {
+            "log_magnitude_mae": 2.935948831848762,
+            "spectral_convergence": 0.08202576143087768
+          },
+          "512": {
+            "log_magnitude_mae": 2.9223490931611327,
+            "spectral_convergence": 0.08211254199855221
+          }
+        }
+      },
+      "speech": {
+        "estoi": 0.9029693058296412,
+        "stoi": 0.9498939387322677
+      },
+      "waveform": {
+        "maximum_absolute_error": 0.07763671875,
+        "rms_error": 0.006471867680555471,
+        "segmental_snr_db": 17.646313201670743,
+        "si_sdr_db": 19.570913235477786,
+        "snr_db": 19.618562792604504
+      }
+    },
+    "sha256": "7494ff8b425c0dacbb2bfb579e7f106abd0fe0b2de7730835fe9e7abe5a6b18c"
+  },
+  "fast_gate_passed": false,
+  "harmonic_basis": {
+    "active_block_count": 9,
+    "active_block_fraction": 0.391304347826087,
+    "basis_envelope_bytes": 114,
+    "bitstream_status": "prospective research HBR1",
+    "block_count": 23,
+    "block_size": 4096,
+    "byte_delta_fraction": 0.004564923354373418,
+    "bytes": 17825,
+    "coefficients_per_frame": 64,
+    "decoder_change": true,
+    "harmonic_count": 2,
+    "log_mel_ratio": 0.9714493609852624,
+    "metrics": {
+      "spectral": {
+        "log_mel_rmse": 3.7157042684263506,
+        "log_spectral_distance_db": 28.745806152672174,
+        "magnitude_cosine_similarity": 0.9839006736062524,
+        "multiresolution_stft": {
+          "1024": {
+            "log_magnitude_mae": 2.527953038115817,
+            "spectral_convergence": 0.08180426150403847
+          },
+          "256": {
+            "log_magnitude_mae": 2.705019700704299,
+            "spectral_convergence": 0.08280762907258953
+          },
+          "512": {
+            "log_magnitude_mae": 2.7030532889549854,
+            "spectral_convergence": 0.0826811240278378
+          }
+        }
+      },
+      "speech": {
+        "estoi": 0.9025689542475532,
+        "stoi": 0.9485483272064623
+      },
+      "waveform": {
+        "maximum_absolute_error": 0.078521728515625,
+        "rms_error": 0.006535533836843564,
+        "segmental_snr_db": 17.624079135440702,
+        "si_sdr_db": 19.48494035100903,
+        "snr_db": 19.533534030693655
+      }
+    },
+    "residual_stream_bytes": 17711,
+    "sha256": "b5ac21f8f6510780cda1b784f56e7587bb589beb403cd393c91c017b9993ba9c",
+    "snr_delta_db": -0.08502876191084852,
+    "status": "R-105 research oracle; no Main syntax assigned",
+    "stream_bytes": 17825,
+    "stream_sha256": "b5ac21f8f6510780cda1b784f56e7587bb589beb403cd393c91c017b9993ba9c"
+  },
+  "opus": {
+    "bytes": 17942,
+    "decoded_sha256": "8125700a4ceab5a34f4259e7168a38a8aac8c8b83bfe1230c2fe2e37e0c72b6a",
+    "decoder_version": "opus-tools 0.2 / libopus 1.6.1",
+    "metrics": {
+      "alignment_lag_samples": 0,
+      "spectral": {
+        "log_mel_rmse": 0.6011680709866213,
+        "log_spectral_distance_db": 11.196922123954055,
+        "magnitude_cosine_similarity": 0.9735693750921546,
+        "multiresolution_stft": {
+          "1024": {
+            "log_magnitude_mae": 0.6829298187302947,
+            "spectral_convergence": 0.18836846108465527
+          },
+          "256": {
+            "log_magnitude_mae": 0.6798483111021106,
+            "spectral_convergence": 0.1907094170946533
+          },
+          "512": {
+            "log_magnitude_mae": 0.6834620321838313,
+            "spectral_convergence": 0.18927212274118627
+          }
+        }
+      },
+      "speech": {
+        "estoi": 0.9880461884303828,
+        "stoi": 0.9931723093721826
+      },
+      "waveform": {
+        "maximum_absolute_error": 0.34344482421875,
+        "rms_error": 0.021236646592585128,
+        "segmental_snr_db": 12.625698682303828,
+        "si_sdr_db": 8.755288247642131,
+        "snr_db": 9.297436583803522
+      }
+    },
+    "sha256": "cbfdd8da42cb28a90a336bb162adbf72d3d6129b62ecc1e452a6da10220d67e6"
+  },
+  "schema": "resonith-harmonic-basis-gate-1",
+  "shortlist": [
+    {
+      "active_block_fraction": 0.5434782608695652,
+      "block_size": 1024,
+      "byte_delta_fraction": 0.0005072137060415649,
+      "bytes": 17753,
+      "coefficients_per_frame": 62,
+      "estoi": 0.8871360464706184,
+      "harmonic_count": 2,
+      "log_mel_rmse": 3.3949672352078406,
+      "snr_db": 19.197577987293627,
+      "stoi": 0.9351851981892688
+    },
+    {
+      "active_block_fraction": 0.5434782608695652,
+      "block_size": 1024,
+      "byte_delta_fraction": 0.005522993688007238,
+      "bytes": 17842,
+      "coefficients_per_frame": 61,
+      "estoi": 0.8865875030951045,
+      "harmonic_count": 4,
+      "log_mel_rmse": 3.386172658526251,
+      "snr_db": 18.986335224839323,
+      "stoi": 0.931389635209157
+    },
+    {
+      "active_block_fraction": 0.5434782608695652,
+      "block_size": 1024,
+      "byte_delta_fraction": -0.002874211000901683,
+      "bytes": 17693,
+      "coefficients_per_frame": 59,
+      "estoi": 0.8795589904432249,
+      "harmonic_count": 6,
+      "log_mel_rmse": 3.352647778797313,
+      "snr_db": 18.65095215626498,
+      "stoi": 0.9254359314430014
+    },
+    {
+      "active_block_fraction": 0.45652173913043476,
+      "block_size": 2048,
+      "byte_delta_fraction": -0.0010707844905319952,
+      "bytes": 17725,
+      "coefficients_per_frame": 63,
+      "estoi": 0.8965678265736481,
+      "harmonic_count": 2,
+      "log_mel_rmse": 3.6084629597252467,
+      "snr_db": 19.35039416568898,
+      "stoi": 0.9429068127903316
+    },
+    {
+      "active_block_fraction": 0.45652173913043476,
+      "block_size": 2048,
+      "byte_delta_fraction": 0.005015779981965673,
+      "bytes": 17833,
+      "coefficients_per_frame": 63,
+      "estoi": 0.8943366067951034,
+      "harmonic_count": 4,
+      "log_mel_rmse": 3.6307965759883145,
+      "snr_db": 19.28107949172957,
+      "stoi": 0.94154795717171
+    },
+    {
+      "active_block_fraction": 0.45652173913043476,
+      "block_size": 2048,
+      "byte_delta_fraction": -0.0025360685302073804,
+      "bytes": 17699,
+      "coefficients_per_frame": 62,
+      "estoi": 0.8920950880486944,
+      "harmonic_count": 6,
+      "log_mel_rmse": 3.627647680157204,
+      "snr_db": 19.087257364624044,
+      "stoi": 0.9399289031518818
+    },
+    {
+      "active_block_fraction": 0.391304347826087,
+      "block_size": 4096,
+      "byte_delta_fraction": 0.004564923354373418,
+      "bytes": 17825,
+      "coefficients_per_frame": 64,
+      "estoi": 0.9025689542475532,
+      "harmonic_count": 2,
+      "log_mel_rmse": 3.7157042684263506,
+      "snr_db": 19.533534030693655,
+      "stoi": 0.9485483272064623
+    },
+    {
+      "active_block_fraction": 0.391304347826087,
+      "block_size": 4096,
+      "byte_delta_fraction": -0.005466636609558151,
+      "bytes": 17647,
+      "coefficients_per_frame": 63,
+      "estoi": 0.9012445143096658,
+      "harmonic_count": 4,
+      "log_mel_rmse": 3.7370298176503605,
+      "snr_db": 19.35927955477836,
+      "stoi": 0.9472929301445125
+    },
+    {
+      "active_block_fraction": 0.391304347826087,
+      "block_size": 4096,
+      "byte_delta_fraction": -0.0027051397655545317,
+      "bytes": 17696,
+      "coefficients_per_frame": 63,
+      "estoi": 0.9005534337245519,
+      "harmonic_count": 6,
+      "log_mel_rmse": 3.7294265819494505,
+      "snr_db": 19.31060140241521,
+      "stoi": 0.946611379052838
+    }
+  ],
+  "source": {
+    "bytes": 187404,
+    "frames": 93680,
+    "path": "speech-original.wav",
+    "sample_rate": 16000,
+    "sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46"
+  },
+  "status": "speech fast gate failed; do not add decoder syntax",
+  "wall_seconds": 252.04282539999986
+}
