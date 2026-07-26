@@ -795,3 +795,24 @@ compiler/build target. The Python RDO can now explicitly request the native
 analysis backend and is required to emit the same complete bytes as its
 Python-fixed fallback. Scalar native throughput is deliberately not claimed
 yet; SIMD/CUDA specialization must preserve this exact array contract.
+
+## 33. Scalar forward-analysis baseline
+
+GitHub Actions run 30209344885 measured the complete native analysis binding
+after exact Python/native array verification. The scalar C++ kernel processed
+one second of stereo in 269.80-270.27 ms, so it is already 3.70x real time.
+However, NumPy's matrix path needed only 137.08-145.28 ms:
+
+| Crop | Python/NumPy | Scalar native | Native versus Python |
+| --- | ---: | ---: | ---: |
+| Corelli | 145.28 ms | 269.80 ms | 0.54x |
+| Piano | 137.08 ms | 270.27 ms | 0.51x |
+| Drums | 143.80 ms | 270.22 ms | 0.53x |
+
+This rejects the assumption that a direct C++ transcription is automatically
+faster. The current inner loop repeats zero-padding tests, window lookup, and
+window multiplication for every coefficient. Those operations can be hoisted
+once per transform frame without changing arithmetic. That exact-preserving
+rewrite is the next gate; explicit SIMD and CUDA remain downstream choices.
+The compact record is
+[`native_lapped_analysis_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_analysis_timing_2026-07-26_summary.json).

@@ -1,0 +1,35 @@
+{
+  "clips": {
+    "corelli-sonata-realization": {
+      "analysis_output_bytes": 895056,
+      "native_realtime_factor_median": 0.2698042640000011,
+      "native_wall_seconds_median": 0.2698042640000011,
+      "python_wall_seconds_median": 0.14528458200000216,
+      "speedup_vs_python_median": 0.5384814155494649
+    },
+    "emotional-piano-cc0": {
+      "analysis_output_bytes": 895056,
+      "native_realtime_factor_median": 0.2702704659999995,
+      "native_wall_seconds_median": 0.2702704659999995,
+      "python_wall_seconds_median": 0.13708496099999934,
+      "speedup_vs_python_median": 0.5072139883756281
+    },
+    "patro-de-bateria": {
+      "analysis_output_bytes": 895056,
+      "native_realtime_factor_median": 0.2702221364999957,
+      "native_wall_seconds_median": 0.2702221364999957,
+      "python_wall_seconds_median": 0.14379859000000295,
+      "speedup_vs_python_median": 0.5321495561486141
+    }
+  },
+  "conclusion": "Scalar native analysis is exact and 3.70x real time, but 1.86x-1.97x slower than the NumPy fixed oracle; repeated inner-loop work must be removed before SIMD or CUDA specialization.",
+  "github_actions_run": 30209344885,
+  "native_iterations": 10,
+  "platform": {
+    "machine": "X64",
+    "operating_system": "GitHub-hosted Linux"
+  },
+  "python_iterations": 3,
+  "research_only": true,
+  "warmups": 2
+}

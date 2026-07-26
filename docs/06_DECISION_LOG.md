@@ -1820,7 +1820,7 @@ new oscillator opcode.
 ## R-068 — Native analysis timing before specialization
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / RUNNING / RESEARCH**
+- Status: **MEASURED BASELINE / OPTIMIZATION REQUIRED / RESEARCH**
 - Decision:
   - measure the release scalar C++ forward-analysis ABI on the three pinned
     one-second stereo crops;
@@ -1834,3 +1834,14 @@ new oscillator opcode.
     despite using a compiled language;
   - the correct specialization target depends on measured transform cost and
     the intended consumer/studio encoder split.
+- Result:
+  - exact array parity passed before every accepted timing set in GitHub
+    Actions run 30209344885;
+  - scalar native analysis took a median 269.80-270.27 ms per one-second stereo
+    crop, or 0.270 times real time;
+  - the NumPy fixed oracle took 137.08-145.28 ms, making the scalar native path
+    1.86x-1.97x slower despite its compiled implementation;
+  - profiling by inspection identifies repeated padding tests, window lookup,
+    and window multiplication inside every coefficient/sample MAC. The next
+    kernel must hoist those operations once per transform frame, preserve exact
+    arrays, and be remeasured before adding explicit SIMD or CUDA code.
