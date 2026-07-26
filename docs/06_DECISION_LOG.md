@@ -2073,7 +2073,7 @@ new oscillator opcode.
 ## R-076 — Direct bounded LSE2 native packet primitive
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **EXACT NATIVE/FUZZ PASS / PORTABLE**
 - Decision:
   - factor the existing native variable-density parser and fixed synthesis
     kernel so they can decode either a complete LPF1/RSC1 stream or one direct
@@ -2091,3 +2091,15 @@ new oscillator opcode.
     security and arithmetic implementations;
   - a parameterized selected-field primitive is the smallest reusable native
     boundary and keeps the player allocation-free.
+- Result:
+  - the native Core now exposes allocation-explicit direct-LSE2 inspect/decode
+    calls and shares the same sparse parser, bound checks, entropy decode, and
+    fixed synthesis functions with complete LPF1;
+  - the existing transactional packet session accepts both LPS1 and LPS2 and
+    selects context trim or direct logical output without persistent transform
+    state;
+  - a frozen two-packet LPS2 vector equals monolithic adaptive LPF1 PCM, and a
+    dynamic 8,192-frame Python-authored sequence matches native output exactly;
+  - GitHub Actions run 30211517931 passed GCC, Clang, MSVC, Windows ARM64,
+    Linux ARM64, macOS ARM64, Android ARM64, C99-header, sanitizer, and 5,000
+    packet-fuzzer mutations seeded with valid LPS1 and LPS2 streams.

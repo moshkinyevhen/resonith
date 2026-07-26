@@ -970,3 +970,22 @@ logical interval. The improvement changes no transform or sample DSP; it
 removes redundant analysis, allocation, and nested headers. The compact record
 is
 [`lapped_transform_packet_2026-07-26_summary.json`](../experiments/results/lapped_transform_packet_2026-07-26_summary.json).
+
+## 41. Native direct-LSE2 result
+
+The native Core now parses direct packet LSE2 under authenticated envelope
+parameters and routes it through the same bounded entropy and fixed synthesis
+implementation as complete LPF1. No artificial container is materialized and
+no second packet-only transform kernel exists.
+
+The allocation-explicit pull session accepts both LPS1 and LPS2. LPS1 trims
+one source-context half-window; LPS2 emits the direct logical reconstruction.
+Both commit the cursor only after complete packet success. A frozen two-packet
+LPS2 vector equals monolithic adaptive LPF1 exactly, and the dynamic
+Python/native bridge confirms exact 8,192-frame parity.
+
+GitHub Actions run
+[30211517931](https://github.com/moshkinyevhen/resonith/actions/runs/30211517931)
+passed every desktop, ARM64, Android, C99-header, sanitizer, and native-bridge
+job. The packet fuzzer completed 5,000 mutations from valid fixed/adaptive
+LPS1 and transform-boundary LPS2 seeds.

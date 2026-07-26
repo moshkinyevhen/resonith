@@ -112,13 +112,15 @@ coefficient, and squared-score grids for encoder-side frontier searches; it
 does not pack policy or RDO decisions into the decoder Core.
 
 `resonith_lapped_packet_open()` preflights an independently authenticated
-`LPS1` sequence and reports the maximum LPF1 child workspace, temporary child
-PCM, and logical output capacities. A caller-owned
+`LPS1` or `LPS2` sequence and reports the maximum child workspace, temporary
+child PCM, and logical output capacities. A caller-owned
 `resonith_lapped_packet_session` then advances with
 `resonith_lapped_packet_decode_next()`. Each pull revalidates its packet,
-decodes one complete context-bearing child, trims the context, and commits the
-session only on success. The session borrows the immutable input bytes and
-contains no hidden allocation or persistent transform state.
+decodes either one context-bearing LPF1 child or one direct transform-boundary
+LSE2 field, emits the declared logical interval, and commits the session only
+on success. Both forms share the same entropy and integer synthesis kernel.
+The session borrows immutable input bytes and contains no hidden allocation or
+persistent transform state.
 
 ## Sanitized fuzzing
 
@@ -148,7 +150,7 @@ build/fuzz/resonith_lapped_packet_fuzz \
 The harnesses cap host allocations after a successful envelope inspection;
 the Core itself remains allocation-free. CI starts from deterministic valid
 RSL1, RSL2/LPC, zero-Atom, periodic-Atom, source-bound RSI1, and fixed- and
-adaptive-density LPF1 and LPS1 seeds.
+adaptive-density LPF1, LPS1, and LPS2 seeds.
 Mutations therefore reach container, typed-section, seek, block, entropy,
 model-render, and inverse-DSP paths rather than stopping only at an outer
 checksum.
