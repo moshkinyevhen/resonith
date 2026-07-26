@@ -35,6 +35,17 @@ int main(void) {
     };
     resonith_liftpack_cursor cursor = {0};
     resonith_cibs_info cibs_info = {0U, 0U, 0U, 0U};
+    resonith_cibs_registry cibs_registry = {NULL, 0U};
+    resonith_cibs_basis_info cibs_basis_info = {
+        NULL,
+        NULL,
+        NULL,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U
+    };
     resonith_raw_basis_info basis_info = {0U, 0U, 0U, 0U};
     resonith_prepared_phase_trajectory trajectory = {
         NULL,
@@ -89,6 +100,16 @@ int main(void) {
     if (
         resonith_cibs_inspect_model(NULL, NULL, &cibs_info)
         != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_cibs_basis_inspect(
+            NULL,
+            0U,
+            &cibs_registry,
+            &cibs_basis_info
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
     ) {
         return 1;
     }

@@ -229,5 +229,148 @@ int main() {
         )) {
         return 1;
     }
+
+    constexpr std::size_t kModelIdBytes = sizeof(kModelId) - 1U;
+    std::array<
+        std::uint8_t,
+        48U + kModelIdBytes + kLatent.size()
+    > typed_payload{};
+    const auto write_u16 = [&typed_payload](
+        std::size_t offset,
+        std::uint16_t value
+    ) {
+        typed_payload[offset] = static_cast<std::uint8_t>(value);
+        typed_payload[offset + 1U] =
+            static_cast<std::uint8_t>(value >> 8U);
+    };
+    const auto write_u32 = [&typed_payload](
+        std::size_t offset,
+        std::uint32_t value
+    ) {
+        typed_payload[offset] = static_cast<std::uint8_t>(value);
+        typed_payload[offset + 1U] =
+            static_cast<std::uint8_t>(value >> 8U);
+        typed_payload[offset + 2U] =
+            static_cast<std::uint8_t>(value >> 16U);
+        typed_payload[offset + 3U] =
+            static_cast<std::uint8_t>(value >> 24U);
+    };
+    typed_payload[0] = static_cast<std::uint8_t>(kModelIdBytes);
+    typed_payload[1] = 0U;
+    write_u16(2U, static_cast<std::uint16_t>(kLatent.size()));
+    write_u16(4U, 2U);
+    write_u16(6U, 0U);
+    write_u32(8U, 32U);
+    write_u32(12U, 0U);
+    std::copy(
+        kPlainDigest.begin(),
+        kPlainDigest.end(),
+        typed_payload.begin() + 16
+    );
+    std::copy_n(
+        reinterpret_cast<const std::uint8_t*>(kModelId),
+        kModelIdBytes,
+        typed_payload.begin() + 48
+    );
+    std::transform(
+        kLatent.begin(),
+        kLatent.end(),
+        typed_payload.begin() + 48 + kModelIdBytes,
+        [](std::int8_t value) {
+            return static_cast<std::uint8_t>(value);
+        }
+    );
+
+    const resonith_cibs_registry registry = {&model, 1U};
+    resonith_cibs_basis_info typed_info{};
+    if (!expect(
+            resonith_cibs_basis_inspect(
+                typed_payload.data(),
+                typed_payload.size(),
+                &registry,
+                &typed_info
+            ) == RESONITH_STATUS_OK
+                && typed_info.model == &model
+                && typed_info.channels == 2U
+                && typed_info.output_length == 32U
+                && typed_info.output_elements == 64U
+                && typed_info.scratch_elements == 128U
+                && typed_info.latent_elements == kLatent.size(),
+            "typed BCIB inspection"
+        )) {
+        return 1;
+    }
+
+    output.fill(-1234);
+    std::size_t elements_written = 0U;
+    if (!expect(
+            resonith_cibs_basis_materialize(
+                typed_payload.data(),
+                typed_payload.size(),
+                &registry,
+                output.data(),
+                output.size(),
+                scratch.data(),
+                scratch.size(),
+                digest.data(),
+                &macs,
+                &elements_written
+            ) == RESONITH_STATUS_OK
+                && elements_written == output.size()
+                && digest == kPlainDigest
+                && output.front() == 31
+                && output.back() == 37,
+            "typed BCIB materialization"
+        )) {
+        return 1;
+    }
+
+    auto bad_hash_payload = typed_payload;
+    bad_hash_payload[16] ^= 1U;
+    output.fill(-1234);
+    elements_written = 99U;
+    if (!expect(
+            resonith_cibs_basis_materialize(
+                bad_hash_payload.data(),
+                bad_hash_payload.size(),
+                &registry,
+                output.data(),
+                output.size(),
+                scratch.data(),
+                scratch.size(),
+                nullptr,
+                nullptr,
+                &elements_written
+            ) == RESONITH_STATUS_HASH_MISMATCH
+                && elements_written == 0U
+                && std::all_of(
+                    output.begin(),
+                    output.end(),
+                    [](std::int16_t value) { return value == -1234; }
+                ),
+            "typed BCIB atomic hash guard"
+        )) {
+        return 1;
+    }
+
+    const std::array<resonith_cibs_model, 2> duplicate_models = {
+        model,
+        model,
+    };
+    const resonith_cibs_registry duplicate_registry = {
+        duplicate_models.data(),
+        duplicate_models.size(),
+    };
+    if (!expect(
+            resonith_cibs_basis_inspect(
+                typed_payload.data(),
+                typed_payload.size(),
+                &duplicate_registry,
+                &typed_info
+            ) == RESONITH_STATUS_INVALID_ARGUMENT,
+            "typed BCIB duplicate registry rejection"
+        )) {
+        return 1;
+    }
     return 0;
 }

@@ -12,11 +12,14 @@ from .periodic import PhaseTrajectory
 
 
 CONFIG = struct.Struct("<IIHHI")
+BCIB_HEADER = struct.Struct("<BBHHHII32s")
 ATOM_HEADER = struct.Struct("<IIIIII")
 PHASE_KNOT = struct.Struct("<II")
 GAIN_EVENT = struct.Struct("<Ii")
 MAX_CHANNELS = 8
 MAX_ATOM_RECORDS = 1_000_000
+MAX_CIBS_LATENT_ELEMENTS = 128
+MAX_BASIS_ELEMENTS = 16_384
 
 
 @dataclass(frozen=True)
@@ -34,6 +37,41 @@ class StreamConfig:
             raise ValueError("CONF Innovation step exceeds the Main-0 bound")
         if not 1 <= self.output_channels <= MAX_CHANNELS:
             raise ValueError("CONF output channel count exceeds the Main-0 bound")
+
+
+@dataclass(frozen=True)
+class CachedCIBSBasis:
+    """One latent-only BCIB schema-1 immutable Basis declaration."""
+
+    model_id: str
+    latent: np.ndarray
+    channels: int
+    samples_per_channel: int
+    expected_sha256: bytes
+
+    def __post_init__(self) -> None:
+        model_id_bytes = self.model_id.encode("utf-8")
+        if not 1 <= len(model_id_bytes) <= 255:
+            raise ValueError("BCIB model ID must occupy 1 through 255 bytes")
+        latent = np.asarray(self.latent)
+        if latent.dtype != np.int8 or latent.ndim != 1:
+            raise TypeError("BCIB latent must be one int8 vector")
+        if not 1 <= latent.size <= MAX_CIBS_LATENT_ELEMENTS:
+            raise ValueError("BCIB latent exceeds the Main-0 bound")
+        if (
+            not 1 <= self.channels <= MAX_CHANNELS
+            or self.samples_per_channel < 2
+            or self.samples_per_channel > 2048
+            or self.channels * self.samples_per_channel > MAX_BASIS_ELEMENTS
+        ):
+            raise ValueError("BCIB Basis shape exceeds the Main-0 bound")
+        if not isinstance(self.expected_sha256, bytes):
+            raise TypeError("BCIB expected hash must be raw bytes")
+        if len(self.expected_sha256) != 32:
+            raise ValueError("BCIB expected hash must contain 32 bytes")
+        latent = latent.copy()
+        latent.flags.writeable = False
+        object.__setattr__(self, "latent", latent)
 
 
 @dataclass(frozen=True)
@@ -76,6 +114,70 @@ def unpack_conf(payload: bytes) -> StreamConfig:
     if flags != 0 or reserved != 0:
         raise ValueError("unsupported CONF feature")
     return StreamConfig(sample_count, innovation_step, output_channels)
+
+
+def pack_bcib(basis: CachedCIBSBasis) -> bytes:
+    """Serialize one latent-only cached CIBS Basis."""
+
+    model_id = basis.model_id.encode("utf-8")
+    return (
+        BCIB_HEADER.pack(
+            len(model_id),
+            0,
+            int(basis.latent.size),
+            basis.channels,
+            0,
+            basis.samples_per_channel,
+            0,
+            basis.expected_sha256,
+        )
+        + model_id
+        + basis.latent.tobytes()
+    )
+
+
+def unpack_bcib(payload: bytes) -> CachedCIBSBasis:
+    """Validate BCIB schema 1 without resolving the external model registry."""
+
+    if len(payload) < BCIB_HEADER.size:
+        raise ValueError("truncated BCIB schema-1 header")
+    (
+        model_id_bytes,
+        flags,
+        latent_elements,
+        channels,
+        reserved,
+        samples_per_channel,
+        reserved2,
+        expected_sha256,
+    ) = BCIB_HEADER.unpack_from(payload)
+    if flags != 0:
+        raise ValueError("unsupported BCIB feature")
+    if reserved != 0 or reserved2 != 0:
+        raise ValueError("non-zero BCIB reserved field")
+    expected_size = BCIB_HEADER.size + model_id_bytes + latent_elements
+    if len(payload) != expected_size:
+        raise ValueError("BCIB schema-1 payload size mismatch")
+    model_start = BCIB_HEADER.size
+    try:
+        model_id = payload[
+            model_start:model_start + model_id_bytes
+        ].decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("BCIB model ID is not canonical UTF-8") from error
+    latent = np.frombuffer(
+        payload,
+        dtype=np.int8,
+        count=latent_elements,
+        offset=model_start + model_id_bytes,
+    ).copy()
+    return CachedCIBSBasis(
+        model_id=model_id,
+        latent=latent,
+        channels=channels,
+        samples_per_channel=samples_per_channel,
+        expected_sha256=expected_sha256,
+    )
 
 
 def pack_periodic_atom(atom: PeriodicAtom) -> bytes:

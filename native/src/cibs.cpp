@@ -14,9 +14,100 @@ namespace {
 constexpr std::uint32_t kMaximumLatentElements = 128;
 constexpr std::uint32_t kMaximumBasisChannels = 8;
 constexpr std::uint32_t kMaximumBasisElements = 8U * 2048U;
+constexpr std::uint32_t kMaximumTypedBasisLength = 2048U;
 constexpr std::uint8_t kMaximumAdapterRank = 4;
 constexpr std::uint8_t kMaximumRefinementStages = 4;
 constexpr std::uint8_t kMaximumShift = 30;
+constexpr std::size_t kTypedBasisHeaderBytes = 48U;
+constexpr std::size_t kMaximumRegistryModels = 256U;
+
+std::uint16_t read_u16(const std::uint8_t* data) noexcept {
+    return static_cast<std::uint16_t>(
+        static_cast<std::uint16_t>(data[0])
+        | (static_cast<std::uint16_t>(data[1]) << 8U)
+    );
+}
+
+std::uint32_t read_u32(const std::uint8_t* data) noexcept {
+    return static_cast<std::uint32_t>(data[0])
+        | (static_cast<std::uint32_t>(data[1]) << 8U)
+        | (static_cast<std::uint32_t>(data[2]) << 16U)
+        | (static_cast<std::uint32_t>(data[3]) << 24U);
+}
+
+bool is_continuation(std::uint8_t value) noexcept {
+    return (value & 0xc0U) == 0x80U;
+}
+
+bool valid_utf8(const std::uint8_t* data, std::size_t size) noexcept {
+    std::size_t cursor = 0U;
+    while (cursor < size) {
+        const std::uint8_t first = data[cursor];
+        if (first <= 0x7fU) {
+            ++cursor;
+            continue;
+        }
+        if (
+            first >= 0xc2U
+            && first <= 0xdfU
+            && cursor + 1U < size
+            && is_continuation(data[cursor + 1U])
+        ) {
+            cursor += 2U;
+            continue;
+        }
+        if (first >= 0xe0U && first <= 0xefU && cursor + 2U < size) {
+            const std::uint8_t second = data[cursor + 1U];
+            const bool second_valid = (
+                    first == 0xe0U
+                    && second >= 0xa0U
+                    && second <= 0xbfU
+                )
+                || (
+                    first == 0xedU
+                    && second >= 0x80U
+                    && second <= 0x9fU
+                )
+                || (
+                    first != 0xe0U
+                    && first != 0xedU
+                    && is_continuation(second)
+                );
+            if (second_valid && is_continuation(data[cursor + 2U])) {
+                cursor += 3U;
+                continue;
+            }
+        }
+        if (first >= 0xf0U && first <= 0xf4U && cursor + 3U < size) {
+            const std::uint8_t second = data[cursor + 1U];
+            const bool second_valid = (
+                    first == 0xf0U
+                    && second >= 0x90U
+                    && second <= 0xbfU
+                )
+                || (
+                    first == 0xf4U
+                    && second >= 0x80U
+                    && second <= 0x8fU
+                )
+                || (
+                    first >= 0xf1U
+                    && first <= 0xf3U
+                    && is_continuation(second)
+                );
+            if (
+                second_valid
+                && is_continuation(data[cursor + 2U])
+                && is_continuation(data[cursor + 3U])
+            ) {
+                cursor += 4U;
+                continue;
+            }
+        }
+        return false;
+    }
+    return true;
+}
 
 std::int64_t round_shift_ties_away(
     std::int64_t value,
@@ -132,6 +223,120 @@ resonith_status inspect(
     info.output_length = static_cast<std::uint32_t>(output_length);
     info.output_elements = static_cast<std::uint32_t>(output_elements);
     info.scratch_elements = 2U * info.output_elements + adapter_rank;
+    return RESONITH_STATUS_OK;
+}
+
+resonith_status inspect_typed_basis(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_cibs_registry* registry,
+    resonith_cibs_basis_info& info
+) noexcept {
+    info = {};
+    if (data == nullptr || registry == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    if (data_size < kTypedBasisHeaderBytes) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+
+    const std::uint8_t model_id_bytes = data[0];
+    const std::uint8_t flags = data[1];
+    const std::uint16_t latent_elements = read_u16(data + 2U);
+    const std::uint16_t channels = read_u16(data + 4U);
+    const std::uint16_t reserved = read_u16(data + 6U);
+    const std::uint32_t output_length = read_u32(data + 8U);
+    const std::uint32_t reserved2 = read_u32(data + 12U);
+    if (flags != 0U) {
+        return RESONITH_STATUS_UNSUPPORTED_FEATURE;
+    }
+    if (reserved != 0U || reserved2 != 0U) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    if (
+        model_id_bytes == 0U
+        || latent_elements == 0U
+        || latent_elements > kMaximumLatentElements
+        || channels == 0U
+        || channels > kMaximumBasisChannels
+        || output_length < 2U
+        || output_length > kMaximumTypedBasisLength
+        || static_cast<std::uint64_t>(channels) * output_length
+            > kMaximumBasisElements
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    const std::size_t expected_size = kTypedBasisHeaderBytes
+        + model_id_bytes
+        + latent_elements;
+    if (data_size != expected_size) {
+        return data_size < expected_size
+            ? RESONITH_STATUS_TRUNCATED
+            : RESONITH_STATUS_MALFORMED;
+    }
+    const std::uint8_t* model_id = data + kTypedBasisHeaderBytes;
+    if (!valid_utf8(model_id, model_id_bytes)) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    if (
+        registry->model_count > kMaximumRegistryModels
+        || (
+            registry->model_count != 0U
+            && registry->models == nullptr
+        )
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+
+    const resonith_cibs_model* matched = nullptr;
+    for (std::size_t index = 0U; index < registry->model_count; ++index) {
+        const resonith_cibs_model& candidate = registry->models[index];
+        if (
+            candidate.model_id != nullptr
+            && candidate.model_id_bytes == model_id_bytes
+            && std::memcmp(
+                candidate.model_id,
+                model_id,
+                model_id_bytes
+            ) == 0
+        ) {
+            if (matched != nullptr) {
+                return RESONITH_STATUS_INVALID_ARGUMENT;
+            }
+            matched = &candidate;
+        }
+    }
+    if (matched == nullptr) {
+        return RESONITH_STATUS_NOT_FOUND;
+    }
+
+    resonith_cibs_info model_info{};
+    const resonith_status model_status = inspect(
+        matched,
+        nullptr,
+        model_info
+    );
+    if (model_status != RESONITH_STATUS_OK) {
+        return model_status;
+    }
+    if (
+        matched->latent_elements != latent_elements
+        || model_info.basis_channels != channels
+        || model_info.output_length != output_length
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+
+    info.model = matched;
+    info.latent = reinterpret_cast<const std::int8_t*>(
+        model_id + model_id_bytes
+    );
+    info.expected_sha256 = data + 16U;
+    info.output_length = model_info.output_length;
+    info.output_elements = model_info.output_elements;
+    info.scratch_elements = model_info.scratch_elements;
+    info.channels = static_cast<std::uint16_t>(model_info.basis_channels);
+    info.latent_elements = latent_elements;
     return RESONITH_STATUS_OK;
 }
 
@@ -413,5 +618,65 @@ extern "C" resonith_status resonith_cibs_materialize(
     if (integer_macs != nullptr) {
         *integer_macs = macs;
     }
+    return RESONITH_STATUS_OK;
+}
+
+extern "C" resonith_status resonith_cibs_basis_inspect(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_cibs_registry* registry,
+    resonith_cibs_basis_info* info
+) {
+    if (info == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    return inspect_typed_basis(data, data_size, registry, *info);
+}
+
+extern "C" resonith_status resonith_cibs_basis_materialize(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_cibs_registry* registry,
+    std::int16_t* output,
+    std::size_t output_capacity,
+    std::int64_t* scratch,
+    std::size_t scratch_count,
+    std::uint8_t* actual_sha256,
+    std::uint64_t* integer_macs,
+    std::size_t* elements_written
+) {
+    if (elements_written == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *elements_written = 0U;
+    resonith_cibs_basis_info info{};
+    const resonith_status inspect_status = inspect_typed_basis(
+        data,
+        data_size,
+        registry,
+        info
+    );
+    if (inspect_status != RESONITH_STATUS_OK) {
+        return inspect_status;
+    }
+    const resonith_status materialize_status = resonith_cibs_materialize(
+        info.model,
+        info.latent,
+        info.latent_elements,
+        nullptr,
+        nullptr,
+        0U,
+        info.expected_sha256,
+        actual_sha256,
+        output,
+        output_capacity,
+        scratch,
+        scratch_count,
+        integer_macs
+    );
+    if (materialize_status != RESONITH_STATUS_OK) {
+        return materialize_status;
+    }
+    *elements_written = info.output_elements;
     return RESONITH_STATUS_OK;
 }
