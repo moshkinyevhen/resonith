@@ -324,6 +324,32 @@ class NativeBridgeTests(unittest.TestCase):
             native.score_grid,
             reference.score_grid.astype(np.uint64),
         )
+        native_encoded = encode_lapped_stream(
+            stereo,
+            48_000,
+            coefficients_per_frame=48,
+            half_window=256,
+            band_count=16,
+            entropy_backend="bounded",
+            transform_backend="fixed",
+            density_backend="adaptive",
+            native_analyzer=self.decoder,
+        )
+        python_encoded = encode_lapped_stream(
+            stereo,
+            48_000,
+            coefficients_per_frame=48,
+            half_window=256,
+            band_count=16,
+            entropy_backend="bounded",
+            transform_backend="fixed",
+            density_backend="adaptive",
+        )
+        self.assertEqual(native_encoded.payload, python_encoded.payload)
+        self.assertEqual(
+            native_encoded.report["analysis_backend"],
+            "native C99 fixed Q15/Q14",
+        )
 
 
 if __name__ == "__main__":

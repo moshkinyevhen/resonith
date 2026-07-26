@@ -1789,7 +1789,7 @@ new oscillator opcode.
 ## R-067 — Allocation-explicit native forward analysis
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **EXACT PARITY PASS / PORTABLE**
 - Decision:
   - expose the fixed Q15-window/Q14-cosine forward transform through the stable
     C99 ABI without adding encoder policy to the decoder;
@@ -1805,3 +1805,14 @@ new oscillator opcode.
     teacher encoders to compete without changing the bitstream or decoder;
   - an allocation-free scalar C ABI supplies a portable correctness anchor
     before SIMD or GPU specialization.
+- Result:
+  - the frozen Python-authored vector matches native scales, all quantized
+    coefficients, and every squared score exactly;
+  - the dynamic 8,192-frame stereo decoder-in-loop test matches Python analysis
+    exactly and produces a byte-identical adaptive-density stream when selected
+    through the native backend;
+  - GitHub Actions run 30209156633 passed all ten jobs across GCC, Clang, MSVC,
+    Linux ARM64, Windows ARM64, macOS ARM64, and Android arm64-v8a;
+  - the CLI exposes native analysis only through an explicit `--native-core`
+    path. Python remains the fallback until optimized native throughput is
+    measured.

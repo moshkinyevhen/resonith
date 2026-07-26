@@ -789,3 +789,9 @@ Those remain encoder/compiler decisions. This separation gives scalar C++,
 SIMD, CUDA, and large teacher encoders one exact output contract without
 expanding the player. Promotion requires Python/native parity across every
 compiler target before any throughput claim.
+
+That parity gate passed in GitHub Actions run 30209156633 on every supported
+compiler/build target. The Python RDO can now explicitly request the native
+analysis backend and is required to emit the same complete bytes as its
+Python-fixed fallback. Scalar native throughput is deliberately not claimed
+yet; SIMD/CUDA specialization must preserve this exact array contract.

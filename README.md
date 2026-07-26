@@ -128,6 +128,15 @@ coefficient-count range, table identity, and wall time. This path has passed
 objective and native portability gates but remains prospective until blinded
 listening and real-device timing pass.
 
+An explicit shared Golden Core can replace Python forward analysis without
+changing the selected bitstream:
+
+```sh
+PYTHONPATH=reference python -m maf_p0 encode-lapped \
+  input.wav output.rsc --average-coefficients 64 \
+  --native-core build/native/libresonith_core_shared.so
+```
+
 ## Implementation stack
 
 - portable dependency-free C++20 bit-exact Golden Core;

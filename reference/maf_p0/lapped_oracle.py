@@ -73,6 +73,7 @@ class LappedAnalysis:
     frame_count: int
     fixed_transform: bool
     fixed_table_sha256: str | None
+    analysis_backend: str
     scales: np.ndarray
     quantized_grid: np.ndarray
     score_grid: np.ndarray
@@ -406,6 +407,7 @@ def analyze_lapped_source(
     half_window: int = 512,
     band_count: int = 24,
     transform_backend: str = "fixed",
+    native_analyzer=None,
 ) -> LappedAnalysis:
     """Transform and quantize source PCM once for many exact-byte trials."""
 
@@ -431,65 +433,91 @@ def analyze_lapped_source(
     else:
         raise ValueError("unknown lapped transform backend")
     frame_count = source.shape[0] // half_window + 1
-    padded = np.pad(
-        source.astype(np.float64),
-        ((half_window, half_window), (0, 0)),
-    )
-    scales = np.empty(
-        (source.shape[1], frame_count, band_count),
-        dtype=np.uint8,
-    )
-    quantized_grid = np.empty(
-        (source.shape[1], frame_count, half_window),
-        dtype=np.int16,
-    )
-    score_grid = np.empty(
-        (source.shape[1], frame_count, half_window),
-        dtype=np.float64,
-    )
-    for channel in range(source.shape[1]):
-        for frame in range(frame_count):
-            start = frame * half_window
-            if fixed_transform:
-                spectrum = analyze_fixed_lapped(
-                    padded[start : start + 2 * half_window, channel].astype(
-                        np.int64
-                    ),
-                    half_window,
-                )
-            else:
-                spectrum = (
-                    padded[start : start + 2 * half_window, channel]
-                    * window
-                ) @ matrix.T
-            quantized = np.empty(half_window, dtype=np.int64)
-            for band, (band_start, band_end) in enumerate(
-                zip(edges[:-1], edges[1:], strict=True)
-            ):
-                maximum = max(
-                    1,
-                    int(np.max(np.abs(spectrum[band_start:band_end]))),
-                )
-                minimum_step = max(1, (maximum + 126) // 127)
-                exponent = min(31, (minimum_step - 1).bit_length())
-                scales[channel, frame, band] = exponent
+    if native_analyzer is not None:
+        if not fixed_transform:
+            raise ValueError("native analysis requires the fixed transform")
+        native = native_analyzer.analyze_lapped(
+            source,
+            half_window=half_window,
+            band_count=band_count,
+        )
+        if native.transform_frame_count != frame_count:
+            raise RuntimeError("native lapped analysis frame count differs")
+        scales = np.array(native.scales, dtype=np.uint8, copy=True)
+        quantized_grid = np.array(
+            native.quantized_grid,
+            dtype=np.int16,
+            copy=True,
+        )
+        score_grid = np.array(native.score_grid, dtype=np.float64, copy=True)
+        analysis_backend = "native C99 fixed Q15/Q14"
+    else:
+        padded = np.pad(
+            source.astype(np.float64),
+            ((half_window, half_window), (0, 0)),
+        )
+        scales = np.empty(
+            (source.shape[1], frame_count, band_count),
+            dtype=np.uint8,
+        )
+        quantized_grid = np.empty(
+            (source.shape[1], frame_count, half_window),
+            dtype=np.int16,
+        )
+        score_grid = np.empty(
+            (source.shape[1], frame_count, half_window),
+            dtype=np.float64,
+        )
+        for channel in range(source.shape[1]):
+            for frame in range(frame_count):
+                start = frame * half_window
                 if fixed_transform:
-                    quantized[band_start:band_end] = round_shift_signed(
-                        spectrum[band_start:band_end],
-                        exponent,
-                    ) if exponent else spectrum[band_start:band_end]
+                    spectrum = analyze_fixed_lapped(
+                        padded[
+                            start : start + 2 * half_window,
+                            channel,
+                        ].astype(np.int64),
+                        half_window,
+                    )
                 else:
-                    quantized[band_start:band_end] = np.rint(
-                        spectrum[band_start:band_end] / float(1 << exponent)
-                    ).astype(np.int64)
-            quantized_grid[channel, frame] = np.clip(
-                quantized,
-                -127,
-                127,
-            ).astype(np.int16)
-            score_grid[channel, frame] = np.square(
-                spectrum.astype(np.float64)
-            )
+                    spectrum = (
+                        padded[start : start + 2 * half_window, channel]
+                        * window
+                    ) @ matrix.T
+                quantized = np.empty(half_window, dtype=np.int64)
+                for band, (band_start, band_end) in enumerate(
+                    zip(edges[:-1], edges[1:], strict=True)
+                ):
+                    maximum = max(
+                        1,
+                        int(np.max(np.abs(spectrum[band_start:band_end]))),
+                    )
+                    minimum_step = max(1, (maximum + 126) // 127)
+                    exponent = min(31, (minimum_step - 1).bit_length())
+                    scales[channel, frame, band] = exponent
+                    if fixed_transform:
+                        quantized[band_start:band_end] = round_shift_signed(
+                            spectrum[band_start:band_end],
+                            exponent,
+                        ) if exponent else spectrum[band_start:band_end]
+                    else:
+                        quantized[band_start:band_end] = np.rint(
+                            spectrum[band_start:band_end]
+                            / float(1 << exponent)
+                        ).astype(np.int64)
+                quantized_grid[channel, frame] = np.clip(
+                    quantized,
+                    -127,
+                    127,
+                ).astype(np.int16)
+                score_grid[channel, frame] = np.square(
+                    spectrum.astype(np.float64)
+                )
+        analysis_backend = (
+            "python fixed Q15/Q14"
+            if fixed_transform
+            else "python float64"
+        )
     source.flags.writeable = False
     scales.flags.writeable = False
     quantized_grid.flags.writeable = False
@@ -502,6 +530,7 @@ def analyze_lapped_source(
         frame_count=frame_count,
         fixed_transform=fixed_transform,
         fixed_table_sha256=table_sha256,
+        analysis_backend=analysis_backend,
         scales=scales,
         quantized_grid=quantized_grid,
         score_grid=score_grid,
@@ -699,6 +728,7 @@ def encode_lapped_analysis(
             "fixed Q15 window/Q14 cosine" if fixed_transform else "float64"
         ),
         "fixed_table_sha256": table_sha256,
+        "analysis_backend": analysis.analysis_backend,
         "density_backend": density_backend,
         "stream_bytes": len(payload),
         "stream_sha256": hashlib.sha256(payload).hexdigest(),
@@ -733,6 +763,7 @@ def encode_lapped_stream(
     entropy_backend: str = "bounded",
     transform_backend: str = "fixed",
     density_backend: str = "fixed",
+    native_analyzer=None,
 ) -> LappedEncodeResult:
     """Analyze source PCM, then encode one exact-byte lapped candidate."""
 
@@ -742,6 +773,7 @@ def encode_lapped_stream(
         half_window=half_window,
         band_count=band_count,
         transform_backend=transform_backend,
+        native_analyzer=native_analyzer,
     )
     return encode_lapped_analysis(
         analysis,

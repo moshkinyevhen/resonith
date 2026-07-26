@@ -22,6 +22,7 @@ from .multichannel import (
     decode_main0_independent_stream,
     encode_main0_independent_rdo,
 )
+from .native_core import NativeMain0Decoder
 from .periodic import analyze_periodic_basis
 from .stateful import (
     decode_stateful_bytes,
@@ -246,6 +247,10 @@ def _encode_lapped(args: argparse.Namespace) -> None:
     """Encode PCM16 WAV through the prospective fixed/bounded LPF1 path."""
 
     sample_rate, samples = read_pcm16_channels(args.input)
+    native_core = getattr(args, "native_core", None)
+    native_analyzer = (
+        NativeMain0Decoder(native_core) if native_core is not None else None
+    )
     started = time.perf_counter()
     result = encode_lapped_stream(
         samples,
@@ -256,6 +261,7 @@ def _encode_lapped(args: argparse.Namespace) -> None:
         entropy_backend="bounded",
         transform_backend="fixed",
         density_backend=args.density,
+        native_analyzer=native_analyzer,
     )
     encode_seconds = time.perf_counter() - started
     Path(args.output).write_bytes(result.payload)
@@ -336,6 +342,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--density",
         choices=("adaptive", "fixed"),
         default="adaptive",
+    )
+    encode_lapped.add_argument(
+        "--native-core",
+        type=Path,
+        help="use the explicit shared Golden Core for forward analysis",
     )
     encode_lapped.set_defaults(function=_encode_lapped)
 
