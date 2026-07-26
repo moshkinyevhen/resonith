@@ -22,7 +22,7 @@ from real_music_benchmark import (  # noqa: E402
     fetch_source,
     read_pcm_as_mono16,
 )
-from maf_p0.main0 import encode_main0_periodic_rdo  # noqa: E402
+from maf_p0.main0 import encode_main0_state_rdo  # noqa: E402
 from maf_p0.native_core import NativeMain0Decoder  # noqa: E402
 from maf_p0.opus_anchor import run_opus_anchor  # noqa: E402
 from maf_p0.wav_io import write_pcm16_mono  # noqa: E402
@@ -55,15 +55,18 @@ def benchmark_clip(
     write_pcm16_mono(source_path, sample_rate, samples)
 
     encode_start = time.perf_counter()
-    resonith = encode_main0_periodic_rdo(
+    resonith = encode_main0_state_rdo(
         samples,
         sample_rate,
         native_decoder=native_decoder,
         basis_length=256,
-        gain_block_sizes=(512, 1024, 2048, 4096),
+        gain_block_sizes=(4096,),
         innovation_step=64,
         residual_block_size=1024,
-        phase_knot_interval=4096,
+        fixed_state_durations_seconds=(0.25, 0.5),
+        adaptive_change_penalties=(100.0, 400.0, 800.0),
+        segmentation_hop_samples=1024,
+        minimum_state_samples=4096,
     )
     encode_seconds = time.perf_counter() - encode_start
     decode_start = time.perf_counter()

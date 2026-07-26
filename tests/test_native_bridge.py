@@ -16,6 +16,7 @@ from maf_p0.main0 import (  # noqa: E402
     Main0State,
     decode_main0_raw_stream,
     encode_main0_periodic_rdo,
+    encode_main0_state_rdo,
     pack_main0_state_stream,
 )
 from maf_p0.native_core import (  # noqa: E402
@@ -126,6 +127,24 @@ class NativeBridgeTests(unittest.TestCase):
         self.assertEqual(native.requirements.basis_count, 1)
         self.assertEqual(native.requirements.render_elements, max(durations))
         np.testing.assert_array_equal(native.samples, reference.samples)
+
+    def test_complete_byte_state_rdo_keeps_one_state_fallback(self) -> None:
+        encoded = encode_main0_state_rdo(
+            self.samples,
+            48_000,
+            native_decoder=self.decoder,
+            basis_length=128,
+            gain_block_sizes=(4096,),
+            innovation_step=64,
+            residual_block_size=256,
+            fixed_state_durations_seconds=(0.5,),
+            adaptive_change_penalties=(),
+        )
+        self.assertEqual(encoded.report["native_decoder_gate"], "verified")
+        self.assertEqual(encoded.report["candidate_count"], 2)
+        self.assertGreater(encoded.report["one_state_bytes"], 0)
+        native = self.decoder.decode(encoded.payload)
+        np.testing.assert_array_equal(native.samples, encoded.reconstructed)
 
 
 if __name__ == "__main__":

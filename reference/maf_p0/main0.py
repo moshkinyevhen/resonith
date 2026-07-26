@@ -21,6 +21,7 @@ from .periodic import (
 )
 from .residual import decode_liftpack, encode_liftpack
 from .rsc1 import RSC1Section, SECTION_CRITICAL, pack_rsc1, parse_rsc1
+from .segmentation import segment_acoustic_states
 from .stream_sections import (
     PeriodicAtom,
     StreamConfig,
@@ -390,6 +391,197 @@ def encode_main0_periodic_rdo(
             "minimum complete typed stream bytes at one Innovation step"
         ),
         "selected_candidate": selected_name,
+        "candidate_count": len(candidates),
+        "candidates": [item[3] for item in candidates],
+    }
+    return Main0EncodeResult(payload, reconstructed, report)
+
+
+def _fixed_state_intervals(
+    sample_count: int,
+    state_samples: int,
+) -> tuple[tuple[int, int], ...]:
+    if state_samples < 64:
+        raise ValueError("fixed state duration must be at least 64 samples")
+    intervals = [
+        (start, min(sample_count, start + state_samples))
+        for start in range(0, sample_count, state_samples)
+    ]
+    if len(intervals) > 1 and intervals[-1][1] - intervals[-1][0] < 64:
+        previous_start, _ = intervals[-2]
+        intervals[-2] = (previous_start, sample_count)
+        intervals.pop()
+    return tuple(intervals)
+
+
+def encode_main0_state_rdo(
+    samples: np.ndarray,
+    sample_rate: int,
+    *,
+    native_decoder: "NativeMain0Decoder",
+    basis_length: int = 256,
+    gain_block_sizes: Sequence[int] = (4096,),
+    innovation_step: int = 64,
+    residual_block_size: int = 1024,
+    fixed_state_durations_seconds: Sequence[float] = (0.25, 0.5),
+    adaptive_change_penalties: Sequence[float] = (100.0, 400.0, 800.0),
+    segmentation_hop_samples: int = 1024,
+    minimum_state_samples: int = 4096,
+) -> Main0EncodeResult:
+    """Select state boundaries by native-decoded complete RSC1 bytes."""
+
+    source = np.asarray(samples)
+    if source.dtype != np.int16 or source.ndim != 1:
+        raise TypeError("Main-0 state RDO input must be mono int16 PCM")
+    if source.size < 64 or sample_rate <= 0:
+        raise ValueError("invalid Main-0 state RDO input")
+    if native_decoder is None:
+        raise ValueError("Main-0 state RDO requires an explicit native decoder")
+    gain_blocks = sorted({int(value) for value in gain_block_sizes})
+    if not gain_blocks or gain_blocks[0] <= 0:
+        raise ValueError("gain_block_sizes must contain positive values")
+
+    partitions: dict[tuple[tuple[int, int], ...], tuple[str, dict]] = {
+        ((0, int(source.size)),): (
+            "one-state",
+            {"mode": "one", "state_count": 1},
+        )
+    }
+    for duration in sorted({float(value) for value in fixed_state_durations_seconds}):
+        state_samples = int(round(duration * sample_rate))
+        intervals = _fixed_state_intervals(int(source.size), state_samples)
+        partitions.setdefault(
+            intervals,
+            (
+                f"fixed-{state_samples}",
+                {
+                    "mode": "fixed",
+                    "state_samples": state_samples,
+                    "state_count": len(intervals),
+                },
+            ),
+        )
+    for penalty in sorted({float(value) for value in adaptive_change_penalties}):
+        segmentation = segment_acoustic_states(
+            source,
+            hop_samples=segmentation_hop_samples,
+            minimum_segment_samples=minimum_state_samples,
+            maximum_segment_samples=max(
+                minimum_state_samples,
+                int(source.size),
+            ),
+            change_penalty=penalty,
+        )
+        partitions.setdefault(
+            segmentation.intervals,
+            (f"adaptive-{penalty:g}", segmentation.report),
+        )
+
+    candidates: list[tuple[str, bytes, np.ndarray, dict]] = []
+    for intervals, (partition_name, partition_report) in partitions.items():
+        for gain_block_size in gain_blocks:
+            states: list[Main0State] = []
+            prediction = np.empty(source.size, dtype=np.int16)
+            phase_knots = 0
+            gain_events = 0
+            for start, end in intervals:
+                state_source = source[start:end]
+                try:
+                    analysis = analyze_periodic_basis(
+                        state_source,
+                        sample_rate,
+                        basis_length=basis_length,
+                    )
+                    basis = analysis.basis
+                    phase_increment = analysis.phase_increment_q32
+                except ValueError:
+                    basis = np.zeros(basis_length, dtype=np.int16)
+                    phase_increment = 1
+                trajectory = constant_phase_trajectory(
+                    int(state_source.size),
+                    phase_increment,
+                )
+                unity = render_basis_trajectory(basis, trajectory)
+                block_gains = fit_block_gains(
+                    state_source,
+                    unity,
+                    gain_block_size,
+                )
+                gain_law = _sparse_block_gain_law(
+                    block_gains,
+                    block_size=gain_block_size,
+                    sample_count=int(state_source.size),
+                )
+                prediction[start:end] = compose_truth(unity, gain_law)
+                states.append(Main0State(basis, trajectory, gain_law))
+                phase_knots += int(trajectory.positions.size)
+                gain_events += int(gain_law.positions.size)
+
+            innovation_q = _quantize_signed(
+                source.astype(np.int64) - prediction.astype(np.int64),
+                innovation_step,
+            )
+            payload = pack_main0_state_stream(
+                sample_rate=sample_rate,
+                states=states,
+                innovation_q=innovation_q,
+                innovation_step=innovation_step,
+                residual_block_size=residual_block_size,
+            )
+            reference = decode_main0_raw_stream(payload)
+            native = native_decoder.decode(payload)
+            if (
+                native.sample_rate != reference.sample_rate
+                or not np.array_equal(native.samples, reference.samples)
+            ):
+                raise RuntimeError(
+                    "native decoder disagrees with state-partition reference"
+                )
+            basis_count = sum(
+                bytes(section.type_code) == b"BRAW"
+                for section in parse_rsc1(payload).sections
+            )
+            name = f"{partition_name}-gain-{gain_block_size}"
+            quality = _quality_report(source, reference.samples)
+            candidate_report = {
+                "name": name,
+                "stream_bytes": len(payload),
+                "state_count": len(states),
+                "basis_count": basis_count,
+                "phase_knots": phase_knots,
+                "gain_events": gain_events,
+                "partition": partition_report,
+                **quality,
+            }
+            candidates.append(
+                (name, payload, reference.samples, candidate_report)
+            )
+
+    selected_name, payload, reconstructed, selected_report = min(
+        candidates,
+        key=lambda item: (len(item[1]), item[0]),
+    )
+    reconstructed.flags.writeable = False
+    one_state_bytes = min(
+        report["stream_bytes"]
+        for _, _, _, report in candidates
+        if report["state_count"] == 1
+    )
+    report = {
+        **selected_report,
+        "format_profile": "Main-0-state-partition-RSC1",
+        "stream_sha256": hashlib.sha256(payload).hexdigest(),
+        "pcm_bytes": int(source.nbytes),
+        "ratio_vs_pcm": len(payload) / source.nbytes,
+        "native_decoder_gate": "verified",
+        "rdo_objective": (
+            "minimum complete typed stream bytes at one Innovation step"
+        ),
+        "selected_candidate": selected_name,
+        "one_state_bytes": one_state_bytes,
+        "selected_reduction_vs_one_state": (
+            1.0 - len(payload) / one_state_bytes
+        ),
         "candidate_count": len(candidates),
         "candidates": [item[3] for item in candidates],
     }

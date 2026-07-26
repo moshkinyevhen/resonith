@@ -712,7 +712,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-036 — State-partitioned typed RSC1 before simultaneous mixing
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / NORMATIVE-DRAFT**
+- Status: **IMPLEMENTED / CROSS-COMPILER VERIFIED / NORMATIVE-DRAFT**
 - Decision:
   - extend the executable profile from one global periodic Atom to a canonical
     sequence of one or more `ATOM` sections whose half-open lifetimes exactly
@@ -736,3 +736,27 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
     separator, or unbounded live-state bank;
   - Basis instance reuse tests the central memory hypothesis directly: timbre
     bytes are paid once even when multiple state-local Atoms invoke them.
+
+## R-037 — Native full-byte RDO owns every state boundary
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / EXPERIMENTAL**
+- Decision:
+  - keep the one-Atom typed stream as a mandatory candidate;
+  - propose additional fixed-duration and acoustic-change partitions;
+  - fit one local Basis, constant phase law, and sparse gain law per state in
+    the first partition experiment;
+  - content-deduplicate all resulting Basis payloads before costing;
+  - compute one stream-wide quantized Innovation from the assembled prediction
+    and encode it once with LiftPack;
+  - pack, native-decode, and cross-check every complete candidate before
+    ranking by total RSC1 bytes at one Innovation step;
+  - accept multi-state syntax as a compression mechanism only if it beats the
+    one-state candidate on at least two declared pitched/music clips; otherwise
+    retain it solely as a representation capability and move to source overlap.
+- Rationale:
+  - a feature boundary is only a search proposal and may cost more Basis,
+    Atom, directory, phase, gain, hash, and residual bytes than it saves;
+  - the one-state fallback prevents semantic confidence from forcing syntax;
+  - local constant laws test whether state separation itself helps, without
+    confounding the result with the already losing global continuous law.
