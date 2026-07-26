@@ -137,7 +137,7 @@ class NativeBridgeTests(unittest.TestCase):
             gain_block_sizes=(4096,),
             innovation_step=64,
             residual_block_size=256,
-            fixed_state_durations_seconds=(0.5,),
+            fixed_state_durations_seconds=(0.08,),
             adaptive_change_penalties=(),
         )
         self.assertEqual(encoded.report["native_decoder_gate"], "verified")
