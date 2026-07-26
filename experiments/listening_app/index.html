@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Resonith Blind Listening</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">Resonith evidence lab</p>
+        <h1>Blind listening</h1>
+      </div>
+      <div class="progress" aria-live="polite">
+        <span id="trial-position">Loading manifest</span>
+        <span id="save-state">Stored locally</span>
+      </div>
+    </header>
+
+    <section id="startup" class="panel startup">
+      <div>
+        <h2>Listen before opening the answer key</h2>
+        <p>
+          Use wired headphones or known speakers, disable sound enhancement,
+          keep one comfortable volume, and do not change it between candidates.
+          Candidate identities remain hidden until results are exported.
+        </p>
+      </div>
+      <div class="setup-grid">
+        <label>
+          Anonymous listener code
+          <input id="listener-id" maxlength="64" autocomplete="off"
+                 placeholder="for example, YM-01">
+        </label>
+        <label>
+          Playback setup
+          <select id="playback-setup">
+            <option value="">Select one</option>
+            <option value="headphones">Headphones</option>
+            <option value="speakers">Speakers</option>
+            <option value="other">Other / unknown</option>
+          </select>
+        </label>
+      </div>
+      <button id="begin" class="primary" type="button" disabled>
+        Load first trial
+      </button>
+      <p id="startup-status" class="status" role="status">
+        Reading the public manifest…
+      </p>
+    </section>
+
+    <section id="test" class="test hidden" aria-live="polite">
+      <div class="transport panel">
+        <div>
+          <p class="eyebrow">Current excerpt</p>
+          <h2 id="clip-id">—</h2>
+        </div>
+        <div class="transport-controls">
+          <button id="play-pause" class="primary" type="button">Play</button>
+          <button id="reference" class="reference" type="button">
+            Reference
+          </button>
+        </div>
+        <div class="timeline">
+          <span id="elapsed">0:00.0</span>
+          <div class="track" aria-hidden="true">
+            <div id="playhead"></div>
+          </div>
+          <span id="duration">0:00.0</span>
+        </div>
+        <p class="hint">
+          Playback loops continuously. Switching conditions keeps the same
+          sample position.
+        </p>
+      </div>
+
+      <div id="candidates" class="candidate-grid"></div>
+
+      <section class="panel trial-actions">
+        <p id="trial-warning" class="status" role="status"></p>
+        <button id="complete-trial" class="primary" type="button">
+          Complete trial
+        </button>
+      </section>
+    </section>
+
+    <section id="finish" class="panel finish hidden">
+      <p class="eyebrow">Session complete</p>
+      <h2>Export before unblinding</h2>
+      <p>
+        The JSON result is bound to this exact manifest. It contains scores and
+        playback diagnostics, but no candidate identities and no audio.
+      </p>
+      <button id="export" class="primary" type="button">
+        Download blinded result
+      </button>
+      <p class="hint">
+        Only after saving the result should the study coordinator use the
+        separate answer key.
+      </p>
+    </section>
+  </main>
+
+  <template id="candidate-template">
+    <article class="candidate panel">
+      <div class="candidate-heading">
+        <button class="condition" type="button"></button>
+        <span class="audition">Not auditioned</span>
+      </div>
+      <label class="score-label">
+        Overall quality
+        <output>Not scored</output>
+        <input class="score" type="range" min="0" max="100" step="1"
+               value="50" aria-label="Overall quality score">
+      </label>
+      <div class="scale-labels" aria-hidden="true">
+        <span>Bad</span><span>Poor</span><span>Fair</span>
+        <span>Good</span><span>Excellent</span>
+      </div>
+      <fieldset>
+        <legend>Artifacts noticed <span>(optional)</span></legend>
+        <label><input type="checkbox" value="pre-echo"> Pre-echo</label>
+        <label><input type="checkbox" value="timbre"> Timbre shift</label>
+        <label><input type="checkbox" value="noise"> Noise</label>
+        <label><input type="checkbox" value="spatial"> Spatial instability</label>
+        <label><input type="checkbox" value="other"> Other</label>
+      </fieldset>
+      <label>
+        Note <span>(optional)</span>
+        <textarea class="note" maxlength="500" rows="2"></textarea>
+      </label>
+    </article>
+  </template>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

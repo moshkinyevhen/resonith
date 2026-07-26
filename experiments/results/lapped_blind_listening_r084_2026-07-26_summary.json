@@ -1,0 +1,74 @@
+{
+  "claim": "Reproducible blinded listening set ready; no perceptual result yet",
+  "codec_candidate": {
+    "band_count": 24,
+    "density_backend": "adaptive",
+    "entropy_backend": "bounded variable-density sparse Rice/packed",
+    "fixed_table_sha256": "383e9d4337ac8d1b59e09701c021f6f2d32a639795bb2db88618d84edf2940d9",
+    "half_window": 512,
+    "transform_backend": "fixed Q15 window/Q14 cosine"
+  },
+  "clips": {
+    "corelli-sonata-realization": {
+      "byte_ratio_vs_opus": 0.989040705949331,
+      "objective_sanity_win": true,
+      "opus_effective_bitrate_kbps": 112.416,
+      "opus_snr_db_diagnostic": 21.61202737465814,
+      "opus_stream_bytes": 42156,
+      "resonith_coefficients_per_frame": 54,
+      "resonith_effective_bitrate_kbps": 111.184,
+      "resonith_snr_db_diagnostic": 25.022626422345155,
+      "resonith_stream_bytes": 41694,
+      "snr_delta_db_diagnostic": 3.4105990476870147
+    },
+    "emotional-piano-cc0": {
+      "byte_ratio_vs_opus": 0.9913914608495783,
+      "objective_sanity_win": true,
+      "opus_effective_bitrate_kbps": 122.97866666666667,
+      "opus_snr_db_diagnostic": 26.755018888324006,
+      "opus_stream_bytes": 46117,
+      "resonith_coefficients_per_frame": 68,
+      "resonith_effective_bitrate_kbps": 121.92,
+      "resonith_snr_db_diagnostic": 37.97329087086514,
+      "resonith_stream_bytes": 45720,
+      "snr_delta_db_diagnostic": 11.218271982541136
+    },
+    "patro-de-bateria": {
+      "byte_ratio_vs_opus": 0.9917190745852423,
+      "objective_sanity_win": true,
+      "opus_effective_bitrate_kbps": 93.70933333333333,
+      "opus_snr_db_diagnostic": 21.317584536537517,
+      "opus_stream_bytes": 35141,
+      "resonith_coefficients_per_frame": 44,
+      "resonith_effective_bitrate_kbps": 92.93333333333332,
+      "resonith_snr_db_diagnostic": 30.789752035205723,
+      "resonith_stream_bytes": 34850,
+      "snr_delta_db_diagnostic": 9.472167498668206
+    }
+  },
+  "duration_seconds_per_clip": 3.0,
+  "mean_snr_delta_db_diagnostic": 8.033679509632119,
+  "objective_sanity_gate_passed": true,
+  "opus_anchor": {
+    "decoder_sha256": "ae3094a4085c18a0825579bd65b389ccf43bf81f344b851072bb65f7fd44132c",
+    "decoder_version": "opusdec opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+    "encoder_sha256": "0fc8a47776b9831613a867a23fb6024278885435422801185e84d8bb9ec0d8c6",
+    "encoder_version": "opusenc opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+    "requested_bitrate_kbps": 96
+  },
+  "public_manifest_sha256": "a9573bd53b88796663796e46eb3924f2a08dda0fe29072db193088d6b140ffcb",
+  "public_manifest_schema": "resonith-blind-listening-2",
+  "rate_match_rule": "nearest complete-stream byte count from the declared coefficient frontier",
+  "remaining_gates": [
+    "blinded listening scores from a preregistered panel",
+    "physical-device energy, thermal, and deadline measurements"
+  ],
+  "test_conditions": [
+    "named reference",
+    "hidden reference",
+    "Resonith fixed-integer bounded adaptive-density reconstruction",
+    "Opus 96 kbps request with complete Ogg byte accounting",
+    "deterministic 3.5 kHz low-pass anchor"
+  ],
+  "waveform_metrics_are_not_perceptual_equivalence": true
+}

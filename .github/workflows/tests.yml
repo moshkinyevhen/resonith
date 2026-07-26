@@ -25,6 +25,8 @@ jobs:
         env:
           RESONITH_OPUS_TOOLS: /usr/bin
         run: python -m unittest discover -s tests -v
+      - name: Validate offline listening application
+        run: node --check experiments/listening_app/app.js
 
   native-linux:
     strategy:

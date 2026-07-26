@@ -16,6 +16,7 @@ from maf_p0.lapped_oracle import (  # noqa: E402
     analyze_lapped_source,
     encode_lapped_analysis,
 )
+from maf_p0.listening_anchor import lowpass_anchor  # noqa: E402
 from maf_p0.opus_anchor import (  # noqa: E402
     resolve_opus_tools,
     run_opus_multichannel_anchor,
@@ -98,6 +99,12 @@ def main() -> None:
         clip_directory.mkdir(parents=True, exist_ok=True)
         source_wav = clip_directory / "source.wav"
         write_pcm16_channels(source_wav, sample_rate, samples)
+        lowpass_path = clip_directory / "lowpass-anchor-3k5.wav"
+        write_pcm16_channels(
+            lowpass_path,
+            sample_rate,
+            lowpass_anchor(samples, sample_rate),
+        )
 
         opus_started = time.perf_counter()
         opus = run_opus_multichannel_anchor(
@@ -175,6 +182,7 @@ def main() -> None:
         (clip_directory / "opus-anchor.opus").write_bytes(opus.payload)
         listening_inputs[record["id"]] = {
             "source": source_wav,
+            "lowpass-anchor-3k5": lowpass_path,
             (
                 f"lapped-k{selected[0]}-"
                 f"{selected[1].report['stream_bytes']}B"
@@ -252,8 +260,7 @@ def main() -> None:
     sanity_gate_passed = winning_clips >= 2 and mean_snr_delta >= 0.0
     promotion_blockers = [
         "blinded listening scores",
-        "native independent decoder parity",
-        "native resource and timing gates",
+        "physical-device energy, thermal, and deadline measurements",
     ]
     if args.entropy_backend != "bounded":
         promotion_blockers.insert(1, "bounded context entropy replacing zlib")
@@ -267,7 +274,7 @@ def main() -> None:
     )
     report = {
         "status": (
-            "objective sanity gate passed; native/listening gates remain"
+            "objective sanity gate passed; listening/device gates remain"
             if sanity_gate_passed
             else "objective sanity gate failed; lapped design remains research"
         ),

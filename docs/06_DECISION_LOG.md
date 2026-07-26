@@ -2381,3 +2381,58 @@ new oscillator opcode.
     decoder-in-loop parity, and ASan/UBSan/libFuzzer;
   - cryptographic transport integration, real packet reordering tests,
     physical-device measurements, and blinded listening remain open.
+
+## R-084 — Offline synchronized blinded-listening harness
+
+- Date: 2026-07-26
+- Status: **HARNESS PASS / LISTENING PENDING**
+- Decision:
+  - ship a dependency-free static Web Audio harness inside the repository and
+    copy it into every generated listening set;
+  - expose the source as a named reference while retaining an independently
+    copied hidden reference among opaque randomized candidates;
+  - start every decoded candidate on one shared audio clock, preserve playback
+    position while switching, and loop the same excerpt so condition changes
+    do not introduce timing bias;
+  - collect one mandatory 0–100 quality score per candidate, audition time,
+    switch count, optional artifact tags, and optional notes;
+  - bind exported results to the exact public manifest SHA-256 and keep the
+    answer key in a separate file that the browser never requests;
+  - validate and aggregate exported results with a separate deterministic
+    Python tool. Do not automatically exclude listeners or claim MUSHRA
+    significance from an informal or undersized panel.
+- Rationale:
+  - waveform SNR can prefer a reconstruction that listeners reject for
+    pre-echo, timbre drift, unstable stereo image, or structured noise;
+  - separate audio elements do not guarantee sample-synchronous switching and
+    can bias short comparisons;
+  - a static offline harness is auditable, portable, host-independent, and
+    cannot silently send listening data to a service.
+- Gate:
+  - the public manifest contains no candidate identities and the application
+    never loads the answer key;
+  - candidates begin on a shared Web Audio clock and condition switching does
+    not restart playback;
+  - incomplete or out-of-range results are rejected;
+  - deterministic generation, manifest binding, unblinding, and summary logic
+    pass automated tests before real scores are interpreted.
+- Result:
+  - every generated set now includes a dependency-free static application,
+    named reference, opaque hidden reference, WAV hashes, separate answer key,
+    local run instructions, and manifest-bound JSON export;
+  - all conditions run from one Web Audio clock and switch by gain without
+    restarting the excerpt;
+  - the result validator rejects wrong manifests, missing scores, audition
+    times below the declared floor, invalid annotations, and duplicate listener
+    IDs; the unblinder emits descriptive summaries without automatic listener
+    exclusion or significance claims;
+  - a deterministic 3.5 kHz linear-phase low-pass condition provides an
+    explicit impaired anchor but is excluded from codec-rate accounting;
+  - the three 3-second real-music trials rate-match the selected Resonith
+    candidate to complete Opus bytes within 1.10%, 0.86%, and 0.83%;
+  - Resonith's waveform SNR diagnostic is 3.41, 11.22, and 9.47 dB above the
+    rate-matched Opus decode, but this is not perceptual evidence;
+  - the public manifest SHA-256 is
+    `a9573bd53b88796663796e46eb3924f2a08dda0fe29072db193088d6b140ffcb`;
+  - 128 reference/security/integration tests, four subtests, and JavaScript
+    syntax validation pass. Real listener scores remain pending.

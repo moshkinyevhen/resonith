@@ -60,7 +60,7 @@ The repository contains:
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 125 pure reference/security/integration tests, twelve native decoder-in-loop
+- 128 pure reference/security/integration tests, twelve native decoder-in-loop
   integration tests, ten native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1/LPF1 mutation targets.
@@ -132,6 +132,20 @@ The encoder prints complete RSC1 bytes, waveform diagnostics, selected
 coefficient-count range, table identity, and wall time. This path has passed
 objective and native portability gates but remains prospective until blinded
 listening and real-device timing pass.
+
+The real-music experiment also emits a self-contained offline blind-listening
+application. It uses one Web Audio clock for the named reference, hidden
+reference, Resonith, Opus, and low-pass anchor, verifies every WAV hash, and
+exports manifest-bound JSON without uploading data. From the generated
+`listening` directory:
+
+```sh
+python -m http.server 8765
+```
+
+Open `http://127.0.0.1:8765/`, export all blinded results, and only then use
+`experiments/listening_results.py` with the separate answer key. The harness
+does not turn an informal or undersized panel into a MUSHRA claim.
 
 An explicit shared Golden Core can replace Python forward analysis without
 changing the selected bitstream:

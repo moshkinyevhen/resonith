@@ -1138,3 +1138,39 @@ QUIC, SRTP, or another profile must authenticate sequence identity, packet
 index, and record bytes and enforce replay policy before calling the Core.
 CRC-32 remains only an accidental-corruption check. Real reordering/loss
 scheduling, physical-device measurements, and listening remain open.
+
+## 48. Synchronized blind-listening harness and first rate match
+
+Every generated listening set now contains a dependency-free static Web Audio
+application. The named reference and all opaque candidates are decoded before
+playback and start on one shared audio clock. A condition switch changes only
+gain, preserving the sample position and loop. The application verifies each
+WAV against the public manifest, records audition time and switching, requires
+one 0–100 score per opaque candidate, and exports a result bound to the exact
+manifest SHA-256. It has no upload or analytics path and never requests the
+separate answer key.
+
+The accompanying Python validator rejects a wrong manifest, incomplete scores,
+insufficient audition, invalid annotations, and duplicate listener IDs before
+unblinding. Its summary is deliberately descriptive: it does not automatically
+exclude listeners or calculate a significance claim for an informal panel.
+
+The generated R-084 set uses three licensed 3-second stereo crops. Each trial
+contains the named reference, a hidden reference, fixed-integer bounded
+adaptive-density Resonith, the real Opus 96 kbps-request decode, and a
+deterministic 3.5 kHz low-pass anchor. The low-pass condition trains the quality
+scale and is never included in codec-rate accounting.
+
+| Crop | Resonith | Opus | Byte ratio | SNR diagnostic delta |
+|---|---:|---:|---:|---:|
+| Corelli | 41,694 B | 42,156 B | 0.9890 | +3.41 dB |
+| Piano | 45,720 B | 46,117 B | 0.9914 | +11.22 dB |
+| Drums | 34,850 B | 35,141 B | 0.9917 | +9.47 dB |
+
+The objective sanity gate passes on all three clips, with a mean +8.03 dB
+waveform SNR diagnostic. This does not establish perceptual equivalence or a
+codec win. The next evidence must come from listeners before the answer key is
+opened.
+
+The compact reproducible record is
+[`lapped_blind_listening_r084_2026-07-26_summary.json`](../experiments/results/lapped_blind_listening_r084_2026-07-26_summary.json).

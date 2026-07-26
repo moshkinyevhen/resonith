@@ -40,6 +40,27 @@ class ListeningSetTests(unittest.TestCase):
                 json.dumps(manifest["trials"]),
             )
             self.assertIn("resonith", json.dumps(key))
+            self.assertEqual(
+                manifest["schema"],
+                "resonith-blind-listening-2",
+            )
+            trial = manifest["trials"][0]
+            self.assertEqual(trial["reference"]["path"], "clip-one/reference.wav")
+            self.assertEqual(
+                (output / "clip-one" / "reference.wav").read_bytes(),
+                b"RIFF-reference",
+            )
+            for asset in (
+                "index.html",
+                "style.css",
+                "app.js",
+                "RUN_LISTENING.md",
+            ):
+                self.assertTrue((output / asset).is_file())
+            self.assertNotIn(
+                "answer-key.json",
+                (output / "app.js").read_text(encoding="utf-8"),
+            )
             first_manifest = (output / "manifest.json").read_bytes()
             first_key = (output / "answer-key.json").read_bytes()
 
