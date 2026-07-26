@@ -263,24 +263,34 @@ class NativeBridgeTests(unittest.TestCase):
     def test_fixed_bounded_lapped_cross_decoder_parity(self) -> None:
         right = np.roll(self.samples, 37)
         stereo = np.stack((self.samples, right), axis=1)
-        encoded = encode_lapped_stream(
-            stereo,
-            48_000,
-            coefficients_per_frame=48,
-            half_window=256,
-            band_count=16,
-            entropy_backend="bounded",
-            transform_backend="fixed",
-        )
-        native = self.decoder.decode_lapped(encoded.payload)
+        for density in ("fixed", "adaptive"):
+            with self.subTest(density=density):
+                encoded = encode_lapped_stream(
+                    stereo,
+                    48_000,
+                    coefficients_per_frame=48,
+                    half_window=256,
+                    band_count=16,
+                    entropy_backend="bounded",
+                    transform_backend="fixed",
+                    density_backend=density,
+                )
+                native = self.decoder.decode_lapped(encoded.payload)
 
-        self.assertEqual(native.requirements.output_channels, 2)
-        self.assertEqual(native.requirements.half_window, 256)
-        self.assertEqual(native.requirements.coefficients_per_frame, 48)
-        np.testing.assert_array_equal(
-            native.samples,
-            encoded.reconstruction,
-        )
+                self.assertEqual(native.requirements.output_channels, 2)
+                self.assertEqual(native.requirements.half_window, 256)
+                self.assertEqual(
+                    native.requirements.coefficients_per_frame,
+                    48 if density == "fixed" else 0,
+                )
+                self.assertEqual(
+                    native.requirements.count_elements,
+                    0 if density == "fixed" else 66,
+                )
+                np.testing.assert_array_equal(
+                    native.samples,
+                    encoded.reconstruction,
+                )
 
 
 if __name__ == "__main__":

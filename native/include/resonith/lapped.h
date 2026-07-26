@@ -25,6 +25,7 @@ typedef struct resonith_lapped_requirements {
     uint16_t coefficients_per_frame;
     uint16_t output_channels;
     size_t scale_elements;
+    size_t count_elements;
     size_t position_elements;
     size_t coefficient_elements;
     size_t overlap_elements;
@@ -34,6 +35,8 @@ typedef struct resonith_lapped_requirements {
 typedef struct resonith_lapped_workspace {
     uint8_t* scales;
     size_t scale_capacity;
+    uint16_t* counts;
+    size_t count_capacity;
     uint16_t* positions;
     size_t position_capacity;
     int8_t* coefficients;

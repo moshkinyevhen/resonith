@@ -35,6 +35,7 @@ int main() {
                 && requirements.coefficients_per_frame == 8U
                 && requirements.output_channels == 2U
                 && requirements.scale_elements == 32U
+                && requirements.count_elements == 0U
                 && requirements.position_elements == 64U
                 && requirements.coefficient_elements == 64U
                 && requirements.overlap_elements == 160U
@@ -45,12 +46,15 @@ int main() {
     }
 
     std::array<std::uint8_t, 32> scales{};
+    std::array<std::uint16_t, 8> counts{};
     std::array<std::uint16_t, 64> positions{};
     std::array<std::int8_t, 64> coefficients{};
     std::array<std::int64_t, 160> overlap{};
     resonith_lapped_workspace workspace = {
         scales.data(),
         scales.size(),
+        counts.data(),
+        0U,
         positions.data(),
         positions.size(),
         coefficients.data(),
@@ -76,6 +80,36 @@ int main() {
         return 1;
     }
 
+    if (!expect(
+            resonith_lapped_inspect(
+                kAdaptiveLappedStream.data(),
+                kAdaptiveLappedStream.size(),
+                &requirements
+            ) == RESONITH_STATUS_OK
+                && requirements.coefficients_per_frame == 0U
+                && requirements.count_elements == counts.size()
+                && requirements.position_elements == positions.size(),
+            "variable-density LPF1 inspect"
+        )) {
+        return 1;
+    }
+    workspace.count_capacity = counts.size();
+    if (!expect(
+            resonith_lapped_decode(
+                kAdaptiveLappedStream.data(),
+                kAdaptiveLappedStream.size(),
+                &workspace,
+                output.data(),
+                output.size(),
+                &written
+            ) == RESONITH_STATUS_OK
+                && written == 96U
+                && output == kExpectedAdaptiveLappedPcm,
+            "Python and native variable-density PCM parity"
+        )) {
+        return 1;
+    }
+
     auto corrupted = kLappedStream;
     corrupted.back() ^= 1U;
     if (!expect(
@@ -90,12 +124,12 @@ int main() {
     }
 
     output.fill(1234);
-    workspace.position_capacity = positions.size() - 1U;
+    workspace.count_capacity = 0U;
     written = 9U;
     if (!expect(
             resonith_lapped_decode(
-                kLappedStream.data(),
-                kLappedStream.size(),
+                kAdaptiveLappedStream.data(),
+                kAdaptiveLappedStream.size(),
                 &workspace,
                 output.data(),
                 output.size(),

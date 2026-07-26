@@ -1634,3 +1634,24 @@ new oscillator opcode.
     complexity without a separate classifier;
   - native LSE2 parity and blinded listening remain mandatory before the count
     law can enter prospective syntax.
+
+## R-062 — Native LSE2 count-law extension
+
+- Date: 2026-07-26
+- Status: **IMPLEMENTED / CROSS-PLATFORM VERIFICATION PENDING / RESEARCH**
+- Decision:
+  - extend the existing LPF1 native ABI with an optional caller-owned uint16
+    transform-frame count array; fixed-density streams report zero count
+    elements and remain unchanged;
+  - decode bounded temporal count deltas before positions, require their sum to
+    equal the declared sparse coefficient total, and reject any frame count
+    above the half-window;
+  - reuse the exact Q14/Q15 synthesis kernel, scale law, position Rice path,
+    value entropy, overlap memory, and arithmetic preflight from R-060;
+  - require fixed and variable streams from one Python source to match the
+    independent native output exactly on every cross-compiler target.
+- Rationale:
+  - R-061 earned the count law through a complete-byte gate, so implementing it
+    now tests the actual incremental decoder cost;
+  - one optional count array and one existing signed entropy field are smaller
+    and easier to verify than explicit acoustic-state or transient syntax.

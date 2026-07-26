@@ -106,6 +106,7 @@ class _LappedRequirements(ctypes.Structure):
         ("coefficients_per_frame", ctypes.c_uint16),
         ("output_channels", ctypes.c_uint16),
         ("scale_elements", ctypes.c_size_t),
+        ("count_elements", ctypes.c_size_t),
         ("position_elements", ctypes.c_size_t),
         ("coefficient_elements", ctypes.c_size_t),
         ("overlap_elements", ctypes.c_size_t),
@@ -117,6 +118,8 @@ class _LappedWorkspace(ctypes.Structure):
     _fields_ = [
         ("scales", ctypes.POINTER(ctypes.c_uint8)),
         ("scale_capacity", ctypes.c_size_t),
+        ("counts", ctypes.POINTER(ctypes.c_uint16)),
+        ("count_capacity", ctypes.c_size_t),
         ("positions", ctypes.POINTER(ctypes.c_uint16)),
         ("position_capacity", ctypes.c_size_t),
         ("coefficients", ctypes.POINTER(ctypes.c_int8)),
@@ -364,6 +367,7 @@ class NativeLappedRequirements:
     coefficients_per_frame: int
     output_channels: int
     scale_elements: int
+    count_elements: int
     position_elements: int
     coefficient_elements: int
     overlap_elements: int
@@ -689,6 +693,7 @@ class NativeMain0Decoder:
         )
         workspace_bytes = (
             int(native.scale_elements)
+            + 2 * int(native.count_elements)
             + 2 * int(native.position_elements)
             + int(native.coefficient_elements)
             + 8 * int(native.overlap_elements)
@@ -706,6 +711,7 @@ class NativeMain0Decoder:
             int(native.coefficients_per_frame),
             int(native.output_channels),
             int(native.scale_elements),
+            int(native.count_elements),
             int(native.position_elements),
             int(native.coefficient_elements),
             int(native.overlap_elements),
@@ -719,6 +725,7 @@ class NativeMain0Decoder:
         requirements = self.inspect_lapped(payload)
         source = self._input_buffer(payload)
         scales = (ctypes.c_uint8 * requirements.scale_elements)()
+        counts = (ctypes.c_uint16 * max(1, requirements.count_elements))()
         positions = (ctypes.c_uint16 * requirements.position_elements)()
         coefficients = (
             ctypes.c_int8 * requirements.coefficient_elements
@@ -727,6 +734,8 @@ class NativeMain0Decoder:
         workspace = _LappedWorkspace(
             scales,
             requirements.scale_elements,
+            counts,
+            requirements.count_elements,
             positions,
             requirements.position_elements,
             coefficients,
