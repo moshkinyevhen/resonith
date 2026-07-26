@@ -21,6 +21,7 @@ from maf_p0.main0 import (  # noqa: E402
     pack_main0_lpc_residual_stream,
     pack_main0_state_stream,
 )
+from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
 from maf_p0.model import encode_basis_latent, train_linear_cibs  # noqa: E402
 from maf_p0.native_core import (  # noqa: E402
     NativeCoreError,
@@ -258,6 +259,28 @@ class NativeBridgeTests(unittest.TestCase):
         np.testing.assert_array_equal(native.samples, reference.samples)
         np.testing.assert_array_equal(streamed.samples, native.samples)
         np.testing.assert_array_equal(pulled.samples, native.samples)
+
+    def test_fixed_bounded_lapped_cross_decoder_parity(self) -> None:
+        right = np.roll(self.samples, 37)
+        stereo = np.stack((self.samples, right), axis=1)
+        encoded = encode_lapped_stream(
+            stereo,
+            48_000,
+            coefficients_per_frame=48,
+            half_window=256,
+            band_count=16,
+            entropy_backend="bounded",
+            transform_backend="fixed",
+        )
+        native = self.decoder.decode_lapped(encoded.payload)
+
+        self.assertEqual(native.requirements.output_channels, 2)
+        self.assertEqual(native.requirements.half_window, 256)
+        self.assertEqual(native.requirements.coefficients_per_frame, 48)
+        np.testing.assert_array_equal(
+            native.samples,
+            encoded.reconstruction,
+        )
 
 
 if __name__ == "__main__":

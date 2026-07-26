@@ -96,6 +96,36 @@ class _MultichannelRequirements(ctypes.Structure):
     ]
 
 
+class _LappedRequirements(ctypes.Structure):
+    _fields_ = [
+        ("sample_rate", ctypes.c_uint32),
+        ("frame_count", ctypes.c_uint32),
+        ("transform_frame_count", ctypes.c_uint32),
+        ("half_window", ctypes.c_uint16),
+        ("band_count", ctypes.c_uint16),
+        ("coefficients_per_frame", ctypes.c_uint16),
+        ("output_channels", ctypes.c_uint16),
+        ("scale_elements", ctypes.c_size_t),
+        ("position_elements", ctypes.c_size_t),
+        ("coefficient_elements", ctypes.c_size_t),
+        ("overlap_elements", ctypes.c_size_t),
+        ("output_elements", ctypes.c_size_t),
+    ]
+
+
+class _LappedWorkspace(ctypes.Structure):
+    _fields_ = [
+        ("scales", ctypes.POINTER(ctypes.c_uint8)),
+        ("scale_capacity", ctypes.c_size_t),
+        ("positions", ctypes.POINTER(ctypes.c_uint16)),
+        ("position_capacity", ctypes.c_size_t),
+        ("coefficients", ctypes.POINTER(ctypes.c_int8)),
+        ("coefficient_capacity", ctypes.c_size_t),
+        ("overlap_q29", ctypes.POINTER(ctypes.c_int64)),
+        ("overlap_capacity", ctypes.c_size_t),
+    ]
+
+
 class _MultichannelPlayerView(ctypes.Structure):
     _fields_ = [
         (
@@ -324,6 +354,30 @@ class NativeMultichannelDecodeResult:
     requirements: NativeMultichannelRequirements
 
 
+@dataclass(frozen=True)
+class NativeLappedRequirements:
+    sample_rate: int
+    frame_count: int
+    transform_frame_count: int
+    half_window: int
+    band_count: int
+    coefficients_per_frame: int
+    output_channels: int
+    scale_elements: int
+    position_elements: int
+    coefficient_elements: int
+    overlap_elements: int
+    output_elements: int
+    workspace_bytes: int
+
+
+@dataclass(frozen=True)
+class NativeLappedDecodeResult:
+    samples: np.ndarray
+    sample_rate: int
+    requirements: NativeLappedRequirements
+
+
 class NativeMain0Decoder:
     """Allocation-explicit host wrapper around `resonith_main0_decode`."""
 
@@ -494,6 +548,21 @@ class NativeMain0Decoder:
         self._library.resonith_multichannel_player_stream.restype = (
             ctypes.c_int
         )
+        self._library.resonith_lapped_inspect.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(_LappedRequirements),
+        ]
+        self._library.resonith_lapped_inspect.restype = ctypes.c_int
+        self._library.resonith_lapped_decode.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(_LappedWorkspace),
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        self._library.resonith_lapped_decode.restype = ctypes.c_int
         self._library.resonith_status_string.argtypes = [ctypes.c_int]
         self._library.resonith_status_string.restype = ctypes.c_char_p
 
@@ -604,6 +673,90 @@ class NativeMain0Decoder:
             int(native.output_elements),
             int(native.output_block_elements),
             workspace_bytes,
+        )
+
+    def inspect_lapped(self, payload: bytes) -> NativeLappedRequirements:
+        """Inspect the prospective fixed/bounded LPF1 research subset."""
+
+        source = self._input_buffer(payload)
+        native = _LappedRequirements()
+        self._check(
+            self._library.resonith_lapped_inspect(
+                source,
+                len(payload),
+                ctypes.byref(native),
+            )
+        )
+        workspace_bytes = (
+            int(native.scale_elements)
+            + 2 * int(native.position_elements)
+            + int(native.coefficient_elements)
+            + 8 * int(native.overlap_elements)
+        )
+        if workspace_bytes > self._max_workspace_bytes:
+            raise MemoryError(
+                "native lapped workspace exceeds the configured host ceiling"
+            )
+        return NativeLappedRequirements(
+            int(native.sample_rate),
+            int(native.frame_count),
+            int(native.transform_frame_count),
+            int(native.half_window),
+            int(native.band_count),
+            int(native.coefficients_per_frame),
+            int(native.output_channels),
+            int(native.scale_elements),
+            int(native.position_elements),
+            int(native.coefficient_elements),
+            int(native.overlap_elements),
+            int(native.output_elements),
+            workspace_bytes,
+        )
+
+    def decode_lapped(self, payload: bytes) -> NativeLappedDecodeResult:
+        """Decode fixed/bounded LPF1 through the independent native Core."""
+
+        requirements = self.inspect_lapped(payload)
+        source = self._input_buffer(payload)
+        scales = (ctypes.c_uint8 * requirements.scale_elements)()
+        positions = (ctypes.c_uint16 * requirements.position_elements)()
+        coefficients = (
+            ctypes.c_int8 * requirements.coefficient_elements
+        )()
+        overlap = (ctypes.c_int64 * requirements.overlap_elements)()
+        workspace = _LappedWorkspace(
+            scales,
+            requirements.scale_elements,
+            positions,
+            requirements.position_elements,
+            coefficients,
+            requirements.coefficient_elements,
+            overlap,
+            requirements.overlap_elements,
+        )
+        output = (ctypes.c_int16 * requirements.output_elements)()
+        frames_written = ctypes.c_size_t()
+        self._check(
+            self._library.resonith_lapped_decode(
+                source,
+                len(payload),
+                ctypes.byref(workspace),
+                output,
+                requirements.output_elements,
+                ctypes.byref(frames_written),
+            )
+        )
+        if frames_written.value != requirements.frame_count:
+            raise RuntimeError("native lapped decoder returned partial PCM")
+        samples = np.ctypeslib.as_array(output).reshape(
+            requirements.frame_count,
+            requirements.output_channels,
+        ).copy()
+        samples.flags.writeable = False
+        return NativeLappedDecodeResult(
+            samples,
+            requirements.sample_rate,
+            requirements,
         )
 
     def decode_multichannel(

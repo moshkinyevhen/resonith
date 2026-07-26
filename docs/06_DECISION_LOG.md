@@ -1557,3 +1557,28 @@ new oscillator opcode.
     +7.58 dB mean. This is still not a perceptual quality claim;
   - compiled ROM, native independent decode, overflow proofs, timing, and
     listening remain required before any syntax promotion.
+
+## R-060 — Allocation-explicit native LPF1 decoder gate
+
+- Date: 2026-07-26
+- Status: **IMPLEMENTED / CROSS-PLATFORM VERIFICATION PENDING / RESEARCH**
+- Decision:
+  - add a standalone C99 ABI for prospective fixed/bounded LPF1 inspection and
+    whole-stream decode without merging the research syntax into Main-0;
+  - require caller-owned scale, position, coefficient, overlap, and output
+    storage with exact element counts returned before decode;
+  - validate the complete container, section hashes, entropy envelopes,
+    canonical padding, decoded positions, scale range, and conservative int64
+    synthesis bounds before the first PCM write;
+  - represent every supported power-of-two window through two reviewed
+    quarter-wave ROMs sampled at the 1,024-half-window grid. Symmetry and
+    integer stride recover the exact Q14 cosine and Q15 window values;
+  - gate the implementation with a Python-authored native conformance vector,
+    Python/native PCM equality, workspace atomicity, cross-compiler warnings
+    as errors, ARM64/Android builds, and sanitizers.
+- Rationale:
+  - a Python-only integer result does not prove portable decoder feasibility;
+  - caller-owned memory and preflighted arithmetic make real device costs
+    visible before syntax promotion;
+  - quarter-wave symmetry reduces compiled table storage from a full transform
+    matrix to 4,098 int32 ROM values while preserving exact coefficients.

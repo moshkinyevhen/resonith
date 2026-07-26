@@ -36,12 +36,15 @@ class SparseLappedFields:
     position_parameter: int
 
 
-def _unsigned_rice_bit_count(values: np.ndarray, parameter: int) -> int:
+def _unsigned_rice_bit_count(
+    values: np.ndarray,
+    parameter: int,
+    position_bits: int,
+) -> int:
     """Measure bounded Rice positions with a local fixed-width escape."""
 
     if values.ndim != 1 or values.dtype != np.uint64:
         raise TypeError("position gaps must be a one-dimensional uint64 array")
-    position_bits = max(1, int(np.max(values)).bit_length()) if values.size else 1
     quotient = np.right_shift(values, np.uint64(parameter))
     costs = np.where(
         quotient < RICE_ESCAPE_QUOTIENT,
@@ -168,7 +171,14 @@ def encode_sparse_lapped(
     position_bits = max(1, (half_window - 1).bit_length())
     position_parameter = min(
         range(min(MAX_RICE_PARAMETER, position_bits) + 1),
-        key=lambda item: (_unsigned_rice_bit_count(gap_values, item), item),
+        key=lambda item: (
+            _unsigned_rice_bit_count(
+                gap_values,
+                item,
+                position_bits,
+            ),
+            item,
+        ),
     )
     position_payload, position_bit_count = _encode_unsigned_rice(
         gap_values,

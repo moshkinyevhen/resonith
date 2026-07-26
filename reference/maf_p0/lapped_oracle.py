@@ -90,9 +90,19 @@ def _band_edges(half_window: int, band_count: int) -> tuple[int, ...]:
 
     if not 1 <= band_count <= min(MAX_BANDS, half_window):
         raise ValueError("lapped band count exceeds the profile bound")
-    raw = np.rint(
-        np.linspace(0.0, np.sqrt(half_window), band_count + 1) ** 2
-    ).astype(np.int64)
+    denominator = band_count * band_count
+    raw = []
+    for index in range(band_count + 1):
+        quotient, remainder = divmod(
+            index * index * half_window,
+            denominator,
+        )
+        if (
+            2 * remainder > denominator
+            or (2 * remainder == denominator and quotient & 1)
+        ):
+            quotient += 1
+        raw.append(quotient)
     raw[0] = 0
     raw[-1] = half_window
     edges = [0]

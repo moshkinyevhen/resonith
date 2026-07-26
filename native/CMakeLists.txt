@@ -11,6 +11,7 @@ set(RESONITH_CORE_SOURCES
     src/composition.cpp
     src/container.cpp
     src/integrity.cpp
+    src/lapped.cpp
     src/liftpack.cpp
     src/multichannel.cpp
     src/seek.cpp
@@ -234,4 +235,13 @@ if(BUILD_TESTING)
     set_target_properties(resonith_seek_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_seek_test)
     add_test(NAME seek_sidecar_conformance COMMAND resonith_seek_test)
+
+    add_executable(resonith_lapped_test
+        tests/lapped_test.cpp
+    )
+    target_compile_features(resonith_lapped_test PRIVATE cxx_std_20)
+    target_link_libraries(resonith_lapped_test PRIVATE Resonith::Core)
+    set_target_properties(resonith_lapped_test PROPERTIES CXX_EXTENSIONS OFF)
+    resonith_enable_warnings(resonith_lapped_test)
+    add_test(NAME lapped_conformance COMMAND resonith_lapped_test)
 endif()
