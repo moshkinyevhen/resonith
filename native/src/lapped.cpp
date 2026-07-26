@@ -1259,6 +1259,7 @@ void render_chained_channel(
     const parsed_lapped* lookahead,
     const resonith_lapped_workspace* lookahead_workspace,
     std::uint16_t channel,
+    std::uint32_t output_frames,
     std::int16_t* output
 ) noexcept {
     std::fill(
@@ -1338,7 +1339,7 @@ void render_chained_channel(
     const std::uint32_t normalization_shift = static_cast<std::uint32_t>(
         28U + log2_power_of_two(current.half_window)
     );
-    for (std::uint32_t frame = 0U; frame < current.sample_count; ++frame) {
+    for (std::uint32_t frame = 0U; frame < output_frames; ++frame) {
         const std::int64_t rounded = round_shift_signed(
             current_workspace.overlap_q29[
                 static_cast<std::size_t>(current.half_window) + frame
@@ -1587,10 +1588,95 @@ resonith_status lapped_render_chained(
             requires_lookahead ? &lookahead : nullptr,
             requires_lookahead ? lookahead_workspace : nullptr,
             channel,
+            current.sample_count,
             output
         );
     }
     *frames_written = current.sample_count;
+    return RESONITH_STATUS_OK;
+}
+
+resonith_status lapped_render_prefix(
+    const resonith_lapped_requirements& current_requirements,
+    const resonith_lapped_workspace& current_workspace,
+    std::int16_t* output,
+    std::size_t output_capacity,
+    std::size_t* frames_written
+) noexcept {
+    if (output == nullptr || frames_written == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *frames_written = 0U;
+    if (
+        current_requirements.frame_count
+            < current_requirements.half_window
+        || current_requirements.half_window == 0U
+        || current_requirements.output_channels == 0U
+        || current_requirements.count_elements == 0U
+        || current_requirements.frame_count
+            % current_requirements.half_window != 0U
+        || current_requirements.transform_frame_count
+            != current_requirements.frame_count
+                / current_requirements.half_window
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    const std::uint32_t prefix_frames =
+        current_requirements.frame_count - current_requirements.half_window;
+    std::size_t prefix_elements = 0U;
+    if (
+        !checked_product(
+            prefix_frames,
+            current_requirements.output_channels,
+            &prefix_elements
+        )
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    if (output_capacity < prefix_elements) {
+        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    }
+    if (
+        !field_workspace_fits(current_requirements, current_workspace)
+        || current_workspace.overlap_q29 == nullptr
+        || current_workspace.overlap_capacity
+            < current_requirements.overlap_elements
+    ) {
+        return RESONITH_STATUS_SCRATCH_TOO_SMALL;
+    }
+
+    parsed_lapped current{};
+    current.sample_rate = current_requirements.sample_rate;
+    current.sample_count = current_requirements.frame_count;
+    current.transform_frames =
+        current_requirements.transform_frame_count;
+    current.channels = current_requirements.output_channels;
+    current.half_window = current_requirements.half_window;
+    current.band_count = current_requirements.band_count;
+    current.variable_density = true;
+    const resonith_status status = validate_synthesis_bounds(
+        current,
+        current_workspace
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    for (
+        std::uint16_t channel = 0U;
+        channel < current.channels;
+        ++channel
+    ) {
+        render_chained_channel(
+            current,
+            current_workspace,
+            nullptr,
+            nullptr,
+            channel,
+            prefix_frames,
+            output
+        );
+    }
+    *frames_written = prefix_frames;
     return RESONITH_STATUS_OK;
 }
 

@@ -146,6 +146,24 @@ RESONITH_API resonith_status resonith_lapped_compact_decode_record_pair(
     size_t* frames_written
 );
 
+/*
+ * Decodes the exact prefix of a non-final record when lookahead is unavailable.
+ *
+ * Exactly one final half-window remains unresolved and is not written or
+ * counted. Concealment of that suffix is an external output-only policy.
+ */
+RESONITH_API resonith_status resonith_lapped_compact_decode_record_prefix(
+    const resonith_lapped_compact_sequence* sequence,
+    uint32_t packet_index,
+    const uint8_t* current_record,
+    size_t current_record_size,
+    const resonith_lapped_workspace* current_workspace,
+    int16_t* logical_output,
+    size_t logical_output_capacity,
+    uint32_t* logical_start,
+    size_t* frames_written
+);
+
 #ifdef __cplusplus
 }
 #endif

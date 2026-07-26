@@ -146,6 +146,21 @@ int main(void) {
         return 1;
     }
     if (
+        resonith_lapped_compact_decode_record_prefix(
+            &compact_sequence,
+            0U,
+            NULL,
+            0U,
+            NULL,
+            NULL,
+            0U,
+            NULL,
+            NULL
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
         resonith_lapped_packet_open(
             NULL,
             0U,

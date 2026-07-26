@@ -552,6 +552,103 @@ int main() {
     );
 
     logical_output.fill(1234);
+    logical_start = 99U;
+    logical_frames = 99U;
+    if (!expect(
+            resonith_lapped_compact_decode_record_prefix(
+                &compact_sequence,
+                0U,
+                kLappedCompactPacketStream.data() + compact_header_size,
+                compact_first_size,
+                &header_current_workspace,
+                logical_output.data(),
+                logical_output.size(),
+                &logical_start,
+                &logical_frames
+            ) == RESONITH_STATUS_OK
+                && logical_start == 0U
+                && logical_frames == 32U
+                && std::equal(
+                    logical_output.begin(),
+                    logical_output.begin() + 64,
+                    kExpectedAdaptiveLappedPcm.begin()
+                )
+                && std::all_of(
+                    logical_output.begin() + 64,
+                    logical_output.end(),
+                    [](std::int16_t sample) { return sample == 1234; }
+                ),
+            "LPS4 prefix salvage is exact and writes no unresolved suffix"
+        )) {
+        return 1;
+    }
+
+    auto compact_current_corrupted = kLappedCompactPacketStream;
+    compact_current_corrupted[
+        compact_header_size + compact_first_size - 1U
+    ] ^= 1U;
+    logical_output.fill(1234);
+    if (!expect(
+            resonith_lapped_compact_decode_record_prefix(
+                &compact_sequence,
+                0U,
+                compact_current_corrupted.data() + compact_header_size,
+                compact_first_size,
+                &header_current_workspace,
+                logical_output.data(),
+                logical_output.size(),
+                &logical_start,
+                &logical_frames
+            ) == RESONITH_STATUS_CHECKSUM_MISMATCH
+                && logical_start == 0U
+                && logical_frames == 0U
+                && std::all_of(
+                    logical_output.begin(),
+                    logical_output.end(),
+                    [](std::int16_t sample) { return sample == 1234; }
+                ),
+            "LPS4 corrupt prefix record writes no PCM"
+        )) {
+        return 1;
+    }
+    if (!expect(
+            resonith_lapped_compact_decode_record_prefix(
+                &compact_sequence,
+                0U,
+                kLappedCompactPacketStream.data() + compact_header_size,
+                compact_first_size,
+                &header_current_workspace,
+                logical_output.data(),
+                63U,
+                &logical_start,
+                &logical_frames
+            ) == RESONITH_STATUS_OUTPUT_TOO_SMALL
+                && logical_start == 0U
+                && logical_frames == 0U,
+            "LPS4 prefix rejects undersized output"
+        )) {
+        return 1;
+    }
+    if (!expect(
+            resonith_lapped_compact_decode_record_prefix(
+                &compact_sequence,
+                1U,
+                kLappedCompactPacketStream.data() + compact_second_offset,
+                compact_second_size,
+                &header_current_workspace,
+                logical_output.data(),
+                logical_output.size(),
+                &logical_start,
+                &logical_frames
+            ) == RESONITH_STATUS_INVALID_ARGUMENT
+                && logical_start == 0U
+                && logical_frames == 0U,
+            "LPS4 final record forbids prefix salvage"
+        )) {
+        return 1;
+    }
+
+    logical_output.fill(1234);
     if (!expect(
             resonith_lapped_compact_decode_record_pair(
                 &compact_sequence,

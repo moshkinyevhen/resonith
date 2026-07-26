@@ -270,6 +270,35 @@ extern "C" int LLVMFuzzerTestOneInput(
         ) {
             __builtin_trap();
         }
+        if (!final_packet) {
+            std::uint32_t prefix_start = 1U;
+            std::size_t prefix_frames = 1U;
+            if (
+                resonith_lapped_compact_decode_record_prefix(
+                    &sequence,
+                    packet,
+                    data + record_offsets[packet],
+                    record_sizes[packet],
+                    &current_workspace,
+                    stateless_output.data(),
+                    stateless_output.size(),
+                    &prefix_start,
+                    &prefix_frames
+                ) != RESONITH_STATUS_OK
+                || prefix_start != logical_start
+                || prefix_frames + sequence.half_window != frames_written
+                || !std::equal(
+                    output.begin(),
+                    output.begin()
+                        + static_cast<std::ptrdiff_t>(
+                            prefix_frames * sequence.output_channels
+                        ),
+                    stateless_output.begin()
+                )
+            ) {
+                __builtin_trap();
+            }
+        }
         expected_start += static_cast<std::uint32_t>(frames_written);
     }
     if (

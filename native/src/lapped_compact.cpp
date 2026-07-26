@@ -1009,3 +1009,81 @@ extern "C" resonith_status resonith_lapped_compact_decode_record_pair(
     *frames_written = rendered_frames;
     return RESONITH_STATUS_OK;
 }
+
+extern "C" resonith_status resonith_lapped_compact_decode_record_prefix(
+    const resonith_lapped_compact_sequence* sequence,
+    std::uint32_t packet_index,
+    const std::uint8_t* current_record,
+    std::size_t current_record_size,
+    const resonith_lapped_workspace* current_workspace,
+    std::int16_t* logical_output,
+    std::size_t logical_output_capacity,
+    std::uint32_t* logical_start,
+    std::size_t* frames_written
+) {
+    if (logical_start == nullptr || frames_written == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *logical_start = 0U;
+    *frames_written = 0U;
+    if (
+        sequence == nullptr
+        || current_record == nullptr
+        || current_workspace == nullptr
+        || logical_output == nullptr
+        || !valid_sequence_shape(*sequence)
+        || packet_index >= sequence->packet_count
+        || packet_index + 1U == sequence->packet_count
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+
+    compact_record_view current{};
+    resonith_status status = parse_record_bytes(
+        *sequence,
+        current_record,
+        current_record_size,
+        packet_index,
+        true,
+        &current
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    resonith_lapped_requirements decoded_current{};
+    status = resonith::internal::lapped_compact_fields_decode(
+        current.data,
+        current.size,
+        sequence->sample_rate,
+        current.logical_count,
+        current.requirements.transform_frame_count,
+        sequence->output_channels,
+        sequence->half_window,
+        sequence->band_count,
+        *current_workspace,
+        &decoded_current
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+
+    std::size_t rendered_frames = 0U;
+    status = resonith::internal::lapped_render_prefix(
+        decoded_current,
+        *current_workspace,
+        logical_output,
+        logical_output_capacity,
+        &rendered_frames
+    );
+    if (
+        status != RESONITH_STATUS_OK
+        || rendered_frames + sequence->half_window != current.logical_count
+    ) {
+        return status == RESONITH_STATUS_OK
+            ? RESONITH_STATUS_MALFORMED
+            : status;
+    }
+    *logical_start = packet_index * sequence->packet_frames;
+    *frames_written = rendered_frames;
+    return RESONITH_STATUS_OK;
+}

@@ -40,6 +40,14 @@ resonith_status lapped_render_chained(
     std::size_t* frames_written
 ) noexcept;
 
+resonith_status lapped_render_prefix(
+    const resonith_lapped_requirements& current_requirements,
+    const resonith_lapped_workspace& current_workspace,
+    std::int16_t* output,
+    std::size_t output_capacity,
+    std::size_t* frames_written
+) noexcept;
+
 }  // namespace resonith::internal
 
 #endif

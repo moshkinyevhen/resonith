@@ -2570,3 +2570,30 @@ new oscillator opcode.
   - header-only maxima cover every exact requirement from complete preflight;
   - frozen stateless decode succeeds using only header-derived workspace;
   - overflow, invalid context, C99, cross-platform, and hostile-input gates pass.
+
+## R-089 — Exact prefix salvage without lookahead
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - when a non-final current LPS4 record is valid but its immediate lookahead is
+    unavailable at playout, permit decoding only the mathematically complete
+    prefix of `logical_count - half_window` frames;
+  - never expose the unresolved final half-window as Truth and never feed
+    concealment into future reconstruction;
+  - keep complete record-pair decode as the normal path and make prefix salvage
+    an explicit separate API so loss policy cannot silently weaken exactness;
+  - retain transactional validation and exact record framing before any prefix
+    PCM write.
+- Rationale:
+  - single-owner lapping makes only the final half-window depend on the next
+    record; discarding the whole current interval would inflate one missing
+    lookahead into avoidable loss;
+  - an explicit exact-prefix primitive lets the external scheduler conceal the
+    smallest unresolved region while keeping the Core free of PLC policy.
+- Gate:
+  - every salvaged prefix is bit-identical to complete record-pair decode;
+  - the advertised frame count excludes exactly one half-window;
+  - corrupt current input writes no PCM; final packets and undersized outputs
+    are rejected;
+  - cross-platform, C99, sanitizer, and mutation gates pass.
