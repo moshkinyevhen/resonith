@@ -189,8 +189,8 @@ def main() -> None:
             "timing_scope": (
                 "ctypes call plus complete-sequence preflight, per-packet "
                 "authentication and child inspection, caller-array "
-                "allocation, entropy decode, synthesis, context trim, "
-                "interleave, and NumPy copy"
+                "allocation, entropy decode, synthesis, logical interval "
+                "extraction, interleave, and NumPy copy"
             ),
         }
 

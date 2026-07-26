@@ -989,3 +989,22 @@ GitHub Actions run
 passed every desktop, ARM64, Android, C99-header, sanitizer, and native-bridge
 job. The packet fuzzer completed 5,000 mutations from valid fixed/adaptive
 LPS1 and transform-boundary LPS2 seeds.
+
+## 42. Hosted native LPS2 resource result
+
+Thirteen 243.81 ms LPS2 packets preserve essentially the same throughput as
+the earlier four approximately one-second LPS1 packets while sharply reducing
+the maximum live child:
+
+| Crop | Median decode | Real-time speed | Complete workspace |
+| --- | ---: | ---: | ---: |
+| Corelli | 179.25 ms | 16.74x | 190,767 bytes |
+| Piano | 159.95 ms | 18.76x | 191,565 bytes |
+| Drums | 140.63 ms | 21.33x | 195,345 bytes |
+
+All Python/native outputs are exact. LPS1 required 754-765 KB in the comparable
+hosted gate, so direct transform packets cut the maximum caller-owned storage
+by approximately four times while carrying fewer bytes and shorter logical
+intervals. This remains a hosted-CPU result, not a mobile energy claim. The
+compact record is
+[`native_lapped_transform_packet_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_transform_packet_timing_2026-07-26_summary.json).

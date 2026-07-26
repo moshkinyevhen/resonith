@@ -1,0 +1,45 @@
+{
+  "date": "2026-07-26",
+  "github_actions_run": 30211619214,
+  "hosted_runner": {
+    "architecture": "X64",
+    "operating_system": "Linux",
+    "python": "3.12.13"
+  },
+  "configuration": {
+    "duration_seconds": 3.0,
+    "packet_frames": 10752,
+    "packet_interval_milliseconds": 243.8095238095238,
+    "packet_count": 13,
+    "packet_mode": "transform"
+  },
+  "gate": {
+    "exact_python_native_pcm": true,
+    "maximum_workspace_bytes": 2097152,
+    "minimum_realtime_speed": 4.0,
+    "passing_clips": 3,
+    "clip_count": 3
+  },
+  "clips": {
+    "corelli-sonata-realization": {
+      "stream_bytes": 49749,
+      "workspace_bytes": 190767,
+      "decode_wall_seconds_median": 0.17925104350001675,
+      "decode_realtime_speed_median": 16.736304243605254
+    },
+    "emotional-piano-cc0": {
+      "stream_bytes": 48036,
+      "workspace_bytes": 191565,
+      "decode_wall_seconds_median": 0.1599523554999962,
+      "decode_realtime_speed_median": 18.7555850029359
+    },
+    "patro-de-bateria": {
+      "stream_bytes": 38949,
+      "workspace_bytes": 195345,
+      "decode_wall_seconds_median": 0.14062708200000884,
+      "decode_realtime_speed_median": 21.333017490897035
+    }
+  },
+  "status": "native LPS2 resource gate passed",
+  "measurement_limit": "Hosted x64 wall time and caller-owned storage only; physical-device energy, thermal behavior, and transport I/O remain pending."
+}

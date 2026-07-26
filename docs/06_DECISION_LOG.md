@@ -2107,7 +2107,7 @@ new oscillator opcode.
 ## R-077 — Hosted native LPS2 resource gate
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **PASS / 16.74X-21.33X REAL TIME / 191-195 KB**
 - Decision:
   - run the same release native timing and complete caller-owned workspace gate
     as R-073 using 243.81 ms LPS2 transform-boundary packets;
@@ -2120,3 +2120,13 @@ new oscillator opcode.
     to thirteen in the chosen three-second sequence;
   - only a complete host measurement can show whether repeated authentication,
     entropy setup, and overlap clearing remain practical.
+- Result:
+  - GitHub Actions run 30211619214 decoded all three pinned three-second clips
+    with exact Python/native PCM equality;
+  - median speed was 16.74x real time on Corelli, 18.76x on piano, and 21.33x
+    on drums, effectively preserving the prior packet/monolithic throughput;
+  - complete caller-owned workspace was 190,767, 191,565, and 195,345 bytes;
+  - compared with the 754-765 KB one-second LPS1 measurements, direct short
+    transform packets reduce the largest live packet storage by approximately
+    four times while also lowering complete bytes;
+  - physical mobile energy, thermal behavior, and transport I/O remain open.
