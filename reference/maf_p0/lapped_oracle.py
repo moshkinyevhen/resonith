@@ -19,7 +19,12 @@ from .fixed_lapped import (
     synthesis_output_shift,
 )
 from .rsc1 import SECTION_CRITICAL, RSC1Section, pack_rsc1, parse_rsc1
-from .sparse_entropy import decode_sparse_lapped, encode_sparse_lapped
+from .sparse_entropy import (
+    decode_sparse_lapped,
+    decode_variable_sparse_lapped,
+    encode_sparse_lapped,
+    encode_variable_sparse_lapped,
+)
 from .stream_sections import StreamConfig, pack_conf, unpack_conf
 
 
@@ -34,6 +39,7 @@ ENTROPY_ZLIB = 0
 ENTROPY_BOUNDED_SPARSE = 1
 FLAG_ENTROPY_MASK = 0x01
 FLAG_FIXED_TRANSFORM = 0x02
+FLAG_VARIABLE_DENSITY = 0x04
 
 
 @dataclass(frozen=True)
@@ -256,10 +262,15 @@ def decode_lapped_stream(payload: bytes) -> LappedDecodeResult:
     ) = HEADER.unpack_from(body)
     if magic != MAGIC or version != VERSION:
         raise ValueError("unsupported lapped research stream")
-    if flags & ~(FLAG_ENTROPY_MASK | FLAG_FIXED_TRANSFORM):
+    if flags & ~(
+        FLAG_ENTROPY_MASK
+        | FLAG_FIXED_TRANSFORM
+        | FLAG_VARIABLE_DENSITY
+    ):
         raise ValueError("unsupported lapped entropy backend")
     entropy_backend = flags & FLAG_ENTROPY_MASK
     fixed_transform = bool(flags & FLAG_FIXED_TRANSFORM)
+    variable_density = bool(flags & FLAG_VARIABLE_DENSITY)
     if not 1 <= channels <= MAX_CHANNELS:
         raise ValueError("lapped research header exceeds the profile")
     edges = _band_edges(half_window, declared_band_count)
@@ -279,6 +290,8 @@ def decode_lapped_stream(payload: bytes) -> LappedDecodeResult:
     ):
         raise ValueError("lapped research cross-section mismatch")
     if entropy_backend == ENTROPY_ZLIB:
+        if variable_density:
+            raise ValueError("zlib comparator does not carry variable density")
         if raw_bytes != expected_raw:
             raise ValueError("lapped zlib grid length mismatch")
         raw = _decompress_exact(body[HEADER.size:], raw_bytes)
@@ -311,25 +324,48 @@ def decode_lapped_stream(payload: bytes) -> LappedDecodeResult:
         sparse_payload = body[HEADER.size:]
         if raw_bytes != len(sparse_payload):
             raise ValueError("lapped sparse payload length mismatch")
-        sparse = decode_sparse_lapped(
-            sparse_payload,
-            half_window=half_window,
-            expected_channels=channels,
-            expected_frames=frame_count,
-            expected_bands=band_count,
-        )
-        scale_grid = sparse.scales
         coefficient_grid = np.zeros(
             (channels, frame_count, half_window),
             dtype=np.int8,
         )
-        channel_index = np.arange(channels)[:, None, None]
-        frame_index = np.arange(frame_count)[None, :, None]
-        coefficient_grid[
-            channel_index,
-            frame_index,
-            sparse.positions,
-        ] = sparse.values
+        if variable_density:
+            sparse_variable = decode_variable_sparse_lapped(
+                sparse_payload,
+                half_window=half_window,
+                expected_channels=channels,
+                expected_frames=frame_count,
+                expected_bands=band_count,
+            )
+            scale_grid = sparse_variable.scales
+            cursor = 0
+            for channel in range(channels):
+                for frame in range(frame_count):
+                    count = int(sparse_variable.counts[channel, frame])
+                    end = cursor + count
+                    coefficient_grid[
+                        channel,
+                        frame,
+                        sparse_variable.positions[cursor:end],
+                    ] = sparse_variable.values[cursor:end]
+                    cursor = end
+            if cursor != sparse_variable.positions.size:
+                raise ValueError("variable sparse coefficient coverage mismatch")
+        else:
+            sparse = decode_sparse_lapped(
+                sparse_payload,
+                half_window=half_window,
+                expected_channels=channels,
+                expected_frames=frame_count,
+                expected_bands=band_count,
+            )
+            scale_grid = sparse.scales
+            channel_index = np.arange(channels)[:, None, None]
+            frame_index = np.arange(frame_count)[None, :, None]
+            coefficient_grid[
+                channel_index,
+                frame_index,
+                sparse.positions,
+            ] = sparse.values
     reconstruction = _synthesize(
         coefficient_grid,
         scale_grid,
@@ -356,6 +392,7 @@ def encode_lapped_stream(
     band_count: int = 24,
     entropy_backend: str = "bounded",
     transform_backend: str = "fixed",
+    density_backend: str = "fixed",
 ) -> LappedEncodeResult:
     """Encode top-energy band-scaled MDCT coefficients with exact bytes."""
 
@@ -390,19 +427,18 @@ def encode_lapped_stream(
         (source.shape[1], frame_count, band_count),
         dtype=np.uint8,
     )
+    quantized_grid = np.empty(
+        (source.shape[1], frame_count, half_window),
+        dtype=np.int16,
+    )
+    score_grid = np.empty(
+        (source.shape[1], frame_count, half_window),
+        dtype=np.float64,
+    )
     coefficients = np.zeros(
         (source.shape[1], frame_count, half_window),
         dtype=np.int8,
     )
-    selected_positions = np.empty(
-        (source.shape[1], frame_count, coefficients_per_frame),
-        dtype=np.uint16,
-    )
-    selected_values_grid = np.empty(
-        (source.shape[1], frame_count, coefficients_per_frame),
-        dtype=np.int8,
-    )
-    nonzero_count = 0
     for channel in range(source.shape[1]):
         for frame in range(frame_count):
             start = frame * half_window
@@ -438,21 +474,97 @@ def encode_lapped_stream(
                     quantized[band_start:band_end] = np.rint(
                         spectrum[band_start:band_end] / float(1 << exponent)
                     ).astype(np.int64)
-            selected = np.sort(
-                np.argpartition(
-                np.abs(spectrum),
-                -coefficients_per_frame,
-                )[-coefficients_per_frame:]
-            )
-            selected_values = np.clip(
-                quantized[selected],
+            quantized_grid[channel, frame] = np.clip(
+                quantized,
                 -127,
                 127,
-            ).astype(np.int8)
-            coefficients[channel, frame, selected] = selected_values
-            selected_positions[channel, frame] = selected
-            selected_values_grid[channel, frame] = selected_values
-            nonzero_count += int(np.count_nonzero(selected_values))
+            ).astype(np.int16)
+            score_grid[channel, frame] = np.square(
+                spectrum.astype(np.float64)
+            )
+
+    selected_positions = None
+    selected_values_grid = None
+    variable_counts = None
+    variable_positions = None
+    variable_values = None
+    if density_backend == "fixed":
+        selected_positions = np.empty(
+            (source.shape[1], frame_count, coefficients_per_frame),
+            dtype=np.uint16,
+        )
+        selected_values_grid = np.empty(
+            (source.shape[1], frame_count, coefficients_per_frame),
+            dtype=np.int8,
+        )
+        for channel in range(source.shape[1]):
+            for frame in range(frame_count):
+                selected = np.sort(
+                    np.argpartition(
+                        score_grid[channel, frame],
+                        -coefficients_per_frame,
+                    )[-coefficients_per_frame:]
+                )
+                selected_values = quantized_grid[
+                    channel,
+                    frame,
+                    selected,
+                ].astype(np.int8)
+                coefficients[channel, frame, selected] = selected_values
+                selected_positions[channel, frame] = selected
+                selected_values_grid[channel, frame] = selected_values
+        selected_count_min = coefficients_per_frame
+        selected_count_max = coefficients_per_frame
+    elif density_backend == "adaptive":
+        if entropy_backend != "bounded":
+            raise ValueError("adaptive density requires bounded sparse entropy")
+        total_budget = (
+            coefficients_per_frame
+            * source.shape[1]
+            * frame_count
+        )
+        flat_quantized = quantized_grid.reshape(-1)
+        valid_indices = np.flatnonzero(flat_quantized)
+        selected_total = min(total_budget, int(valid_indices.size))
+        if selected_total == valid_indices.size:
+            selected_global = valid_indices
+        else:
+            valid_scores = score_grid.reshape(-1)[valid_indices]
+            selected_global = valid_indices[
+                np.argpartition(valid_scores, -selected_total)[
+                    -selected_total:
+                ]
+            ]
+        selected_mask = np.zeros(flat_quantized.size, dtype=np.bool_)
+        selected_mask[selected_global] = True
+        selected_mask = selected_mask.reshape(quantized_grid.shape)
+        variable_counts = np.empty(
+            (source.shape[1], frame_count),
+            dtype=np.uint16,
+        )
+        position_parts = []
+        value_parts = []
+        for channel in range(source.shape[1]):
+            for frame in range(frame_count):
+                positions = np.flatnonzero(
+                    selected_mask[channel, frame]
+                ).astype(np.uint16)
+                values = quantized_grid[
+                    channel,
+                    frame,
+                    positions,
+                ].astype(np.int8)
+                variable_counts[channel, frame] = positions.size
+                coefficients[channel, frame, positions] = values
+                position_parts.append(positions)
+                value_parts.append(values)
+        variable_positions = np.concatenate(position_parts)
+        variable_values = np.concatenate(value_parts)
+        selected_count_min = int(np.min(variable_counts))
+        selected_count_max = int(np.max(variable_counts))
+    else:
+        raise ValueError("unknown lapped density backend")
+    nonzero_count = int(np.count_nonzero(coefficients))
 
     raw = bytearray()
     for channel in range(source.shape[1]):
@@ -465,20 +577,38 @@ def encode_lapped_stream(
         entropy_name = "zlib level 9; non-normative comparator"
     elif entropy_backend == "bounded":
         entropy_id = ENTROPY_BOUNDED_SPARSE
-        entropy_payload = encode_sparse_lapped(
-            scales,
-            selected_positions,
-            selected_values_grid,
-            half_window=half_window,
-        )
-        entropy_name = "bounded sparse Rice/packed research syntax"
+        if density_backend == "adaptive":
+            entropy_payload = encode_variable_sparse_lapped(
+                scales,
+                variable_counts,
+                variable_positions,
+                variable_values,
+                half_window=half_window,
+            )
+            entropy_name = (
+                "bounded variable-density sparse Rice/packed research syntax"
+            )
+        else:
+            entropy_payload = encode_sparse_lapped(
+                scales,
+                selected_positions,
+                selected_values_grid,
+                half_window=half_window,
+            )
+            entropy_name = "bounded sparse Rice/packed research syntax"
     else:
         raise ValueError("unknown lapped entropy backend")
     inner = (
         HEADER.pack(
             MAGIC,
             VERSION,
-            entropy_id | (FLAG_FIXED_TRANSFORM if fixed_transform else 0),
+            entropy_id
+            | (FLAG_FIXED_TRANSFORM if fixed_transform else 0)
+            | (
+                FLAG_VARIABLE_DENSITY
+                if density_backend == "adaptive"
+                else 0
+            ),
             source.shape[1],
             sample_rate,
             source.shape[0],
@@ -516,6 +646,7 @@ def encode_lapped_stream(
             "fixed Q15 window/Q14 cosine" if fixed_transform else "float64"
         ),
         "fixed_table_sha256": table_sha256,
+        "density_backend": density_backend,
         "stream_bytes": len(payload),
         "stream_sha256": hashlib.sha256(payload).hexdigest(),
         "sample_rate": sample_rate,
@@ -526,6 +657,8 @@ def encode_lapped_stream(
         "transform_frame_count": frame_count,
         "band_count": band_count,
         "coefficients_per_frame": coefficients_per_frame,
+        "selected_count_min": selected_count_min,
+        "selected_count_max": selected_count_max,
         "nonzero_coefficients": nonzero_count,
         "raw_grid_bytes": len(raw),
         "compressed_grid_bytes": len(entropy_payload),

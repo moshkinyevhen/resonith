@@ -672,3 +672,30 @@ equality. GCC, Clang, MSVC, Linux ARM64, Windows ARM64, macOS ARM64, Android
 arm64-v8a, and sanitized builds passed in
 [run 30207598669](https://github.com/moshkinyevhen/resonith/actions/runs/30207598669).
 This closes native feasibility, not perceptual quality or real-device timing.
+
+## 28. Implicit acoustic-state boundaries
+
+R-061 tests a simpler alternative to explicit state-boundary metadata. The
+encoder receives one average coefficient budget, ranks quantized transform
+coefficients globally across channel, time, and frequency, and transmits the
+resulting per-frame count trajectory. Attacks naturally become dense frames;
+sustain and silence become sparse frames. Position prediction still resets at
+each frame, and zero-count frames are valid.
+
+At closest complete fixed/adaptive bytes:
+
+| Crop | Adaptive | Fixed | Byte difference | Adaptive SNR gain |
+| --- | ---: | ---: | ---: | ---: |
+| Corelli | 15,844 B | 15,920 B | -76 B | +0.56 dB |
+| Piano | 14,616 B | 14,588 B | +28 B | +0.79 dB |
+| Drums | 16,810 B | 16,746 B | +64 B | +1.34 dB |
+
+At the nearest Opus-size drum points, adaptive density used 12,514 bytes
+versus 12,623 fixed bytes and improved the waveform diagnostic by +0.93 dB.
+The original selected average budgets produced frame-count ranges of 0–98,
+48–96, and 5–125 on Corelli, piano, and drums respectively.
+
+The count trajectory therefore earns a native implementation gate. It does
+not yet justify explicit transient classes or short-window syntax, and it is
+not a listening result. The compact record is
+[`lapped_density_2026-07-26_summary.json`](../experiments/results/lapped_density_2026-07-26_summary.json).

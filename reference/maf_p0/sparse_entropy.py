@@ -20,8 +20,10 @@ from .residual import (
 
 
 MAGIC = b"LSE1"
+VARIABLE_MAGIC = b"LSE2"
 VERSION = 1
 HEADER = struct.Struct("<4sBBBBBBBBIHHHIII")
+VARIABLE_HEADER = struct.Struct("<4sBBBBBBBBBBIHHIIIII")
 MAX_SYMBOLS = 64 << 20
 MAX_PAYLOAD_BYTES = 512 << 20
 
@@ -31,6 +33,17 @@ class SparseLappedFields:
     """Exact decoded scale, position, and signed-value fields."""
 
     scales: np.ndarray
+    positions: np.ndarray
+    values: np.ndarray
+    position_parameter: int
+
+
+@dataclass(frozen=True)
+class VariableSparseLappedFields:
+    """Decoded variable-density fields in channel/frame traversal order."""
+
+    scales: np.ndarray
+    counts: np.ndarray
     positions: np.ndarray
     values: np.ndarray
     position_parameter: int
@@ -326,6 +339,264 @@ def decode_sparse_lapped(
         array.flags.writeable = False
     return SparseLappedFields(
         scales,
+        positions,
+        values8,
+        position_parameter,
+    )
+
+
+def encode_variable_sparse_lapped(
+    scales: np.ndarray,
+    counts: np.ndarray,
+    positions: np.ndarray,
+    values: np.ndarray,
+    *,
+    half_window: int,
+) -> bytes:
+    """Encode one bounded variable-density sparse coefficient trajectory."""
+
+    scale_array = np.asarray(scales)
+    count_array = np.asarray(counts)
+    position_array = np.asarray(positions)
+    value_array = np.asarray(values)
+    if (
+        scale_array.dtype != np.uint8
+        or scale_array.ndim != 3
+        or count_array.dtype != np.uint16
+        or count_array.shape != scale_array.shape[:2]
+        or position_array.dtype != np.uint16
+        or position_array.ndim != 1
+        or value_array.dtype != np.int8
+        or value_array.shape != position_array.shape
+    ):
+        raise TypeError("invalid variable sparse lapped fields")
+    channels, frame_count, band_count = scale_array.shape
+    _checked_symbol_count(channels, frame_count, band_count)
+    _checked_symbol_count(channels, frame_count)
+    if (
+        half_window <= 0
+        or half_window > 65535
+        or np.any(scale_array > 31)
+        or np.any(count_array > half_window)
+    ):
+        raise ValueError("variable sparse lapped field exceeds the profile")
+    total_coefficients = int(np.sum(count_array, dtype=np.uint64))
+    if (
+        total_coefficients != position_array.size
+        or total_coefficients > MAX_SYMBOLS
+        or np.any(position_array >= half_window)
+    ):
+        raise ValueError("variable sparse coefficient count mismatch")
+
+    scale_delta = scale_array.astype(np.int64)
+    count_delta = count_array.astype(np.int64)
+    if frame_count > 1:
+        scale_delta[:, 1:, :] -= scale_array[:, :-1, :].astype(np.int64)
+        count_delta[:, 1:] -= count_array[:, :-1].astype(np.int64)
+    scale_entropy, scale_parameter, scale_payload, scale_bits = _encode_entropy(
+        scale_delta.reshape(-1)
+    )
+    count_entropy, count_parameter, count_payload, count_bits = _encode_entropy(
+        count_delta.reshape(-1)
+    )
+
+    gap_values = np.empty(total_coefficients, dtype=np.uint64)
+    cursor = 0
+    for count in count_array.reshape(-1):
+        frame_count_value = int(count)
+        frame_positions = position_array[cursor : cursor + frame_count_value]
+        if (
+            frame_count_value > 1
+            and np.any(np.diff(frame_positions.astype(np.int64)) <= 0)
+        ):
+            raise ValueError(
+                "variable sparse positions must be strictly ordered"
+            )
+        if frame_count_value:
+            gap_values[cursor] = frame_positions[0]
+            if frame_count_value > 1:
+                gap_values[cursor + 1 : cursor + frame_count_value] = (
+                    frame_positions[1:].astype(np.int64)
+                    - frame_positions[:-1].astype(np.int64)
+                    - 1
+                ).astype(np.uint64)
+        cursor += frame_count_value
+    position_width = max(1, (half_window - 1).bit_length())
+    position_parameter = min(
+        range(min(MAX_RICE_PARAMETER, position_width) + 1),
+        key=lambda item: (
+            _unsigned_rice_bit_count(
+                gap_values,
+                item,
+                position_width,
+            ),
+            item,
+        ),
+    )
+    position_payload, position_bits = _encode_unsigned_rice(
+        gap_values,
+        position_parameter,
+        position_width,
+    )
+    value_entropy, value_parameter, value_payload, value_bits = _encode_entropy(
+        value_array.astype(np.int64)
+    )
+    payload = (
+        VARIABLE_HEADER.pack(
+            VARIABLE_MAGIC,
+            VERSION,
+            0,
+            scale_entropy,
+            scale_parameter,
+            count_entropy,
+            count_parameter,
+            position_parameter,
+            value_entropy,
+            value_parameter,
+            0,
+            frame_count,
+            channels,
+            band_count,
+            total_coefficients,
+            scale_bits,
+            count_bits,
+            position_bits,
+            value_bits,
+        )
+        + scale_payload
+        + count_payload
+        + position_payload
+        + value_payload
+    )
+    if len(payload) > MAX_PAYLOAD_BYTES:
+        raise ValueError("variable sparse payload exceeds the byte bound")
+    return payload
+
+
+def decode_variable_sparse_lapped(
+    payload: bytes,
+    *,
+    half_window: int,
+    expected_channels: int,
+    expected_frames: int,
+    expected_bands: int,
+) -> VariableSparseLappedFields:
+    """Independently decode one bounded variable-density coefficient field."""
+
+    if len(payload) < VARIABLE_HEADER.size or len(payload) > MAX_PAYLOAD_BYTES:
+        raise ValueError("invalid variable sparse payload length")
+    (
+        magic,
+        version,
+        flags,
+        scale_entropy,
+        scale_parameter,
+        count_entropy,
+        count_parameter,
+        position_parameter,
+        value_entropy,
+        value_parameter,
+        reserved,
+        frame_count,
+        channels,
+        band_count,
+        total_coefficients,
+        scale_bits,
+        count_bits,
+        position_bits,
+        value_bits,
+    ) = VARIABLE_HEADER.unpack_from(payload)
+    if (
+        magic != VARIABLE_MAGIC
+        or version != VERSION
+        or flags != 0
+        or reserved != 0
+        or channels != expected_channels
+        or frame_count != expected_frames
+        or band_count != expected_bands
+        or total_coefficients > MAX_SYMBOLS
+    ):
+        raise ValueError("variable sparse lapped header mismatch")
+    scale_count = _checked_symbol_count(channels, frame_count, band_count)
+    frame_symbol_count = _checked_symbol_count(channels, frame_count)
+    bit_counts = (scale_bits, count_bits, position_bits, value_bits)
+    byte_counts = tuple((item + 7) // 8 for item in bit_counts)
+    if sum(byte_counts) != len(payload) - VARIABLE_HEADER.size:
+        raise ValueError("variable sparse entropy length mismatch")
+    cursor = VARIABLE_HEADER.size
+    fields = []
+    for byte_count in byte_counts:
+        fields.append(payload[cursor : cursor + byte_count])
+        cursor += byte_count
+
+    scale_delta = _decode_entropy(
+        fields[0],
+        scale_bits,
+        scale_count,
+        scale_entropy,
+        scale_parameter,
+    ).reshape(channels, frame_count, band_count)
+    scales64 = scale_delta.copy()
+    for frame in range(1, frame_count):
+        scales64[:, frame, :] += scales64[:, frame - 1, :]
+    if np.any(scales64 < 0) or np.any(scales64 > 31):
+        raise ValueError("decoded variable sparse scale exceeds the profile")
+    scales = scales64.astype(np.uint8)
+
+    count_delta = _decode_entropy(
+        fields[1],
+        count_bits,
+        frame_symbol_count,
+        count_entropy,
+        count_parameter,
+    ).reshape(channels, frame_count)
+    counts64 = count_delta.copy()
+    for frame in range(1, frame_count):
+        counts64[:, frame] += counts64[:, frame - 1]
+    if (
+        np.any(counts64 < 0)
+        or np.any(counts64 > half_window)
+        or int(np.sum(counts64, dtype=np.int64)) != total_coefficients
+    ):
+        raise ValueError("decoded variable sparse count exceeds the profile")
+    counts = counts64.astype(np.uint16)
+
+    gaps = _decode_unsigned_rice(
+        fields[2],
+        position_bits,
+        total_coefficients,
+        position_parameter,
+        max(1, (half_window - 1).bit_length()),
+        half_window - 1,
+    )
+    positions = np.empty(total_coefficients, dtype=np.uint16)
+    cursor = 0
+    for count in counts.reshape(-1):
+        previous = -1
+        for _ in range(int(count)):
+            position = previous + 1 + int(gaps[cursor])
+            if position >= half_window:
+                raise ValueError(
+                    "decoded variable sparse position exceeds the window"
+                )
+            positions[cursor] = position
+            previous = position
+            cursor += 1
+    values = _decode_entropy(
+        fields[3],
+        value_bits,
+        total_coefficients,
+        value_entropy,
+        value_parameter,
+    )
+    if np.any(values < -128) or np.any(values > 127):
+        raise ValueError("decoded variable sparse value exceeds int8")
+    values8 = values.astype(np.int8)
+    for array in (scales, counts, positions, values8):
+        array.flags.writeable = False
+    return VariableSparseLappedFields(
+        scales,
+        counts,
         positions,
         values8,
         position_parameter,

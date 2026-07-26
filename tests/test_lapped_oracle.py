@@ -86,6 +86,30 @@ class LappedOracleTests(unittest.TestCase):
         )
         self.assertNotEqual(bounded.payload, zlib_comparator.payload)
 
+    def test_adaptive_density_uses_one_average_budget(self) -> None:
+        source = self._stereo(4096)
+        encoded = encode_lapped_stream(
+            source,
+            48000,
+            coefficients_per_frame=32,
+            half_window=256,
+            band_count=16,
+            entropy_backend="bounded",
+            transform_backend="fixed",
+            density_backend="adaptive",
+        )
+        decoded = decode_lapped_stream(encoded.payload)
+
+        np.testing.assert_array_equal(
+            decoded.samples,
+            encoded.reconstruction,
+        )
+        self.assertEqual(encoded.report["density_backend"], "adaptive")
+        self.assertLess(
+            encoded.report["selected_count_min"],
+            encoded.report["selected_count_max"],
+        )
+
     def test_more_coefficients_improve_the_sanity_metric(self) -> None:
         source = self._stereo(2048)
         sparse = encode_lapped_stream(

@@ -77,6 +77,9 @@ reproducible command and independent decode.
   diagnostic pairs and the explicit residual-only baseline loss.
 - `lapped_opus_gate.py` — R-057 band-adaptive lapped sparse-grid sweep,
   nearest-byte Opus sanity gate, and deterministic blind listening trials.
+- `results/lapped_density_2026-07-26_summary.json` — R-061 closest-byte
+  fixed/variable-density comparison showing implicit acoustic-state
+  localization without a separate classifier.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

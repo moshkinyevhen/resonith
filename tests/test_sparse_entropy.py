@@ -12,7 +12,9 @@ sys.path.insert(0, str(REPOSITORY_ROOT / "reference"))
 
 from maf_p0.sparse_entropy import (  # noqa: E402
     decode_sparse_lapped,
+    decode_variable_sparse_lapped,
     encode_sparse_lapped,
+    encode_variable_sparse_lapped,
 )
 
 
@@ -104,6 +106,31 @@ class SparseEntropyTests(unittest.TestCase):
                 expected_frames=2,
                 expected_bands=3,
             )
+
+    def test_variable_density_round_trip_including_empty_frame(self) -> None:
+        scales, _positions, _values = self._fields()
+        counts = np.asarray([[2, 0], [1, 3]], dtype=np.uint16)
+        positions = np.asarray([0, 7, 2, 3, 10, 60], dtype=np.uint16)
+        values = np.asarray([4, -7, -4, -3, 6, -1], dtype=np.int8)
+        payload = encode_variable_sparse_lapped(
+            scales,
+            counts,
+            positions,
+            values,
+            half_window=64,
+        )
+        decoded = decode_variable_sparse_lapped(
+            payload,
+            half_window=64,
+            expected_channels=2,
+            expected_frames=2,
+            expected_bands=3,
+        )
+
+        np.testing.assert_array_equal(decoded.scales, scales)
+        np.testing.assert_array_equal(decoded.counts, counts)
+        np.testing.assert_array_equal(decoded.positions, positions)
+        np.testing.assert_array_equal(decoded.values, values)
 
 
 if __name__ == "__main__":

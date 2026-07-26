@@ -57,6 +57,11 @@ def main() -> None:
         choices=("fixed", "float"),
         default="fixed",
     )
+    parser.add_argument(
+        "--density-backend",
+        choices=("fixed", "adaptive"),
+        default="fixed",
+    )
     parser.add_argument("--opus-bitrate", type=int, default=96)
     parser.add_argument("--opus-tools", type=Path)
     parser.add_argument(
@@ -110,6 +115,7 @@ def main() -> None:
                 band_count=args.band_count,
                 entropy_backend=args.entropy_backend,
                 transform_backend=args.transform_backend,
+                density_backend=args.density_backend,
             )
             candidates.append(
                 (
@@ -220,6 +226,13 @@ def main() -> None:
                     "fixed_table_sha256": (
                         result.report["fixed_table_sha256"]
                     ),
+                    "density_backend": result.report["density_backend"],
+                    "selected_count_min": (
+                        result.report["selected_count_min"]
+                    ),
+                    "selected_count_max": (
+                        result.report["selected_count_max"]
+                    ),
                     "encode_wall_seconds": wall_seconds,
                 }
                 for budget, result, wall_seconds in candidates
@@ -252,6 +265,7 @@ def main() -> None:
         "research_only": True,
         "entropy_backend": args.entropy_backend,
         "transform_backend": args.transform_backend,
+        "density_backend": args.density_backend,
         "fixed_table_sha256": (
             next(iter(table_hashes)) if len(table_hashes) == 1 else None
         ),

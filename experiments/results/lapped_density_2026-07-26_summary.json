@@ -1,0 +1,59 @@
+{
+  "clip_count": 3,
+  "clips": {
+    "corelli-sonata-realization": {
+      "closest_cross_density": {
+        "adaptive_bytes": 15844,
+        "adaptive_k": 61,
+        "adaptive_snr_db_diagnostic": 25.992783550601423,
+        "byte_gap": 76,
+        "fixed_bytes": 15920,
+        "fixed_k": 62,
+        "fixed_snr_db_diagnostic": 25.436681873225325,
+        "snr_delta_db_diagnostic": 0.5561016773760983
+      },
+      "nearest_opus_bytes": 15356
+    },
+    "emotional-piano-cc0": {
+      "closest_cross_density": {
+        "adaptive_bytes": 14616,
+        "adaptive_k": 63,
+        "adaptive_snr_db_diagnostic": 38.864699064448466,
+        "byte_gap": 28,
+        "fixed_bytes": 14588,
+        "fixed_k": 63,
+        "fixed_snr_db_diagnostic": 38.07404913608803,
+        "snr_delta_db_diagnostic": 0.7906499283604376
+      },
+      "nearest_opus_bytes": 15552
+    },
+    "patro-de-bateria": {
+      "closest_cross_density": {
+        "adaptive_bytes": 16810,
+        "adaptive_k": 66,
+        "adaptive_snr_db_diagnostic": 31.450849635440314,
+        "byte_gap": 64,
+        "fixed_bytes": 16746,
+        "fixed_k": 66,
+        "fixed_snr_db_diagnostic": 30.10617085755569,
+        "snr_delta_db_diagnostic": 1.3446787778846243
+      },
+      "nearest_opus": {
+        "adaptive_bytes": 12514,
+        "adaptive_k": 46,
+        "adaptive_snr_db_diagnostic": 28.835431925613214,
+        "fixed_bytes": 12623,
+        "fixed_k": 47,
+        "fixed_snr_db_diagnostic": 27.90852510901544,
+        "opus_bytes": 12599
+      }
+    }
+  },
+  "commands": [
+    "python experiments/lapped_opus_gate.py --cache artifacts/real_music_source --maximum-seconds 1.0 --coefficient-budgets 46 47 48 61 62 63 64 65 66 --half-window 512 --band-count 24 --entropy-backend bounded --transform-backend fixed --density-backend fixed --opus-bitrate 96 --opus-tools <opus-tools> --output-directory artifacts/lapped_fixed_fine_local",
+    "python experiments/lapped_opus_gate.py --cache artifacts/real_music_source --maximum-seconds 1.0 --coefficient-budgets 46 47 48 61 62 63 64 65 66 --half-window 512 --band-count 24 --entropy-backend bounded --transform-backend fixed --density-backend adaptive --opus-bitrate 96 --opus-tools <opus-tools> --output-directory artifacts/lapped_adaptive_fine_local"
+  ],
+  "conclusion": "Variable sparse density improves the waveform diagnostic at nearly equal complete bytes on every clip; native parity and blinded listening remain mandatory.",
+  "research_only": true,
+  "waveform_metrics_are_not_perceptual_equivalence": true
+}

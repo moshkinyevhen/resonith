@@ -1593,3 +1593,44 @@ new oscillator opcode.
     GitHub Actions run 30207598669;
   - real-device thermal/deadline measurements and blinded listening remain
     promotion blockers.
+
+## R-061 — Implicit acoustic-state boundaries through sparse density
+
+- Date: 2026-07-26
+- Status: **OBJECTIVE GATE PASSED / NATIVE AND LISTENING GATES PENDING / RESEARCH**
+- Decision:
+  - test variable transform-frame coefficient counts before adding explicit
+    acoustic-state records, short-window opcodes, or a transient classifier;
+  - treat the existing `coefficients_per_frame` input as an average complete
+    budget and select the globally strongest quantized coefficients across
+    channel, time, and frequency;
+  - transmit one bounded count trajectory plus the existing scale, position,
+    and signed-value fields. Position prediction still resets per transform
+    frame, including zero-count frames;
+  - let sustained regions and attacks emerge as low/high sparse-density runs.
+    A classifier may later accelerate search but must not define decoder truth;
+  - compare fixed and variable density at nearest complete Opus bytes on the
+    same corpus. No native syntax is added unless variable density improves the
+    declared complete-byte quality gate.
+- Rationale:
+  - an explicit boundary is redundant when the coded resource field already
+    says where acoustic complexity changes;
+  - global allocation removes the artificial rule that silence, sustain, and
+    attack receive the same coefficient count;
+  - one count law is simpler than a separate segmentation model and can later
+    drive window switching only where listening proves it necessary.
+- Result:
+  - a bounded `LSE2` research payload reconstructs temporal scale deltas,
+    coefficient-count deltas, reset position gaps, and signed values exactly,
+    including zero-count transform frames;
+  - closest fixed/adaptive complete-byte pairs improved waveform SNR by
+    +0.56 dB with 76 fewer adaptive bytes on Corelli, +0.79 dB with 28 more
+    bytes on piano, and +1.34 dB with 64 more bytes on drums;
+  - around the Opus-size point, adaptive drums used 12,514 versus 12,623 fixed
+    bytes while improving the diagnostic by +0.93 dB;
+  - observed per-frame counts ranged from 0 to 98 on Corelli, 48 to 96 on
+    piano, and 5 to 125 on drums at the original selected average budgets.
+    This is evidence that one resource law locates changing acoustic
+    complexity without a separate classifier;
+  - native LSE2 parity and blinded listening remain mandatory before the count
+    law can enter prospective syntax.
