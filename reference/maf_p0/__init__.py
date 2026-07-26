@@ -26,6 +26,12 @@ from .lpc_oracle import (
     index_lpc_liftpack_blocks,
     run_lpc_liftpack_oracle,
 )
+from .lapped_oracle import (
+    LappedDecodeResult,
+    LappedEncodeResult,
+    decode_lapped_stream,
+    encode_lapped_stream,
+)
 from .main0 import (
     Main0DecodeResult,
     Main0EncodeResult,
@@ -84,6 +90,8 @@ __all__ = [
     "IndependentChannelEncodeResult",
     "LPCOracleResult",
     "LPCBlockInfo",
+    "LappedDecodeResult",
+    "LappedEncodeResult",
     "NativeMain0Decoder",
     "NativeMultichannelDecodeResult",
     "NativeMultichannelRequirements",
@@ -110,8 +118,10 @@ __all__ = [
     "decode_liftpack",
     "decode_lpc_liftpack_oracle",
     "decode_lpc_liftpack_block",
+    "decode_lapped_stream",
     "encode_liftpack",
     "encode_lpc_liftpack_oracle",
+    "encode_lapped_stream",
     "index_lpc_liftpack_blocks",
     "SegmentationResult",
     "segment_acoustic_states",

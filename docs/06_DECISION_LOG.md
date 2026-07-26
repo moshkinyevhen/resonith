@@ -1440,7 +1440,7 @@ new oscillator opcode.
 ## R-057 — Lapped perceptual Innovation oracle
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING / RESEARCH**
+- Status: **OBJECTIVE SANITY GATE PASSED / LISTENING AND INTEGER GATES PENDING / RESEARCH**
 - Decision:
   - add an encoder-side lapped transform Innovation candidate for lossy Main,
     while retaining RSL2 as the exact Lossless and mandatory RDO fallback;
@@ -1467,3 +1467,17 @@ new oscillator opcode.
   - a single regular lapped kernel plus scale/entropy metadata is compatible
     with SIMD, GPU, DSP, mobile, and later ASIC implementation without turning
     the decoder into a collection of subcodecs.
+- Result:
+  - the prospective `LPF1` oracle uses a 50%-overlapped sine-window MDCT,
+    low-frequency-dense band scales, sparse signed coefficients, complete
+    `RSC1` byte accounting, and an independent decoder;
+  - at nearest complete bytes to the official Opus 96 kbit/s anchor, LPF1 used
+    15,959 versus 15,356 bytes on Corelli, 16,768 versus 15,552 bytes on piano,
+    and 12,714 versus 12,599 bytes on drums;
+  - the corresponding waveform SNR diagnostics were 22.38 versus 21.20 dB,
+    38.32 versus 26.46 dB, and 25.90 versus 21.80 dB. All three objective
+    sanity comparisons passed, with a mean diagnostic delta of +5.71 dB;
+  - this is not a listening win or a syntax promotion. The current oracle uses
+    floating-point transform arithmetic and zlib as a non-normative entropy
+    proxy. Fixed-integer parity, bounded native entropy, resource timing, and
+    blinded listening remain mandatory gates.

@@ -1,0 +1,59 @@
+{
+  "clip_count": 3,
+  "clips": {
+    "corelli-sonata-realization": {
+      "lapped": {
+        "coefficients_per_frame": 48,
+        "snr_db_diagnostic": 22.37788904905511,
+        "stream_bytes": 15959
+      },
+      "objective_sanity_win": true,
+      "opus": {
+        "requested_bitrate_kbps": 96,
+        "snr_db_diagnostic": 21.199091295925868,
+        "stream_bytes": 15356
+      }
+    },
+    "emotional-piano-cc0": {
+      "lapped": {
+        "coefficients_per_frame": 64,
+        "snr_db_diagnostic": 38.32197916248259,
+        "stream_bytes": 16768
+      },
+      "objective_sanity_win": true,
+      "opus": {
+        "requested_bitrate_kbps": 96,
+        "snr_db_diagnostic": 26.455168629153558,
+        "stream_bytes": 15552
+      }
+    },
+    "patro-de-bateria": {
+      "lapped": {
+        "coefficients_per_frame": 32,
+        "snr_db_diagnostic": 25.895204203890277,
+        "stream_bytes": 12714
+      },
+      "objective_sanity_win": true,
+      "opus": {
+        "requested_bitrate_kbps": 96,
+        "snr_db_diagnostic": 21.80200191701985,
+        "stream_bytes": 12599
+      }
+    }
+  },
+  "command": "python experiments/lapped_opus_gate.py --cache artifacts/real_music_source --maximum-seconds 1.0 --coefficient-budgets 16 24 32 48 64 96 --half-window 512 --band-count 24 --opus-bitrate 96 --opus-tools <opus-tools> --output-directory artifacts/lapped_opus_gate_local",
+  "conclusion": "The floating lapped representation passes the declared objective sanity gate on all three clips; listening, bounded entropy, fixed-integer parity, and native timing remain mandatory before syntax promotion.",
+  "entropy_proxy": "zlib level 9; non-normative",
+  "half_window": 512,
+  "mean_snr_delta_db_diagnostic": 5.713087840130618,
+  "objective_sanity_gate_passed": true,
+  "promotion_blockers": [
+    "blinded listening scores",
+    "bounded context entropy replacing zlib",
+    "fixed-integer transform parity",
+    "native resource and timing gates"
+  ],
+  "research_only": true,
+  "waveform_metrics_are_not_perceptual_equivalence": true,
+  "winning_clips": 3
+}

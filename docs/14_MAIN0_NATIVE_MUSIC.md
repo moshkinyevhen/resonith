@@ -597,3 +597,32 @@ the transform candidate remains encoder research until complete bytes,
 blinded listening, fixed-integer conversion, and independent decode all pass.
 The compact R-056 record is
 [`stereo_opus_frontier_2026-07-26_summary.json`](../experiments/results/stereo_opus_frontier_2026-07-26_summary.json).
+
+## 25. Lapped Innovation objective sanity gate
+
+The first R-057 oracle replaces uniform waveform quantization with one regular
+50%-overlapped sine-window transform, low-frequency-dense band scales, and a
+sparse signed coefficient grid. It remains outside Main-0 and uses zlib only
+as an explicitly non-normative entropy proxy. The outer `RSC1` container,
+transform metadata, band scales, coefficient payload, and checksums are all
+counted.
+
+At the nearest complete bytes to the official Opus 96 kbit/s anchor:
+
+| Crop | Lapped | Opus | Lapped SNR | Opus SNR | Delta |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Corelli | 15,959 B | 15,356 B | 22.38 dB | 21.20 dB | +1.18 dB |
+| Piano | 16,768 B | 15,552 B | 38.32 dB | 26.46 dB | +11.87 dB |
+| Drums | 12,714 B | 12,599 B | 25.90 dB | 21.80 dB | +4.09 dB |
+
+This passes the declared objective sanity gate on all three clips with a mean
+waveform-SNR delta of +5.71 dB. Waveform SNR is not perceptual equivalence, so
+no quality win is claimed. The generated opaque listening trials remain
+unscored.
+
+The representation now advances to engineering gates, not to normative
+syntax. It must preserve the result after replacing zlib with bounded entropy,
+converting analysis and synthesis to deterministic fixed-integer arithmetic,
+passing native memory/timing gates, and completing blinded listening. RSL2
+remains the exact Lossless and mandatory RDO fallback. The compact record is
+[`lapped_opus_gate_2026-07-26_summary.json`](../experiments/results/lapped_opus_gate_2026-07-26_summary.json).
