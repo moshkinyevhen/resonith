@@ -538,3 +538,29 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
     the first cross-language conformance vector;
   - model selection and training remain encoder-side research until measured
     corpus evidence justifies freezing Main-0 registry entries.
+
+## R-029 — Prepared absolute phase trajectories
+
+- Date: 2026-07-26
+- Status: **NORMATIVE-DRAFT / IMPLEMENTATION IN PROGRESS**
+- Decision:
+  - represent periodic Atom motion as absolute piecewise-linear unsigned Q32
+    phase increments over strictly increasing sample positions;
+  - cap every knot span at 32,768 samples and the trajectory bank at one
+    million knots;
+  - prepare and validate knot phase origins once into caller-owned memory
+    outside the real-time callback;
+  - render arbitrary slices by binary-searching the prepared trajectory and
+    evaluating the absolute polynomial, never by advancing prior callback
+    state;
+  - use Q16 linear Basis interpolation with explicit floor-division semantics
+    for negative values;
+  - require identical output for every callback partition and random-access
+    slice;
+  - keep the scalar kernel allocation-free and make future SIMD paths exactly
+    equivalent.
+- Rationale:
+  - the prepared origin table makes random access logarithmic in knot count
+    without storing per-sample phase;
+  - absolute evaluation removes callback size, seek history, and scheduling
+    from normative output.

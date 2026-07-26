@@ -18,6 +18,8 @@ The native Core:
   pass and verifies section CRC-32 plus SHA-256 without dependencies;
 - materializes registered CIBS models once with bounded integer projection,
   adapter, refinement, correction, and atomic Basis-hash verification;
+- prepares absolute Q32 phase-knot origins once and renders arbitrary periodic
+  slices with callback-size-independent Q16 interpolation;
 - rejects non-canonical lengths, trailing bytes, non-zero padding, profile
   bound violations, and undersized buffers;
 - uses a portable scalar implementation with no third-party dependency;
@@ -60,6 +62,10 @@ decoded by both implementations.
 refinement, correction, and SHA-256 vectors as the Python CIBS oracle. The
 model is an operator conformance fixture and remains explicitly non-normative.
 
-This is not yet the full Resonith decoder. Typed Basis payload parsing, Atom
-trajectories, transient rendering, gain laws, and multi-channel synthesis
-remain subsequent parity stages.
+`native/tests/trajectory_test.cpp` verifies prepared knot origins, every Q32
+phase, every rendered sample, and equality across deliberately irregular
+callback partitions.
+
+This is not yet the full Resonith decoder. Typed Basis/Atom payload parsing,
+transient rendering, gain laws, and multi-channel synthesis remain subsequent
+parity stages.

@@ -1,6 +1,7 @@
 #include "resonith/cibs.h"
 #include "resonith/container.h"
 #include "resonith/liftpack.h"
+#include "resonith/trajectory.h"
 
 #include <stddef.h>
 
@@ -17,8 +18,21 @@ int main(void) {
     };
     resonith_liftpack_info info = {0U, 0U, 0U, 0U};
     resonith_cibs_info cibs_info = {0U, 0U, 0U, 0U};
+    resonith_prepared_phase_trajectory trajectory = {
+        NULL,
+        NULL,
+        NULL,
+        0U,
+        0U
+    };
     if (
         resonith_cibs_inspect_model(NULL, NULL, &cibs_info)
+        != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_phase_prepare(NULL, NULL, 0U, &trajectory)
         != RESONITH_STATUS_INVALID_ARGUMENT
     ) {
         return 1;

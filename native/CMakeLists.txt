@@ -10,6 +10,7 @@ add_library(resonith_core STATIC
     src/integrity.cpp
     src/liftpack.cpp
     src/status.cpp
+    src/trajectory.cpp
 )
 add_library(Resonith::Core ALIAS resonith_core)
 
@@ -77,4 +78,16 @@ if(BUILD_TESTING)
     set_target_properties(resonith_cibs_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_cibs_test)
     add_test(NAME cibs_conformance COMMAND resonith_cibs_test)
+
+    add_executable(resonith_trajectory_test
+        tests/trajectory_test.cpp
+    )
+    target_compile_features(resonith_trajectory_test PRIVATE cxx_std_20)
+    target_link_libraries(resonith_trajectory_test PRIVATE Resonith::Core)
+    set_target_properties(
+        resonith_trajectory_test
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_trajectory_test)
+    add_test(NAME trajectory_conformance COMMAND resonith_trajectory_test)
 endif()

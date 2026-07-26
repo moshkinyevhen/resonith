@@ -218,6 +218,40 @@ y[n]=A[n]\sum_k a_k[n]B_k(\phi[n]).
 - an Atom update MUST preserve phase continuity or provide an objective
   correction/crossfade.
 
+The first executable phase law uses knots \((p_i,f_i)\), where positions are
+absolute local sample indices and \(f_i\) is unsigned Q0.32 cycles/sample.
+Positions begin at zero, increase strictly, and no span exceeds 32,768
+samples. For interval length \(L=p_{i+1}-p_i\) and local position
+\(0\le j<L\):
+
+\[
+\phi_i(j)=
+\phi_i(0)+j f_i+
+RoundAway\left(
+\frac{(f_{i+1}-f_i)j(j-1)}{2L}
+\right)
+\pmod {2^{32}}.
+\]
+
+The next knot origin is the same equation evaluated at \(j=L\). A decoder
+MUST derive every rendered slice from a prepared knot origin, not a preceding
+output sample.
+
+For a Basis of \(N\) int16 samples, the phase lookup position is
+\(q=\phi N\). The upper 32 bits select the left sample and bits 16 through 31
+define Q16 interpolation fraction \(a\). The output is:
+
+\[
+Clip_{16}\left(
+\left\lfloor
+\frac{B_l(65536-a)+B_{(l+1)\bmod N}a+32768}{65536}
+\right\rfloor
+\right).
+\]
+
+Signed division and negative intermediate behavior MUST follow these equations
+explicitly rather than implementation-defined right shift.
+
 ### 6.2 `PREDICTIVE`
 
 Uses bounded excitation and short, stable integer FIR/IIR sections.
