@@ -1075,6 +1075,14 @@ new oscillator opcode.
     periodic-Atom seeds;
   - GCC, Clang, MSVC, the Python/native decoder bridge, and both 5,000-mutation
     smoke targets passed in runs 30202809934, 30203095386, and 30203223428;
+  - complete callback playback now also supports model-bearing state
+    partitions: it retains only one residual block plus the maximum live
+    Basis/trajectory/gain state, splits prediction internally when a residual
+    block crosses an Atom boundary, and emits the same canonical PCM as
+    whole-stream decode;
+  - zero-Atom and model-bearing callback playback, including a deliberately
+    cross-boundary state transition, passed every x64/ARM64/Android target,
+    the Python/native bridge, and sanitized fuzzing in run 30204031294;
   - no compression opcode or mandatory index syntax was added. A serialized
     seek/checkpoint table remains optional future work and must bind itself to
     the verified residual identity before a decoder may trust its offsets.

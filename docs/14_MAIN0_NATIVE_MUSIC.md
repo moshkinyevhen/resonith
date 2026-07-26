@@ -438,3 +438,25 @@ The conformance implementation passed every x64/ARM64/Android target in
 [run 30203602697](https://github.com/moshkinyevhen/resonith/actions/runs/30203602697).
 Its dedicated 5,000-mutation ASan/UBSan/libFuzzer target passed in
 [run 30203691322](https://github.com/moshkinyevhen/resonith/actions/runs/30203691322).
+
+## 19. Model-bearing callback playback
+
+The callback player now covers the complete executable Main-0 subset, not
+only the residual-only winner. It keeps one LiftPack block live, prepares only
+the maximum state-local Basis, trajectory, and gain arrays reported by
+inspection, and divides prediction internally at Atom lifetime boundaries.
+The application still receives canonical residual-sized PCM blocks, including
+when one block straddles two model states.
+
+The native pipeline vector, Python/native decoder-in-loop tests, and whole
+Main-0 fuzzer require callback output to equal whole-stream native and Python
+Truth sample-for-sample. A deliberately non-aligned state transition exercises
+the cross-boundary path. Linux and Windows x64/ARM64, macOS ARM64, Android
+arm64-v8a, GCC, Clang, MSVC, and sanitized fuzzing passed in
+[run 30204031294](https://github.com/moshkinyevhen/resonith/actions/runs/30204031294).
+
+This removes state-partition playback from the implementation critical path.
+It does not reverse the earlier compression gates: additional raw periodic
+Atoms still cost more complete bytes on the licensed clips. The next source
+overlap experiment must first eliminate repeated raw Basis transport through
+typed CIBS or another already gated shared representation.

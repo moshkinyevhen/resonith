@@ -28,8 +28,9 @@ The native Core:
   seek planning without decoding PCM or allocating memory;
 - builds and verifies optional source-bound `RSI1` seek sidecars with
   independent CRC-32/SHA-256 integrity and exact entry/source equality;
-- opens immutable Main-0 player views and decodes independently seeded
-  zero-Atom Truth blocks directly to PCM16 with output-atomic failure;
+- opens immutable Main-0 player views, decodes independently seeded zero-Atom
+  Truth blocks directly to PCM16, and streams complete model-bearing state
+  partitions with output-atomic block failure;
 - decodes minimal typed `BRAW` Basis payloads into aligned caller-owned
   host-endian memory without generic array metadata;
 - parses fixed `CONF` and state-local periodic `ATOM` payloads, reports exact
@@ -55,13 +56,15 @@ caller-owned memory without decoding earlier PCM. A player layer may cache the
 index or serialize independently checked checkpoints.
 
 `resonith_main0_player_open()` verifies the complete typed RSC1 stream once.
-`resonith_main0_player_decode_block()` then exposes the production zero-Atom
-Truth path as bounded PCM16 callback-sized work without retaining decoder
-state. The view borrows immutable stream bytes; applications decide whether
-to keep an in-memory block index or a separately authenticated seek table.
-For continuous playback, `resonith_main0_player_stream()` advances one
-caller-owned LiftPack cursor and emits canonical blocks through a C callback.
-Its cost is linear in stream bytes and its live workspace is one block.
+`resonith_main0_player_decode_block()` exposes the production zero-Atom Truth
+path as bounded PCM16 callback-sized work without retaining decoder state. The
+view borrows immutable stream bytes; applications decide whether to keep an
+in-memory block index or a separately verified seek table. For continuous
+zero-Atom playback, `resonith_main0_player_stream()` advances one caller-owned
+LiftPack cursor. `resonith_main0_player_stream_complete()` adds state-local
+periodic prediction and resolves Atom transitions even when a residual block
+crosses a state boundary. Both functions emit canonical blocks through the
+same C callback; live residual workspace remains one block.
 
 ## Build and test
 
@@ -156,5 +159,5 @@ The test also proves that a rejected undersized workspace leaves output PCM
 unchanged.
 
 This is not yet the full Resonith decoder. Typed CIBS stream integration,
-transient rendering, multi-Atom mixing, and multi-channel synthesis remain
-subsequent parity stages.
+promoted transient rendering, gated simultaneous-Atom mixing, and
+multi-channel synthesis remain subsequent parity stages.

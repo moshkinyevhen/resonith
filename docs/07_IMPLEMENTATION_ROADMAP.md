@@ -26,8 +26,9 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
 - LiftPack-2 bounded integer LPC passed its declared three-clip byte gate and
   is implemented in the native Core.
 - Exact block indexing, independent block decode, a linear forward cursor,
-  callback-oriented zero-Atom playback, and separate LiftPack/Main-0 sanitized
-  fuzz targets are implemented and cross-compiler verified.
+  callback-oriented playback for zero-Atom and model-bearing state partitions,
+  and separate LiftPack/Main-0 sanitized fuzz targets are implemented and
+  cross-compiler verified.
 - The optional source-bound RSI1 seek sidecar and its dedicated sanitized
   fuzzer are implemented. The mandatory Truth stream remains independently
   sequentially decodable.
@@ -35,9 +36,11 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   Android NDK arm64-v8a build without platform-specific DSP source.
 - Variable block lifetimes and three bounded waveform-domain stereo families
   failed their declared promotion gates and added no Main syntax.
-- The next blocking milestone is callback playback for model-bearing state
-  partitions followed by simultaneous Atom mixing. New coding tools resume
-  only through declared gates.
+- The next blocking milestone is typed CIBS Basis materialization inside RSC1,
+  followed by a complete-byte gate for simultaneous sources that reuse
+  cached/analytic Basis state. Raw per-Atom Basis overlap already failed its
+  declared gate and is not promoted. New coding tools resume only through
+  declared gates.
 
 Detailed measurements are in
 [10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) and
