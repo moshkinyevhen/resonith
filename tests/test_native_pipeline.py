@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import hashlib
 import re
 import sys
 import unittest
@@ -11,10 +12,7 @@ import numpy as np
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT / "reference"))
 
-from maf_p0.basis_section import unpack_braw  # noqa: E402
-from maf_p0.composition import GainEventLaw, compose_truth  # noqa: E402
-from maf_p0.periodic import PhaseTrajectory, render_basis_trajectory  # noqa: E402
-from maf_p0.residual import decode_liftpack  # noqa: E402
+from maf_p0.main0 import decode_main0_raw_stream  # noqa: E402
 
 
 class NativePipelineTests(unittest.TestCase):
@@ -39,29 +37,15 @@ class NativePipelineTests(unittest.TestCase):
                 )
             ]
 
-        basis = unpack_braw(bytes(array("kBrawPayload"))).reshape(-1)
-        trajectory = PhaseTrajectory(
-            np.asarray(array("kPhasePositions"), dtype=np.int64),
-            np.asarray(array("kPhaseIncrements"), dtype=np.uint32),
-            0x1234_5678,
-        )
-        unity = render_basis_trajectory(basis, trajectory)
-        innovation = decode_liftpack(
-            bytes(array("kInnovationPayload"))
-        ).astype(np.int64)
-        gain = GainEventLaw(
-            np.asarray(array("kGainPositions"), dtype=np.uint32),
-            np.asarray(array("kGainsQ15"), dtype=np.int32),
-            unity.size,
-        )
-        output = compose_truth(
-            unity,
-            gain,
-            innovation_q=innovation,
-            innovation_step=3,
+        stream = bytes(array("kMain0Stream"))
+        decoded = decode_main0_raw_stream(stream)
+        self.assertEqual(decoded.sample_rate, 48_000)
+        self.assertEqual(
+            hashlib.sha256(stream).hexdigest(),
+            "32e4e7d0f8b5ff7c2d7c33ed51579c24731d57ee9c681cbc480eee23e0e3aa74",
         )
         np.testing.assert_array_equal(
-            output,
+            decoded.samples,
             np.asarray(array("kExpectedPcm"), dtype=np.int16),
         )
 

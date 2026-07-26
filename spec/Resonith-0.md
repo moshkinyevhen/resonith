@@ -106,6 +106,63 @@ Channels are in \([1,8]\), total elements do not exceed 16,384, and trailing
 bytes are prohibited. Implementations decode to aligned host-endian Basis
 memory before state commit.
 
+#### 4.1.2 Stream configuration section (`CONF`, schema 1)
+
+The payload is exactly 16 bytes:
+
+| Field | Type | Constraint |
+|---|---|---|
+| `sample_count` | `u32` | \(1\) through \(2^{31}-1\) |
+| `innovation_step` | `u32` | \(1\) through \(2^{20}\) |
+| `output_channels` | `u16` | \(1\) through \(8\) |
+| `flags` | `u16` | zero |
+| `reserved` | `u32` | zero |
+
+`timebase_hz` in the RSC1 header is the PCM sample rate. The first executable
+Main-0 subset has profile zero, level zero, exactly one output channel, and one
+critical `CONF` record with instance ID and start tick zero.
+
+#### 4.1.3 Periodic Atom section (`ATOM`, schema 1)
+
+The fixed 24-byte header contains:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `basis_instance_id` | `u32` | referenced `BRAW` instance |
+| `duration_samples` | `u32` | Atom lifetime |
+| `phase_origin_q32` | `u32` | absolute phase at local sample zero |
+| `phase_knot_count` | `u32` | number of endpoint knots |
+| `gain_event_count` | `u32` | number of sparse gain events |
+| `flags` | `u32` | zero |
+
+The header is followed by `phase_knot_count` records of
+`(u32 position, u32 increment_q32)`, then `gain_event_count` records of
+`(u32 position, i32 gain_q15)`. Each record is exactly eight bytes.
+
+Phase positions MUST begin at zero, end exactly at `duration_samples`, increase
+strictly, and have no span greater than 32,768 samples. There MUST be between
+two and 1,000,000 phase knots. Gain positions MUST begin at zero, increase
+strictly, and remain below `duration_samples`; there MUST be between one and
+1,000,000 events. Every gain is signed Q17.15 in
+\([-131072,131071]\).
+
+The RSC1 record start tick is the Atom lifetime origin. In the first executable
+subset it is zero. `duration_samples` MUST equal the `CONF` sample count, the
+referenced `BRAW` MUST be mono and contain at least two samples, and the
+`RSL1` decoded sample count MUST equal the same duration.
+
+#### 4.1.4 First executable Main-0 stream
+
+A profile-zero, level-zero stream contains exactly one critical instance-zero
+record of each required type: `ATOM`, `BRAW`, `CONF`, and `RSL1`. Additional
+unknown non-critical sections MAY be skipped. Unknown critical sections,
+additional instances of a required type, unsupported schemas, or non-zero
+required-section start ticks MUST reject this subset.
+
+A decoder MUST verify all required section hashes and all cross-section
+lifetimes before rendering. It MUST be able to inspect the stream first,
+report exact workspace sizes, and then decode without hidden allocation.
+
 ## 5. State records
 
 ### 5.1 `STREAM_CONFIG`

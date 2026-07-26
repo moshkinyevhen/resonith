@@ -94,22 +94,23 @@ skipped by the typed decoder.
 
 ## 6. Executable evidence
 
-The Python writer/parser and C++20 parser share one canonical stream containing
-the frozen 203-byte `LiftPack-1` vector. The complete 315-byte container has
-SHA-256:
+The Python writer/parser and C++20 whole-stream decoder share one canonical
+557-byte Main-0 stream. It contains typed `CONF`, `ATOM`, `BRAW`, and `RSL1`
+sections and has SHA-256:
 
 ```text
-d8fc786a31c43e30b6d0d612ac22730aaded9847bdc739e74119bc3ce9247c1d
+32e4e7d0f8b5ff7c2d7c33ed51579c24731d57ee9c681cbc480eee23e0e3aa74
 ```
 
-The native conformance test opens the container, finds and verifies `RSL1`,
-then sends the zero-copy payload view directly into the allocation-free
-LiftPack decoder.
+The native conformance test performs one allocation-free
+`RSC1 -> BRAW -> ATOM -> LiftPack -> Truth PCM` decode. Python independently
+parses the same embedded bytes and reproduces all 40 output samples. The native
+inspection API reports exact Basis, phase, gain, output, Innovation, and
+LiftPack workspace element counts before any decode call.
 
 ## 7. What remains
 
-`RSC1` is only an envelope. Main-0 still needs frozen binary payload schemas
-for stream configuration, Basis Bank entries, Atom laws, transients,
-Innovation indexing, and checkpoints. The next gate is not to add generic
-metadata; it is to define the smallest typed records required for end-to-end
-native reconstruction.
+The first mono periodic path is complete. Main-0 still needs typed CIBS,
+transient, multi-Atom/multi-channel, Innovation indexing, and checkpoint
+payloads. Each new syntax must enter through the same inspect-first,
+caller-owned-memory decoder boundary; no generic metadata archive is added.

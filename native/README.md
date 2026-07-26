@@ -4,8 +4,8 @@ Status: **EXECUTABLE MAIN-0 SUBSET**
 
 This directory contains the dependency-free portable C++20 implementation of
 the first frozen Resonith decoder primitives. The current subset validates the
-compact `RSC1` section container and decodes `LiftPack-1`
-objective-innovation streams through a stable C99 ABI.
+compact `RSC1` section container and decodes the first complete mono Main-0
+stream through a stable C99 ABI.
 
 ## Runtime contract
 
@@ -24,6 +24,9 @@ The native Core:
   bounded saturating Truth-composition pass;
 - decodes minimal typed `BRAW` Basis payloads into aligned caller-owned
   host-endian memory without generic array metadata;
+- parses fixed `CONF` and periodic `ATOM` payloads, reports exact workspace
+  requirements, and orchestrates whole-container decode with no hidden
+  allocation;
 - rejects non-canonical lengths, trailing bytes, non-zero padding, profile
   bound violations, and undersized buffers;
 - uses a portable scalar implementation with no third-party dependency;
@@ -76,10 +79,17 @@ floor-division, Innovation scaling, saturation, and slice independence.
 `native/tests/basis_test.cpp` verifies the first typed acoustic payload and
 cross-endian sample reconstruction.
 
-`native/tests/pipeline_test.cpp` chains typed Basis decode, absolute periodic
-rendering, LiftPack Innovation decode, sparse gain, and saturating Truth
-composition into one cross-language PCM conformance vector.
+`native/tests/pipeline_test.cpp` embeds a complete 557-byte RSC1 stream and
+calls the public whole-stream decoder once. The canonical stream SHA-256 is:
 
-This is not yet the full Resonith decoder. Typed CIBS/Atom payload parsing,
-transient rendering, and multi-channel synthesis remain subsequent parity
-stages.
+```text
+32e4e7d0f8b5ff7c2d7c33ed51579c24731d57ee9c681cbc480eee23e0e3aa74
+```
+
+Python independently decodes the same stream and checks the exact PCM vector.
+The test also proves that a rejected undersized workspace leaves output PCM
+unchanged.
+
+This is not yet the full Resonith decoder. Typed CIBS stream integration,
+transient rendering, multi-Atom mixing, and multi-channel synthesis remain
+subsequent parity stages.

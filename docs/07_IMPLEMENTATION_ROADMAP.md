@@ -19,8 +19,10 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   CI with full container-byte and executable-provenance accounting.
 - `LiftPack-1`, acoustic change-point proposals, full-stream boundary RDO, and
   the first licensed real-music corpus test are complete.
-- The next blocking milestone is C++20 LiftPack decode parity, followed by
-  stereo decorrelation and multi-Atom overlap.
+- The portable Core now decodes a complete typed mono RSC1 stream through one
+  allocation-free C API call.
+- The next blocking milestone is binding this whole-stream decoder into Python
+  encoder RDO, followed by typed transient integration and multi-Atom overlap.
 
 Detailed measurements are in
 [10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) and

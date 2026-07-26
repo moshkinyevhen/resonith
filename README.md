@@ -43,7 +43,7 @@ The repository contains:
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 61 Python reference/security/integration tests when the Opus tool is
+- 65 Python reference/security/integration tests when the Opus tool is
   configured, plus seven native conformance targets built with GCC, Clang, and
   MSVC.
 

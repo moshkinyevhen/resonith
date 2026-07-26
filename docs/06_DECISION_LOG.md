@@ -627,3 +627,33 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
   - the vector calls typed primitives directly;
   - compact `ATOM`/configuration payload parsing and whole-RSC1 decoder
     orchestration are the next stage.
+
+## R-033 — Typed Main-0 stream state and whole-container decoding
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / NORMATIVE-DRAFT**
+- Decision:
+  - define `CONF` schema 1 as one fixed 16-byte stream contract carrying
+    sample count, objective-Innovation step, output-channel count, and zero
+    flags/reserved fields;
+  - define `ATOM` schema 1 as one bounded periodic Atom header followed by
+    absolute Q32 phase knots and sparse signed Q17.15 gain events;
+  - use the RSC1 record start tick as the Atom lifetime origin and use the
+    `BRAW` instance ID as its immutable Basis reference;
+  - make the first executable Main-0 subset exactly mono and require one
+    `CONF`, one `ATOM`, one `BRAW`, and one `RSL1`, all with instance ID zero;
+  - permit unknown non-critical sections but reject every unknown critical
+    section in this profile;
+  - expose a two-stage allocation-free native API: inspect computes exact
+    caller-owned workspace requirements, then decode verifies every required
+    payload before rendering or committing PCM;
+  - orchestrate the already verified Basis, trajectory, gain, LiftPack, and
+    Truth-composition kernels rather than introduce another DSP path.
+- Rationale:
+  - a complete container-to-PCM function is the minimum decoder-in-loop
+    boundary needed by encoder RDO, fuzzing, players, mobile bindings, and
+    independent implementations;
+  - fixed typed state removes the generic array archive from the normative
+    format while preserving the causal model and a small embedded decoder;
+  - exact workspace discovery keeps the decoder deterministic and free of
+    hidden allocation.

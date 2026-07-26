@@ -7,6 +7,7 @@ from .model import (
     save_analysis_model,
     train_linear_cibs,
 )
+from .main0 import Main0DecodeResult, decode_main0_raw_stream, pack_main0_raw_stream
 from .periodic import PhaseTrajectory
 from .residual import ResidualPacket, decode_liftpack, encode_liftpack
 from .segmentation import SegmentationResult, segment_acoustic_states
@@ -20,8 +21,11 @@ from .wav_io import read_pcm16_mono, write_pcm16_mono
 __all__ = [
     "DecodeResult",
     "EncodeResult",
+    "Main0DecodeResult",
     "decode_bytes",
+    "decode_main0_raw_stream",
     "encode_samples",
+    "pack_main0_raw_stream",
     "decode_stateful_bytes",
     "encode_stateful_samples",
     "encode_stateful_rdo_samples",

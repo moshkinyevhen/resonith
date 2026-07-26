@@ -12,6 +12,7 @@ add_library(resonith_core STATIC
     src/integrity.cpp
     src/liftpack.cpp
     src/status.cpp
+    src/stream.cpp
     src/trajectory.cpp
 )
 add_library(Resonith::Core ALIAS resonith_core)
