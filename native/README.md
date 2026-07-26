@@ -20,6 +20,8 @@ The native Core:
   adapter, refinement, correction, and atomic Basis-hash verification;
 - prepares absolute Q32 phase-knot origins once and renders arbitrary periodic
   slices with callback-size-independent Q16 interpolation;
+- applies sparse absolute Q17.15 gain events and objective Innovation in one
+  bounded saturating Truth-composition pass;
 - rejects non-canonical lengths, trailing bytes, non-zero padding, profile
   bound violations, and undersized buffers;
 - uses a portable scalar implementation with no third-party dependency;
@@ -66,6 +68,9 @@ model is an operator conformance fixture and remains explicitly non-normative.
 phase, every rendered sample, and equality across deliberately irregular
 callback partitions.
 
+`native/tests/composition_test.cpp` verifies sparse gain events, negative
+floor-division, Innovation scaling, saturation, and slice independence.
+
 This is not yet the full Resonith decoder. Typed Basis/Atom payload parsing,
-transient rendering, gain laws, and multi-channel synthesis remain subsequent
-parity stages.
+transient rendering, and multi-channel synthesis remain subsequent parity
+stages.

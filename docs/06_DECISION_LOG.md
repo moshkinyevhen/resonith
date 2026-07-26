@@ -564,3 +564,25 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
     without storing per-sample phase;
   - absolute evaluation removes callback size, seek history, and scheduling
     from normative output.
+
+## R-030 — Sparse gain events and one-pass Truth composition
+
+- Date: 2026-07-26
+- Status: **NORMATIVE-DRAFT / IMPLEMENTATION IN PROGRESS**
+- Decision:
+  - replace the conceptual requirement for fixed gain blocks with a sparse
+    absolute event law: one signed Q17.15 gain remains active until the next
+    declared position;
+  - permit an encoder to reproduce the current block-gain experiment by
+    placing events at block starts, but charge every redundant event in RDO;
+  - evaluate arbitrary slices by binary search and event scanning, without
+    state inherited from an earlier callback;
+  - combine scaled periodic prediction and dequantized objective Innovation in
+    one saturating int64 pass;
+  - define negative Q15 division by explicit floor semantics, not signed right
+    shift.
+- Rationale:
+  - a static or slowly varying Atom pays no per-frame gain syntax;
+  - the same small mechanism handles abrupt amplitude events and long-lived
+    constants while preserving exact compatibility with the P1 diagnostic
+    when needed.

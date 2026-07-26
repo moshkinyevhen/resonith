@@ -252,6 +252,21 @@ Clip_{16}\left(
 Signed division and negative intermediate behavior MUST follow these equations
 explicitly rather than implementation-defined right shift.
 
+The first executable amplitude law is a strictly increasing sequence of
+absolute event positions and signed Q17.15 gains. The first position is zero;
+each gain remains active until the next event. For unity prediction \(u[n]\)
+and active gain \(g[n]\):
+
+\[
+p[n]=
+\left\lfloor
+\frac{u[n]g[n]+16384}{32768}
+\right\rfloor.
+\]
+
+No periodic gain refresh is required. A constant gain therefore costs one
+event for the Atom lifetime.
+
 ### 6.2 `PREDICTIVE`
 
 Uses bounded excitation and short, stable integer FIR/IIR sections.
@@ -295,6 +310,16 @@ payload, not an inferred onset label, determine decoder output.
 
 Uses inverse integer lifting, sparse coefficients and exact replacement.
 This is a universal fallback, not a separate content classifier.
+
+For the first executable scalar composition, a decoded quantized coefficient
+\(q[n]\) and positive integer step \(s\) produce:
+
+\[
+\hat x[n]=Clip_{16}(p[n]+q[n]s).
+\]
+
+Prediction scaling, Innovation dequantization, addition, and saturation use
+wide integer intermediates in one pass.
 
 #### 6.6.1 `LiftPack-1`
 

@@ -1,4 +1,5 @@
 #include "resonith/cibs.h"
+#include "resonith/composition.h"
 #include "resonith/container.h"
 #include "resonith/liftpack.h"
 #include "resonith/trajectory.h"
@@ -25,8 +26,15 @@ int main(void) {
         0U,
         0U
     };
+    resonith_prepared_gain_law gain_law = {NULL, NULL, 0U, 0U};
     if (
         resonith_cibs_inspect_model(NULL, NULL, &cibs_info)
+        != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_gain_prepare(NULL, &gain_law)
         != RESONITH_STATUS_INVALID_ARGUMENT
     ) {
         return 1;

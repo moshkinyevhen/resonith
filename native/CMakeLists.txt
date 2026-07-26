@@ -6,6 +6,7 @@ option(RESONITH_WARNINGS_AS_ERRORS "Treat native-core warnings as errors" ON)
 
 add_library(resonith_core STATIC
     src/cibs.cpp
+    src/composition.cpp
     src/container.cpp
     src/integrity.cpp
     src/liftpack.cpp
@@ -90,4 +91,16 @@ if(BUILD_TESTING)
     )
     resonith_enable_warnings(resonith_trajectory_test)
     add_test(NAME trajectory_conformance COMMAND resonith_trajectory_test)
+
+    add_executable(resonith_composition_test
+        tests/composition_test.cpp
+    )
+    target_compile_features(resonith_composition_test PRIVATE cxx_std_20)
+    target_link_libraries(resonith_composition_test PRIVATE Resonith::Core)
+    set_target_properties(
+        resonith_composition_test
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_composition_test)
+    add_test(NAME composition_conformance COMMAND resonith_composition_test)
 endif()

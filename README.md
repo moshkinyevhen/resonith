@@ -43,8 +43,8 @@ The repository contains:
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 52 Python reference/security/integration tests when the Opus tool is
-  configured, plus four native conformance targets built with GCC, Clang, and
+- 56 Python reference/security/integration tests when the Opus tool is
+  configured, plus five native conformance targets built with GCC, Clang, and
   MSVC.
 
 All current MAF-P1/Opus results are deliberately labeled diagnostics, not
