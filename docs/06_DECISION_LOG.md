@@ -2935,3 +2935,29 @@ new oscillator opcode.
   - `.orka` is reserved for an Orkela synchronized media package that can bind
     independent Resonith and SceneLith streams through the separate SceneLith
     AV Bridge without merging their Truth reference graphs.
+
+## R-100 — Per-frame coefficient-floor speech kill-test
+
+- Date: 2026-07-26
+- Status: **RESEARCH — CLOSED**
+- Hypothesis:
+  - reserve a minimum number of selected transform coefficients in every
+    channel/frame before spending the remaining global adaptive budget;
+  - this might preserve low-energy consonants that a waveform-energy ranking
+    could otherwise starve.
+- Test:
+  - LibriSpeech `1272-128104-0000`, 5.855 s, mono 16 kHz PCM16;
+  - prospective LPS5, 64 average coefficients, identical transform, entropy,
+    packet size, and decoder;
+  - floors of 0, 4, 8, 12, 16, 24, and 32 coefficients;
+  - complete bytes plus SNR, STOI, ESTOI, and log-spectral distance.
+- Result:
+  - floor zero produced 17,929 bytes, 19.619 dB SNR, 0.94989 STOI, 0.90297
+    ESTOI, and 30.49 dB log-spectral distance;
+  - every positive floor increased complete bytes and reduced all four quality
+    diagnostics; floor 32 reached 18,315 bytes, 18.498 dB SNR, 0.94300 STOI,
+    0.89758 ESTOI, and 31.89 dB log-spectral distance;
+  - the candidate is removed rather than added as a permanent encoder option.
+    The next speech experiment must change the predictive/Basis model or use
+    verified perceptual RDO, not merely constrain the existing coefficient
+    allocator.
