@@ -987,7 +987,7 @@ new oscillator opcode.
 ## R-046 — One-MAC cross-channel gain-delay predictor
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / RESEARCH**
+- Status: **MEASURED 0/3 WON / GATE FAILED / CLOSED**
 - Decision:
   - test one decoded channel as an immutable Truth reference for the other;
   - predict the target with one signed Q12 gain and one bounded integer sample
@@ -1005,3 +1005,31 @@ new oscillator opcode.
     and bounded lookahead/state while leaving both RSL2 kernels unchanged;
   - failure closes the simple waveform-domain stereo family before considering
     more expensive time-varying or frequency-selective spatial models.
+- Result:
+  - the best cross-channel candidates were 3.06%, 6.99%, and 0.02% larger than
+    the R-045 fallback on Corelli, piano, and drums respectively;
+  - no cross-channel candidate was selected, so global waveform-domain stereo
+    lifting and gain-delay prediction are closed for Main.
+
+## R-047 — Two-band reversible spatial lifting
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / RESEARCH**
+- Decision:
+  - apply one exact temporal Haar lifting stage to each quantized channel,
+    yielding low and high coefficient bands;
+  - choose independent, mid/side, left/side, or right/side lifting separately
+    for each band;
+  - concatenate like components and transport them through only two unchanged
+    RSL2 streams, with one bounded band/mode header;
+  - compete all sixteen band-mode pairs by complete bytes and retain the full
+    R-045 winner as fallback;
+  - promote only if the two-band form saves at least 5% on two clips and 8% on
+    the arithmetic mean.
+- Rationale:
+  - the failed global predictors imply that stereo dependence varies with
+    acoustic component rather than one waveform-wide law;
+  - one reversible split is the smallest frequency-local experiment and
+    reuses the existing integer Haar kernel;
+  - two residual streams avoid multiplying section-directory and entropy state
+    overhead as the number of bands grows.

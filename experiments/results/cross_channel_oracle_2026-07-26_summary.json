@@ -1,0 +1,32 @@
+{
+  "actions_run": "https://github.com/moshkinyevhen/resonith/actions/runs/30202154571",
+  "clips": {
+    "corelli-sonata-realization": {
+      "best_cross_bytes": 21285,
+      "best_cross_coefficient_q12": 2114,
+      "best_cross_delay": 0,
+      "best_cross_mode": "right_reference",
+      "r045_anchor_bytes": 20654,
+      "selected_bytes": 20654
+    },
+    "emotional-piano-cc0": {
+      "best_cross_bytes": 26592,
+      "best_cross_coefficient_q12": 1291,
+      "best_cross_delay": -14,
+      "best_cross_mode": "right_reference",
+      "r045_anchor_bytes": 24855,
+      "selected_bytes": 24855
+    },
+    "patro-de-bateria": {
+      "best_cross_bytes": 25938,
+      "best_cross_coefficient_q12": 4054,
+      "best_cross_delay": 0,
+      "best_cross_mode": "left_reference",
+      "r045_anchor_bytes": 25932,
+      "selected_bytes": 25932
+    }
+  },
+  "gate_passed": false,
+  "raw_report_sha256": "4486c9841f37410ce77fecf6671f74ebf49864566bae83d198e3ac18216e6df3",
+  "status": "cross-channel gain-delay lost 0/3; simple waveform stereo family closed"
+}

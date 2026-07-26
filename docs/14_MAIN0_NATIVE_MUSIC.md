@@ -315,3 +315,27 @@ Raw report SHA-256:
 
 Canonical compact evidence:
 [`../experiments/results/stereo_lifting_oracle_2026-07-26_summary.json`](../experiments/results/stereo_lifting_oracle_2026-07-26_summary.json).
+
+## 14. Cross-channel gain-delay gate
+
+R-046 relaxed global mid/side into a one-MAC Q12 gain plus a signed delay from
+-32 through +32 samples. Both channel directions were searched; residual
+energy shortlisted four candidates per direction, and only complete bytes
+could select one.
+
+No candidate won. The best cross forms were 3.06% larger for Corelli, 6.99%
+larger for piano, and 0.02% larger for drums than the R-045 fallback. This
+closes simple whole-waveform stereo prediction for Main. R-047 moves the same
+reversible question into two frequency-local bands without adding another
+entropy coder.
+
+Run:
+[30202154571](https://github.com/moshkinyevhen/resonith/actions/runs/30202154571).
+Raw report SHA-256:
+
+```text
+4486c9841f37410ce77fecf6671f74ebf49864566bae83d198e3ac18216e6df3
+```
+
+Canonical compact evidence:
+[`../experiments/results/cross_channel_oracle_2026-07-26_summary.json`](../experiments/results/cross_channel_oracle_2026-07-26_summary.json).

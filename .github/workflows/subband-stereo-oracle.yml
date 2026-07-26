@@ -1,0 +1,33 @@
+name: Two-Band Reversible Stereo Oracle
+
+on:
+  workflow_dispatch:
+    inputs:
+      maximum_seconds:
+        description: Maximum licensed crop duration per clip
+        required: true
+        default: "1"
+
+permissions:
+  contents: read
+
+jobs:
+  oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install runtime dependency
+        run: python -m pip install numpy
+      - name: Run exact two-band stereo oracle
+        run: >
+          python experiments/subband_stereo_oracle_benchmark.py
+          --maximum-seconds ${{ inputs.maximum_seconds }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: subband-stereo-oracle-${{ github.sha }}
+          path: artifacts/subband_stereo_oracle
+          if-no-files-found: error

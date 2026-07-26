@@ -57,6 +57,9 @@ reproducible command and independent decode.
 - `cross_channel_oracle_benchmark.py` — R-046 bounded one-MAC Q12 gain-delay
   prediction in both channel directions, shortlisted by energy and selected
   against the full R-045 fallback only by complete bytes.
+- `subband_stereo_oracle_benchmark.py` — R-047 exact temporal Haar split with
+  independently selected reversible channel lifting in low/high bands and
+  only two unchanged RSL2 component streams.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never
