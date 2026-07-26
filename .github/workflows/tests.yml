@@ -118,13 +118,23 @@ jobs:
           -DRESONITH_BUILD_FUZZERS=ON
           -DRESONITH_WARNINGS_AS_ERRORS=ON
       - name: Build sanitized fuzz target
-        run: cmake --build build/fuzz --target resonith_liftpack_fuzz --parallel
+        run: >
+          cmake --build build/fuzz
+          --target resonith_liftpack_fuzz resonith_main0_fuzz
+          --parallel
       - name: Generate deterministic valid corpus
         run: python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
       - name: Run bounded mutation smoke test
         run: >
           build/fuzz/resonith_liftpack_fuzz
-          artifacts/fuzz_corpus
+          artifacts/fuzz_corpus/liftpack
+          -runs=5000
+          -max_len=65536
+          -timeout=10
+      - name: Run bounded Main-0 mutation smoke test
+        run: >
+          build/fuzz/resonith_main0_fuzz
+          artifacts/fuzz_corpus/main0
           -runs=5000
           -max_len=65536
           -timeout=10

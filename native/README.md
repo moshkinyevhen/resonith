@@ -91,15 +91,20 @@ DSP directly into one ASan/UBSan/libFuzzer target:
 cmake -S native -B build/fuzz \
   -DBUILD_TESTING=OFF \
   -DRESONITH_BUILD_FUZZERS=ON
-cmake --build build/fuzz --target resonith_liftpack_fuzz
+cmake --build build/fuzz \
+  --target resonith_liftpack_fuzz resonith_main0_fuzz
 python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
-build/fuzz/resonith_liftpack_fuzz artifacts/fuzz_corpus -runs=5000
+build/fuzz/resonith_liftpack_fuzz \
+  artifacts/fuzz_corpus/liftpack -runs=5000
+build/fuzz/resonith_main0_fuzz \
+  artifacts/fuzz_corpus/main0 -runs=5000
 ```
 
-The harness caps host allocations after a successful envelope inspection; the
-Core itself remains allocation-free. CI starts from deterministic valid RSL1
-and RSL2/LPC seeds so mutations reach block, entropy, and inverse-DSP paths
-rather than stopping only at the outer CRC.
+The harnesses cap host allocations after a successful envelope inspection;
+the Core itself remains allocation-free. CI starts from deterministic valid
+RSL1, RSL2/LPC, zero-Atom, and periodic-Atom seeds. Mutations therefore reach
+container, typed-section, block, entropy, model-render, and inverse-DSP paths
+rather than stopping only at an outer checksum.
 
 ## Conformance anchor
 
