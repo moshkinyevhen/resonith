@@ -158,13 +158,17 @@ class NativeBridgeTests(unittest.TestCase):
             basis_length=128,
             gain_block_sizes=(4096,),
             innovation_step=64,
-            residual_block_size=256,
+            residual_block_size=(256, 512),
             fixed_state_durations_seconds=(0.08,),
             adaptive_change_penalties=(),
         )
         self.assertEqual(encoded.report["native_decoder_gate"], "verified")
-        self.assertEqual(encoded.report["candidate_count"], 3)
+        self.assertEqual(encoded.report["candidate_count"], 6)
         self.assertGreater(encoded.report["one_state_bytes"], 0)
+        self.assertIn(
+            encoded.report["residual_block_size"],
+            {256, 512},
+        )
         native = self.decoder.decode(encoded.payload)
         np.testing.assert_array_equal(native.samples, encoded.reconstructed)
 

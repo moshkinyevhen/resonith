@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 
 KNOWN_TYPES = frozenset({b"ATOM", b"BRAW", b"CONF", b"RSL1"})
 MANDATORY_TYPES = frozenset({b"CONF", b"RSL1"})
+DEFAULT_RESIDUAL_BLOCK_SIZES = (1024, 2048, 4096, 8192, 16384, 32768)
 
 
 @dataclass(frozen=True)
@@ -318,6 +319,24 @@ def _sparse_block_gain_law(
     )
 
 
+def _residual_block_candidates(
+    value: int | Sequence[int],
+) -> tuple[int, ...]:
+    values = (
+        (int(value),)
+        if isinstance(value, (int, np.integer))
+        else tuple(int(item) for item in value)
+    )
+    blocks = tuple(sorted(set(values)))
+    if (
+        not blocks
+        or blocks[0] < 16
+        or blocks[-1] > 32768
+    ):
+        raise ValueError("residual block size exceeds the LiftPack-1 bound")
+    return blocks
+
+
 def encode_main0_periodic_rdo(
     samples: np.ndarray,
     sample_rate: int,
@@ -326,7 +345,7 @@ def encode_main0_periodic_rdo(
     basis_length: int = 256,
     gain_block_sizes: Sequence[int] = (512, 1024, 2048, 4096),
     innovation_step: int = 1,
-    residual_block_size: int = 1024,
+    residual_block_size: int | Sequence[int] = DEFAULT_RESIDUAL_BLOCK_SIZES,
     phase_knot_interval: int = 4096,
 ) -> Main0EncodeResult:
     """RDO zero or periodic prediction after native decoder acceptance."""
@@ -343,45 +362,49 @@ def encode_main0_periodic_rdo(
     blocks = sorted({int(value) for value in gain_block_sizes})
     if not blocks or blocks[0] <= 0:
         raise ValueError("gain_block_sizes must contain positive values")
+    residual_blocks = _residual_block_candidates(residual_block_size)
 
     candidates: list[tuple[str, bytes, np.ndarray, dict]] = []
     residual_innovation = _quantize_signed(
         source.astype(np.int64),
         innovation_step,
     )
-    residual_payload = pack_main0_residual_stream(
-        sample_rate=sample_rate,
-        innovation_q=residual_innovation,
-        innovation_step=innovation_step,
-        residual_block_size=residual_block_size,
-    )
-    residual_reference = decode_main0_raw_stream(residual_payload)
-    residual_native = native_decoder.decode(residual_payload)
-    if (
-        residual_native.sample_rate != residual_reference.sample_rate
-        or not np.array_equal(
-            residual_native.samples,
-            residual_reference.samples,
+    for residual_block in residual_blocks:
+        residual_payload = pack_main0_residual_stream(
+            sample_rate=sample_rate,
+            innovation_q=residual_innovation,
+            innovation_step=innovation_step,
+            residual_block_size=residual_block,
         )
-    ):
-        raise RuntimeError(
-            "native decoder disagrees with residual-only Main-0"
+        residual_reference = decode_main0_raw_stream(residual_payload)
+        residual_native = native_decoder.decode(residual_payload)
+        if (
+            residual_native.sample_rate != residual_reference.sample_rate
+            or not np.array_equal(
+                residual_native.samples,
+                residual_reference.samples,
+            )
+        ):
+            raise RuntimeError(
+                "native decoder disagrees with residual-only Main-0"
+            )
+        residual_name = f"residual-only-lift-{residual_block}"
+        residual_report = {
+            "name": residual_name,
+            "stream_bytes": len(residual_payload),
+            "residual_block_size": residual_block,
+            "phase_knots": 0,
+            "gain_events": 0,
+            **_quality_report(source, residual_reference.samples),
+        }
+        candidates.append(
+            (
+                residual_name,
+                residual_payload,
+                residual_reference.samples,
+                residual_report,
+            )
         )
-    residual_report = {
-        "name": "residual-only",
-        "stream_bytes": len(residual_payload),
-        "phase_knots": 0,
-        "gain_events": 0,
-        **_quality_report(source, residual_reference.samples),
-    }
-    candidates.append(
-        (
-            "residual-only",
-            residual_payload,
-            residual_reference.samples,
-            residual_report,
-        )
-    )
 
     phase_candidates: list[tuple[str, PhaseTrajectory]] = []
     try:
@@ -432,37 +455,42 @@ def encode_main0_periodic_rdo(
                 source.astype(np.int64) - prediction.astype(np.int64),
                 innovation_step,
             )
-            payload = pack_main0_raw_stream(
-                sample_rate=sample_rate,
-                basis=analysis.basis,
-                trajectory=trajectory,
-                gain_law=gain_law,
-                innovation_q=innovation_q,
-                innovation_step=innovation_step,
-                residual_block_size=residual_block_size,
-            )
-
-            reference = decode_main0_raw_stream(payload)
-            native = native_decoder.decode(payload)
-            if (
-                native.sample_rate != reference.sample_rate
-                or not np.array_equal(native.samples, reference.samples)
-            ):
-                raise RuntimeError(
-                    "native decoder disagrees with the Main-0 reference"
+            for residual_block in residual_blocks:
+                payload = pack_main0_raw_stream(
+                    sample_rate=sample_rate,
+                    basis=analysis.basis,
+                    trajectory=trajectory,
+                    gain_law=gain_law,
+                    innovation_q=innovation_q,
+                    innovation_step=innovation_step,
+                    residual_block_size=residual_block,
                 )
-            name = f"{phase_name}-gain-{block_size}"
-            quality = _quality_report(source, reference.samples)
-            candidate_report = {
-                "name": name,
-                "stream_bytes": len(payload),
-                "phase_knots": int(trajectory.positions.size),
-                "gain_events": int(gain_law.positions.size),
-                **quality,
-            }
-            candidates.append(
-                (name, payload, reference.samples, candidate_report)
-            )
+
+                reference = decode_main0_raw_stream(payload)
+                native = native_decoder.decode(payload)
+                if (
+                    native.sample_rate != reference.sample_rate
+                    or not np.array_equal(native.samples, reference.samples)
+                ):
+                    raise RuntimeError(
+                        "native decoder disagrees with the Main-0 reference"
+                    )
+                name = (
+                    f"{phase_name}-gain-{block_size}"
+                    f"-lift-{residual_block}"
+                )
+                quality = _quality_report(source, reference.samples)
+                candidate_report = {
+                    "name": name,
+                    "stream_bytes": len(payload),
+                    "residual_block_size": residual_block,
+                    "phase_knots": int(trajectory.positions.size),
+                    "gain_events": int(gain_law.positions.size),
+                    **quality,
+                }
+                candidates.append(
+                    (name, payload, reference.samples, candidate_report)
+                )
 
     selected_name, payload, reconstructed, selected_report = min(
         candidates,
@@ -480,7 +508,11 @@ def encode_main0_periodic_rdo(
             "minimum complete typed stream bytes at one Innovation step"
         ),
         "selected_candidate": selected_name,
-        "residual_only_bytes": len(residual_payload),
+        "residual_only_bytes": min(
+            item[3]["stream_bytes"]
+            for item in candidates
+            if item[3]["phase_knots"] == 0
+        ),
         "candidate_count": len(candidates),
         "candidates": [item[3] for item in candidates],
     }
@@ -512,7 +544,7 @@ def encode_main0_state_rdo(
     basis_length: int = 256,
     gain_block_sizes: Sequence[int] = (4096,),
     innovation_step: int = 64,
-    residual_block_size: int = 1024,
+    residual_block_size: int | Sequence[int] = DEFAULT_RESIDUAL_BLOCK_SIZES,
     fixed_state_durations_seconds: Sequence[float] = (0.25, 0.5),
     adaptive_change_penalties: Sequence[float] = (100.0, 400.0, 800.0),
     segmentation_hop_samples: int = 1024,
@@ -530,6 +562,7 @@ def encode_main0_state_rdo(
     gain_blocks = sorted({int(value) for value in gain_block_sizes})
     if not gain_blocks or gain_blocks[0] <= 0:
         raise ValueError("gain_block_sizes must contain positive values")
+    residual_blocks = _residual_block_candidates(residual_block_size)
 
     partitions: dict[tuple[tuple[int, int], ...], tuple[str, dict]] = {
         ((0, int(source.size)),): (
@@ -572,42 +605,45 @@ def encode_main0_state_rdo(
         source.astype(np.int64),
         innovation_step,
     )
-    residual_payload = pack_main0_residual_stream(
-        sample_rate=sample_rate,
-        innovation_q=residual_innovation,
-        innovation_step=innovation_step,
-        residual_block_size=residual_block_size,
-    )
-    residual_reference = decode_main0_raw_stream(residual_payload)
-    residual_native = native_decoder.decode(residual_payload)
-    if (
-        residual_native.sample_rate != residual_reference.sample_rate
-        or not np.array_equal(
-            residual_native.samples,
-            residual_reference.samples,
+    for residual_block in residual_blocks:
+        residual_payload = pack_main0_residual_stream(
+            sample_rate=sample_rate,
+            innovation_q=residual_innovation,
+            innovation_step=innovation_step,
+            residual_block_size=residual_block,
         )
-    ):
-        raise RuntimeError(
-            "native decoder disagrees with residual-only Main-0"
+        residual_reference = decode_main0_raw_stream(residual_payload)
+        residual_native = native_decoder.decode(residual_payload)
+        if (
+            residual_native.sample_rate != residual_reference.sample_rate
+            or not np.array_equal(
+                residual_native.samples,
+                residual_reference.samples,
+            )
+        ):
+            raise RuntimeError(
+                "native decoder disagrees with residual-only Main-0"
+            )
+        residual_name = f"residual-only-lift-{residual_block}"
+        residual_report = {
+            "name": residual_name,
+            "stream_bytes": len(residual_payload),
+            "residual_block_size": residual_block,
+            "state_count": 0,
+            "basis_count": 0,
+            "phase_knots": 0,
+            "gain_events": 0,
+            "partition": {"mode": "residual-only", "state_count": 0},
+            **_quality_report(source, residual_reference.samples),
+        }
+        candidates.append(
+            (
+                residual_name,
+                residual_payload,
+                residual_reference.samples,
+                residual_report,
+            )
         )
-    residual_report = {
-        "name": "residual-only",
-        "stream_bytes": len(residual_payload),
-        "state_count": 0,
-        "basis_count": 0,
-        "phase_knots": 0,
-        "gain_events": 0,
-        "partition": {"mode": "residual-only", "state_count": 0},
-        **_quality_report(source, residual_reference.samples),
-    }
-    candidates.append(
-        (
-            "residual-only",
-            residual_payload,
-            residual_reference.samples,
-            residual_report,
-        )
-    )
     for intervals, (partition_name, partition_report) in partitions.items():
         for gain_block_size in gain_blocks:
             states: list[Main0State] = []
@@ -651,41 +687,46 @@ def encode_main0_state_rdo(
                 source.astype(np.int64) - prediction.astype(np.int64),
                 innovation_step,
             )
-            payload = pack_main0_state_stream(
-                sample_rate=sample_rate,
-                states=states,
-                innovation_q=innovation_q,
-                innovation_step=innovation_step,
-                residual_block_size=residual_block_size,
-            )
-            reference = decode_main0_raw_stream(payload)
-            native = native_decoder.decode(payload)
-            if (
-                native.sample_rate != reference.sample_rate
-                or not np.array_equal(native.samples, reference.samples)
-            ):
-                raise RuntimeError(
-                    "native decoder disagrees with state-partition reference"
+            for residual_block in residual_blocks:
+                payload = pack_main0_state_stream(
+                    sample_rate=sample_rate,
+                    states=states,
+                    innovation_q=innovation_q,
+                    innovation_step=innovation_step,
+                    residual_block_size=residual_block,
                 )
-            basis_count = sum(
-                bytes(section.type_code) == b"BRAW"
-                for section in parse_rsc1(payload).sections
-            )
-            name = f"{partition_name}-gain-{gain_block_size}"
-            quality = _quality_report(source, reference.samples)
-            candidate_report = {
-                "name": name,
-                "stream_bytes": len(payload),
-                "state_count": len(states),
-                "basis_count": basis_count,
-                "phase_knots": phase_knots,
-                "gain_events": gain_events,
-                "partition": partition_report,
-                **quality,
-            }
-            candidates.append(
-                (name, payload, reference.samples, candidate_report)
-            )
+                reference = decode_main0_raw_stream(payload)
+                native = native_decoder.decode(payload)
+                if (
+                    native.sample_rate != reference.sample_rate
+                    or not np.array_equal(native.samples, reference.samples)
+                ):
+                    raise RuntimeError(
+                        "native decoder disagrees with state-partition reference"
+                    )
+                basis_count = sum(
+                    bytes(section.type_code) == b"BRAW"
+                    for section in parse_rsc1(payload).sections
+                )
+                name = (
+                    f"{partition_name}-gain-{gain_block_size}"
+                    f"-lift-{residual_block}"
+                )
+                quality = _quality_report(source, reference.samples)
+                candidate_report = {
+                    "name": name,
+                    "stream_bytes": len(payload),
+                    "residual_block_size": residual_block,
+                    "state_count": len(states),
+                    "basis_count": basis_count,
+                    "phase_knots": phase_knots,
+                    "gain_events": gain_events,
+                    "partition": partition_report,
+                    **quality,
+                }
+                candidates.append(
+                    (name, payload, reference.samples, candidate_report)
+                )
 
     selected_name, payload, reconstructed, selected_report = min(
         candidates,
@@ -709,7 +750,11 @@ def encode_main0_state_rdo(
         ),
         "selected_candidate": selected_name,
         "one_state_bytes": one_state_bytes,
-        "residual_only_bytes": len(residual_payload),
+        "residual_only_bytes": min(
+            item[3]["stream_bytes"]
+            for item in candidates
+            if item[3]["state_count"] == 0
+        ),
         "selected_reduction_vs_one_state": (
             1.0 - len(payload) / one_state_bytes
         ),

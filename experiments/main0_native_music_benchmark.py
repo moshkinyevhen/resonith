@@ -62,7 +62,6 @@ def benchmark_clip(
         basis_length=256,
         gain_block_sizes=(4096,),
         innovation_step=64,
-        residual_block_size=1024,
         fixed_state_durations_seconds=(0.5, 1.0, 2.0),
         adaptive_change_penalties=(100.0, 400.0, 800.0),
         segmentation_hop_samples=1024,

@@ -828,7 +828,7 @@ new oscillator opcode.
 ## R-040 — Zero-Atom Truth stream is a mandatory Main-0 candidate
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING / NORMATIVE-DRAFT**
+- Status: **IMPLEMENTED / CROSS-COMPILER VERIFIED / NORMATIVE-DRAFT**
 - Decision:
   - permit a canonical Main-0 stream containing `CONF` and `RSL1` with no
     `ATOM` or `BRAW` sections;
@@ -849,3 +849,22 @@ new oscillator opcode.
     failed semantic or acoustic hypothesis cost zero decoder complexity;
   - this is both a compression improvement and a simplification of resource
     requirements.
+
+## R-041 — Full-byte LiftPack block-size RDO
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - permit the encoder to evaluate a bounded set of existing LiftPack-1 block
+    sizes for every complete Main-0 candidate;
+  - pack and native-decode every surviving stream exactly as before;
+  - select by complete RSC1 bytes, including the changed block-header count;
+  - keep the decoder syntax and arithmetic unchanged because block size is
+    already an explicit bounded LiftPack-1 field;
+  - retain a single integer block-size argument as a deterministic restricted
+    encoder configuration.
+- Rationale:
+  - one-second residual-only diagnostics show that tonal clips prefer very
+    large blocks while the drum clip prefers a smaller 2,048-sample block;
+  - no universal fixed choice is best, and encoder-only RDO improves
+    compression without increasing decoder ISA, state, or attack surface.
