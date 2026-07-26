@@ -1235,7 +1235,7 @@ new oscillator opcode.
 ## R-052 — Independent-channel Main-0 transport
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING / NORMATIVE-DRAFT**
+- Status: **IMPLEMENTED / CROSS-PLATFORM VERIFIED / NORMATIVE-DRAFT**
 - Decision:
   - extend the residual-only Main-0 subset to one through eight output channels
     without adding a second container, codec dispatch layer, or coupled DSP
@@ -1268,3 +1268,21 @@ new oscillator opcode.
     records plus interleaving;
   - aligned partitions make the real-time contract simple enough for desktop,
     mobile, embedded, and later hardware decoders.
+- Result:
+  - the Python encoder performs complete aggregate-byte RDO over common RSL2
+    block sizes, independently parses its winning RSC1, and reconstructs
+    canonical frame-major PCM;
+  - the native Core validates one consecutive residual instance per channel,
+    exact frame/partition equality, and bounded output-size arithmetic;
+  - whole decode preflights every entropy path before its first PCM write while
+    reusing one channel-sized Innovation and one maximum scratch region;
+  - player decode uses one channel block plus one interleaved output block and
+    calls the application only after all channels reconstruct the same frame
+    interval;
+  - a generated stereo stream is bit-exact across Python, native whole decode,
+    and native callback playback;
+  - GCC, Clang, MSVC, Linux ARM64, Windows ARM64, macOS ARM64, Android
+    arm64-v8a, the Python/native bridge, and ASan/UBSan/libFuzzer passed in
+    run 30205820034;
+  - the reference CLI now accepts ordinary one-through-eight-channel PCM16 WAV
+    for `encode-main0` and writes validated PCM16 WAV through `decode-main0`.

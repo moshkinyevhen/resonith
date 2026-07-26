@@ -1,4 +1,4 @@
-"""Strict PCM16 mono WAV I/O for the first codec prototype."""
+"""Strict bounded PCM16 WAV I/O for Resonith reference tools."""
 
 from __future__ import annotations
 
@@ -8,18 +8,35 @@ import wave
 import numpy as np
 
 
-def read_pcm16_mono(path: str | Path) -> tuple[int, np.ndarray]:
+def read_pcm16_channels(path: str | Path) -> tuple[int, np.ndarray]:
+    """Read canonical frame-major PCM16 with one through eight channels."""
+
     with wave.open(str(path), "rb") as source:
-        if source.getnchannels() != 1:
-            raise ValueError("MAF-P0 accepts mono WAV only")
+        channels = source.getnchannels()
+        if not 1 <= channels <= 8:
+            raise ValueError("Resonith accepts one through eight WAV channels")
         if source.getsampwidth() != 2:
-            raise ValueError("MAF-P0 accepts PCM16 WAV only")
+            raise ValueError("Resonith accepts PCM16 WAV only")
         if source.getcomptype() != "NONE":
             raise ValueError("compressed WAV input is not supported")
         sample_rate = source.getframerate()
-        frames = source.readframes(source.getnframes())
-    samples = np.frombuffer(frames, dtype="<i2").astype(np.int16, copy=True)
-    return sample_rate, samples
+        frame_count = source.getnframes()
+        frame_bytes = source.readframes(frame_count)
+    samples = np.frombuffer(frame_bytes, dtype="<i2").astype(
+        np.int16,
+        copy=True,
+    )
+    expected_elements = frame_count * channels
+    if samples.size != expected_elements:
+        raise ValueError("truncated PCM16 WAV frame payload")
+    return sample_rate, samples.reshape(frame_count, channels)
+
+
+def read_pcm16_mono(path: str | Path) -> tuple[int, np.ndarray]:
+    sample_rate, channels = read_pcm16_channels(path)
+    if channels.shape[1] != 1:
+        raise ValueError("this analysis path accepts mono WAV only")
+    return sample_rate, channels[:, 0].copy()
 
 
 def write_pcm16_mono(

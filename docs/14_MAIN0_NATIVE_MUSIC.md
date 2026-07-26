@@ -517,3 +517,28 @@ itself; a future source model must remove substantially more Innovation or
 amortize one state record across much longer useful lifetimes before it earns
 new decoder syntax. The reproducible compact record is
 [`cached_cibs_additive_2026-07-26_summary.json`](../experiments/results/cached_cibs_additive_2026-07-26_summary.json).
+
+## 22. Independent-channel playback
+
+The functional Main-0 fallback now carries one through eight channels without
+adding a second codec or coupled transform. One `CONF` declares the frame
+count, shared Innovation step, and channel count. Consecutive `RSL2` instances
+carry independent channel residuals on one aligned block partition.
+
+The Python encoder selects that common partition by complete aggregate RSC1
+bytes. The native whole decoder validates every channel and preflights every
+entropy path before writing interleaved PCM. The callback player retains one
+channel block, one maximum LiftPack scratch region, and one interleaved output
+block; it emits a frame interval only after all channels reconstruct at the
+same offset and length.
+
+The conformance bridge generates stereo PCM and requires equality among the
+Python decoder, native whole decode, and native interleaved callback. GCC,
+Clang, MSVC, Linux ARM64, Windows ARM64, macOS ARM64, Android arm64-v8a,
+Python/native parity, and sanitized mutation coverage passed in
+[run 30205820034](https://github.com/moshkinyevhen/resonith/actions/runs/30205820034).
+
+This is a deployability result, not a stereo compression claim. Independent
+channels are the required fallback because all earlier coupled waveform tools
+lost their declared gates. A later source-aware stereo or spatial
+representation must beat this executable fallback before replacing it.

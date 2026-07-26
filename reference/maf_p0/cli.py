@@ -15,13 +15,23 @@ from .model import (
     save_analysis_model,
     train_linear_cibs,
 )
+from .main0 import decode_main0_raw_stream
+from .multichannel import (
+    decode_main0_independent_stream,
+    encode_main0_independent_rdo,
+)
 from .periodic import analyze_periodic_basis
 from .stateful import (
     decode_stateful_bytes,
     encode_stateful_rdo_samples,
     encode_stateful_samples,
 )
-from .wav_io import read_pcm16_mono, write_pcm16_mono
+from .wav_io import (
+    read_pcm16_channels,
+    read_pcm16_mono,
+    write_pcm16_channels,
+    write_pcm16_mono,
+)
 
 
 def _json_default(value):
@@ -183,9 +193,80 @@ def _benchmark(args: argparse.Namespace) -> None:
     print(json.dumps(reports, indent=2, default=_json_default))
 
 
+def _encode_main0(args: argparse.Namespace) -> None:
+    """Encode a deployable independent-channel RSC1 stream."""
+
+    sample_rate, samples = read_pcm16_channels(args.input)
+    result = encode_main0_independent_rdo(
+        samples,
+        sample_rate,
+        innovation_step=args.innovation_step,
+        residual_block_sizes=tuple(args.residual_blocks),
+    )
+    Path(args.output).write_bytes(result.payload)
+    print(json.dumps(result.report, indent=2, default=_json_default))
+
+
+def _decode_main0(args: argparse.Namespace) -> None:
+    """Decode residual-only or mono model-bearing Main-0 to PCM16 WAV."""
+
+    payload = Path(args.input).read_bytes()
+    try:
+        result = decode_main0_independent_stream(payload)
+        sample_rate = result.sample_rate
+        samples = result.samples
+    except ValueError as independent_error:
+        model = load_analysis_model(args.model) if args.model else None
+        try:
+            mono = decode_main0_raw_stream(
+                payload,
+                cibs_models=() if model is None else (model,),
+            )
+        except ValueError:
+            raise independent_error
+        sample_rate = mono.sample_rate
+        samples = mono.samples.reshape(-1, 1)
+    write_pcm16_channels(args.output, sample_rate, samples)
+    print(
+        json.dumps(
+            {
+                "sample_rate": sample_rate,
+                "frame_count": int(samples.shape[0]),
+                "output_channels": int(samples.shape[1]),
+                "output": str(args.output),
+            },
+            indent=2,
+        )
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="maf-p0")
+    parser = argparse.ArgumentParser(prog="resonith")
     commands = parser.add_subparsers(dest="command", required=True)
+
+    encode_main0 = commands.add_parser(
+        "encode-main0",
+        help="encode a 1-8 channel PCM16 WAV to aligned Main-0 RSC1",
+    )
+    encode_main0.add_argument("input")
+    encode_main0.add_argument("output")
+    encode_main0.add_argument("--innovation-step", type=int, default=1)
+    encode_main0.add_argument(
+        "--residual-blocks",
+        type=int,
+        nargs="+",
+        default=(4096, 16384, 32768),
+    )
+    encode_main0.set_defaults(function=_encode_main0)
+
+    decode_main0 = commands.add_parser(
+        "decode-main0",
+        help="decode Main-0 RSC1 to a PCM16 WAV",
+    )
+    decode_main0.add_argument("input")
+    decode_main0.add_argument("output")
+    decode_main0.add_argument("--model")
+    decode_main0.set_defaults(function=_decode_main0)
 
     train = commands.add_parser("train-model")
     train.add_argument("output")

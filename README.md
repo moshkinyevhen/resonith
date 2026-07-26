@@ -55,7 +55,7 @@ The repository contains:
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 96 pure reference/security/integration tests, seven native decoder-in-loop
+- 98 pure reference/security/integration tests, seven native decoder-in-loop
   integration tests, nine native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1 mutation targets.
@@ -94,6 +94,22 @@ explicitly marked as **TARGET** or **HYPOTHESIS**. They are not codec claims.
 
 Public repository:
 [github.com/moshkinyevhen/resonith](https://github.com/moshkinyevhen/resonith).
+
+## Main-0 WAV quick start
+
+The reference CLI accepts uncompressed PCM16 WAV with one through eight
+channels. Lossless mode uses `innovation_step=1`:
+
+```sh
+PYTHONPATH=reference python -m maf_p0 encode-main0 \
+  input.wav output.rsc --innovation-step 1
+PYTHONPATH=reference python -m maf_p0 decode-main0 \
+  output.rsc decoded.wav
+```
+
+The encoder RDO selects one aligned RSL2 block size by complete aggregate RSC1
+bytes. The decoder independently validates the container, channel instances,
+frame counts, and common block partition before emitting PCM.
 
 ## Implementation stack
 

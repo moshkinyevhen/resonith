@@ -56,7 +56,12 @@ from .stateful import (
     encode_stateful_rdo_samples,
     encode_stateful_samples,
 )
-from .wav_io import read_pcm16_mono, write_pcm16_mono
+from .wav_io import (
+    read_pcm16_channels,
+    read_pcm16_mono,
+    write_pcm16_channels,
+    write_pcm16_mono,
+)
 
 __all__ = [
     "AdditiveOracleResult",
@@ -103,9 +108,11 @@ __all__ = [
     "save_analysis_model",
     "train_linear_cibs",
     "read_pcm16_mono",
+    "read_pcm16_channels",
     "run_additive_atom_oracle",
     "run_analytic_oscillator_oracle",
     "run_cached_additive_oracle",
     "run_lpc_liftpack_oracle",
     "write_pcm16_mono",
+    "write_pcm16_channels",
 ]
