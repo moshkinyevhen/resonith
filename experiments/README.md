@@ -80,6 +80,9 @@ reproducible command and independent decode.
 - `results/lapped_density_2026-07-26_summary.json` — R-061 closest-byte
   fixed/variable-density comparison showing implicit acoustic-state
   localization without a separate classifier.
+- `native_lapped_timing.py` — R-063 release C++ decode timing, exact
+  Python/native parity, and caller-owned workspace accounting on the pinned
+  real-music crops.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

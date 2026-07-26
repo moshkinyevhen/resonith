@@ -1664,3 +1664,26 @@ new oscillator opcode.
     retaining warnings-as-errors and the existing sanitizer build;
   - explicit state and transient opcodes remain unjustified. Blinded listening
     and real-device timing are still required.
+
+## R-063 — Reproducible native lapped timing gate
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING / RESEARCH**
+- Decision:
+  - benchmark the release C++ decoder on the same pinned one-second stereo
+    music crops and selected adaptive-density budgets used by the compression
+    gate;
+  - verify Python/native PCM equality before accepting any timing sample;
+  - report complete stream bytes, exact caller-owned workspace, minimum,
+    median, and maximum end-to-end decode wall time, and real-time factor;
+  - initially include ctypes call and caller-array construction in the timing.
+    This is a conservative host integration measurement, not an isolated
+    optimized kernel claim;
+  - automate the run on a pinned GitHub Linux x64 environment and retain its
+    JSON artifact. Android and ARM64 builds establish portability, while
+    physical phone thermal/battery testing remains a separate release gate.
+- Rationale:
+  - operation counts and successful cross-compilation do not prove deadline
+    margin;
+  - using real selected streams reveals parser, entropy, sparse-density, ROM
+    lookup, overlap, interleave, and host binding costs together.
