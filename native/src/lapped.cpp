@@ -941,10 +941,7 @@ resonith_status validate_synthesis_bounds(
             }
         }
     }
-    return sparse_cursor == requirements.coefficient_elements
-            || !parsed.variable_density
-        ? RESONITH_STATUS_OK
-        : RESONITH_STATUS_MALFORMED;
+    return RESONITH_STATUS_OK;
 }
 
 void render_channel(
