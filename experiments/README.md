@@ -104,6 +104,10 @@ reproducible command and independent decode.
   pre-echo diagnostics before any mixed-window syntax.
 - `results/window_transient_2026-07-26_summary.json` — the R-064 negative
   result that keeps short-window switching out of prospective LPF1.
+- `lapped_streaming_gate.py` — R-071 independent-context packet overhead,
+  quality, and seam-local diagnostic gate on pinned real music.
+- `results/lapped_streaming_2026-07-26_summary.json` — the R-071 complete-byte
+  pass; native envelope/session implementation remains a separate gate.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

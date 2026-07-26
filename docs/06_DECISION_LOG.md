@@ -1902,3 +1902,37 @@ new oscillator opcode.
   - the ordinary CPU path can now evaluate six exact candidates faster than
     real time on the hosted x64 runner. GPU work is reserved for deeper RDO,
     source analysis, and teacher search rather than basic encoding viability.
+
+## R-071 — Independent-context bounded LPF1 packets
+
+- Date: 2026-07-26
+- Status: **MEASURED PASS / NATIVE SESSION PENDING / RESEARCH**
+- Decision:
+  - test an `LPS1` packet sequence whose children are complete independently
+    verifiable LPF1/RSC1 streams;
+  - give each logical packet exactly one half-window of source context on both
+    sides, then discard that context after child reconstruction;
+  - align packet duration to the half-window and require contiguous canonical
+    logical offsets;
+  - authenticate the fixed header and every packet independently with SHA-256,
+    while retaining every child's existing section integrity;
+  - admit streaming syntax only if approximately one-second packets cost no
+    more than 8% complete bytes and lose no more than 0.5 dB waveform SNR on
+    every pinned clip.
+- Rationale:
+  - current LPF1 scale, sparse, and overlap workspaces grow with track length;
+  - one-window context makes fixed-density packet interiors exactly equal to
+    monolithic reconstruction while avoiding cross-packet decoder state;
+  - slight context retransmission is a deliberate simplicity trade for bounded
+    memory, random access, packet-loss containment, and parallel decode.
+- Result:
+  - the Python reference packet encoder/decoder rejects non-canonical coverage,
+    child-parameter mismatch, digest corruption, and unaligned packet sizes;
+  - fixed-density packet reconstruction is exactly equal to monolithic LPF1 on
+    a multi-boundary conformance vector;
+  - on three-second adaptive-density music crops, complete-byte overhead was
+    6.80%-7.31% and waveform-SNR delta was -0.26 to +2.64 dB, so all three
+    clips passed the declared gate;
+  - packet-local SHA-256 permits progressive authentication without waiting for
+    an end-of-file digest. The native envelope parser, pull session, packet-loss
+    behavior, and listening gate remain pending.

@@ -35,6 +35,12 @@ from .lapped_oracle import (
     encode_lapped_analysis,
     encode_lapped_stream,
 )
+from .lapped_streaming import (
+    LappedPacketDecodeResult,
+    LappedPacketEncodeResult,
+    decode_lapped_packet_stream,
+    encode_lapped_packet_stream,
+)
 from .main0 import (
     Main0DecodeResult,
     Main0EncodeResult,
@@ -96,6 +102,8 @@ __all__ = [
     "LappedDecodeResult",
     "LappedEncodeResult",
     "LappedAnalysis",
+    "LappedPacketDecodeResult",
+    "LappedPacketEncodeResult",
     "NativeMain0Decoder",
     "NativeMultichannelDecodeResult",
     "NativeMultichannelRequirements",
@@ -124,10 +132,12 @@ __all__ = [
     "decode_lpc_liftpack_oracle",
     "decode_lpc_liftpack_block",
     "decode_lapped_stream",
+    "decode_lapped_packet_stream",
     "encode_lapped_analysis",
     "encode_liftpack",
     "encode_lpc_liftpack_oracle",
     "encode_lapped_stream",
+    "encode_lapped_packet_stream",
     "index_lpc_liftpack_blocks",
     "SegmentationResult",
     "segment_acoustic_states",

@@ -18,6 +18,11 @@ from .model import (
 )
 from .main0 import decode_main0_raw_stream
 from .lapped_oracle import decode_lapped_stream, encode_lapped_stream
+from .lapped_streaming import (
+    MAGIC as LAPPED_PACKET_MAGIC,
+    decode_lapped_packet_stream,
+    encode_lapped_packet_stream,
+)
 from .multichannel import (
     decode_main0_independent_stream,
     encode_main0_independent_rdo,
@@ -252,18 +257,31 @@ def _encode_lapped(args: argparse.Namespace) -> None:
         NativeMain0Decoder(native_core) if native_core is not None else None
     )
     started = time.perf_counter()
-    result = encode_lapped_stream(
-        samples,
-        sample_rate,
-        coefficients_per_frame=args.average_coefficients,
-        half_window=args.half_window,
-        band_count=args.bands,
-        entropy_backend="bounded",
-        transform_backend="fixed",
-        density_backend=args.density,
-        native_analyzer=native_analyzer,
-        native_decoder=native_analyzer,
-    )
+    packet_frames = getattr(args, "packet_frames", 0)
+    if packet_frames:
+        result = encode_lapped_packet_stream(
+            samples,
+            sample_rate,
+            coefficients_per_frame=args.average_coefficients,
+            packet_frames=packet_frames,
+            half_window=args.half_window,
+            band_count=args.bands,
+            density_backend=args.density,
+            native_core=native_analyzer,
+        )
+    else:
+        result = encode_lapped_stream(
+            samples,
+            sample_rate,
+            coefficients_per_frame=args.average_coefficients,
+            half_window=args.half_window,
+            band_count=args.bands,
+            entropy_backend="bounded",
+            transform_backend="fixed",
+            density_backend=args.density,
+            native_analyzer=native_analyzer,
+            native_decoder=native_analyzer,
+        )
     encode_seconds = time.perf_counter() - started
     Path(args.output).write_bytes(result.payload)
     report = dict(result.report)
@@ -277,7 +295,12 @@ def _decode_lapped(args: argparse.Namespace) -> None:
 
     payload = Path(args.input).read_bytes()
     started = time.perf_counter()
-    result = decode_lapped_stream(payload)
+    packeted = payload.startswith(LAPPED_PACKET_MAGIC)
+    result = (
+        decode_lapped_packet_stream(payload)
+        if packeted
+        else decode_lapped_stream(payload)
+    )
     decode_seconds = time.perf_counter() - started
     write_pcm16_channels(args.output, result.sample_rate, result.samples)
     print(
@@ -288,7 +311,15 @@ def _decode_lapped(args: argparse.Namespace) -> None:
                 "output_channels": int(result.samples.shape[1]),
                 "half_window": result.half_window,
                 "band_count": result.band_count,
-                "transform_frame_count": result.frame_count,
+                "transform_frame_count": (
+                    None if packeted else result.frame_count
+                ),
+                "packet_frames": (
+                    result.packet_frames if packeted else None
+                ),
+                "packet_count": (
+                    result.packet_count if packeted else None
+                ),
                 "stream_bytes": len(payload),
                 "decode_wall_seconds": decode_seconds,
                 "output": str(args.output),
@@ -339,6 +370,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     encode_lapped.add_argument("--half-window", type=int, default=512)
     encode_lapped.add_argument("--bands", type=int, default=24)
+    encode_lapped.add_argument(
+        "--packet-frames",
+        type=int,
+        default=0,
+        help="emit bounded LPS1 packets; value must align to half-window",
+    )
     encode_lapped.add_argument(
         "--density",
         choices=("adaptive", "fixed"),

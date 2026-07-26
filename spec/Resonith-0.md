@@ -279,6 +279,42 @@ only after all channels succeed. A rejected block reports zero output frames
 and leaves the session retryable. End-of-stream is reported only after the
 declared block and frame counts are both exhausted.
 
+#### 4.1.7 Prospective `LPS1` independent-context packet sequence
+
+`LPS1` is a research candidate and is not yet a mandatory Resonith-0
+conformance profile. It provides bounded-memory transport for the prospective
+fixed/bounded LPF1 path without cross-packet prediction state.
+
+The little-endian fixed header declares magic, version, zero flags, channel
+count, sample rate, total logical frame count, half-window, band count, nominal
+packet frames, and packet count. Nominal packet frames MUST be a positive
+multiple of the half-window. Packet count MUST equal the canonical ceiling of
+total frames divided by nominal packet frames. The header is immediately
+followed by its 32-byte SHA-256 digest.
+
+Each packet then contains:
+
+1. `u32 logical_start`, `u32 logical_count`, and `u32 child_bytes`;
+2. one complete LPF1/RSC1 child of exactly `child_bytes`;
+3. SHA-256 over the packet header and child bytes.
+
+Logical intervals MUST be non-empty, contiguous, ordered, non-overlapping, and
+cover the declared output exactly. Each child MUST declare the envelope's
+sample rate, channel count, half-window, and band count. Its PCM frame count
+MUST equal `logical_count + 2 * half_window`.
+
+The encoder prepends and appends exactly one half-window of source context,
+using zeros only outside the logical track. The decoder authenticates and
+decodes one child independently, discards the first and final half-window, and
+commits only the central logical interval. It MUST NOT use concealment or a
+failed child as reference for another packet.
+
+Fixed-density child interiors are required to equal monolithic LPF1
+reconstruction for identical coefficient and transform parameters. Adaptive
+density is permitted to redistribute its budget independently inside each
+child. No whole-file digest is required: header and packet authentication are
+independent so a receiver can validate and emit progressively.
+
 ## 5. State records
 
 ### 5.1 `STREAM_CONFIG`
@@ -902,7 +938,7 @@ Decoder MUST:
 - fixed-point precisions;
 - stability domains;
 - exact profile/level limits;
-- packetization/FEC;
+- promotion of the prospective `LPS1` packet sequence and FEC;
 - MUSHRA conformance corpus;
 - reference encoder/decoder;
 - container mappings.

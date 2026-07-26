@@ -1,0 +1,42 @@
+{
+  "clip_count": 3,
+  "clips": {
+    "corelli-sonata-realization": {
+      "boundary_vs_interior_error_db": 1.6657377480628899,
+      "byte_overhead_fraction": 0.06795633848481564,
+      "gate_passed": true,
+      "monolithic_snr_db_diagnostic": 26.51975063131756,
+      "monolithic_stream_bytes": 46265,
+      "packet_count": 4,
+      "packet_snr_db_diagnostic": 26.666097503791857,
+      "packet_stream_bytes": 49409,
+      "snr_delta_db_diagnostic": 0.14634687247429667
+    },
+    "emotional-piano-cc0": {
+      "boundary_vs_interior_error_db": 3.04428438478159,
+      "byte_overhead_fraction": 0.07305475181122856,
+      "gate_passed": true,
+      "monolithic_snr_db_diagnostic": 37.76433996891152,
+      "monolithic_stream_bytes": 44583,
+      "packet_count": 4,
+      "packet_snr_db_diagnostic": 40.40165597981007,
+      "packet_stream_bytes": 47840,
+      "snr_delta_db_diagnostic": 2.6373160108985516
+    },
+    "patro-de-bateria": {
+      "boundary_vs_interior_error_db": -1.7991102984768879,
+      "byte_overhead_fraction": 0.06925628974288078,
+      "gate_passed": true,
+      "monolithic_snr_db_diagnostic": 31.109282749694792,
+      "monolithic_stream_bytes": 36170,
+      "packet_count": 4,
+      "packet_snr_db_diagnostic": 30.85169854100436,
+      "packet_stream_bytes": 38675,
+      "snr_delta_db_diagnostic": -0.25758420869043164
+    }
+  },
+  "conclusion": "Independent one-window-context packets passed the declared gate with 6.80%-7.31% complete-byte overhead and -0.26 to +2.64 dB waveform-SNR delta.",
+  "gate_rule": "No more than 8% complete-byte overhead and no more than 0.5 dB waveform-SNR loss on every clip.",
+  "metric_warning": "Waveform and boundary-error values are diagnostics, not perceptual equivalence.",
+  "research_only": true
+}

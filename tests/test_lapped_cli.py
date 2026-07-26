@@ -16,7 +16,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT / "reference"))
 
 from maf_p0.cli import _decode_lapped, _encode_lapped  # noqa: E402
-from maf_p0.lapped_oracle import decode_lapped_stream  # noqa: E402
+from maf_p0.lapped_streaming import decode_lapped_packet_stream  # noqa: E402
 from maf_p0.wav_io import (  # noqa: E402
     read_pcm16_channels,
     write_pcm16_channels,
@@ -49,9 +49,11 @@ class LappedCliTests(unittest.TestCase):
                         half_window=256,
                         bands=16,
                         density="adaptive",
+                        packet_frames=1024,
+                        native_core=None,
                     )
                 )
-            reference = decode_lapped_stream(stream_path.read_bytes())
+            reference = decode_lapped_packet_stream(stream_path.read_bytes())
             with redirect_stdout(io.StringIO()):
                 _decode_lapped(
                     argparse.Namespace(
@@ -64,6 +66,7 @@ class LappedCliTests(unittest.TestCase):
 
         self.assertEqual(sample_rate, 48000)
         self.assertEqual(report["density_backend"], "adaptive")
+        self.assertEqual(report["packet_count"], 4)
         self.assertGreater(report["stream_bytes"], 0)
         np.testing.assert_array_equal(decoded, reference.samples)
 

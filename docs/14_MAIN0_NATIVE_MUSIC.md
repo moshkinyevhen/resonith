@@ -857,3 +857,30 @@ free; it establishes that consumer encoding is already viable without a GPU,
 while CUDA can be spent on broader candidate generation and teacher analysis.
 The compact record is
 [`native_lapped_frontier_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_frontier_timing_2026-07-26_summary.json).
+
+## 36. Independent-context packet gate
+
+`LPS1` divides the logical output into half-window-aligned packets. Each child
+contains one half-window of real or zero source context before and after its
+logical interval, is encoded as an independently valid LPF1/RSC1 stream, and
+is trimmed back to the logical interval after decode. The fixed header and
+every packet are authenticated independently, so progressive decode does not
+wait for an end-of-file digest.
+
+| Crop | Monolithic bytes | Packet bytes | Overhead | SNR delta |
+| --- | ---: | ---: | ---: | ---: |
+| Corelli | 46,265 | 49,409 | 6.80% | +0.15 dB |
+| Piano | 44,583 | 47,840 | 7.31% | +2.64 dB |
+| Drums | 36,170 | 38,675 | 6.93% | -0.26 dB |
+
+All clips pass the declared 8%/−0.5 dB gate. More importantly, fixed-density
+packet interiors are exactly equal to monolithic reconstruction, proving that
+the context trim itself introduces no transform seam. Adaptive density may
+allocate coefficients differently per packet; its waveform and seam-local
+metrics are diagnostics, not listening equivalence.
+
+This buys bounded memory, packet-local loss containment, random access, and
+parallel decode with one mechanism and no persistent cross-packet state. The
+native envelope parser and pull session remain mandatory before promotion.
+The compact record is
+[`lapped_streaming_2026-07-26_summary.json`](../experiments/results/lapped_streaming_2026-07-26_summary.json).
