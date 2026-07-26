@@ -1,0 +1,45 @@
+{
+  "date": "2026-07-26",
+  "github_actions_run": 30212427356,
+  "gate": {
+    "maximum_estimated_latency_milliseconds": 50.0,
+    "maximum_complete_rate_ratio": 1.15,
+    "minimum_snr_delta_db": -1.0,
+    "maximum_spectral_delta_db": 1.0,
+    "common_passing_configurations": [
+      "h512_p40"
+    ],
+    "recommended_configuration": "h512_p40"
+  },
+  "recommended_configuration": {
+    "half_window": 512,
+    "actual_packet_milliseconds": 34.82993197278912,
+    "half_window_lookahead_milliseconds": 11.609977324263038,
+    "estimated_algorithmic_latency_milliseconds": 46.439909297052154
+  },
+  "clips": {
+    "corelli-sonata-realization": {
+      "anchor_bytes": 15844,
+      "lps4_bytes": 17517,
+      "complete_rate_ratio": 1.105592022216612,
+      "snr_delta_db": 0.0,
+      "spectral_delta_db": 0.0
+    },
+    "emotional-piano-cc0": {
+      "anchor_bytes": 15257,
+      "lps4_bytes": 17144,
+      "complete_rate_ratio": 1.1236809333420725,
+      "snr_delta_db": 0.0,
+      "spectral_delta_db": 0.0
+    },
+    "patro-de-bateria": {
+      "anchor_bytes": 12514,
+      "lps4_bytes": 14168,
+      "complete_rate_ratio": 1.1321719673965158,
+      "snr_delta_db": 0.0,
+      "spectral_delta_db": 0.0
+    }
+  },
+  "status": "LPS4 Realtime diagnostic frontier passed",
+  "conclusion": "Compact transport-framed records make H512 with 34.83 ms packets the only common passing diagnostic configuration. Estimated packet-plus-half-window latency is 46.44 ms, complete-byte overhead is 10.56%-13.22%, and reconstruction equals the monolithic anchor exactly."
+}

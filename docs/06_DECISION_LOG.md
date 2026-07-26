@@ -2171,7 +2171,7 @@ new oscillator opcode.
 ## R-079 — Measured Realtime latency/rate frontier
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **NO COMMON LPS3 POINT / ADMINISTRATIVE RATE BLOCKER**
 - Decision:
   - sweep fixed half-windows 128, 256, and 512 with approximately 20, 40, and
     80 ms LPS3 packet intervals on every pinned music clip;
@@ -2194,11 +2194,24 @@ new oscillator opcode.
     transform inefficiency, or objective quality before any native LPS3 state
     machine is frozen;
   - the metrics remain diagnostics. A passing point still requires listening.
+- Result:
+  - GitHub Actions run 30212188173 found no configuration passing all four
+    limits on all clips;
+  - H128 at approximately 40 ms packets reached 43.54 ms estimated latency and
+    acceptable rate on some clips, but lost 1.08-6.37 dB waveform SNR and
+    1.13-6.95 dB mean spectral convergence;
+  - H256 at approximately 40 ms reached 46.44 ms, but still lost 0.60-3.36 dB
+    SNR and 0.70-3.79 dB spectral convergence;
+  - H512 at approximately 40 ms preserved anchor PCM and all diagnostics
+    exactly, but repeated packet metadata raised complete bytes by
+    20.63%-25.96%;
+  - therefore shorter transforms are not selected merely for latency. R-080
+    attacks the isolated administrative rate cost while retaining H512.
 
 ## R-080 — Compact transport-framed LPS4 records
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **REALTIME DIAGNOSTIC PASS / 46.44 MS / 10.56%-13.22%**
 - Decision:
   - test an `LPS4` Realtime sequence with the same globally selected
     single-owner transform fields and lookahead semantics as LPS3;
@@ -2220,3 +2233,18 @@ new oscillator opcode.
     global shape in every short packet are redundant;
   - CRC-32 preserves standalone accidental-corruption detection while the
     transport profile requires external cryptographic authentication.
+- Result:
+  - the Python LPS4 encoder removes repeated logical and transform-shape
+    fields, carries a 27-byte entropy descriptor, derives each record length
+    from entropy bit counts, and protects the compact record with CRC-32;
+  - compact-to-canonical LSE2 expansion is exact, malformed or corrupted
+    records are rejected, and decoded PCM equals the monolithic transform
+    anchor exactly;
+  - GitHub Actions run 30212427356 found one common passing point: H512 with
+    1536-frame, 34.83 ms records;
+  - one 512-frame lookahead raises estimated algorithmic latency to 46.44 ms;
+    complete-byte overhead was 10.56%, 12.37%, and 13.22% on the three pinned
+    clips, with zero SNR or spectral delta from the anchor;
+  - native compact parsing and scheduling, authenticated transport integration,
+    physical-device measurements, and listening remain prospective. CRC-32 is
+    not adversarial authentication.

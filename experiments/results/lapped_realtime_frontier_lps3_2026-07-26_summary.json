@@ -1,0 +1,33 @@
+{
+  "date": "2026-07-26",
+  "github_actions_run": 30212188173,
+  "gate": {
+    "maximum_estimated_latency_milliseconds": 50.0,
+    "maximum_complete_rate_ratio": 1.15,
+    "minimum_snr_delta_db": -1.0,
+    "maximum_spectral_delta_db": 1.0,
+    "common_passing_configurations": []
+  },
+  "representative_40ms_points": {
+    "h128": {
+      "estimated_latency_milliseconds": 43.53741496598639,
+      "complete_rate_ratio_range": [1.1019944458470083, 1.2828831708486494],
+      "snr_delta_db_range": [-6.369894747792188, -1.0812152763817906],
+      "spectral_delta_db_range": [1.133924776555645, 6.945911654379422]
+    },
+    "h256": {
+      "estimated_latency_milliseconds": 46.439909297052154,
+      "complete_rate_ratio_range": [1.1198560969452158, 1.2231101166693303],
+      "snr_delta_db_range": [-3.361091089188122, -0.6008000742255462],
+      "spectral_delta_db_range": [0.6957924633991084, 3.7850514468697334]
+    },
+    "h512": {
+      "estimated_latency_milliseconds": 46.439909297052154,
+      "complete_rate_ratio_range": [1.2063241605655137, 1.2596292152788877],
+      "snr_delta_db_range": [0.0, 0.0],
+      "spectral_delta_db_range": [0.0, 0.0]
+    }
+  },
+  "status": "LPS3 Realtime frontier found no common diagnostic candidate",
+  "conclusion": "Shorter transforms met latency but lost objective quality; H512 preserved quality but repeated short-packet metadata cost 20.63%-25.96%. Packet administration, not transform DSP, became the next target."
+}

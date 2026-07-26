@@ -52,13 +52,14 @@ The repository contains:
 - an explicit shared-Core Python bridge that gates typed-stream RDO on the
   production decoder and exact cross-decoder PCM equality;
 - independently authenticated `LPS1` source-context, `LPS2` independent
-  transform-boundary, and `LPS3` single-owner transform packets for
-  bounded-memory, parallel, random-access, and loss-contained lapped research;
+  transform-boundary, `LPS3` single-owner transform packets, and compact
+  transport-framed `LPS4` records for bounded-memory, parallel, random-access,
+  and loss-contained lapped research;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 123 pure reference/security/integration tests, eleven native decoder-in-loop
+- 125 pure reference/security/integration tests, eleven native decoder-in-loop
   integration tests, ten native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1/LPF1 mutation targets.

@@ -1031,3 +1031,50 @@ The result passes the declared 4% rate gate. The next oracle must jointly sweep
 packet duration and half-window before LPS3 receives a native scheduler. The
 compact record is
 [`lapped_chained_packet_2026-07-26_summary.json`](../experiments/results/lapped_chained_packet_2026-07-26_summary.json).
+
+## 44. First Realtime frontier: negative LPS3 result
+
+The joint half-window and packet-duration sweep found no LPS3 point satisfying
+the declared 50 ms latency, 15% complete-rate, 1 dB SNR, and 1 dB spectral
+limits on every clip.
+
+Shorter transforms paid in objective quality. Around 40 ms packets, H128 lost
+1.08-6.37 dB SNR and 1.13-6.95 dB spectral convergence; H256 lost 0.60-3.36 dB
+and 0.70-3.79 dB respectively. H512 preserved the anchor reconstruction
+exactly at 46.44 ms estimated latency, but repeated per-packet LSE2 shape,
+logical headers, and SHA-256 raised complete bytes by 20.63%-25.96%.
+
+This is a useful negative result: transform quality and latency can coexist;
+the blocker is repeated administrative data. R-080 therefore retains H512 and
+compacts only the transport record. The compact record is
+[`lapped_realtime_frontier_lps3_2026-07-26_summary.json`](../experiments/results/lapped_realtime_frontier_lps3_2026-07-26_summary.json).
+
+## 45. Compact LPS4 Realtime candidate
+
+LPS4 removes repeated global transform shape, logical packet fields, child
+headers, and per-record SHA-256. Its authenticated sequence header fixes the
+global shape, while each transport-framed record carries a 27-byte entropy
+descriptor, compact entropy payload, and CRC-32. The record length is derived
+from its entropy bit counts.
+
+The unchanged R-079 frontier then found one common diagnostic pass:
+
+| Property | H512 / approximately 40 ms |
+|---|---:|
+| Actual record duration | 34.83 ms |
+| Required half-window lookahead | 11.61 ms |
+| Estimated algorithmic latency | 46.44 ms |
+| Complete-byte overhead, Corelli | 10.56% |
+| Complete-byte overhead, piano | 12.37% |
+| Complete-byte overhead, drums | 13.22% |
+| SNR delta from monolithic H512 | 0.00 dB |
+| Spectral delta from monolithic H512 | 0.00 dB |
+
+This crosses the declared diagnostic threshold without changing transform
+reconstruction. It does not yet establish a deployable Realtime profile:
+native compact parsing and scheduling, cryptographically authenticated
+transport, device energy and thermal measurements, and listening remain open.
+CRC-32 detects accidental corruption but is not adversarial authentication.
+
+The compact result is
+[`lapped_realtime_frontier_lps4_2026-07-26_summary.json`](../experiments/results/lapped_realtime_frontier_lps4_2026-07-26_summary.json).
