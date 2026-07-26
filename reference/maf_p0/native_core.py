@@ -34,12 +34,6 @@ class _Requirements(ctypes.Structure):
         ("liftpack_scratch_elements", ctypes.c_size_t),
         ("output_channels", ctypes.c_uint16),
         ("reserved", ctypes.c_uint16),
-        ("stream_data", ctypes.POINTER(ctypes.c_uint8)),
-        ("stream_size", ctypes.c_size_t),
-        ("basis_elements", ctypes.c_uint32),
-        ("phase_knot_count", ctypes.c_uint32),
-        ("gain_event_count", ctypes.c_uint32),
-        ("basis_count", ctypes.c_uint32),
     ]
 
 
@@ -76,6 +70,12 @@ class _PlayerView(ctypes.Structure):
         ("liftpack_scratch_elements", ctypes.c_size_t),
         ("output_channels", ctypes.c_uint16),
         ("reserved", ctypes.c_uint16),
+        ("stream_data", ctypes.POINTER(ctypes.c_uint8)),
+        ("stream_size", ctypes.c_size_t),
+        ("basis_elements", ctypes.c_uint32),
+        ("phase_knot_count", ctypes.c_uint32),
+        ("gain_event_count", ctypes.c_uint32),
+        ("basis_count", ctypes.c_uint32),
     ]
 
 
