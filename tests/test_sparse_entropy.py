@@ -11,10 +11,13 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT / "reference"))
 
 from maf_p0.sparse_entropy import (  # noqa: E402
+    compact_variable_sparse_lapped,
+    compact_variable_sparse_lapped_size,
     decode_sparse_lapped,
     decode_variable_sparse_lapped,
     encode_sparse_lapped,
     encode_variable_sparse_lapped,
+    expand_compact_variable_sparse_lapped,
 )
 
 
@@ -131,6 +134,34 @@ class SparseEntropyTests(unittest.TestCase):
         np.testing.assert_array_equal(decoded.counts, counts)
         np.testing.assert_array_equal(decoded.positions, positions)
         np.testing.assert_array_equal(decoded.values, values)
+
+    def test_compact_variable_transport_restores_exact_lse2(self) -> None:
+        scales, _positions, _values = self._fields()
+        counts = np.asarray([[2, 0], [1, 3]], dtype=np.uint16)
+        positions = np.asarray([0, 7, 2, 3, 10, 60], dtype=np.uint16)
+        values = np.asarray([4, -7, -4, -3, 6, -1], dtype=np.int8)
+        payload = encode_variable_sparse_lapped(
+            scales,
+            counts,
+            positions,
+            values,
+            half_window=64,
+        )
+        compact = compact_variable_sparse_lapped(payload)
+        restored = expand_compact_variable_sparse_lapped(
+            compact,
+            frame_count=2,
+            channels=2,
+            band_count=3,
+        )
+
+        self.assertEqual(
+            compact_variable_sparse_lapped_size(compact),
+            len(compact),
+        )
+        self.assertEqual(restored, payload)
+        with self.assertRaises(ValueError):
+            compact_variable_sparse_lapped_size(compact[:-1])
 
 
 if __name__ == "__main__":

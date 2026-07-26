@@ -17,6 +17,7 @@ from maf_p0.lapped_streaming import (  # noqa: E402
     decode_lapped_packet_view,
     encode_lapped_packet_stream,
     encode_lapped_chained_packet_stream,
+    encode_lapped_compact_packet_stream,
     encode_lapped_transform_packet_stream,
     index_lapped_packet_stream,
 )
@@ -210,6 +211,38 @@ class LappedStreamingTests(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             decode_lapped_packet_view(info, info.packets[0])
+
+    def test_compact_packets_remove_repeated_transport_metadata(self) -> None:
+        source = self._stereo(4096)
+        chained = encode_lapped_chained_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+        )
+        compact = encode_lapped_compact_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+        )
+        info = index_lapped_packet_stream(compact.payload)
+
+        self.assertTrue(info.chained_boundary)
+        self.assertTrue(info.compact_transport)
+        self.assertLess(len(compact.payload), len(chained.payload))
+        np.testing.assert_array_equal(
+            compact.reconstruction,
+            chained.reconstruction,
+        )
+        corrupted = bytearray(compact.payload)
+        corrupted[-1] ^= 1
+        with self.assertRaises(ValueError):
+            decode_lapped_packet_stream(bytes(corrupted))
 
 
 if __name__ == "__main__":

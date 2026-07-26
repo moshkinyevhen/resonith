@@ -24,8 +24,142 @@ VARIABLE_MAGIC = b"LSE2"
 VERSION = 1
 HEADER = struct.Struct("<4sBBBBBBBBIHHHIII")
 VARIABLE_HEADER = struct.Struct("<4sBBBBBBBBBBIHHIIIII")
+COMPACT_VARIABLE_HEADER = struct.Struct("<BBBBBBBIIIII")
 MAX_SYMBOLS = 64 << 20
 MAX_PAYLOAD_BYTES = 512 << 20
+
+
+def compact_variable_sparse_lapped(payload: bytes) -> bytes:
+    """Remove LSE2 fields inherited from a transport-framed sequence."""
+
+    if (
+        not isinstance(payload, bytes)
+        or len(payload) < VARIABLE_HEADER.size
+        or len(payload) > MAX_PAYLOAD_BYTES
+    ):
+        raise ValueError("invalid LSE2 payload for compact transport")
+    (
+        magic,
+        version,
+        flags,
+        scale_entropy,
+        scale_parameter,
+        count_entropy,
+        count_parameter,
+        position_parameter,
+        value_entropy,
+        value_parameter,
+        reserved,
+        _frame_count,
+        _channels,
+        _band_count,
+        coefficient_count,
+        scale_bits,
+        count_bits,
+        position_bits,
+        value_bits,
+    ) = VARIABLE_HEADER.unpack_from(payload)
+    if (
+        magic != VARIABLE_MAGIC
+        or version != VERSION
+        or flags != 0
+        or reserved != 0
+    ):
+        raise ValueError("unsupported LSE2 compact source")
+    return (
+        COMPACT_VARIABLE_HEADER.pack(
+            scale_entropy,
+            scale_parameter,
+            count_entropy,
+            count_parameter,
+            position_parameter,
+            value_entropy,
+            value_parameter,
+            coefficient_count,
+            scale_bits,
+            count_bits,
+            position_bits,
+            value_bits,
+        )
+        + payload[VARIABLE_HEADER.size:]
+    )
+
+
+def compact_variable_sparse_lapped_size(payload: bytes) -> int:
+    """Return one compact record length from its local entropy bit counts."""
+
+    if (
+        not isinstance(payload, bytes)
+        or len(payload) < COMPACT_VARIABLE_HEADER.size
+    ):
+        raise ValueError("truncated compact LSE2 descriptor")
+    fields = COMPACT_VARIABLE_HEADER.unpack_from(payload)
+    bit_counts = fields[-4:]
+    payload_bytes = sum((int(bits) + 7) // 8 for bits in bit_counts)
+    total = COMPACT_VARIABLE_HEADER.size + payload_bytes
+    if total > MAX_PAYLOAD_BYTES or total > len(payload):
+        raise ValueError("truncated compact LSE2 fields")
+    return total
+
+
+def expand_compact_variable_sparse_lapped(
+    payload: bytes,
+    *,
+    frame_count: int,
+    channels: int,
+    band_count: int,
+) -> bytes:
+    """Restore a canonical LSE2 header from authenticated sequence fields."""
+
+    size = compact_variable_sparse_lapped_size(payload)
+    if size != len(payload):
+        raise ValueError("trailing compact LSE2 bytes")
+    (
+        scale_entropy,
+        scale_parameter,
+        count_entropy,
+        count_parameter,
+        position_parameter,
+        value_entropy,
+        value_parameter,
+        coefficient_count,
+        scale_bits,
+        count_bits,
+        position_bits,
+        value_bits,
+    ) = COMPACT_VARIABLE_HEADER.unpack_from(payload)
+    if (
+        frame_count <= 0
+        or channels <= 0
+        or channels > 0xFFFF
+        or band_count <= 0
+        or band_count > 0xFFFF
+    ):
+        raise ValueError("compact LSE2 inherited shape is invalid")
+    return (
+        VARIABLE_HEADER.pack(
+            VARIABLE_MAGIC,
+            VERSION,
+            0,
+            scale_entropy,
+            scale_parameter,
+            count_entropy,
+            count_parameter,
+            position_parameter,
+            value_entropy,
+            value_parameter,
+            0,
+            frame_count,
+            channels,
+            band_count,
+            coefficient_count,
+            scale_bits,
+            count_bits,
+            position_bits,
+            value_bits,
+        )
+        + payload[COMPACT_VARIABLE_HEADER.size:]
+    )
 
 
 @dataclass(frozen=True)

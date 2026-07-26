@@ -13,7 +13,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
 from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
 from maf_p0.lapped_streaming import (  # noqa: E402
-    encode_lapped_chained_packet_stream,
+    encode_lapped_compact_packet_stream,
 )
 from maf_p0.perceptual_metrics import (  # noqa: E402
     multiresolution_spectral_error_db,
@@ -143,7 +143,7 @@ def main() -> None:
                     ),
                 )
                 packet_frames = packet_units * half_window
-                encoded = encode_lapped_chained_packet_stream(
+                encoded = encode_lapped_compact_packet_stream(
                     samples,
                     sample_rate,
                     coefficients_per_frame=budget,
@@ -191,6 +191,7 @@ def main() -> None:
                         estimated_latency_ms
                     ),
                     "stream_bytes": len(encoded.payload),
+                    "packet_format": "LPS4 compact transport-framed",
                     "packet_overhead_fraction_vs_same_transform": (
                         encoded.report["packet_byte_overhead_fraction"]
                     ),

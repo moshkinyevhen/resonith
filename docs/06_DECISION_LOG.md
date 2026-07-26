@@ -2194,3 +2194,29 @@ new oscillator opcode.
     transform inefficiency, or objective quality before any native LPS3 state
     machine is frozen;
   - the metrics remain diagnostics. A passing point still requires listening.
+
+## R-080 — Compact transport-framed LPS4 records
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - test an `LPS4` Realtime sequence with the same globally selected
+    single-owner transform fields and lookahead semantics as LPS3;
+  - make packet index, nominal logical duration, channel count, transform
+    shape, and child length implicit from the authenticated sequence header,
+    transport record boundary, and entropy bit counts;
+  - replace each repeated 42-byte LSE2 header, 12-byte logical packet header,
+    and 32-byte packet SHA-256 with a 27-byte compact entropy descriptor and a
+    4-byte CRC-32;
+  - retain the header SHA-256 and require corruption rejection, canonical
+    packet coverage, exact monolithic PCM, and exact later-packet recovery;
+  - rerun the R-079 frontier unchanged and admit a diagnostic Realtime
+    candidate only under the same 50 ms, 15%, 1 dB, and 1 dB limits.
+- Rationale:
+  - R-079 isolates repeated packet administration, not transform DSP, as the
+    rate blocker for the quality-preserving H512 points;
+  - authenticated transports such as QUIC/SRTP already frame and
+    cryptographically protect datagrams. A codec-level SHA-256 and repeated
+    global shape in every short packet are redundant;
+  - CRC-32 preserves standalone accidental-corruption detection while the
+    transport profile requires external cryptographic authentication.

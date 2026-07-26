@@ -48,6 +48,7 @@ from .lapped_streaming import (
     decode_lapped_packet_view,
     encode_lapped_packet_stream,
     encode_lapped_chained_packet_stream,
+    encode_lapped_compact_packet_stream,
     encode_lapped_transform_packet_stream,
     index_lapped_packet_stream,
 )
@@ -154,6 +155,7 @@ __all__ = [
     "encode_lapped_stream",
     "encode_lapped_packet_stream",
     "encode_lapped_chained_packet_stream",
+    "encode_lapped_compact_packet_stream",
     "encode_lapped_transform_packet_stream",
     "index_lapped_packet_stream",
     "pack_lapped_selected_grid",

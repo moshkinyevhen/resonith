@@ -374,6 +374,46 @@ one-half-window lookahead, and a bounded one-half-window backward loss
 extension. It is not mandatory until native scheduling, loss, latency,
 hostile-input, and listening gates pass.
 
+#### 4.1.10 Prospective `LPS4` compact transport-framed sequence
+
+`LPS4` retains LPS3 global selection, single ownership, lookahead, loss
+containment, and exact reconstruction. Its magic is `LPS4`. It removes fields
+that are already determined by the authenticated sequence header and ordered
+transport record.
+
+Packet \(k\)'s logical start is `k * packet_frames`; its logical count is the
+smaller of `packet_frames` and the remaining declared track frames. The record
+contains no repeated logical start, logical count, child byte count, sample
+rate, channel count, half-window, band count, transform-frame count, magic, or
+version.
+
+Each record begins with this 27-byte little-endian compact entropy descriptor:
+
+| Field | Type |
+| --- | --- |
+| scale entropy mode and parameter | `u8`, `u8` |
+| count entropy mode and parameter | `u8`, `u8` |
+| position Rice parameter | `u8` |
+| value entropy mode and parameter | `u8`, `u8` |
+| selected coefficient count | `u32` |
+| scale, count, position, value bit counts | four `u32` |
+
+The four canonical entropy payloads follow in that order, each occupying the
+ceiling of its declared bit count divided by eight. A little-endian CRC-32 over
+the descriptor and payloads terminates the record. The bit counts therefore
+define the record length without another size field. Padding, entropy bounds,
+coefficient order, and inherited shape MUST satisfy the unchanged LSE2 rules.
+
+The sequence header retains SHA-256. CRC-32 detects accidental standalone
+record corruption but is not cryptographic authentication. A Realtime network
+profile using LPS4 MUST obtain replay protection and cryptographic packet
+authentication from its transport, such as an authenticated SRTP or QUIC
+mapping. A CRC-valid packet from an unauthenticated adversary MUST NOT be
+treated as trusted media.
+
+LPS4 is not mandatory until native parsing, transport mapping, hostile-input,
+loss scheduling, and listening gates pass.
+
 ## 5. State records
 
 ### 5.1 `STREAM_CONFIG`
