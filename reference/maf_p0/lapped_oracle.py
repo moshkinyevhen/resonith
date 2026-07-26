@@ -60,6 +60,8 @@ class LappedEncodeResult:
     payload: bytes
     reconstruction: np.ndarray
     report: dict
+    selected_scales: np.ndarray
+    selected_coefficients: np.ndarray
 
 
 @dataclass(frozen=True)
@@ -763,7 +765,157 @@ def encode_lapped_analysis(
             reconstruction.reshape(-1),
         ),
     }
-    return LappedEncodeResult(payload, reconstruction, report)
+    coefficients.flags.writeable = False
+    return LappedEncodeResult(
+        payload,
+        reconstruction,
+        report,
+        scales,
+        coefficients,
+    )
+
+
+def pack_lapped_selected_grid(
+    scales: np.ndarray,
+    coefficients: np.ndarray,
+    *,
+    sample_rate: int,
+    sample_count: int,
+    half_window: int,
+    fixed_transform: bool = True,
+) -> bytes:
+    """Pack an already selected grid as one adaptive-density LPF1 child."""
+
+    if sample_rate <= 0:
+        raise ValueError("selected lapped sample rate must be positive")
+    entropy_payload = pack_lapped_selected_payload(
+        scales,
+        coefficients,
+        sample_count=sample_count,
+        half_window=half_window,
+    )
+    scale_grid = np.asarray(scales)
+    channels, frame_count, band_count = scale_grid.shape
+    inner = (
+        HEADER.pack(
+            MAGIC,
+            VERSION,
+            ENTROPY_BOUNDED_SPARSE
+            | FLAG_VARIABLE_DENSITY
+            | (FLAG_FIXED_TRANSFORM if fixed_transform else 0),
+            channels,
+            sample_rate,
+            sample_count,
+            half_window,
+            band_count,
+            frame_count,
+            len(entropy_payload),
+        )
+        + entropy_payload
+    )
+    return pack_rsc1(
+        [
+            RSC1Section(
+                "CONF",
+                pack_conf(StreamConfig(sample_count, 1, channels)),
+            ),
+            RSC1Section("LPF1", inner),
+        ],
+        profile=0,
+        level=5,
+        timebase_hz=sample_rate,
+    )
+
+
+def pack_lapped_selected_payload(
+    scales: np.ndarray,
+    coefficients: np.ndarray,
+    *,
+    sample_count: int,
+    half_window: int,
+) -> bytes:
+    """Pack only bounded LSE2 fields under stream-level lapped parameters."""
+
+    scale_grid = np.asarray(scales)
+    coefficient_grid = np.asarray(coefficients)
+    if (
+        scale_grid.dtype != np.uint8
+        or scale_grid.ndim != 3
+        or coefficient_grid.dtype != np.int8
+        or coefficient_grid.ndim != 3
+        or scale_grid.shape[:2] != coefficient_grid.shape[:2]
+        or coefficient_grid.shape[2] != half_window
+        or sample_count <= 0
+    ):
+        raise TypeError("invalid selected lapped grid")
+    channels, frame_count, band_count = scale_grid.shape
+    _band_edges(half_window, band_count)
+    if (
+        not 1 <= channels <= MAX_CHANNELS
+        or frame_count != sample_count // half_window + 1
+        or np.any(scale_grid > 31)
+    ):
+        raise ValueError("selected lapped grid exceeds the profile")
+
+    counts = np.count_nonzero(coefficient_grid, axis=2).astype(np.uint16)
+    position_parts = []
+    value_parts = []
+    for channel in range(channels):
+        for frame in range(frame_count):
+            positions = np.flatnonzero(
+                coefficient_grid[channel, frame]
+            ).astype(np.uint16)
+            position_parts.append(positions)
+            value_parts.append(
+                coefficient_grid[channel, frame, positions].astype(np.int8)
+            )
+    positions = np.concatenate(position_parts)
+    values = np.concatenate(value_parts)
+    entropy_payload = encode_variable_sparse_lapped(
+        scale_grid,
+        counts,
+        positions,
+        values,
+        half_window=half_window,
+    )
+    return entropy_payload
+
+
+def synthesize_lapped_selected_grid(
+    scales: np.ndarray,
+    coefficients: np.ndarray,
+    *,
+    sample_count: int,
+    half_window: int,
+    fixed_transform: bool = True,
+) -> np.ndarray:
+    """Render one validated selected grid through the canonical lapped kernel."""
+
+    scale_grid = np.asarray(scales)
+    coefficient_grid = np.asarray(coefficients)
+    if (
+        scale_grid.dtype != np.uint8
+        or scale_grid.ndim != 3
+        or coefficient_grid.dtype != np.int8
+        or coefficient_grid.ndim != 3
+        or scale_grid.shape[:2] != coefficient_grid.shape[:2]
+        or coefficient_grid.shape[2] != half_window
+        or sample_count <= 0
+        or scale_grid.shape[1] != sample_count // half_window + 1
+        or np.any(scale_grid > 31)
+    ):
+        raise TypeError("invalid selected lapped synthesis grid")
+    edges = _band_edges(half_window, scale_grid.shape[2])
+    output = _synthesize(
+        coefficient_grid,
+        scale_grid,
+        sample_count=sample_count,
+        half_window=half_window,
+        edges=edges,
+        fixed_transform=fixed_transform,
+    )
+    output.flags.writeable = False
+    return output
 
 
 def encode_lapped_stream(

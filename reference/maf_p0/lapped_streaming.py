@@ -13,12 +13,18 @@ from .lapped_oracle import (
     MAX_BANDS,
     MAX_CHANNELS,
     MAX_HALF_WINDOW,
+    analyze_lapped_source,
     decode_lapped_stream,
+    encode_lapped_analysis,
     encode_lapped_stream,
+    pack_lapped_selected_payload,
+    synthesize_lapped_selected_grid,
 )
+from .sparse_entropy import decode_variable_sparse_lapped
 
 
 MAGIC = b"LPS1"
+TRANSFORM_MAGIC = b"LPS2"
 VERSION = 1
 HEADER = struct.Struct("<4sBBHIIHHII")
 PACKET_HEADER = struct.Struct("<III")
@@ -64,6 +70,7 @@ class LappedPacketStreamInfo:
     half_window: int
     band_count: int
     packet_frames: int
+    transform_boundary: bool
     packets: tuple[LappedPacketView, ...]
 
 
@@ -150,8 +157,8 @@ def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
         packet_frames,
         packet_count,
     ) = HEADER.unpack(header_bytes)
-    if magic != MAGIC or version != VERSION or flags != 0:
-        raise ValueError("unsupported LPS1 envelope")
+    if magic not in (MAGIC, TRANSFORM_MAGIC) or version != VERSION or flags != 0:
+        raise ValueError("unsupported lapped packet envelope")
     _validate_header(
         channels,
         sample_rate,
@@ -209,6 +216,7 @@ def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
         half_window,
         band_count,
         packet_frames,
+        magic == TRANSFORM_MAGIC,
         tuple(packets),
     )
 
@@ -222,14 +230,48 @@ def decode_lapped_packet_view(
     """Decode one authenticated packet without using adjacent packet state."""
 
     if not isinstance(info, LappedPacketStreamInfo):
-        raise TypeError("LPS1 stream info has an invalid type")
+        raise TypeError("lapped packet stream info has an invalid type")
     if (
         not isinstance(packet, LappedPacketView)
         or packet.packet_index < 0
         or packet.packet_index >= len(info.packets)
         or info.packets[packet.packet_index] != packet
     ):
-        raise ValueError("LPS1 packet view is not part of this envelope")
+        raise ValueError("lapped packet view is not part of this envelope")
+    if info.transform_boundary:
+        frame_count = packet.logical_count // info.half_window + 1
+        fields = decode_variable_sparse_lapped(
+            packet.child_payload,
+            half_window=info.half_window,
+            expected_channels=info.channels,
+            expected_frames=frame_count,
+            expected_bands=info.band_count,
+        )
+        coefficient_grid = np.zeros(
+            (info.channels, frame_count, info.half_window),
+            dtype=np.int8,
+        )
+        cursor = 0
+        for channel in range(info.channels):
+            for frame in range(frame_count):
+                count = int(fields.counts[channel, frame])
+                end = cursor + count
+                coefficient_grid[
+                    channel,
+                    frame,
+                    fields.positions[cursor:end],
+                ] = fields.values[cursor:end]
+                cursor = end
+        if cursor != fields.positions.size:
+            raise ValueError("LPS2 coefficient coverage mismatch")
+        return synthesize_lapped_selected_grid(
+            fields.scales,
+            coefficient_grid,
+            sample_count=packet.logical_count,
+            half_window=info.half_window,
+            fixed_transform=True,
+        )
+
     if native_decoder is None:
         child = decode_lapped_stream(packet.child_payload)
         child_samples = child.samples
@@ -242,14 +284,12 @@ def decode_lapped_packet_view(
         child_sample_rate = native.sample_rate
         child_half_window = native.requirements.half_window
         child_band_count = native.requirements.band_count
+    expected_child_frames = packet.logical_count + 2 * info.half_window
     if (
         child_sample_rate != info.sample_rate
         or child_half_window != info.half_window
         or child_band_count != info.band_count
-        or child_samples.shape != (
-            packet.logical_count + 2 * info.half_window,
-            info.channels,
-        )
+        or child_samples.shape != (expected_child_frames, info.channels)
     ):
         raise ValueError("LPS1 child stream differs from its envelope")
     logical = child_samples[
@@ -377,6 +417,135 @@ def encode_lapped_packet_stream(
             source.shape[0],
         )
         + 2 * half_window,
+        **_quality_report(
+            source.reshape(-1),
+            decoded.samples.reshape(-1),
+        ),
+    }
+    return LappedPacketEncodeResult(
+        payload,
+        decoded.samples,
+        report,
+    )
+
+
+def encode_lapped_transform_packet_stream(
+    samples: np.ndarray,
+    sample_rate: int,
+    *,
+    coefficients_per_frame: int,
+    packet_frames: int,
+    half_window: int = 512,
+    band_count: int = 24,
+    native_core=None,
+) -> LappedPacketEncodeResult:
+    """Packetize one globally selected grid with one shared boundary frame."""
+
+    source_view = np.asarray(samples)
+    if (
+        source_view.dtype != np.int16
+        or source_view.ndim != 2
+        or source_view.shape[0] == 0
+    ):
+        raise TypeError("LPS2 input must be frame-major PCM16")
+    source = np.array(source_view, dtype=np.int16, copy=True)
+    packet_count = (
+        source.shape[0] + packet_frames - 1
+    ) // packet_frames
+    _validate_header(
+        source.shape[1],
+        sample_rate,
+        source.shape[0],
+        half_window,
+        band_count,
+        packet_frames,
+        packet_count,
+    )
+    analysis = analyze_lapped_source(
+        source,
+        sample_rate,
+        half_window=half_window,
+        band_count=band_count,
+        transform_backend="fixed",
+        native_analyzer=native_core,
+    )
+    monolithic = encode_lapped_analysis(
+        analysis,
+        coefficients_per_frame=coefficients_per_frame,
+        entropy_backend="bounded",
+        density_backend="adaptive",
+        native_decoder=native_core,
+    )
+    header = HEADER.pack(
+        TRANSFORM_MAGIC,
+        VERSION,
+        0,
+        source.shape[1],
+        sample_rate,
+        source.shape[0],
+        half_window,
+        band_count,
+        packet_frames,
+        packet_count,
+    )
+    body = bytearray(header + hashlib.sha256(header).digest())
+    child_bytes = []
+    for logical_start in range(0, source.shape[0], packet_frames):
+        logical_count = min(
+            packet_frames,
+            source.shape[0] - logical_start,
+        )
+        first_transform = logical_start // half_window
+        child_transform_count = logical_count // half_window + 1
+        transform_end = first_transform + child_transform_count
+        child_payload = pack_lapped_selected_payload(
+            monolithic.selected_scales[
+                :, first_transform:transform_end
+            ],
+            monolithic.selected_coefficients[
+                :, first_transform:transform_end
+            ],
+            sample_count=logical_count,
+            half_window=half_window,
+        )
+        packet_header = PACKET_HEADER.pack(
+            logical_start,
+            logical_count,
+            len(child_payload),
+        )
+        body += packet_header
+        body += child_payload
+        body += hashlib.sha256(packet_header + child_payload).digest()
+        child_bytes.append(len(child_payload))
+
+    payload = bytes(body)
+    decoded = decode_lapped_packet_stream(
+        payload,
+        native_decoder=native_core,
+    )
+    if not np.array_equal(decoded.samples, monolithic.reconstruction):
+        raise RuntimeError("LPS2 packet reconstruction differs from LPF1")
+    report = {
+        "status": "transform-boundary LPF1 packet research stream",
+        "format_profile": "prospective-LPS2",
+        "stream_bytes": len(payload),
+        "stream_sha256": hashlib.sha256(payload).hexdigest(),
+        "sample_rate": sample_rate,
+        "frame_count": int(source.shape[0]),
+        "channel_count": int(source.shape[1]),
+        "half_window": half_window,
+        "band_count": band_count,
+        "coefficients_per_frame": coefficients_per_frame,
+        "density_backend": "adaptive-global",
+        "packet_frames": packet_frames,
+        "packet_count": packet_count,
+        "packet_payload_bytes": child_bytes,
+        "duplicated_boundary_transform_frames": max(0, packet_count - 1),
+        "monolithic_stream_bytes": len(monolithic.payload),
+        "packet_byte_overhead_fraction": (
+            len(payload) / len(monolithic.payload) - 1.0
+        ),
+        "exact_monolithic_reconstruction": True,
         **_quality_report(
             source.reshape(-1),
             decoded.samples.reshape(-1),

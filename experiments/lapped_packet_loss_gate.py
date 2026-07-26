@@ -12,7 +12,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
 from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
-from maf_p0.lapped_streaming import encode_lapped_packet_stream  # noqa: E402
+from maf_p0.lapped_streaming import (  # noqa: E402
+    encode_lapped_packet_stream,
+    encode_lapped_transform_packet_stream,
+)
 from maf_p0.packet_loss import simulate_lapped_packet_loss  # noqa: E402
 from packet_loss_benchmark import read_bounded_pcm16  # noqa: E402
 from real_music_benchmark import fetch_source  # noqa: E402
@@ -84,7 +87,7 @@ def main() -> None:
             transform_backend="fixed",
             density_backend="adaptive",
         )
-        packeted = encode_lapped_packet_stream(
+        contextual = encode_lapped_packet_stream(
             samples,
             sample_rate,
             coefficients_per_frame=budget,
@@ -92,6 +95,14 @@ def main() -> None:
             half_window=args.half_window,
             band_count=args.band_count,
             density_backend="adaptive",
+        )
+        packeted = encode_lapped_transform_packet_stream(
+            samples,
+            sample_rate,
+            coefficients_per_frame=budget,
+            packet_frames=packet_frames,
+            half_window=args.half_window,
+            band_count=args.band_count,
         )
         packet_count = int(packeted.report["packet_count"])
         lost_packet = min(packet_count - 2, max(1, packet_count // 3))
@@ -103,6 +114,8 @@ def main() -> None:
             simulation.report["exact_outside_loss"]
             and simulation.report["all_recoverable_next_packets_exact"]
             and not simulation.report["truth_reference_uses_concealment"]
+            and packeted.report["exact_monolithic_reconstruction"]
+            and packeted.report["packet_byte_overhead_fraction"] <= 0.10
         )
         passing_clips += int(gate_passed)
         reports[record["id"]] = {
@@ -118,9 +131,16 @@ def main() -> None:
             "packet_count": packet_count,
             "lost_packet": lost_packet,
             "monolithic_stream_bytes": len(monolithic.payload),
-            "packet_stream_bytes": len(packeted.payload),
-            "packet_byte_overhead_fraction": (
-                len(packeted.payload) / len(monolithic.payload) - 1.0
+            "source_context_packet_stream_bytes": len(contextual.payload),
+            "source_context_packet_byte_overhead_fraction": (
+                len(contextual.payload) / len(monolithic.payload) - 1.0
+            ),
+            "transform_packet_stream_bytes": len(packeted.payload),
+            "transform_packet_byte_overhead_fraction": (
+                packeted.report["packet_byte_overhead_fraction"]
+            ),
+            "exact_monolithic_reconstruction": (
+                packeted.report["exact_monolithic_reconstruction"]
             ),
             "containment_gate_passed": gate_passed,
             "simulation": simulation.report,
@@ -129,15 +149,16 @@ def main() -> None:
     gate_passed = passing_clips == len(reports)
     report = {
         "status": (
-            "LPS1 transport-loss containment gate passed"
+            "LPS2 transform-packet gate passed"
             if gate_passed
-            else "LPS1 transport-loss containment gate failed"
+            else "LPS2 transform-packet gate failed"
         ),
         "research_only": True,
         "gate_rule": (
             "every non-lost frame and the first later available packet must "
             "equal uninterrupted Truth exactly; concealment must not enter "
-            "Truth reference state"
+            "Truth reference state; transform-boundary packet reconstruction "
+            "must equal monolithic LPF1 exactly and add no more than 10% bytes"
         ),
         "metric_warning": (
             "concealed-interval waveform values are diagnostics, not a "
@@ -155,7 +176,7 @@ def main() -> None:
     )
     print(json.dumps(report, indent=2, sort_keys=True))
     if not gate_passed:
-        raise SystemExit("LPS1 transport-loss containment gate failed")
+        raise SystemExit("LPS2 transform-packet gate failed")
 
 
 if __name__ == "__main__":

@@ -34,6 +34,9 @@ from .lapped_oracle import (
     decode_lapped_stream,
     encode_lapped_analysis,
     encode_lapped_stream,
+    pack_lapped_selected_grid,
+    pack_lapped_selected_payload,
+    synthesize_lapped_selected_grid,
 )
 from .lapped_streaming import (
     LappedPacketDecodeResult,
@@ -43,6 +46,7 @@ from .lapped_streaming import (
     decode_lapped_packet_stream,
     decode_lapped_packet_view,
     encode_lapped_packet_stream,
+    encode_lapped_transform_packet_stream,
     index_lapped_packet_stream,
 )
 from .main0 import (
@@ -146,7 +150,11 @@ __all__ = [
     "encode_lpc_liftpack_oracle",
     "encode_lapped_stream",
     "encode_lapped_packet_stream",
+    "encode_lapped_transform_packet_stream",
     "index_lapped_packet_stream",
+    "pack_lapped_selected_grid",
+    "pack_lapped_selected_payload",
+    "synthesize_lapped_selected_grid",
     "index_lpc_liftpack_blocks",
     "SegmentationResult",
     "segment_acoustic_states",

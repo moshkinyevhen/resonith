@@ -306,7 +306,7 @@ def simulate_lapped_packet_loss(
     )
     output.flags.writeable = False
     report = {
-        "status": "research LPS1 transport-loss containment simulation",
+        "status": "research lapped transport-loss containment simulation",
         "loss_model": (
             "authenticated packet record absent after transport demultiplexing"
         ),

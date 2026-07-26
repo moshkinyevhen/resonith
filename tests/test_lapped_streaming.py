@@ -15,6 +15,7 @@ from maf_p0.lapped_streaming import (  # noqa: E402
     decode_lapped_packet_stream,
     decode_lapped_packet_view,
     encode_lapped_packet_stream,
+    encode_lapped_transform_packet_stream,
     index_lapped_packet_stream,
 )
 from maf_p0.packet_loss import simulate_lapped_packet_loss  # noqa: E402
@@ -124,12 +125,51 @@ class LappedStreamingTests(unittest.TestCase):
             simulation.truth[2048:],
         )
         self.assertTrue(simulation.report["exact_outside_loss"])
+        corrupted = bytearray(encoded.payload)
+        corrupted[-1] ^= 1
+        with self.assertRaises(ValueError):
+            decode_lapped_packet_stream(bytes(corrupted))
         self.assertTrue(
             simulation.report["all_recoverable_next_packets_exact"]
         )
         self.assertFalse(
             simulation.report["truth_reference_uses_concealment"]
         )
+
+    def test_transform_packets_equal_one_global_selected_field(self) -> None:
+        source = self._stereo(4096)
+        encoded = encode_lapped_transform_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+        )
+        info = index_lapped_packet_stream(encoded.payload)
+        simulation = simulate_lapped_packet_loss(
+            encoded.payload,
+            lost_packets=(1,),
+        )
+
+        self.assertTrue(info.transform_boundary)
+        self.assertEqual(len(info.packets), 4)
+        self.assertTrue(
+            encoded.report["exact_monolithic_reconstruction"]
+        )
+        np.testing.assert_array_equal(
+            decode_lapped_packet_view(info, info.packets[2]),
+            encoded.reconstruction[2048:3072],
+        )
+        np.testing.assert_array_equal(
+            simulation.reconstruction[2048:],
+            simulation.truth[2048:],
+        )
+        self.assertTrue(simulation.report["exact_outside_loss"])
+        corrupted = bytearray(encoded.payload)
+        corrupted[-1] ^= 1
+        with self.assertRaises(ValueError):
+            decode_lapped_packet_stream(bytes(corrupted))
 
 
 if __name__ == "__main__":

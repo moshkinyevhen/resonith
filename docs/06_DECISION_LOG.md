@@ -2033,3 +2033,27 @@ new oscillator opcode.
     random-access packets but rejected as the current Realtime packet profile.
     A shorter-packet design must reuse global analysis and pay only for the
     minimum boundary state.
+
+## R-075 — Transform-boundary packets replace repeated source context
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - analyze and select the complete lapped coefficient field exactly once;
+  - form an independent packet from only the transform frames that overlap its
+    logical output interval;
+  - duplicate exactly one selected boundary transform frame between adjacent
+    half-window-aligned packets, rather than source context on both sides;
+  - retain complete independently authenticated LPF1 children and output-only
+    loss concealment;
+  - promote the construction over LPS1 short packets only if reconstruction is
+    exactly equal to the monolithic selected field and 243.81 ms packet
+    overhead is no more than 10% on every pinned clip.
+- Rationale:
+  - an interval of \(m\) half-windows is determined by \(m+1\) overlapping
+    transform frames; the neighboring interval shares only the last frame;
+  - current source-context packets independently analyze \(m+3\) frames and
+    also make a new local allocation decision, which explains much of the
+    measured 23.80%-28.26% short-packet cost;
+  - moving the boundary into transform space removes redundant work and bytes
+    without a new DSP kernel, predictor, or persistent decoder dependency.

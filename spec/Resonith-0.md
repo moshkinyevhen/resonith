@@ -315,6 +315,36 @@ density is permitted to redistribute its budget independently inside each
 child. No whole-file digest is required: header and packet authentication are
 independent so a receiver can validate and emit progressively.
 
+#### 4.1.8 Prospective `LPS2` transform-boundary packet sequence
+
+`LPS2` is a research successor to `LPS1` for short independent packets. It
+uses the same fixed header, packet index, canonical logical coverage, header
+digest, and per-packet digest. Its magic is `LPS2`.
+
+The encoder MUST analyze and select one complete adaptive-density transform
+field before packetization. For a half-window-aligned logical interval of
+\(m\) half-windows, the packet carries exactly \(m+1\) selected transform
+frames. Adjacent packets therefore duplicate exactly their one common boundary
+transform frame. A final partial interval carries
+`floor(logical_count / half_window) + 1` frames.
+
+The authenticated packet child is the bounded `LSE2` scale, count, position,
+and coefficient payload directly. It MUST NOT repeat an RSC1 directory, CONF,
+LPF1 header, sample rate, channel count, half-window, or band count. Those
+parameters are inherited from the authenticated sequence header. Decoding the
+child with any different parameter set is prohibited.
+
+The packet decoder initializes a zero local overlap buffer, synthesizes the
+declared transform frames with the unchanged fixed LPF1 kernel, and emits the
+central `logical_count` samples. It retains no transform, entropy, or
+concealment state for the next packet. Concatenating every decoded packet MUST
+equal monolithic synthesis of the globally selected transform field exactly.
+
+Loss MAY create output-only concealment over the absent logical interval.
+Concealed samples MUST NOT enter Truth, overlap, density, entropy, or future
+packet state. Corrupted packets remain hard errors. `LPS2` is not mandatory
+until native parity, hostile-input, resource, and listening gates pass.
+
 ## 5. State records
 
 ### 5.1 `STREAM_CONFIG`
