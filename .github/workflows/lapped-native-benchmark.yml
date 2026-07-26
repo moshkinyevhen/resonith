@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/lapped-native-benchmark.yml"
       - "experiments/native_lapped_timing.py"
+      - "experiments/native_lapped_analysis_timing.py"
       - "experiments/real_music_corpus.json"
       - "native/**"
       - "reference/maf_p0/fixed_lapped.py"
@@ -43,8 +44,24 @@ jobs:
           --iterations 10
           --warmups 2
           --output artifacts/lapped_native_timing/report.json
+      - name: Measure pinned real-music forward analysis
+        env:
+          RESONITH_NATIVE_CORE: ${{ github.workspace }}/build/native/libresonith_core_shared.so
+        run: >
+          python experiments/native_lapped_analysis_timing.py
+          --cache artifacts/real_music_source
+          --maximum-seconds 1.0
+          --native-iterations 10
+          --python-iterations 3
+          --warmups 2
+          --output artifacts/lapped_native_analysis_timing/report.json
       - uses: actions/upload-artifact@v6
         with:
           name: lapped-native-timing-linux-x64
           path: artifacts/lapped_native_timing/report.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v6
+        with:
+          name: lapped-native-analysis-timing-linux-x64
+          path: artifacts/lapped_native_analysis_timing/report.json
           if-no-files-found: error

@@ -83,6 +83,8 @@ reproducible command and independent decode.
 - `native_lapped_timing.py` — R-063 release C++ decode timing, exact
   Python/native parity, and caller-owned workspace accounting on the pinned
   real-music crops.
+- `native_lapped_analysis_timing.py` — R-068 scalar C++ forward-analysis
+  timing and exact array parity against the fixed Python oracle.
 - `results/native_lapped_timing_2026-07-26_summary.json` — the R-063 hosted
   x64 timing result; physical-device energy and thermal gates remain open.
 - `lapped_frontier_timing.py` — R-066 exact-stream comparison and development

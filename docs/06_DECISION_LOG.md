@@ -1816,3 +1816,21 @@ new oscillator opcode.
   - the CLI exposes native analysis only through an explicit `--native-core`
     path. Python remains the fallback until optimized native throughput is
     measured.
+
+## R-068 — Native analysis timing before specialization
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / RUNNING / RESEARCH**
+- Decision:
+  - measure the release scalar C++ forward-analysis ABI on the three pinned
+    one-second stereo crops;
+  - verify exact Python/native arrays before accepting any timing sample;
+  - include ctypes, caller-array allocation, transform, quantization, score
+    generation, and NumPy reshape in the native timing scope;
+  - compare native medians with the existing NumPy/Python fixed oracle, then
+    choose SIMD-first or CUDA-first work from evidence rather than assumption.
+- Rationale:
+  - a portable scalar anchor can be slower than optimized matrix operations
+    despite using a compiled language;
+  - the correct specialization target depends on measured transform cost and
+    the intended consumer/studio encoder split.
