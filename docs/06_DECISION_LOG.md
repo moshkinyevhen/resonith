@@ -1940,7 +1940,7 @@ new oscillator opcode.
 ## R-072 — Allocation-explicit native `LPS1` pull session
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **EXACT PULL/FUZZ PASS / PORTABLE**
 - Decision:
   - preflight the complete packet sequence, authenticating the header and every
     child and reporting maximum child plus logical-output storage;
@@ -1955,3 +1955,15 @@ new oscillator opcode.
     requires a native pull API rather than whole-file NumPy allocation;
   - independent children let the implementation reuse the existing verified
     LPF1 parser and decoder instead of adding a second transform path.
+- Result:
+  - the allocation-free C99 pull session reports exact maximum child and
+    logical-output capacities before decode and commits its cursor only after
+    a complete authenticated child succeeds;
+  - a frozen two-packet C++ vector reconstructs exactly the same PCM as the
+    monolithic fixed-density LPF1 stream;
+  - the Python/native bridge generated and decoded an adaptive 8,192-frame
+    packet stream with exact PCM parity;
+  - GitHub Actions run 30210231145 passed GCC, Clang, MSVC, C99-header,
+    sanitizer, Python/native, and 5,000-mutation dedicated LPS1 fuzz gates;
+  - the session retains only an immutable input view and four scalar cursors.
+    Child PCM, transform workspace, and delivered PCM remain caller-owned.

@@ -111,6 +111,15 @@ analysis through `resonith_lapped_analyze_requirements` and
 coefficient, and squared-score grids for encoder-side frontier searches; it
 does not pack policy or RDO decisions into the decoder Core.
 
+`resonith_lapped_packet_open()` preflights an independently authenticated
+`LPS1` sequence and reports the maximum LPF1 child workspace, temporary child
+PCM, and logical output capacities. A caller-owned
+`resonith_lapped_packet_session` then advances with
+`resonith_lapped_packet_decode_next()`. Each pull revalidates its packet,
+decodes one complete context-bearing child, trims the context, and commits the
+session only on success. The session borrows the immutable input bytes and
+contains no hidden allocation or persistent transform state.
+
 ## Sanitized fuzzing
 
 Clang builds the LiftPack, Main-0, seek-sidecar, and lapped-stream parsers and

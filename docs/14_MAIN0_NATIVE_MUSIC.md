@@ -884,3 +884,28 @@ parallel decode with one mechanism and no persistent cross-packet state. The
 native envelope parser and pull session remain mandatory before promotion.
 The compact record is
 [`lapped_streaming_2026-07-26_summary.json`](../experiments/results/lapped_streaming_2026-07-26_summary.json).
+
+## 37. Native packet pull and hostile-input gate
+
+The native Core now exposes an allocation-explicit `LPS1` session. Opening a
+sequence authenticates its fixed header and every packet, validates each LPF1
+child, and reports the largest child workspace and output buffer. Pulling one
+packet decodes into caller-owned temporary PCM, copies only its central logical
+interval, and commits the four-scalar cursor after the entire operation
+succeeds. A rejected packet cannot partially advance playback.
+
+The two-packet C++ conformance vector is exactly equal to monolithic
+fixed-density reconstruction. The independent Python/native bridge also
+generated an adaptive 8,192-frame sequence and required exact PCM equality.
+GitHub Actions run
+[30210231145](https://github.com/moshkinyevhen/resonith/actions/runs/30210231145)
+passed GCC, Clang, MSVC, C99-header, sanitizer, and bridge jobs. Its dedicated
+LPS1 libFuzzer target completed 5,000 mutations from both fixed- and
+adaptive-density valid seeds.
+
+This closes the implementation part of the bounded-memory gate, but it does
+not yet claim network-loss recovery: `open` intentionally authenticates a
+complete available sequence. The next transport experiment must prove that a
+missing logical interval can be concealed without changing any later
+authenticated packet, and must keep concealment outside Truth reference
+state.
