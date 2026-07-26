@@ -259,3 +259,32 @@ diagnostic, not a matched-MUSHRA comparison with Opus.
 
 Canonical compact native evidence:
 [`../experiments/results/main0_lpc_native_2026-07-26_summary.json`](../experiments/results/main0_lpc_native_2026-07-26_summary.json).
+
+## 12. Variable residual-lifetime gate
+
+R-044 asked whether attacks and state changes need a separate transient
+renderer at all. A research stream retained the exact RSL2 transforms, LPC,
+entropy, and checksum but allowed encoder byte-RDO to choose variable block
+lifetimes on a 512-sample boundary lattice.
+
+| Clip | Fixed RSL2 | Variable lifetime | Reduction |
+|---|---:|---:|---:|
+| Corelli realization | 10,233 bytes | 10,204 bytes | 0.28% |
+| Recorded piano | 11,953 bytes | 11,667 bytes | 2.39% |
+| Recorded drums | 12,743 bytes | 12,160 bytes | 4.58% |
+
+All three clips won, but the arithmetic mean was 2.42%, below the declared 3%
+broad-corpus promotion gate. No new residual magic, version, or decoder rule
+is therefore promoted. The drum result remains useful evidence for a future
+attack-heavy class gate, but it does not justify broad Main complexity.
+
+Run:
+[30201682126](https://github.com/moshkinyevhen/resonith/actions/runs/30201682126).
+Raw report SHA-256:
+
+```text
+1af06563bd5b6b666c11d9e0e98f92354085d7a92ddcb7a34ef3d71dcaf0ab0d
+```
+
+Canonical compact evidence:
+[`../experiments/results/variable_block_oracle_2026-07-26_summary.json`](../experiments/results/variable_block_oracle_2026-07-26_summary.json).

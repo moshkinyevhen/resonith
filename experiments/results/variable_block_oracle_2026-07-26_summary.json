@@ -1,0 +1,46 @@
+{
+  "actions_run": "https://github.com/moshkinyevhen/resonith/actions/runs/30201682126",
+  "boundary_quantum": 512,
+  "clips": {
+    "corelli-sonata-realization": {
+      "block_length_counts": {
+        "21060": 1,
+        "23040": 1
+      },
+      "fixed_anchor_block_size": 16384,
+      "fixed_anchor_bytes": 10233,
+      "reduction_vs_fixed": 0.002833968533176967,
+      "variable_bytes": 10204
+    },
+    "emotional-piano-cc0": {
+      "block_length_counts": {
+        "11844": 1,
+        "15360": 1,
+        "16896": 1
+      },
+      "fixed_anchor_block_size": 32768,
+      "fixed_anchor_bytes": 11953,
+      "reduction_vs_fixed": 0.02392704760311215,
+      "variable_bytes": 11667
+    },
+    "patro-de-bateria": {
+      "block_length_counts": {
+        "11264": 1,
+        "1536": 1,
+        "2048": 1,
+        "4096": 1,
+        "6656": 1,
+        "8704": 1,
+        "9796": 1
+      },
+      "fixed_anchor_block_size": 4096,
+      "fixed_anchor_bytes": 12743,
+      "reduction_vs_fixed": 0.045750608177038354,
+      "variable_bytes": 12160
+    }
+  },
+  "gate_passed": false,
+  "mean_reduction_vs_fixed": 0.024170541437775823,
+  "raw_report_sha256": "1af06563bd5b6b666c11d9e0e98f92354085d7a92ddcb7a34ef3d71dcaf0ab0d",
+  "status": "won 3/3 but failed the declared 3% broad-mean promotion gate"
+}

@@ -13,7 +13,10 @@ import numpy as np
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "experiments"))
 
-from real_music_benchmark import read_pcm_as_mono16  # noqa: E402
+from real_music_benchmark import (  # noqa: E402
+    read_pcm_as_channels16,
+    read_pcm_as_mono16,
+)
 
 
 def pack_pcm24(values: np.ndarray) -> bytes:
@@ -87,6 +90,23 @@ class RealMusicCorpusTests(unittest.TestCase):
             mono,
             np.asarray([1, -1, 1, -1], dtype=np.int16),
         )
+
+    def test_pcm_channels_preserve_stereo_without_downmix(self) -> None:
+        frames = np.asarray(
+            [[1000, -1000], [32767, -32768]],
+            dtype="<i2",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "channels16.wav"
+            with wave.open(str(path), "wb") as destination:
+                destination.setnchannels(2)
+                destination.setsampwidth(2)
+                destination.setframerate(48000)
+                destination.writeframes(frames.tobytes())
+            rate, channels, report = read_pcm_as_channels16(path)
+        self.assertEqual(rate, 48000)
+        self.assertEqual(report["source_channels"], 2)
+        np.testing.assert_array_equal(channels, frames)
 
 
 if __name__ == "__main__":

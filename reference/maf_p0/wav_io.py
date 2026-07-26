@@ -34,3 +34,23 @@ def write_pcm16_mono(
         destination.setsampwidth(2)
         destination.setframerate(sample_rate)
         destination.writeframes(samples.astype("<i2", copy=False).tobytes())
+
+
+def write_pcm16_channels(
+    path: str | Path,
+    sample_rate: int,
+    samples: np.ndarray,
+) -> None:
+    """Write frame-major PCM16 with a bounded explicit channel count."""
+
+    if (
+        samples.dtype != np.int16
+        or samples.ndim != 2
+        or not 1 <= samples.shape[1] <= 8
+    ):
+        raise TypeError("samples must be frame-major int16 with 1-8 channels")
+    with wave.open(str(path), "wb") as destination:
+        destination.setnchannels(int(samples.shape[1]))
+        destination.setsampwidth(2)
+        destination.setframerate(sample_rate)
+        destination.writeframes(samples.astype("<i2", copy=False).tobytes())

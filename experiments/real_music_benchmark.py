@@ -66,9 +66,9 @@ def _round_divide_signed(values: np.ndarray, denominator: int) -> np.ndarray:
     return np.where(values < 0, -rounded, rounded)
 
 
-def read_pcm_as_mono16(path: Path) -> tuple[int, np.ndarray, dict]:
-    """Decode bounded 16/24-bit integer WAV and downmix deterministically."""
-
+def _read_pcm_integer_matrix(
+    path: Path,
+) -> tuple[int, np.ndarray, int]:
     with wave.open(str(path), "rb") as source:
         channels = source.getnchannels()
         sample_width = source.getsampwidth()
@@ -96,8 +96,18 @@ def read_pcm_as_mono16(path: Path) -> tuple[int, np.ndarray, dict]:
         raise ValueError("corpus source must use 16-bit or 24-bit integer PCM")
     if interleaved.size != frame_count * channels:
         raise ValueError("truncated corpus PCM payload")
+    return (
+        sample_rate,
+        interleaved.reshape(frame_count, channels),
+        sample_width,
+    )
 
-    channel_matrix = interleaved.reshape(frame_count, channels)
+
+def read_pcm_as_mono16(path: Path) -> tuple[int, np.ndarray, dict]:
+    """Decode bounded 16/24-bit integer WAV and downmix deterministically."""
+
+    sample_rate, channel_matrix, sample_width = _read_pcm_integer_matrix(path)
+    channels = channel_matrix.shape[1]
     mono = _round_divide_signed(
         np.sum(channel_matrix, axis=1, dtype=np.int64),
         channels,
@@ -109,6 +119,28 @@ def read_pcm_as_mono16(path: Path) -> tuple[int, np.ndarray, dict]:
         "source_channels": channels,
         "source_sample_width_bits": sample_width * 8,
         "downmix": "signed nearest, ties away from zero",
+    }
+
+
+def read_pcm_as_channels16(path: Path) -> tuple[int, np.ndarray, dict]:
+    """Decode each bounded PCM channel without a lossy channel mix."""
+
+    sample_rate, channel_matrix, sample_width = _read_pcm_integer_matrix(path)
+    if sample_width == 3:
+        channel_matrix = _round_divide_signed(channel_matrix, 256)
+    channels16 = np.clip(
+        channel_matrix,
+        -32768,
+        32767,
+    ).astype(np.int16)
+    return sample_rate, channels16, {
+        "source_channels": int(channels16.shape[1]),
+        "source_sample_width_bits": sample_width * 8,
+        "channel_conversion": (
+            "identity PCM16"
+            if sample_width == 2
+            else "signed nearest, ties away from zero PCM24-to-PCM16"
+        ),
     }
 
 

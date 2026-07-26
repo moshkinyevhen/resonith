@@ -872,7 +872,7 @@ new oscillator opcode.
 ## R-042 — Bounded integer LPC oracle before LiftPack-2 syntax
 
 - Date: 2026-07-26
-- Status: **MEASURED 3/3 PASSED / PROMOTING**
+- Status: **MEASURED 3/3 PASSED / PROMOTED BY R-043**
 - Decision:
   - test block-local finite-order linear prediction as an additional exact
     Truth transform before assigning a new LiftPack transform ID;
@@ -927,7 +927,7 @@ new oscillator opcode.
 ## R-044 — Transient localization through variable residual lifetimes
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / RESEARCH**
+- Status: **MEASURED 3/3 WON / GATE FAILED / RESEARCH-ONLY**
 - Decision:
   - test attack and acoustic-state localization first as exact byte-RDO over
     variable LiftPack-2 block lifetimes, not as a separate transient codec;
@@ -948,3 +948,34 @@ new oscillator opcode.
     renderer, entropy coder, overlap rule, or sample-domain mixing path;
   - exact byte dynamic programming directly implements the simplicity rule:
     a boundary exists only when its saved residual bytes pay for its header.
+- Result:
+  - a 512-sample encoder lattice reduced the complete RSL2 anchor by 0.28%,
+    2.39%, and 4.58% on Corelli, piano, and drums respectively;
+  - the arithmetic mean was 2.42%, below the declared 3% promotion threshold;
+  - variable blocks remain a research encoder/bitstream experiment and no new
+    normative residual version is assigned.
+
+## R-045 — Reversible stereo lifting before spatial syntax
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / RESEARCH**
+- Decision:
+  - test stereo first as one bounded reversible two-channel lifting choice
+    followed by two unchanged independent RSL2 streams;
+  - compete independent left/right, reversible mid/side, left/side, and
+    right/side representations by complete prospective RSC1 bytes;
+  - use the exact integer mapping
+    \(side=right-left,\ mid=left+\lfloor side/2\rfloor\) and its exact inverse;
+  - quantize source channels before the reversible mapping so every candidate
+    reconstructs the same channel-local objective Truth;
+  - allow floating-point correlation or source understanding only to shortlist
+    encoder candidates; the final decision remains full-byte RDO;
+  - assign no Main stereo opcode until the representation reduces complete
+    bytes by at least 10% on two declared stereo clips and 12% on average.
+- Rationale:
+  - stereo correlation is a much larger available redundancy source than the
+    failed broad variable-block syntax;
+  - the decoder cost is one add and one exact floor divide per sample pair,
+    while entropy, prediction, checksums, and bounded memory stay unchanged;
+  - starting with a whole-stream lift creates a falsifiable lower bound before
+    considering time-varying or frequency-selective stereo state.

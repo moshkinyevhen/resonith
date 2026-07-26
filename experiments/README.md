@@ -51,6 +51,9 @@ reproducible command and independent decode.
 - `variable_block_oracle_benchmark.py` — R-044 exact-byte dynamic programming
   over variable residual lifetimes, with all fixed `RSL2` block sizes retained
   as mandatory fallbacks and no normative syntax assigned before its gate.
+- `stereo_lifting_oracle_benchmark.py` — R-045 complete-byte competition
+  among independent, reversible mid/side, left/side, and right/side stereo
+  representations over the original licensed source channels.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never
