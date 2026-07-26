@@ -2625,7 +2625,7 @@ new oscillator opcode.
 ## R-090 — Bounded authenticated-record playout scheduler
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **PASS / ACCEPTED**
 - Decision:
   - keep reordering, replay rejection, deadlines, and concealment policy outside
     the normative decoder in a bounded host-side state machine;
@@ -2651,3 +2651,15 @@ new oscillator opcode.
   - a lost middle record preserves the previous exact prefix and allows the
     next valid final record to decode exactly;
   - no scheduler action mutates record payloads or creates decoder reference.
+- Result:
+  - `LappedTransportScheduler` retains only the bounded future window and
+    reuses the next record after it served as lookahead;
+  - each deadline produces one explicit `decode_pair`, `decode_prefix`, or
+    `conceal` decision with exact and concealed frame counts;
+  - reversed arrival, late recovery before the record's own deadline, missing
+    middle input, final decode, authentication, replay, late arrival, invalid
+    index, and far-future bounds pass;
+  - a missing middle record salvages the preceding exact half, conceals only
+    unresolved output, and leaves the later final record exactly decodable;
+  - 136 reference/security/integration tests pass locally and in GitHub Actions
+    run 30215591344.

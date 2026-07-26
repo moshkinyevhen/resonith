@@ -427,6 +427,13 @@ playout, a decoder MAY emit the exact prefix ending one half-window before the
 record's logical end. It MUST NOT expose the unresolved suffix as Truth. Any
 concealment of that suffix is output-only and MUST NOT become reference state.
 The normal complete path still requires the immediate successor.
+
+A transport scheduler MUST keep authentication, replay policy, reordering, and
+playout deadlines outside the decoder Core. At each deadline it selects
+complete record-pair decode, exact prefix decode plus output-only suffix
+concealment, or full output-only interval concealment. A record used as
+lookahead MAY be retained as the next current record. Future-index buffering
+MUST have an explicit profile bound.
 Cryptographic transport integration, physical-device resource measurements,
 reordered/lost-packet scheduling, and listening still MUST pass before LPS4
 becomes mandatory.

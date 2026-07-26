@@ -1256,3 +1256,26 @@ GitHub Actions run
 [30215434818](https://github.com/moshkinyevhen/resonith/actions/runs/30215434818)
 passed all cross-platform, C99, decoder-in-loop, Android, and sanitizer/fuzzer
 gates.
+
+## 52. Bounded reordering and playout decisions
+
+The host-side receiver is now an explicit bounded state machine rather than an
+implicit sequence cursor. It accepts only transport-authenticated immutable
+record bytes and rejects invalid indices, duplicates, late arrivals, and
+records beyond the configured future window before buffering.
+
+At each logical deadline it emits exactly one action:
+
+- `decode_pair` when current and required lookahead are present;
+- `decode_prefix` when current is present but lookahead is absent;
+- `conceal` when current itself is absent.
+
+A record that served as lookahead remains buffered as the next current record.
+No PCM or concealment enters scheduler state. If a middle record is absent,
+the preceding exact prefix survives, the missing interval is concealed, and a
+later valid record still maps to exact Core decode.
+
+In-order, reversed order, late recovery before the record's own deadline,
+missing middle, final packet, replay, unauthenticated input, late input, and
+future-window bounds pass in GitHub Actions run
+[30215591344](https://github.com/moshkinyevhen/resonith/actions/runs/30215591344).
