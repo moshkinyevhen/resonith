@@ -20,6 +20,7 @@ from maf_p0.periodic import (  # noqa: E402
 )
 from maf_p0.stateful import (  # noqa: E402
     decode_stateful_bytes,
+    encode_stateful_rdo_samples,
     encode_stateful_samples,
 )
 
@@ -202,6 +203,7 @@ class MAFP1Tests(unittest.TestCase):
         damaged = pack_container(
             {key: value for key, value in metadata.items() if key != "sections"},
             arrays,
+            stored_sections={"RSL1"},
         )
         with self.assertRaisesRegex(ValueError, "outlives"):
             decode_stateful_bytes(damaged)
@@ -219,6 +221,102 @@ class MAFP1Tests(unittest.TestCase):
         np.testing.assert_array_equal(decoded.samples, source)
         self.assertEqual(encoded.report["periodic_fallback_atoms"], 2)
         self.assertEqual(encoded.report["basis_count"], 1)
+
+    def test_liftpack_is_the_exact_default_truth_residual(self) -> None:
+        rng = np.random.default_rng(0x4D4146)
+        samples = rng.integers(
+            -12000,
+            12001,
+            size=12000,
+            dtype=np.int16,
+        )
+        encoded = encode_stateful_samples(
+            samples,
+            self.sample_rate,
+            segment_samples=6000,
+            transient_mode="off",
+            residual_step=1,
+        )
+        decoded = decode_stateful_bytes(encoded.payload)
+        np.testing.assert_array_equal(decoded.samples, samples)
+        self.assertEqual(encoded.report["residual"]["codec"], "LiftPack-1")
+        self.assertEqual(decoded.report["residual_codec"], "liftpack")
+        metadata, arrays = unpack_container(encoded.payload)
+        self.assertIn("RSL1", arrays)
+        self.assertNotIn("RESI", arrays)
+        section = next(
+            item
+            for item in metadata["sections"]
+            if item["name"] == "RSL1"
+        )
+        self.assertEqual(section["compression"], "stored")
+        recompressed = pack_container(
+            {key: value for key, value in metadata.items() if key != "sections"},
+            arrays,
+        )
+        with self.assertRaisesRegex(ValueError, "canonical stored"):
+            decode_stateful_bytes(recompressed)
+
+    def test_adaptive_state_boundaries_drive_atom_lifetimes(self) -> None:
+        first = sine_basis(self.basis_length, 1, peak=7000)
+        second = sine_basis(self.basis_length, 5, peak=14000)
+        increment = 1 << 24
+        source = np.concatenate(
+            (
+                render_unity_basis(first, 24576, increment),
+                render_unity_basis(second, 24576, increment),
+            )
+        )
+        encoded = encode_stateful_samples(
+            source,
+            self.sample_rate,
+            segment_mode="adaptive",
+            segmentation_hop_samples=512,
+            minimum_segment_samples=4096,
+            maximum_segment_samples=32768,
+            segmentation_change_penalty=30.0,
+            transient_mode="off",
+            residual_step=1,
+        )
+        decoded = decode_stateful_bytes(encoded.payload)
+        np.testing.assert_array_equal(decoded.samples, source)
+        boundaries = encoded.report["segmentation"]["boundary_samples"]
+        self.assertTrue(
+            any(abs(boundary - 24576) <= 1024 for boundary in boundaries),
+            boundaries,
+        )
+        self.assertEqual(
+            encoded.report["atom_count"],
+            encoded.report["segmentation"]["state_count"],
+        )
+
+    def test_full_stream_segmentation_rdo_selects_the_smallest_candidate(self) -> None:
+        source = np.concatenate(
+            (
+                sine_basis(8192, 7, peak=9000),
+                sine_basis(8192, 13, peak=12000),
+            )
+        )
+        encoded = encode_stateful_rdo_samples(
+            source,
+            self.sample_rate,
+            fixed_durations_seconds=(0.125, 0.25),
+            adaptive_change_penalties=(100.0, 400.0),
+            segmentation_hop_samples=512,
+            minimum_segment_samples=2048,
+            maximum_segment_samples=12000,
+            transient_mode="off",
+            residual_step=1,
+        )
+        decoded = decode_stateful_bytes(encoded.payload)
+        np.testing.assert_array_equal(decoded.samples, source)
+        rdo = encoded.report["segmentation_rdo"]
+        candidate_bytes = [
+            candidate["stream_bytes"]
+            for candidate in rdo["candidates"]
+        ]
+        self.assertEqual(len(encoded.payload), min(candidate_bytes))
+        self.assertEqual(rdo["candidate_count"], 4)
 
 
 if __name__ == "__main__":

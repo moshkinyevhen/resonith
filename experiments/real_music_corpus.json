@@ -1,0 +1,50 @@
+{
+  "schema": "resonith-real-music-corpus-1",
+  "sources": [
+    {
+      "id": "emotional-piano-cc0",
+      "title": "Emotional piano",
+      "kind": "recorded piano music",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Emotional_piano.wav",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Emotional_piano.wav",
+      "sha256": "9661f81d37c59f230b324b830ab68c0482336af3ec117c92e73108ffb4095f15",
+      "bytes": 2822444,
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "credit": "triangelx / Freesound sound 189175",
+      "cache_name": "emotional_piano.wav",
+      "start_seconds": 0.0,
+      "duration_seconds": 8.0
+    },
+    {
+      "id": "patro-de-bateria",
+      "title": "Patró de bateria",
+      "kind": "recorded drum pattern",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Patr%C3%B3_de_bateria.wav",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/5/57/Patr%C3%B3_de_bateria.wav",
+      "sha256": "81451591006ee747eb3fd31ad94ba0e73d6bcb685244d613eba02a72d141955f",
+      "bytes": 986202,
+      "license": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "credit": "Escola Superior de Música de Catalunya (ESMUC)",
+      "cache_name": "patro_de_bateria.wav",
+      "start_seconds": 0.0,
+      "duration_seconds": 3.7245351473922903
+    },
+    {
+      "id": "corelli-sonata-realization",
+      "title": "Corelli Violin Sonata Op. 5 No. 9, Tempo di Gavotta",
+      "kind": "public-domain score realization",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Corelli_Violin_Sonata_Op_5_No_9.wav",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Corelli_Violin_Sonata_Op_5_No_9.wav",
+      "sha256": "702fc705f83f73e2b8d27f2eb88f4ed3ee59ea46a4737254d72aecb3079c73e7",
+      "bytes": 3702828,
+      "license": "Public domain",
+      "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "credit": "Arcangelo Corelli",
+      "cache_name": "corelli_violin_sonata.wav",
+      "start_seconds": 0.0,
+      "duration_seconds": 8.0
+    }
+  ]
+}

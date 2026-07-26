@@ -1,6 +1,6 @@
 # Resonith-0 Bitstream and Decoding Process
 
-Version: 0.0.3
+Version: 0.0.4
 Status: **NORMATIVE-DRAFT**
 Architecture: **MAF - Memory-oriented Acoustic Field**
 
@@ -217,6 +217,86 @@ payload, not an inferred onset label, determine decoder output.
 Uses inverse integer lifting, sparse coefficients and exact replacement.
 This is a universal fallback, not a separate content classifier.
 
+#### 6.6.1 `LiftPack-1`
+
+`LiftPack-1` is the first executable Main draft for a bounded objective
+Innovation payload. All multi-byte integers and entropy bits are little-endian.
+
+The stream header contains:
+
+- four-byte magic `RSL1`;
+- unsigned eight-bit version `1`;
+- unsigned 16-bit `block_size`;
+- unsigned 32-bit `sample_count`;
+- unsigned 32-bit `block_count`.
+
+Every block contains:
+
+- unsigned 16-bit original sample length;
+- unsigned eight-bit transform ID;
+- unsigned eight-bit entropy ID;
+- unsigned eight-bit entropy parameter;
+- unsigned 32-bit entropy bit count;
+- the declared entropy payload.
+
+The stream ends with little-endian IEEE CRC-32 over every preceding byte. The
+enclosing Resonith section hash remains mandatory; CRC-32 is a local corruption
+check and not a cryptographic authenticator.
+
+Transform IDs are:
+
+- `0`: `IDENTITY`;
+- `1`: `DELTA1`, where \(y_0=x_0\) and \(y_n=x_n-x_{n-1}\);
+- `2`: `DELTA2`, where \(y_0=x_0\), \(y_1=x_1-x_0\), and
+  \(y_n=x_n-2x_{n-1}+x_{n-2}\);
+- `3`: reversible integer `HAAR`.
+
+For one Haar pair \(e,o\):
+
+\[
+d=o-e,\qquad l=e+\left\lfloor\frac{d}{2}\right\rfloor.
+\]
+
+The inverse is:
+
+\[
+e=l-\left\lfloor\frac{d}{2}\right\rfloor,\qquad o=d+e.
+\]
+
+Haar input is zero-padded to the next power of two; the original block length
+defines the returned samples. All transforms MUST use profile-bounded wide
+integer arithmetic and MUST reconstruct the quantized residual exactly.
+
+A signed coefficient \(c\) maps to unsigned zigzag value:
+
+\[
+u(c)=
+\begin{cases}
+2c, & c\ge 0,\\
+-2c-1, & c<0.
+\end{cases}
+\]
+
+Entropy ID `0` (`RICE`) uses \(k\in[0,20]\). For
+\(q=\lfloor u/2^k\rfloor<31\), it codes \(q\) one bits, one zero bit, and the
+\(k\)-bit remainder. For \(q\ge31\), it codes 31 one bits, one zero bit, and
+the full unsigned value in 64 bits. Entropy ID `1` (`PACKED`) codes every
+zigzag value with the declared fixed width in \([1,64]\).
+
+A Main-0 decoder MUST reject:
+
+- a non-canonical block count or block length;
+- a block larger than 32,768 samples;
+- a Rice parameter above 20;
+- more than 96 coded bits per coefficient;
+- non-zero final padding bits;
+- an inverse result outside the profile sample bound;
+- trailing data, checksum failure, or incomplete coverage.
+
+LiftPack blocks are independently reconstructible after their explicit stream
+header. The reference encoder competes every transform and entropy mode by
+actual payload size, but encoder search is non-normative.
+
 ### 6.7 `SPATIAL`
 
 Defines source routing, gain/delay laws, and a bounded integer mix matrix.
@@ -389,6 +469,13 @@ Recommended final selector:
 J=R+\lambda D+\mu C+\nu M+\rho L+\kappa P+\eta S.
 \]
 
+Acoustic feature analysis MAY propose Atom and Basis lifetimes. A proposed
+boundary MUST NOT be treated as valuable merely because a classifier or
+change-point detector is confident. Studio and Foundry encoders SHOULD compare
+the complete resulting streams, including Basis, Atom, trajectory, gain,
+Innovation, checkpoint, and container cost. A fixed-lifetime or universal
+Innovation candidate MUST remain available.
+
 ## 15. Security
 
 Decoder MUST:
@@ -403,11 +490,11 @@ Decoder MUST:
 
 ## 16. Open items
 
-- binary packing;
-- entropy contexts/tables;
+- final record packing outside LiftPack-1;
+- adaptive entropy contexts beyond LiftPack-1;
 - exact PRNG construction;
 - exact CIBS-0 graph, weights, quantizers, Basis hash and model package;
-- lifting kernels;
+- additional lifting kernels beyond LiftPack-1;
 - sample formats and channel layouts;
 - fixed-point precisions;
 - stability domains;

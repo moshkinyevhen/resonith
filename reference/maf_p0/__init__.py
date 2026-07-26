@@ -8,7 +8,13 @@ from .model import (
     train_linear_cibs,
 )
 from .periodic import PhaseTrajectory
-from .stateful import decode_stateful_bytes, encode_stateful_samples
+from .residual import ResidualPacket, decode_liftpack, encode_liftpack
+from .segmentation import SegmentationResult, segment_acoustic_states
+from .stateful import (
+    decode_stateful_bytes,
+    encode_stateful_rdo_samples,
+    encode_stateful_samples,
+)
 from .wav_io import read_pcm16_mono, write_pcm16_mono
 
 __all__ = [
@@ -18,7 +24,13 @@ __all__ = [
     "encode_samples",
     "decode_stateful_bytes",
     "encode_stateful_samples",
+    "encode_stateful_rdo_samples",
     "PhaseTrajectory",
+    "ResidualPacket",
+    "decode_liftpack",
+    "encode_liftpack",
+    "SegmentationResult",
+    "segment_acoustic_states",
     "encode_basis_latent",
     "load_analysis_model",
     "save_analysis_model",

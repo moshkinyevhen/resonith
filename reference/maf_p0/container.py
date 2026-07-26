@@ -49,7 +49,17 @@ def _validated_shape(shape_value: object) -> tuple[int, ...]:
     return shape
 
 
-def pack_container(metadata: dict, arrays: dict[str, np.ndarray]) -> bytes:
+def pack_container(
+    metadata: dict,
+    arrays: dict[str, np.ndarray],
+    *,
+    stored_sections: set[str] | None = None,
+) -> bytes:
+    """Pack bounded integer arrays, optionally preserving pre-encoded bytes."""
+
+    stored = set() if stored_sections is None else set(stored_sections)
+    if not stored.issubset(arrays):
+        raise ValueError("stored section set references an undefined section")
     if len(arrays) > MAX_SECTIONS:
         raise ValueError("too many MAF-P0 sections")
     section_metadata: list[dict] = []
@@ -67,12 +77,14 @@ def pack_container(metadata: dict, arrays: dict[str, np.ndarray]) -> bytes:
         total_raw_bytes += len(raw)
         if total_raw_bytes > MAX_TOTAL_RAW_BYTES:
             raise ValueError("MAF-P0 stream exceeds the total raw-byte bound")
-        compressed = zlib.compress(raw, level=9)
+        compression = "stored" if name in stored else "zlib"
+        compressed = raw if compression == "stored" else zlib.compress(raw, level=9)
         section_metadata.append(
             {
                 "name": name,
                 "dtype": array.dtype.str,
                 "shape": list(array.shape),
+                "compression": compression,
                 "raw_bytes": len(raw),
                 "compressed_bytes": len(compressed),
                 "sha256": hashlib.sha256(raw).hexdigest(),
@@ -135,21 +147,31 @@ def unpack_container(payload: bytes) -> tuple[dict, dict[str, np.ndarray]]:
         end = cursor + compressed_bytes
         if end > len(payload):
             raise ValueError("truncated MAF-P0 section")
-        try:
-            decompressor = zlib.decompressobj()
-            raw = decompressor.decompress(
-                payload[cursor:end],
-                raw_bytes + 1,
-            )
-        except zlib.error as error:
-            raise ValueError("invalid compressed MAF-P0 section") from error
+        compression = section.get("compression", "zlib")
+        if compression == "stored":
+            if compressed_bytes != raw_bytes:
+                raise ValueError("stored MAF-P0 section size mismatch")
+            raw = payload[cursor:end]
+        elif compression == "zlib":
+            try:
+                decompressor = zlib.decompressobj()
+                raw = decompressor.decompress(
+                    payload[cursor:end],
+                    raw_bytes + 1,
+                )
+            except zlib.error as error:
+                raise ValueError("invalid compressed MAF-P0 section") from error
+            if (
+                len(raw) != raw_bytes
+                or not decompressor.eof
+                or decompressor.unconsumed_tail
+                or decompressor.unused_data
+            ):
+                raise ValueError("section size mismatch")
+        else:
+            raise ValueError("unknown MAF-P0 section compression")
         cursor = end
-        if (
-            len(raw) != raw_bytes
-            or not decompressor.eof
-            or decompressor.unconsumed_tail
-            or decompressor.unused_data
-        ):
+        if len(raw) != raw_bytes:
             raise ValueError("section size mismatch")
         if hashlib.sha256(raw).hexdigest() != section["sha256"]:
             raise ValueError("section hash mismatch")

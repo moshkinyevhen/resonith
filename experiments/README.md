@@ -30,6 +30,10 @@ reproducible command and independent decode.
   transient-RDO, and real Opus ablation.
 - `opus_anchor.py` — run official external `opusenc/opusdec` on a supplied WAV.
 - `results/maf_p1_opus_2026-07-26.json` — raw first MAF-P1/Opus diagnostic.
+- `real_music_corpus.json` — pinned URLs, licenses, credits, hashes, and crops.
+- `real_music_benchmark.py` — deterministic PCM downmix, LiftPack/zlib,
+  fixed/adaptive/full-RDO, and Opus ablation.
+- `results/maf_p2_real_music_2026-07-26.json` — raw real-music phase report.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

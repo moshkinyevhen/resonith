@@ -48,6 +48,19 @@ class ContainerTests(unittest.TestCase):
         for name, expected in arrays.items():
             np.testing.assert_array_equal(restored[name], expected)
 
+    def test_preencoded_section_is_stored_without_second_compression(self) -> None:
+        encoded = np.arange(257, dtype=np.uint8)
+        payload = pack_container(
+            {"profile": "test"},
+            {"RSL1": encoded},
+            stored_sections={"RSL1"},
+        )
+        metadata, arrays = unpack_container(payload)
+        section = metadata["sections"][0]
+        self.assertEqual(section["compression"], "stored")
+        self.assertEqual(section["compressed_bytes"], encoded.nbytes)
+        np.testing.assert_array_equal(arrays["RSL1"], encoded)
+
     def test_float_and_expansion_mismatch_are_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "dtype"):
             pack_container({}, {"FLOAT": np.zeros(8, dtype=np.float32)})

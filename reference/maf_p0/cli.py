@@ -16,7 +16,11 @@ from .model import (
     train_linear_cibs,
 )
 from .periodic import analyze_periodic_basis
-from .stateful import decode_stateful_bytes, encode_stateful_samples
+from .stateful import (
+    decode_stateful_bytes,
+    encode_stateful_rdo_samples,
+    encode_stateful_samples,
+)
 from .wav_io import read_pcm16_mono, write_pcm16_mono
 
 
@@ -74,16 +78,36 @@ def _encode(args: argparse.Namespace) -> None:
         "residual_step": args.residual_q,
     }
     if args.profile == "p1":
-        result = encode_stateful_samples(
-            samples,
-            sample_rate,
-            segment_samples=args.segment_samples,
-            pitch_knot_samples=args.pitch_knot,
-            transient_mode=args.transient,
-            transient_quantization_step=args.transient_q,
-            transient_window_size=args.transient_window,
+        p1_common = {
+            "pitch_knot_samples": args.pitch_knot,
+            "residual_codec": args.residual_codec,
+            "residual_block_size": args.residual_block,
+            "transient_mode": args.transient,
+            "transient_quantization_step": args.transient_q,
+            "transient_window_size": args.transient_window,
             **common,
-        )
+        }
+        if args.segment_mode == "rdo":
+            result = encode_stateful_rdo_samples(
+                samples,
+                sample_rate,
+                segmentation_hop_samples=args.segment_hop,
+                minimum_segment_samples=args.segment_min,
+                maximum_segment_samples=args.segment_max,
+                **p1_common,
+            )
+        else:
+            result = encode_stateful_samples(
+                samples,
+                sample_rate,
+                segment_samples=args.segment_samples,
+                segment_mode=args.segment_mode,
+                segmentation_hop_samples=args.segment_hop,
+                minimum_segment_samples=args.segment_min,
+                maximum_segment_samples=args.segment_max,
+                segmentation_change_penalty=args.change_penalty,
+                **p1_common,
+            )
     else:
         result = encode_samples(samples, sample_rate, **common)
     Path(args.output).write_bytes(result.payload)
@@ -116,20 +140,39 @@ def _benchmark(args: argparse.Namespace) -> None:
             "basis_correction_step": args.basis_q,
             "residual_step": args.residual_q,
         }
-        result = (
-            encode_stateful_samples(
-                samples,
-                sample_rate,
-                segment_samples=args.segment_samples,
-                pitch_knot_samples=args.pitch_knot,
-                transient_mode=args.transient,
-                transient_quantization_step=args.transient_q,
-                transient_window_size=args.transient_window,
+        if args.profile == "p1":
+            p1_common = {
+                "pitch_knot_samples": args.pitch_knot,
+                "residual_codec": args.residual_codec,
+                "residual_block_size": args.residual_block,
+                "transient_mode": args.transient,
+                "transient_quantization_step": args.transient_q,
+                "transient_window_size": args.transient_window,
                 **common,
-            )
-            if args.profile == "p1"
-            else encode_samples(samples, sample_rate, **common)
-        )
+            }
+            if args.segment_mode == "rdo":
+                result = encode_stateful_rdo_samples(
+                    samples,
+                    sample_rate,
+                    segmentation_hop_samples=args.segment_hop,
+                    minimum_segment_samples=args.segment_min,
+                    maximum_segment_samples=args.segment_max,
+                    **p1_common,
+                )
+            else:
+                result = encode_stateful_samples(
+                    samples,
+                    sample_rate,
+                    segment_samples=args.segment_samples,
+                    segment_mode=args.segment_mode,
+                    segmentation_hop_samples=args.segment_hop,
+                    minimum_segment_samples=args.segment_min,
+                    maximum_segment_samples=args.segment_max,
+                    segmentation_change_penalty=args.change_penalty,
+                    **p1_common,
+                )
+        else:
+            result = encode_samples(samples, sample_rate, **common)
         reports[mode] = result.report
         if args.output_prefix:
             extension = "maf1" if args.profile == "p1" else "maf0"
@@ -162,7 +205,22 @@ def build_parser() -> argparse.ArgumentParser:
     encode.add_argument("--gain-block", type=int, default=1024)
     encode.add_argument("--basis-q", type=int, default=1)
     encode.add_argument("--residual-q", type=int, default=1)
+    encode.add_argument(
+        "--residual-codec",
+        choices=("liftpack", "zlib"),
+        default="liftpack",
+    )
+    encode.add_argument("--residual-block", type=int, default=1024)
     encode.add_argument("--segment-samples", type=int, default=24000)
+    encode.add_argument(
+        "--segment-mode",
+        choices=("fixed", "adaptive", "rdo"),
+        default="rdo",
+    )
+    encode.add_argument("--segment-hop", type=int, default=1024)
+    encode.add_argument("--segment-min", type=int, default=4096)
+    encode.add_argument("--segment-max", type=int, default=96000)
+    encode.add_argument("--change-penalty", type=float, default=200.0)
     encode.add_argument("--pitch-knot", type=int, default=4096)
     encode.add_argument("--transient", choices=("off", "on", "auto"), default="auto")
     encode.add_argument("--transient-q", type=int, default=1)
@@ -184,7 +242,22 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--gain-block", type=int, default=1024)
     benchmark.add_argument("--basis-q", type=int, default=1)
     benchmark.add_argument("--residual-q", type=int, default=1)
+    benchmark.add_argument(
+        "--residual-codec",
+        choices=("liftpack", "zlib"),
+        default="liftpack",
+    )
+    benchmark.add_argument("--residual-block", type=int, default=1024)
     benchmark.add_argument("--segment-samples", type=int, default=24000)
+    benchmark.add_argument(
+        "--segment-mode",
+        choices=("fixed", "adaptive", "rdo"),
+        default="rdo",
+    )
+    benchmark.add_argument("--segment-hop", type=int, default=1024)
+    benchmark.add_argument("--segment-min", type=int, default=4096)
+    benchmark.add_argument("--segment-max", type=int, default=96000)
+    benchmark.add_argument("--change-penalty", type=float, default=200.0)
     benchmark.add_argument("--pitch-knot", type=int, default=4096)
     benchmark.add_argument("--transient", choices=("off", "on", "auto"), default="auto")
     benchmark.add_argument("--transient-q", type=int, default=1)

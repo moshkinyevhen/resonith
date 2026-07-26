@@ -14,7 +14,8 @@
 | [09_CIBS_NORMATIVE_DESIGN.md](09_CIBS_NORMATIVE_DESIGN.md) | Accepted Cached Integer Basis Synthesis |
 | [10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) | MAF-P0/P1 executable codecs, Opus anchor, and measured results |
 | [11_IMPLEMENTATION_LANGUAGE.md](11_IMPLEMENTATION_LANGUAGE.md) | Native Golden Core, safe player runtime, portability, and quality gates |
+| [12_LIFTPACK_AND_STATE_RDO.md](12_LIFTPACK_AND_STATE_RDO.md) | Native residual entropy, state candidates, full-stream RDO, and real-music results |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
 
-Regulatory draft:
+Normative draft:
 [../spec/Resonith-0.md](../spec/Resonith-0.md).

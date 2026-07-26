@@ -36,15 +36,19 @@ The repository contains:
 - MAF-P1 immutable multi-Basis Bank with validated lifetimes and reuse;
 - absolute continuous Q32 pitch/phase trajectories with random access;
 - bounded reversible integer-lifting transient events;
-- RAW and CIBS Basis banks plus objective residual;
+- RAW and CIBS Basis banks plus the bounded `LiftPack-1` objective residual;
+- acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
-- 27 reference, security, and integration tests when the Opus tool is
+- a pinned licensed real-music corpus and deterministic PCM downmix;
+- 42 reference, security, and integration tests when the Opus tool is
   configured.
 
-The first MAF-P1/Opus result is deliberately labeled a synthetic diagnostic,
-not a general codec claim. See
-[MAF-P0 and MAF-P1 Executable Prototypes](docs/10_MAF_P0_IMPLEMENTATION.md).
+All current MAF-P1/Opus results are deliberately labeled diagnostics, not
+general codec claims. See
+[MAF-P0 and MAF-P1 Executable Prototypes](docs/10_MAF_P0_IMPLEMENTATION.md)
+and
+[LiftPack-1 and Full-Stream Acoustic-State RDO](docs/12_LIFTPACK_AND_STATE_RDO.md).
 
 ## Documentation
 
@@ -61,6 +65,7 @@ not a general codec claim. See
 - [CIBS normative design](docs/09_CIBS_NORMATIVE_DESIGN.md)
 - [MAF-P0/P1 executable prototypes and measured results](docs/10_MAF_P0_IMPLEMENTATION.md)
 - [Implementation language and runtime](docs/11_IMPLEMENTATION_LANGUAGE.md)
+- [LiftPack-1 and full-stream state RDO](docs/12_LIFTPACK_AND_STATE_RDO.md)
 - [Primary sources](docs/REFERENCES.md)
 - [Resonith-0 normative draft](spec/Resonith-0.md)
 

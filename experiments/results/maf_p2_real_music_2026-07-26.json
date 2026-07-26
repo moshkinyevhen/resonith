@@ -1,0 +1,1987 @@
+{
+  "clips": {
+    "corelli-sonata-realization": {
+      "conversion": {
+        "downmix": "signed nearest, ties away from zero",
+        "source_channels": 2,
+        "source_sample_width_bits": 16
+      },
+      "duration_seconds": 8.0,
+      "mono_pcm_sha256": "d15224482ce934003a5d6b287727b14002b17409dbb454fb5b06960f8609cf99",
+      "provenance": {
+        "bytes": 3702828,
+        "cache_name": "corelli_violin_sonata.wav",
+        "credit": "Arcangelo Corelli",
+        "download_url": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Corelli_Violin_Sonata_Op_5_No_9.wav",
+        "duration_seconds": 8.0,
+        "id": "corelli-sonata-realization",
+        "kind": "public-domain score realization",
+        "license": "Public domain",
+        "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+        "sha256": "702fc705f83f73e2b8d27f2eb88f4ed3ee59ea46a4737254d72aecb3079c73e7",
+        "source_page": "https://commons.wikimedia.org/wiki/File:Corelli_Violin_Sonata_Op_5_No_9.wav",
+        "start_seconds": 0.0,
+        "title": "Corelli Violin Sonata Op. 5 No. 9, Tempo di Gavotta"
+      },
+      "results": {
+        "maf": {
+          "adaptive_liftpack_q64": {
+            "atom_count": 8,
+            "basis_count": 8,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 3113,
+            "effective_bitrate_kbps": 93.215,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 705600,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 96,
+            "ratio_vs_pcm": 0.13210742630385489,
+            "residual": {
+              "block_count": 345,
+              "block_size": 1024,
+              "codec": "LiftPack-1",
+              "entropy_bits": 658725,
+              "entropy_counts": {
+                "packed": 0,
+                "rice": 345
+              },
+              "sample_count": 352800,
+              "stream_bytes": 85617,
+              "transform_counts": {
+                "delta1": 100,
+                "delta2": 245,
+                "haar": 0,
+                "identity": 0
+              }
+            },
+            "saving_vs_pcm": 0.8678925736961451,
+            "section_compressed_bytes": {
+              "ATOM": 109,
+              "BASI": 2947,
+              "BLIF": 39,
+              "GAIN": 1041,
+              "PKIN": 257,
+              "PKPO": 92,
+              "RSL1": 85617
+            },
+            "section_raw_bytes": {
+              "ATOM": 384,
+              "BASI": 4096,
+              "BLIF": 128,
+              "GAIN": 1380,
+              "PKIN": 384,
+              "PKPO": 768,
+              "RSL1": 85617
+            },
+            "segmentation": {
+              "boundary_novelty": [
+                2.88014625429295,
+                4.806696614852104,
+                2.7195318596582183,
+                5.480904779609594,
+                4.531720435541461,
+                2.2143479454912853,
+                4.54918636941357
+              ],
+              "boundary_samples": [
+                23552,
+                56320,
+                113664,
+                133120,
+                202752,
+                223232,
+                311296
+              ],
+              "change_penalty": 200.0,
+              "feature_dimensions": 16,
+              "feature_frames": 345,
+              "hop_samples": 1024,
+              "maximum_segment_samples": 88200,
+              "minimum_segment_samples": 4096,
+              "mode": "adaptive",
+              "objective": 5065.237228744368,
+              "state_count": 8
+            },
+            "snr_db": 25.825559953270666,
+            "stream_bytes": 93215,
+            "stream_sha256": "d544809c3781942e83d6d8cd487c86da7967c5dca39f43cd61a67c48f7431e21",
+            "transient": {
+              "baseline_proxy_bytes": 85617,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 85617,
+              "selected_events": 0
+            }
+          },
+          "adaptive_zlib_q64": {
+            "atom_count": 8,
+            "basis_count": 8,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 3110,
+            "effective_bitrate_kbps": 127.305,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 705600,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 96,
+            "ratio_vs_pcm": 0.18042091836734694,
+            "residual": {
+              "codec": "zlib-array",
+              "sample_count": 352800
+            },
+            "saving_vs_pcm": 0.819579081632653,
+            "section_compressed_bytes": {
+              "ATOM": 109,
+              "BASI": 2947,
+              "BLIF": 39,
+              "GAIN": 1041,
+              "PKIN": 257,
+              "PKPO": 92,
+              "RESI": 119710
+            },
+            "section_raw_bytes": {
+              "ATOM": 384,
+              "BASI": 4096,
+              "BLIF": 128,
+              "GAIN": 1380,
+              "PKIN": 384,
+              "PKPO": 768,
+              "RESI": 705600
+            },
+            "segmentation": {
+              "boundary_novelty": [
+                2.88014625429295,
+                4.806696614852104,
+                2.7195318596582183,
+                5.480904779609594,
+                4.531720435541461,
+                2.2143479454912853,
+                4.54918636941357
+              ],
+              "boundary_samples": [
+                23552,
+                56320,
+                113664,
+                133120,
+                202752,
+                223232,
+                311296
+              ],
+              "change_penalty": 200.0,
+              "feature_dimensions": 16,
+              "feature_frames": 345,
+              "hop_samples": 1024,
+              "maximum_segment_samples": 88200,
+              "minimum_segment_samples": 4096,
+              "mode": "adaptive",
+              "objective": 5065.237228744368,
+              "state_count": 8
+            },
+            "snr_db": 25.825559953270666,
+            "stream_bytes": 127305,
+            "stream_sha256": "e5a363c2d5847398d4a4225ce237de5dd3e6bc2437ca57f49c6d7c006f4090f9",
+            "transient": {
+              "baseline_proxy_bytes": 119710,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 119710,
+              "selected_events": 0
+            }
+          },
+          "fixed_liftpack_q64": {
+            "atom_count": 8,
+            "basis_count": 8,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 3110,
+            "effective_bitrate_kbps": 92.454,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 705600,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 96,
+            "ratio_vs_pcm": 0.13102891156462584,
+            "residual": {
+              "block_count": 345,
+              "block_size": 1024,
+              "codec": "LiftPack-1",
+              "entropy_bits": 655849,
+              "entropy_counts": {
+                "packed": 0,
+                "rice": 345
+              },
+              "sample_count": 352800,
+              "stream_bytes": 85266,
+              "transform_counts": {
+                "delta1": 94,
+                "delta2": 251,
+                "haar": 0,
+                "identity": 0
+              }
+            },
+            "saving_vs_pcm": 0.8689710884353742,
+            "section_compressed_bytes": {
+              "ATOM": 103,
+              "BASI": 2593,
+              "BLIF": 47,
+              "GAIN": 1010,
+              "PKIN": 275,
+              "PKPO": 50,
+              "RSL1": 85266
+            },
+            "section_raw_bytes": {
+              "ATOM": 384,
+              "BASI": 4096,
+              "BLIF": 128,
+              "GAIN": 1380,
+              "PKIN": 384,
+              "PKPO": 768,
+              "RSL1": 85266
+            },
+            "segmentation": {
+              "boundary_samples": [
+                44100,
+                88200,
+                132300,
+                176400,
+                220500,
+                264600,
+                308700
+              ],
+              "mode": "fixed",
+              "segment_samples": 44100,
+              "state_count": 8
+            },
+            "snr_db": 25.826987092123876,
+            "stream_bytes": 92454,
+            "stream_sha256": "9f21d2555e7621562b9fa195a605188fba90a36e32f4f9d7a04848c0fae66c78",
+            "transient": {
+              "baseline_proxy_bytes": 85266,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 85266,
+              "selected_events": 0
+            }
+          },
+          "fixed_zlib_q64": {
+            "atom_count": 8,
+            "basis_count": 8,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 3107,
+            "effective_bitrate_kbps": 126.78,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 705600,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 96,
+            "ratio_vs_pcm": 0.17967687074829933,
+            "residual": {
+              "codec": "zlib-array",
+              "sample_count": 352800
+            },
+            "saving_vs_pcm": 0.8203231292517007,
+            "section_compressed_bytes": {
+              "ATOM": 103,
+              "BASI": 2593,
+              "BLIF": 47,
+              "GAIN": 1010,
+              "PKIN": 275,
+              "PKPO": 50,
+              "RESI": 119595
+            },
+            "section_raw_bytes": {
+              "ATOM": 384,
+              "BASI": 4096,
+              "BLIF": 128,
+              "GAIN": 1380,
+              "PKIN": 384,
+              "PKPO": 768,
+              "RESI": 705600
+            },
+            "segmentation": {
+              "boundary_samples": [
+                44100,
+                88200,
+                132300,
+                176400,
+                220500,
+                264600,
+                308700
+              ],
+              "mode": "fixed",
+              "segment_samples": 44100,
+              "state_count": 8
+            },
+            "snr_db": 25.826987092123876,
+            "stream_bytes": 126780,
+            "stream_sha256": "8b8156429949a04a6e9bcf23cbb50847bfb27c909cda84f5273e73eefddfcb39",
+            "transient": {
+              "baseline_proxy_bytes": 119595,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 119595,
+              "selected_events": 0
+            }
+          },
+          "rdo_liftpack_q64": {
+            "atom_count": 4,
+            "basis_count": 4,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 2417,
+            "effective_bitrate_kbps": 90.406,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 705600,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 92,
+            "ratio_vs_pcm": 0.12812641723356008,
+            "residual": {
+              "block_count": 345,
+              "block_size": 1024,
+              "codec": "LiftPack-1",
+              "entropy_bits": 656035,
+              "entropy_counts": {
+                "packed": 0,
+                "rice": 345
+              },
+              "sample_count": 352800,
+              "stream_bytes": 85278,
+              "transform_counts": {
+                "delta1": 99,
+                "delta2": 246,
+                "haar": 0,
+                "identity": 0
+              }
+            },
+            "saving_vs_pcm": 0.8718735827664399,
+            "section_compressed_bytes": {
+              "ATOM": 57,
+              "BASI": 1310,
+              "BLIF": 30,
+              "GAIN": 974,
+              "PKIN": 260,
+              "PKPO": 80,
+              "RSL1": 85278
+            },
+            "section_raw_bytes": {
+              "ATOM": 192,
+              "BASI": 2048,
+              "BLIF": 64,
+              "GAIN": 1380,
+              "PKIN": 368,
+              "PKPO": 736,
+              "RSL1": 85278
+            },
+            "segmentation": {
+              "boundary_samples": [
+                88200,
+                176400,
+                264600
+              ],
+              "mode": "fixed",
+              "segment_samples": 88200,
+              "state_count": 4
+            },
+            "segmentation_rdo": {
+              "candidate_count": 7,
+              "candidates": [
+                {
+                  "atom_count": 16,
+                  "name": "fixed-22050",
+                  "segmentation": {
+                    "boundary_samples": [
+                      22050,
+                      44100,
+                      66150,
+                      88200,
+                      110250,
+                      132300,
+                      154350,
+                      176400,
+                      198450,
+                      220500,
+                      242550,
+                      264600,
+                      286650,
+                      308700,
+                      330750
+                    ],
+                    "mode": "fixed",
+                    "segment_samples": 22050,
+                    "state_count": 16
+                  },
+                  "snr_db": 25.818469138132887,
+                  "stream_bytes": 96913
+                },
+                {
+                  "atom_count": 8,
+                  "name": "fixed-44100",
+                  "segmentation": {
+                    "boundary_samples": [
+                      44100,
+                      88200,
+                      132300,
+                      176400,
+                      220500,
+                      264600,
+                      308700
+                    ],
+                    "mode": "fixed",
+                    "segment_samples": 44100,
+                    "state_count": 8
+                  },
+                  "snr_db": 25.826987092123876,
+                  "stream_bytes": 92454
+                },
+                {
+                  "atom_count": 4,
+                  "name": "fixed-88200",
+                  "segmentation": {
+                    "boundary_samples": [
+                      88200,
+                      176400,
+                      264600
+                    ],
+                    "mode": "fixed",
+                    "segment_samples": 88200,
+                    "state_count": 4
+                  },
+                  "snr_db": 25.82191979651237,
+                  "stream_bytes": 90406
+                },
+                {
+                  "atom_count": 14,
+                  "name": "adaptive-100",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      1.632496212655182,
+                      2.88014625429295,
+                      4.806696614852104,
+                      3.293057967007306,
+                      3.0356891777754758,
+                      2.7195318596582183,
+                      5.480904779609594,
+                      4.652960060661129,
+                      4.531720435541461,
+                      3.7554845892494315,
+                      5.101155417837697,
+                      5.059991303286796,
+                      2.1322613484566006
+                    ],
+                    "boundary_samples": [
+                      4096,
+                      23552,
+                      56320,
+                      67584,
+                      88064,
+                      113664,
+                      133120,
+                      144384,
+                      202752,
+                      221184,
+                      265216,
+                      285696,
+                      313344
+                    ],
+                    "change_penalty": 100.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 345,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 4186.094574697762,
+                    "state_count": 14
+                  },
+                  "snr_db": 25.825950856580846,
+                  "stream_bytes": 96365
+                },
+                {
+                  "atom_count": 8,
+                  "name": "adaptive-200",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      2.88014625429295,
+                      4.806696614852104,
+                      2.7195318596582183,
+                      5.480904779609594,
+                      4.531720435541461,
+                      2.2143479454912853,
+                      4.54918636941357
+                    ],
+                    "boundary_samples": [
+                      23552,
+                      56320,
+                      113664,
+                      133120,
+                      202752,
+                      223232,
+                      311296
+                    ],
+                    "change_penalty": 200.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 345,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 5065.237228744368,
+                    "state_count": 8
+                  },
+                  "snr_db": 25.825559953270666,
+                  "stream_bytes": 93215
+                },
+                {
+                  "atom_count": 5,
+                  "name": "adaptive-400",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      1.7535586913918337,
+                      1.4576610573238329,
+                      2.2143479454912853,
+                      4.54918636941357
+                    ],
+                    "boundary_samples": [
+                      57344,
+                      135168,
+                      223232,
+                      311296
+                    ],
+                    "change_penalty": 400.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 345,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 6090.738311097026,
+                    "state_count": 5
+                  },
+                  "snr_db": 25.834144518931428,
+                  "stream_bytes": 91030
+                },
+                {
+                  "atom_count": 5,
+                  "name": "adaptive-800",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      1.7535586913918337,
+                      1.4576610573238329,
+                      2.2143479454912853,
+                      4.54918636941357
+                    ],
+                    "boundary_samples": [
+                      57344,
+                      135168,
+                      223232,
+                      311296
+                    ],
+                    "change_penalty": 800.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 345,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 7690.738311097026,
+                    "state_count": 5
+                  },
+                  "snr_db": 25.834144518931428,
+                  "stream_bytes": 91030
+                }
+              ],
+              "objective": "minimum complete stream bytes at one residual quantizer",
+              "selected_candidate": "fixed-88200"
+            },
+            "snr_db": 25.82191979651237,
+            "stream_bytes": 90406,
+            "stream_sha256": "e2f31c0ad6f088bfba150b5778b79586b00664d0a0ce399893eaf677c4649e1c",
+            "transient": {
+              "baseline_proxy_bytes": 85278,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 85278,
+              "selected_events": 0
+            }
+          }
+        },
+        "opus": {
+          "48k_vbr_music": {
+            "application": "music",
+            "codec": "Opus",
+            "container": "Ogg Opus",
+            "decoder_sha256": "ae3094a4085c18a0825579bd65b389ccf43bf81f344b851072bb65f7fd44132c",
+            "decoder_version": "opusdec opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "effective_bitrate_kbps": 53.624,
+            "encoder_sha256": "0fc8a47776b9831613a867a23fb6024278885435422801185e84d8bb9ec0d8c6",
+            "encoder_version": "opusenc opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "exact": false,
+            "frame_size_ms": 20.0,
+            "max_abs_error": 162,
+            "mode": "vbr",
+            "ogg_page_count": 11,
+            "requested_bitrate_kbps": 48.0,
+            "sample_count": 352800,
+            "sample_rate": 44100,
+            "snr_db": 21.21039999593874,
+            "stream_bytes": 53624,
+            "stream_hash_normalization": "Ogg stream serial and page CRC fields are zeroed before hashing",
+            "stream_sha256": "16c5b7d40a3cba9d0c4096b2fd6a32895afc338349c11eca3569d3377811d127"
+          },
+          "96k_vbr_music": {
+            "application": "music",
+            "codec": "Opus",
+            "container": "Ogg Opus",
+            "decoder_sha256": "ae3094a4085c18a0825579bd65b389ccf43bf81f344b851072bb65f7fd44132c",
+            "decoder_version": "opusdec opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "effective_bitrate_kbps": 106.256,
+            "encoder_sha256": "0fc8a47776b9831613a867a23fb6024278885435422801185e84d8bb9ec0d8c6",
+            "encoder_version": "opusenc opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "exact": false,
+            "frame_size_ms": 20.0,
+            "max_abs_error": 98,
+            "mode": "vbr",
+            "ogg_page_count": 11,
+            "requested_bitrate_kbps": 96.0,
+            "sample_count": 352800,
+            "sample_rate": 44100,
+            "snr_db": 26.89347995363353,
+            "stream_bytes": 106256,
+            "stream_hash_normalization": "Ogg stream serial and page CRC fields are zeroed before hashing",
+            "stream_sha256": "4abfb5a23fc49ecf70de1d3d1427b1e9524153df3e8cf03651246b47fecff577"
+          }
+        }
+      },
+      "sample_count": 352800,
+      "sample_rate": 44100
+    },
+    "emotional-piano-cc0": {
+      "conversion": {
+        "downmix": "signed nearest, ties away from zero",
+        "source_channels": 2,
+        "source_sample_width_bits": 16
+      },
+      "duration_seconds": 8.0,
+      "mono_pcm_sha256": "e2bd61b95b81821d687b1b80f16e8d56d39c2f8a51acffb05fb37331bb5655bd",
+      "provenance": {
+        "bytes": 2822444,
+        "cache_name": "emotional_piano.wav",
+        "credit": "triangelx / Freesound sound 189175",
+        "download_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Emotional_piano.wav",
+        "duration_seconds": 8.0,
+        "id": "emotional-piano-cc0",
+        "kind": "recorded piano music",
+        "license": "CC0 1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "sha256": "9661f81d37c59f230b324b830ab68c0482336af3ec117c92e73108ffb4095f15",
+        "source_page": "https://commons.wikimedia.org/wiki/File:Emotional_piano.wav",
+        "start_seconds": 0.0,
+        "title": "Emotional piano"
+      },
+      "results": {
+        "maf": {
+          "adaptive_liftpack_q64": {
+            "atom_count": 6,
+            "basis_count": 6,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 2770,
+            "effective_bitrate_kbps": 113.511,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 705600,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 94,
+            "ratio_vs_pcm": 0.16087159863945577,
+            "residual": {
+              "block_count": 345,
+              "block_size": 1024,
+              "codec": "LiftPack-1",
+              "entropy_bits": 825878,
+              "entropy_counts": {
+                "packed": 0,
+                "rice": 345
+              },
+              "sample_count": 352800,
+              "stream_bytes": 106514,
+              "transform_counts": {
+                "delta1": 0,
+                "delta2": 345,
+                "haar": 0,
+                "identity": 0
+              }
+            },
+            "saving_vs_pcm": 0.8391284013605442,
+            "section_compressed_bytes": {
+              "ATOM": 90,
+              "BASI": 2779,
+              "BLIF": 33,
+              "GAIN": 1041,
+              "PKIN": 196,
+              "PKPO": 88,
+              "RSL1": 106514
+            },
+            "section_raw_bytes": {
+              "ATOM": 288,
+              "BASI": 3072,
+              "BLIF": 96,
+              "GAIN": 1380,
+              "PKIN": 376,
+              "PKPO": 752,
+              "RSL1": 106514
+            },
+            "segmentation": {
+              "boundary_novelty": [
+                2.392594191240415,
+                6.557023792936319,
+                2.1177819666074797,
+                1.3668921402408094,
+                10.21900046390551
+              ],
+              "boundary_samples": [
+                69632,
+                154624,
+                182272,
+                256000,
+                330752
+              ],
+              "change_penalty": 200.0,
+              "feature_dimensions": 16,
+              "feature_frames": 345,
+              "hop_samples": 1024,
+              "maximum_segment_samples": 88200,
+              "minimum_segment_samples": 4096,
+              "mode": "adaptive",
+              "objective": 6353.440259865178,
+              "state_count": 6
+            },
+            "snr_db": 46.22322619175992,
+            "stream_bytes": 113511,
+            "stream_sha256": "b212df92ff79db3565b588fa5196bb00598e283444537ecf29f621376db4fda6",
+            "transient": {
+              "baseline_proxy_bytes": 106514,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 106514,
+              "selected_events": 0
+            }
+          },
+          "adaptive_zlib_q64": {
+            "atom_count": 6,
+            "basis_count": 6,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 2764,
+            "effective_bitrate_kbps": 279.329,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 705600,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 94,
+            "ratio_vs_pcm": 0.39587443310657594,
+            "residual": {
+              "codec": "zlib-array",
+              "sample_count": 352800
+            },
+            "saving_vs_pcm": 0.604125566893424,
+            "section_compressed_bytes": {
+              "ATOM": 90,
+              "BASI": 2779,
+              "BLIF": 33,
+              "GAIN": 1041,
+              "PKIN": 196,
+              "PKPO": 88,
+              "RESI": 272338
+            },
+            "section_raw_bytes": {
+              "ATOM": 288,
+              "BASI": 3072,
+              "BLIF": 96,
+              "GAIN": 1380,
+              "PKIN": 376,
+              "PKPO": 752,
+              "RESI": 705600
+            },
+            "segmentation": {
+              "boundary_novelty": [
+                2.392594191240415,
+                6.557023792936319,
+                2.1177819666074797,
+                1.3668921402408094,
+                10.21900046390551
+              ],
+              "boundary_samples": [
+                69632,
+                154624,
+                182272,
+                256000,
+                330752
+              ],
+              "change_penalty": 200.0,
+              "feature_dimensions": 16,
+              "feature_frames": 345,
+              "hop_samples": 1024,
+              "maximum_segment_samples": 88200,
+              "minimum_segment_samples": 4096,
+              "mode": "adaptive",
+              "objective": 6353.440259865178,
+              "state_count": 6
+            },
+            "snr_db": 46.22322619175992,
+            "stream_bytes": 279329,
+            "stream_sha256": "74376b679c9e9200ae5e151387f44006076aae4adac27c35639be4851bac3081",
+            "transient": {
+              "baseline_proxy_bytes": 272338,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 272338,
+              "selected_events": 0
+            }
+          },
+          "fixed_liftpack_q64": {
+            "atom_count": 8,
+            "basis_count": 8,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 3113,
+            "effective_bitrate_kbps": 114.801,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 705600,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 96,
+            "ratio_vs_pcm": 0.1626998299319728,
+            "residual": {
+              "block_count": 345,
+              "block_size": 1024,
+              "codec": "LiftPack-1",
+              "entropy_bits": 827587,
+              "entropy_counts": {
+                "packed": 0,
+                "rice": 345
+              },
+              "sample_count": 352800,
+              "stream_bytes": 106723,
+              "transform_counts": {
+                "delta1": 0,
+                "delta2": 345,
+                "haar": 0,
+                "identity": 0
+              }
+            },
+            "saving_vs_pcm": 0.8373001700680271,
+            "section_compressed_bytes": {
+              "ATOM": 103,
+              "BASI": 3542,
+              "BLIF": 47,
+              "GAIN": 1021,
+              "PKIN": 202,
+              "PKPO": 50,
+              "RSL1": 106723
+            },
+            "section_raw_bytes": {
+              "ATOM": 384,
+              "BASI": 4096,
+              "BLIF": 128,
+              "GAIN": 1380,
+              "PKIN": 384,
+              "PKPO": 768,
+              "RSL1": 106723
+            },
+            "segmentation": {
+              "boundary_samples": [
+                44100,
+                88200,
+                132300,
+                176400,
+                220500,
+                264600,
+                308700
+              ],
+              "mode": "fixed",
+              "segment_samples": 44100,
+              "state_count": 8
+            },
+            "snr_db": 46.22656745639286,
+            "stream_bytes": 114801,
+            "stream_sha256": "b184a5a9e75afd7017f995058380c334e4e0fccc2d0cabbdba4a47cbb95a51a2",
+            "transient": {
+              "baseline_proxy_bytes": 106723,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 106723,
+              "selected_events": 0
+            }
+          },
+          "fixed_zlib_q64": {
+            "atom_count": 8,
+            "basis_count": 8,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 3107,
+            "effective_bitrate_kbps": 280.053,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 705600,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 96,
+            "ratio_vs_pcm": 0.3969005102040816,
+            "residual": {
+              "codec": "zlib-array",
+              "sample_count": 352800
+            },
+            "saving_vs_pcm": 0.6030994897959183,
+            "section_compressed_bytes": {
+              "ATOM": 103,
+              "BASI": 3542,
+              "BLIF": 47,
+              "GAIN": 1021,
+              "PKIN": 202,
+              "PKPO": 50,
+              "RESI": 271981
+            },
+            "section_raw_bytes": {
+              "ATOM": 384,
+              "BASI": 4096,
+              "BLIF": 128,
+              "GAIN": 1380,
+              "PKIN": 384,
+              "PKPO": 768,
+              "RESI": 705600
+            },
+            "segmentation": {
+              "boundary_samples": [
+                44100,
+                88200,
+                132300,
+                176400,
+                220500,
+                264600,
+                308700
+              ],
+              "mode": "fixed",
+              "segment_samples": 44100,
+              "state_count": 8
+            },
+            "snr_db": 46.22656745639286,
+            "stream_bytes": 280053,
+            "stream_sha256": "256ea50faa68d049effe1674e5e327ba2daa5440d340cac8766d979f2f6951a2",
+            "transient": {
+              "baseline_proxy_bytes": 271981,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 271981,
+              "selected_events": 0
+            }
+          },
+          "rdo_liftpack_q64": {
+            "atom_count": 4,
+            "basis_count": 4,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 2421,
+            "effective_bitrate_kbps": 112.071,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 705600,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 92,
+            "ratio_vs_pcm": 0.15883078231292516,
+            "residual": {
+              "block_count": 345,
+              "block_size": 1024,
+              "codec": "LiftPack-1",
+              "entropy_bits": 825805,
+              "entropy_counts": {
+                "packed": 0,
+                "rice": 345
+              },
+              "sample_count": 352800,
+              "stream_bytes": 106510,
+              "transform_counts": {
+                "delta1": 0,
+                "delta2": 345,
+                "haar": 0,
+                "identity": 0
+              }
+            },
+            "saving_vs_pcm": 0.8411692176870749,
+            "section_compressed_bytes": {
+              "ATOM": 57,
+              "BASI": 1749,
+              "BLIF": 30,
+              "GAIN": 1037,
+              "PKIN": 187,
+              "PKPO": 80,
+              "RSL1": 106510
+            },
+            "section_raw_bytes": {
+              "ATOM": 192,
+              "BASI": 2048,
+              "BLIF": 64,
+              "GAIN": 1380,
+              "PKIN": 368,
+              "PKPO": 736,
+              "RSL1": 106510
+            },
+            "segmentation": {
+              "boundary_samples": [
+                88200,
+                176400,
+                264600
+              ],
+              "mode": "fixed",
+              "segment_samples": 88200,
+              "state_count": 4
+            },
+            "segmentation_rdo": {
+              "candidate_count": 7,
+              "candidates": [
+                {
+                  "atom_count": 16,
+                  "name": "fixed-22050",
+                  "segmentation": {
+                    "boundary_samples": [
+                      22050,
+                      44100,
+                      66150,
+                      88200,
+                      110250,
+                      132300,
+                      154350,
+                      176400,
+                      198450,
+                      220500,
+                      242550,
+                      264600,
+                      286650,
+                      308700,
+                      330750
+                    ],
+                    "mode": "fixed",
+                    "segment_samples": 22050,
+                    "state_count": 16
+                  },
+                  "snr_db": 46.22002572185244,
+                  "stream_bytes": 119410
+                },
+                {
+                  "atom_count": 8,
+                  "name": "fixed-44100",
+                  "segmentation": {
+                    "boundary_samples": [
+                      44100,
+                      88200,
+                      132300,
+                      176400,
+                      220500,
+                      264600,
+                      308700
+                    ],
+                    "mode": "fixed",
+                    "segment_samples": 44100,
+                    "state_count": 8
+                  },
+                  "snr_db": 46.22656745639286,
+                  "stream_bytes": 114801
+                },
+                {
+                  "atom_count": 4,
+                  "name": "fixed-88200",
+                  "segmentation": {
+                    "boundary_samples": [
+                      88200,
+                      176400,
+                      264600
+                    ],
+                    "mode": "fixed",
+                    "segment_samples": 88200,
+                    "state_count": 4
+                  },
+                  "snr_db": 46.2371043017598,
+                  "stream_bytes": 112071
+                },
+                {
+                  "atom_count": 22,
+                  "name": "adaptive-100",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      4.174326558159201,
+                      9.877271125850603,
+                      3.393930397895124,
+                      7.0435318760305945,
+                      3.1233328666733158,
+                      10.876075084032967,
+                      2.5496279966803845,
+                      10.341591050306056,
+                      2.7780676900965817,
+                      5.47379438545032,
+                      4.249350252600754,
+                      9.882971797865668,
+                      1.5637536763613222,
+                      9.43989442589593,
+                      2.3411699390060763,
+                      8.595564658644028,
+                      2.5506940618381155,
+                      1.5853989111427949,
+                      9.746006505379599,
+                      3.6948509756870487,
+                      10.21900046390551
+                    ],
+                    "boundary_samples": [
+                      6144,
+                      32768,
+                      36864,
+                      65536,
+                      71680,
+                      88064,
+                      95232,
+                      120832,
+                      140288,
+                      153600,
+                      166912,
+                      176128,
+                      187392,
+                      208896,
+                      212992,
+                      242688,
+                      247808,
+                      277504,
+                      296960,
+                      313344,
+                      330752
+                    ],
+                    "change_penalty": 100.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 345,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 5210.858065153125,
+                    "state_count": 22
+                  },
+                  "snr_db": 46.22166281905319,
+                  "stream_bytes": 122945
+                },
+                {
+                  "atom_count": 6,
+                  "name": "adaptive-200",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      2.392594191240415,
+                      6.557023792936319,
+                      2.1177819666074797,
+                      1.3668921402408094,
+                      10.21900046390551
+                    ],
+                    "boundary_samples": [
+                      69632,
+                      154624,
+                      182272,
+                      256000,
+                      330752
+                    ],
+                    "change_penalty": 200.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 345,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 6353.440259865178,
+                    "state_count": 6
+                  },
+                  "snr_db": 46.22322619175992,
+                  "stream_bytes": 113511
+                },
+                {
+                  "atom_count": 6,
+                  "name": "adaptive-400",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      2.392594191240415,
+                      6.557023792936319,
+                      2.1177819666074797,
+                      1.3668921402408094,
+                      10.21900046390551
+                    ],
+                    "boundary_samples": [
+                      69632,
+                      154624,
+                      182272,
+                      256000,
+                      330752
+                    ],
+                    "change_penalty": 400.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 345,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 7353.440259865178,
+                    "state_count": 6
+                  },
+                  "snr_db": 46.22322619175992,
+                  "stream_bytes": 113511
+                },
+                {
+                  "atom_count": 5,
+                  "name": "adaptive-800",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      2.392594191240415,
+                      6.557023792936319,
+                      2.1177819666074797,
+                      6.147123895979641
+                    ],
+                    "boundary_samples": [
+                      69632,
+                      154624,
+                      182272,
+                      265216
+                    ],
+                    "change_penalty": 800.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 345,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 8997.754734850525,
+                    "state_count": 5
+                  },
+                  "snr_db": 46.22402381878507,
+                  "stream_bytes": 112961
+                }
+              ],
+              "objective": "minimum complete stream bytes at one residual quantizer",
+              "selected_candidate": "fixed-88200"
+            },
+            "snr_db": 46.2371043017598,
+            "stream_bytes": 112071,
+            "stream_sha256": "48c820918018d4224247831692868e4cbccc1b5b8535881da8797a120c199563",
+            "transient": {
+              "baseline_proxy_bytes": 106510,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 106510,
+              "selected_events": 0
+            }
+          }
+        },
+        "opus": {
+          "48k_vbr_music": {
+            "application": "music",
+            "codec": "Opus",
+            "container": "Ogg Opus",
+            "decoder_sha256": "ae3094a4085c18a0825579bd65b389ccf43bf81f344b851072bb65f7fd44132c",
+            "decoder_version": "opusdec opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "effective_bitrate_kbps": 59.346,
+            "encoder_sha256": "0fc8a47776b9831613a867a23fb6024278885435422801185e84d8bb9ec0d8c6",
+            "encoder_version": "opusenc opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "exact": false,
+            "frame_size_ms": 20.0,
+            "max_abs_error": 1465,
+            "mode": "vbr",
+            "ogg_page_count": 11,
+            "requested_bitrate_kbps": 48.0,
+            "sample_count": 352800,
+            "sample_rate": 44100,
+            "snr_db": 25.654731298627528,
+            "stream_bytes": 59346,
+            "stream_hash_normalization": "Ogg stream serial and page CRC fields are zeroed before hashing",
+            "stream_sha256": "16edf253821549b68f037912b71a95de29b7f883b2d087b62d6f113724e2067d"
+          },
+          "96k_vbr_music": {
+            "application": "music",
+            "codec": "Opus",
+            "container": "Ogg Opus",
+            "decoder_sha256": "ae3094a4085c18a0825579bd65b389ccf43bf81f344b851072bb65f7fd44132c",
+            "decoder_version": "opusdec opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "effective_bitrate_kbps": 114.558,
+            "encoder_sha256": "0fc8a47776b9831613a867a23fb6024278885435422801185e84d8bb9ec0d8c6",
+            "encoder_version": "opusenc opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "exact": false,
+            "frame_size_ms": 20.0,
+            "max_abs_error": 766,
+            "mode": "vbr",
+            "ogg_page_count": 11,
+            "requested_bitrate_kbps": 96.0,
+            "sample_count": 352800,
+            "sample_rate": 44100,
+            "snr_db": 29.483509097759523,
+            "stream_bytes": 114558,
+            "stream_hash_normalization": "Ogg stream serial and page CRC fields are zeroed before hashing",
+            "stream_sha256": "dbd03a32bdc8d748bc7c651eef739c79cc1e8756e6093bce626bb36143008d35"
+          }
+        }
+      },
+      "sample_count": 352800,
+      "sample_rate": 44100
+    },
+    "patro-de-bateria": {
+      "conversion": {
+        "downmix": "signed nearest, ties away from zero",
+        "source_channels": 2,
+        "source_sample_width_bits": 24
+      },
+      "duration_seconds": 3.7245351473922903,
+      "mono_pcm_sha256": "38ff4816979f875c5a67e5dcadf5d06bc2a88b62ae0d2e782e71e98d9b100e01",
+      "provenance": {
+        "bytes": 986202,
+        "cache_name": "patro_de_bateria.wav",
+        "credit": "Escola Superior de M\u00fasica de Catalunya (ESMUC)",
+        "download_url": "https://upload.wikimedia.org/wikipedia/commons/5/57/Patr%C3%B3_de_bateria.wav",
+        "duration_seconds": 3.7245351473922903,
+        "id": "patro-de-bateria",
+        "kind": "recorded drum pattern",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "sha256": "81451591006ee747eb3fd31ad94ba0e73d6bcb685244d613eba02a72d141955f",
+        "source_page": "https://commons.wikimedia.org/wiki/File:Patr%C3%B3_de_bateria.wav",
+        "start_seconds": 0.0,
+        "title": "Patr\u00f3 de bateria"
+      },
+      "results": {
+        "maf": {
+          "adaptive_liftpack_q64": {
+            "atom_count": 8,
+            "basis_count": 8,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 3108,
+            "effective_bitrate_kbps": 102.46003458100967,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 328504,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 52,
+            "ratio_vs_pcm": 0.14520979957626087,
+            "residual": {
+              "block_count": 161,
+              "block_size": 1024,
+              "codec": "LiftPack-1",
+              "entropy_bits": 321602,
+              "entropy_counts": {
+                "packed": 2,
+                "rice": 159
+              },
+              "sample_count": 164252,
+              "stream_bytes": 41748,
+              "transform_counts": {
+                "delta1": 120,
+                "delta2": 33,
+                "haar": 4,
+                "identity": 4
+              }
+            },
+            "saving_vs_pcm": 0.8547902004237391,
+            "section_compressed_bytes": {
+              "ATOM": 105,
+              "BASI": 2037,
+              "BLIF": 37,
+              "GAIN": 495,
+              "PKIN": 99,
+              "PKPO": 73,
+              "RSL1": 41748
+            },
+            "section_raw_bytes": {
+              "ATOM": 384,
+              "BASI": 4096,
+              "BLIF": 128,
+              "GAIN": 644,
+              "PKIN": 208,
+              "PKPO": 416,
+              "RSL1": 41748
+            },
+            "segmentation": {
+              "boundary_novelty": [
+                1.525271970135975,
+                11.374195050571132,
+                5.9010933369386045,
+                6.541898948573835,
+                6.473320198784833,
+                12.251853983465711,
+                5.555801038371161
+              ],
+              "boundary_samples": [
+                19456,
+                63488,
+                68608,
+                123904,
+                130048,
+                144384,
+                149504
+              ],
+              "change_penalty": 200.0,
+              "feature_dimensions": 16,
+              "feature_frames": 161,
+              "hop_samples": 1024,
+              "maximum_segment_samples": 88200,
+              "minimum_segment_samples": 4096,
+              "mode": "adaptive",
+              "objective": 3277.82934495474,
+              "state_count": 8
+            },
+            "snr_db": 39.6543786795155,
+            "stream_bytes": 47702,
+            "stream_sha256": "f5575aa5c7ae0bcaf591e5570865f9b039475eaf2a15c25328d58593f8e5b572",
+            "transient": {
+              "baseline_proxy_bytes": 41748,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 41748,
+              "selected_events": 0
+            }
+          },
+          "adaptive_zlib_q64": {
+            "atom_count": 8,
+            "basis_count": 8,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 3104,
+            "effective_bitrate_kbps": 147.29140101794803,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 328504,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 52,
+            "ratio_vs_pcm": 0.20874631663541388,
+            "residual": {
+              "codec": "zlib-array",
+              "sample_count": 164252
+            },
+            "saving_vs_pcm": 0.7912536833645861,
+            "section_compressed_bytes": {
+              "ATOM": 105,
+              "BASI": 2037,
+              "BLIF": 37,
+              "GAIN": 495,
+              "PKIN": 99,
+              "PKPO": 73,
+              "RESI": 62624
+            },
+            "section_raw_bytes": {
+              "ATOM": 384,
+              "BASI": 4096,
+              "BLIF": 128,
+              "GAIN": 644,
+              "PKIN": 208,
+              "PKPO": 416,
+              "RESI": 328504
+            },
+            "segmentation": {
+              "boundary_novelty": [
+                1.525271970135975,
+                11.374195050571132,
+                5.9010933369386045,
+                6.541898948573835,
+                6.473320198784833,
+                12.251853983465711,
+                5.555801038371161
+              ],
+              "boundary_samples": [
+                19456,
+                63488,
+                68608,
+                123904,
+                130048,
+                144384,
+                149504
+              ],
+              "change_penalty": 200.0,
+              "feature_dimensions": 16,
+              "feature_frames": 161,
+              "hop_samples": 1024,
+              "maximum_segment_samples": 88200,
+              "minimum_segment_samples": 4096,
+              "mode": "adaptive",
+              "objective": 3277.82934495474,
+              "state_count": 8
+            },
+            "snr_db": 39.6543786795155,
+            "stream_bytes": 68574,
+            "stream_sha256": "b9c51048907e35b3373bd3bf4a09ea3531f7c2f441b37026348790509cff43f7",
+            "transient": {
+              "baseline_proxy_bytes": 62624,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 62624,
+              "selected_events": 0
+            }
+          },
+          "fixed_liftpack_q64": {
+            "atom_count": 4,
+            "basis_count": 4,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 2412,
+            "effective_bitrate_kbps": 96.87329712880208,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 328504,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 45,
+            "ratio_vs_pcm": 0.13729208776757665,
+            "residual": {
+              "block_count": 161,
+              "block_size": 1024,
+              "codec": "LiftPack-1",
+              "entropy_bits": 318794,
+              "entropy_counts": {
+                "packed": 2,
+                "rice": 159
+              },
+              "sample_count": 164252,
+              "stream_bytes": 41390,
+              "transform_counts": {
+                "delta1": 118,
+                "delta2": 34,
+                "haar": 5,
+                "identity": 4
+              }
+            },
+            "saving_vs_pcm": 0.8627079122324234,
+            "section_compressed_bytes": {
+              "ATOM": 58,
+              "BASI": 586,
+              "BLIF": 28,
+              "GAIN": 501,
+              "PKIN": 77,
+              "PKPO": 49,
+              "RSL1": 41390
+            },
+            "section_raw_bytes": {
+              "ATOM": 192,
+              "BASI": 2048,
+              "BLIF": 64,
+              "GAIN": 644,
+              "PKIN": 180,
+              "PKPO": 360,
+              "RSL1": 41390
+            },
+            "segmentation": {
+              "boundary_samples": [
+                44100,
+                88200,
+                132300
+              ],
+              "mode": "fixed",
+              "segment_samples": 44100,
+              "state_count": 4
+            },
+            "snr_db": 39.67555450516241,
+            "stream_bytes": 45101,
+            "stream_sha256": "18f3a58a77995af61a398700012de976a29329c33dbbf17cede5c85dadf7687b",
+            "transient": {
+              "baseline_proxy_bytes": 41390,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 41390,
+              "selected_events": 0
+            }
+          },
+          "fixed_zlib_q64": {
+            "atom_count": 4,
+            "basis_count": 4,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 2408,
+            "effective_bitrate_kbps": 140.51901224947034,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 328504,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 45,
+            "ratio_vs_pcm": 0.19914825999074592,
+            "residual": {
+              "codec": "zlib-array",
+              "sample_count": 164252
+            },
+            "saving_vs_pcm": 0.8008517400092541,
+            "section_compressed_bytes": {
+              "ATOM": 58,
+              "BASI": 586,
+              "BLIF": 28,
+              "GAIN": 501,
+              "PKIN": 77,
+              "PKPO": 49,
+              "RESI": 61714
+            },
+            "section_raw_bytes": {
+              "ATOM": 192,
+              "BASI": 2048,
+              "BLIF": 64,
+              "GAIN": 644,
+              "PKIN": 180,
+              "PKPO": 360,
+              "RESI": 328504
+            },
+            "segmentation": {
+              "boundary_samples": [
+                44100,
+                88200,
+                132300
+              ],
+              "mode": "fixed",
+              "segment_samples": 44100,
+              "state_count": 4
+            },
+            "snr_db": 39.67555450516241,
+            "stream_bytes": 65421,
+            "stream_sha256": "099ee229f5b852293a33b02749e73f3d49c92a828ffd9a29b96260ce2536fa2b",
+            "transient": {
+              "baseline_proxy_bytes": 61714,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 61714,
+              "selected_events": 0
+            }
+          },
+          "rdo_liftpack_q64": {
+            "atom_count": 2,
+            "basis_count": 2,
+            "basis_mode": "raw",
+            "basis_reuses": 0,
+            "cibs_integer_macs": 0,
+            "container_overhead_bytes": 2069,
+            "effective_bitrate_kbps": 94.90150743978765,
+            "exact": false,
+            "format_profile": "MAF-P1",
+            "max_abs_error": 32,
+            "pcm_bytes": 328504,
+            "periodic_fallback_atoms": 0,
+            "pitch_knot_count": 43,
+            "ratio_vs_pcm": 0.13449760124686458,
+            "residual": {
+              "block_count": 161,
+              "block_size": 1024,
+              "codec": "LiftPack-1",
+              "entropy_bits": 318246,
+              "entropy_counts": {
+                "packed": 2,
+                "rice": 159
+              },
+              "sample_count": 164252,
+              "stream_bytes": 41321,
+              "transform_counts": {
+                "delta1": 117,
+                "delta2": 35,
+                "haar": 5,
+                "identity": 4
+              }
+            },
+            "saving_vs_pcm": 0.8655023987531354,
+            "section_compressed_bytes": {
+              "ATOM": 32,
+              "BASI": 84,
+              "BLIF": 20,
+              "GAIN": 503,
+              "PKIN": 75,
+              "PKPO": 79,
+              "RSL1": 41321
+            },
+            "section_raw_bytes": {
+              "ATOM": 96,
+              "BASI": 1024,
+              "BLIF": 32,
+              "GAIN": 644,
+              "PKIN": 172,
+              "PKPO": 344,
+              "RSL1": 41321
+            },
+            "segmentation": {
+              "boundary_novelty": [
+                3.331431936867184
+              ],
+              "boundary_samples": [
+                88064
+              ],
+              "change_penalty": 800.0,
+              "feature_dimensions": 16,
+              "feature_frames": 161,
+              "hop_samples": 1024,
+              "maximum_segment_samples": 88200,
+              "minimum_segment_samples": 4096,
+              "mode": "adaptive",
+              "objective": 4986.2931586955365,
+              "state_count": 2
+            },
+            "segmentation_rdo": {
+              "candidate_count": 7,
+              "candidates": [
+                {
+                  "atom_count": 8,
+                  "name": "fixed-22050",
+                  "segmentation": {
+                    "boundary_samples": [
+                      22050,
+                      44100,
+                      66150,
+                      88200,
+                      110250,
+                      132300,
+                      154350
+                    ],
+                    "mode": "fixed",
+                    "segment_samples": 22050,
+                    "state_count": 8
+                  },
+                  "snr_db": 39.67461630128461,
+                  "stream_bytes": 46480
+                },
+                {
+                  "atom_count": 4,
+                  "name": "fixed-44100",
+                  "segmentation": {
+                    "boundary_samples": [
+                      44100,
+                      88200,
+                      132300
+                    ],
+                    "mode": "fixed",
+                    "segment_samples": 44100,
+                    "state_count": 4
+                  },
+                  "snr_db": 39.67555450516241,
+                  "stream_bytes": 45101
+                },
+                {
+                  "atom_count": 2,
+                  "name": "fixed-88200",
+                  "segmentation": {
+                    "boundary_samples": [
+                      88200
+                    ],
+                    "mode": "fixed",
+                    "segment_samples": 88200,
+                    "state_count": 2
+                  },
+                  "snr_db": 39.68386166290297,
+                  "stream_bytes": 44211
+                },
+                {
+                  "atom_count": 16,
+                  "name": "adaptive-100",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      1.6253625179770883,
+                      2.532725382728695,
+                      6.426906761300251,
+                      5.615808654335787,
+                      5.399495176243836,
+                      11.374195050571132,
+                      5.9010933369386045,
+                      8.348753517731875,
+                      3.331431936867184,
+                      5.501226477133153,
+                      2.9307756614593683,
+                      6.541898948573835,
+                      6.473320198784833,
+                      12.251853983465711,
+                      5.555801038371161
+                    ],
+                    "boundary_samples": [
+                      6144,
+                      22528,
+                      26624,
+                      44032,
+                      50176,
+                      63488,
+                      68608,
+                      72704,
+                      88064,
+                      103424,
+                      108544,
+                      123904,
+                      130048,
+                      144384,
+                      149504
+                    ],
+                    "change_penalty": 100.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 161,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 2355.854483619918,
+                    "state_count": 16
+                  },
+                  "snr_db": 39.67701616606347,
+                  "stream_bytes": 51008
+                },
+                {
+                  "atom_count": 8,
+                  "name": "adaptive-200",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      1.525271970135975,
+                      11.374195050571132,
+                      5.9010933369386045,
+                      6.541898948573835,
+                      6.473320198784833,
+                      12.251853983465711,
+                      5.555801038371161
+                    ],
+                    "boundary_samples": [
+                      19456,
+                      63488,
+                      68608,
+                      123904,
+                      130048,
+                      144384,
+                      149504
+                    ],
+                    "change_penalty": 200.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 161,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 3277.82934495474,
+                    "state_count": 8
+                  },
+                  "snr_db": 39.6543786795155,
+                  "stream_bytes": 47702
+                },
+                {
+                  "atom_count": 3,
+                  "name": "adaptive-400",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      8.348753517731875,
+                      7.1205856234677105
+                    ],
+                    "boundary_samples": [
+                      72704,
+                      124928
+                    ],
+                    "change_penalty": 400.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 161,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 4227.818888495122,
+                    "state_count": 3
+                  },
+                  "snr_db": 39.6807838986711,
+                  "stream_bytes": 45379
+                },
+                {
+                  "atom_count": 2,
+                  "name": "adaptive-800",
+                  "segmentation": {
+                    "boundary_novelty": [
+                      3.331431936867184
+                    ],
+                    "boundary_samples": [
+                      88064
+                    ],
+                    "change_penalty": 800.0,
+                    "feature_dimensions": 16,
+                    "feature_frames": 161,
+                    "hop_samples": 1024,
+                    "maximum_segment_samples": 88200,
+                    "minimum_segment_samples": 4096,
+                    "mode": "adaptive",
+                    "objective": 4986.2931586955365,
+                    "state_count": 2
+                  },
+                  "snr_db": 39.683834413663035,
+                  "stream_bytes": 44183
+                }
+              ],
+              "objective": "minimum complete stream bytes at one residual quantizer",
+              "selected_candidate": "adaptive-800"
+            },
+            "snr_db": 39.683834413663035,
+            "stream_bytes": 44183,
+            "stream_sha256": "298046cee5725d6191751c31abcc0835cae9eca9f8c03b38bac9f995c439caf1",
+            "transient": {
+              "baseline_proxy_bytes": 41321,
+              "candidate_events": 0,
+              "candidate_proxy_bytes": 41321,
+              "selected_events": 0
+            }
+          }
+        },
+        "opus": {
+          "48k_vbr_music": {
+            "application": "music",
+            "codec": "Opus",
+            "container": "Ogg Opus",
+            "decoder_sha256": "ae3094a4085c18a0825579bd65b389ccf43bf81f344b851072bb65f7fd44132c",
+            "decoder_version": "opusdec opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "effective_bitrate_kbps": 42.479395075859046,
+            "encoder_sha256": "0fc8a47776b9831613a867a23fb6024278885435422801185e84d8bb9ec0d8c6",
+            "encoder_version": "opusenc opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "exact": false,
+            "frame_size_ms": 20.0,
+            "max_abs_error": 2724,
+            "mode": "vbr",
+            "ogg_page_count": 6,
+            "requested_bitrate_kbps": 48.0,
+            "sample_count": 164252,
+            "sample_rate": 44100,
+            "snr_db": 19.877001780304827,
+            "stream_bytes": 19777,
+            "stream_hash_normalization": "Ogg stream serial and page CRC fields are zeroed before hashing",
+            "stream_sha256": "163a3fbdbe8d5acb0db9c33ed11a7a409b6f5083df8638dc14a53141a4383d58"
+          },
+          "96k_vbr_music": {
+            "application": "music",
+            "codec": "Opus",
+            "container": "Ogg Opus",
+            "decoder_sha256": "ae3094a4085c18a0825579bd65b389ccf43bf81f344b851072bb65f7fd44132c",
+            "decoder_version": "opusdec opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "effective_bitrate_kbps": 92.19727735430924,
+            "encoder_sha256": "0fc8a47776b9831613a867a23fb6024278885435422801185e84d8bb9ec0d8c6",
+            "encoder_version": "opusenc opus-tools 0.2-3-gf5f571b (using libopus 1.3)",
+            "exact": false,
+            "frame_size_ms": 20.0,
+            "max_abs_error": 1445,
+            "mode": "vbr",
+            "ogg_page_count": 6,
+            "requested_bitrate_kbps": 96.0,
+            "sample_count": 164252,
+            "sample_rate": 44100,
+            "snr_db": 22.282160861810265,
+            "stream_bytes": 42924,
+            "stream_hash_normalization": "Ogg stream serial and page CRC fields are zeroed before hashing",
+            "stream_sha256": "f01004ca5038aa823dab39883972c381fa981410c4b296d720fbc6680e4218f5"
+          }
+        }
+      },
+      "sample_count": 164252,
+      "sample_rate": 44100
+    }
+  },
+  "codec_scope": "mono downmix, waveform SNR; no MUSHRA",
+  "corpus_schema": "resonith-real-music-corpus-1",
+  "status": "diagnostic real-music ablation, not a codec victory claim"
+}

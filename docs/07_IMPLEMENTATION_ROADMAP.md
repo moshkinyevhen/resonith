@@ -17,12 +17,14 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   ablation lost 0.72%; `auto` correctly rejected it.
 - A real official Opus encode/decode anchor is integrated locally and in Linux
   CI with full container-byte and executable-provenance accounting.
-- The next blocking milestone is the general integer-lifting/entropy residual,
-  followed by automatic change-point segmentation and real licensed corpus
-  tests.
+- `LiftPack-1`, acoustic change-point proposals, full-stream boundary RDO, and
+  the first licensed real-music corpus test are complete.
+- The next blocking milestone is C++20 LiftPack decode parity, followed by
+  stereo decorrelation and multi-Atom overlap.
 
 Detailed measurements are in
-[10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md).
+[10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) and
+[12_LIFTPACK_AND_STATE_RDO.md](12_LIFTPACK_AND_STATE_RDO.md).
 
 ## Milestone 0 - Golden Core
 

@@ -160,17 +160,22 @@ python -m unittest discover -s tests -v
 
 ## 6. Next falsification gates
 
-1. Replace the zlib residual placeholder with the general integer-lifting and
-   entropy baseline.
-2. Add automatic change-point segmentation instead of fixed Atom intervals.
+The first, second, and seventh gates were executed in the next phase. Results
+and the replacement gate list are in
+[12_LIFTPACK_AND_STATE_RDO.md](12_LIFTPACK_AND_STATE_RDO.md).
+
+1. ~~Replace the zlib residual placeholder with the general integer-lifting
+   and entropy baseline.~~ Implemented as LiftPack-1.
+2. ~~Add automatic change-point segmentation instead of fixed Atom
+   intervals.~~ Implemented as proposals guarded by full-stream RDO.
 3. Fit phase trajectories from real vibrato, glissando, and polyphonic
    recordings.
 4. Make transient RDO win on a predeclared attack-heavy corpus without
    introducing pre-echo.
 5. Add stereo and multi-Atom overlap.
 6. Build or package current libopus 1.6.1 and xHE-AAC anchors.
-7. Run per-clip objective and MUSHRA-ready tests on licensed real music,
-   speech, ambience, and hostile noise.
+7. ~~Run per-clip objective tests on licensed real music.~~ First three-clip
+   diagnostic complete; broad corpus and MUSHRA remain open.
 
 No broad compression claim is accepted before these gates and independent
 listening tests.

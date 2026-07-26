@@ -30,6 +30,18 @@ from .periodic import (
     fit_block_gains,
     render_basis_trajectory,
 )
+from .residual import (
+    DEFAULT_BLOCK_SIZE,
+    decode_liftpack,
+    encode_liftpack,
+)
+from .segmentation import (
+    DEFAULT_CHANGE_PENALTY,
+    DEFAULT_HOP_SAMPLES,
+    DEFAULT_MAXIMUM_SEGMENT_SAMPLES,
+    DEFAULT_MINIMUM_SEGMENT_SAMPLES,
+    segment_acoustic_states,
+)
 from .transient import (
     TransientPacket,
     decode_transient_events,
@@ -87,12 +99,26 @@ def _compressed_vector_bytes(values: np.ndarray) -> int:
     return len(zlib.compress(compact.tobytes(order="C"), level=9))
 
 
+def _residual_proxy_bytes(
+    values: np.ndarray,
+    codec: str,
+    block_size: int,
+) -> int:
+    if codec == "liftpack":
+        return len(encode_liftpack(values, block_size=block_size).payload)
+    if codec == "zlib":
+        return _compressed_vector_bytes(values)
+    raise ValueError("residual_codec must be liftpack or zlib")
+
+
 def _choose_transient_packet(
     samples: np.ndarray,
     periodic_prediction: np.ndarray,
     *,
     mode: str,
     residual_step: int,
+    residual_codec: str,
+    residual_block_size: int,
     quantization_step: int,
     window_size: int,
 ) -> tuple[np.ndarray, TransientPacket | None, dict]:
@@ -104,7 +130,11 @@ def _choose_transient_packet(
         samples.astype(np.int64) - periodic_prediction.astype(np.int64),
         residual_step,
     )
-    baseline_proxy = _compressed_vector_bytes(baseline_residual)
+    baseline_proxy = _residual_proxy_bytes(
+        baseline_residual,
+        residual_codec,
+        residual_block_size,
+    )
     if mode == "off":
         return periodic_prediction, None, {
             "candidate_events": 0,
@@ -134,7 +164,11 @@ def _choose_transient_packet(
         residual_step,
     )
     candidate_proxy = (
-        _compressed_vector_bytes(candidate_residual)
+        _residual_proxy_bytes(
+            candidate_residual,
+            residual_codec,
+            residual_block_size,
+        )
         + len(zlib.compress(packet.event_table.tobytes(order="C"), level=9))
         + len(
             zlib.compress(
@@ -164,12 +198,19 @@ def encode_stateful_samples(
     cibs_model: CIBS0Model | None = None,
     basis_length: int = 256,
     segment_samples: int = 24000,
+    segment_mode: str = "fixed",
+    segmentation_hop_samples: int = DEFAULT_HOP_SAMPLES,
+    minimum_segment_samples: int = DEFAULT_MINIMUM_SEGMENT_SAMPLES,
+    maximum_segment_samples: int = DEFAULT_MAXIMUM_SEGMENT_SAMPLES,
+    segmentation_change_penalty: float = DEFAULT_CHANGE_PENALTY,
     pitch_knot_samples: int = 4096,
     phase_trajectories: Sequence[PhaseTrajectory] | None = None,
     analysis_periods: Sequence[int] | None = None,
     gain_block_size: int = 1024,
     basis_correction_step: int = 1,
     residual_step: int = 1,
+    residual_codec: str = "liftpack",
+    residual_block_size: int = DEFAULT_BLOCK_SIZE,
     transient_mode: str = "auto",
     transient_quantization_step: int = 1,
     transient_window_size: int = 256,
@@ -191,6 +232,8 @@ def encode_stateful_samples(
         raise ValueError("sample_rate must be positive")
     if basis_mode not in {"raw", "cibs"}:
         raise ValueError("basis_mode must be raw or cibs")
+    if residual_codec not in {"liftpack", "zlib"}:
+        raise ValueError("residual_codec must be liftpack or zlib")
     if basis_mode == "cibs":
         if cibs_model is None:
             raise ValueError("CIBS mode requires a model")
@@ -199,7 +242,26 @@ def encode_stateful_samples(
         if cibs_model.output_length != basis_length:
             raise ValueError("CIBS model Basis length mismatch")
 
-    intervals = _segment_intervals(samples.size, segment_samples)
+    if segment_mode == "fixed":
+        intervals = _segment_intervals(samples.size, segment_samples)
+        segmentation_report = {
+            "mode": "fixed",
+            "state_count": len(intervals),
+            "segment_samples": int(segment_samples),
+            "boundary_samples": [start for start, _ in intervals[1:]],
+        }
+    elif segment_mode == "adaptive":
+        segmentation = segment_acoustic_states(
+            samples,
+            hop_samples=segmentation_hop_samples,
+            minimum_segment_samples=minimum_segment_samples,
+            maximum_segment_samples=maximum_segment_samples,
+            change_penalty=segmentation_change_penalty,
+        )
+        intervals = list(segmentation.intervals)
+        segmentation_report = segmentation.report
+    else:
+        raise ValueError("segment_mode must be fixed or adaptive")
     if phase_trajectories is not None and len(phase_trajectories) != len(intervals):
         raise ValueError("phase trajectory count does not match Atom count")
     if analysis_periods is not None and len(analysis_periods) != len(intervals):
@@ -360,6 +422,8 @@ def encode_stateful_samples(
         periodic_prediction,
         mode=transient_mode,
         residual_step=residual_step,
+        residual_codec=residual_codec,
+        residual_block_size=residual_block_size,
         quantization_step=transient_quantization_step,
         window_size=transient_window_size,
     )
@@ -378,18 +442,39 @@ def encode_stateful_samples(
         32767,
     ).astype(np.int16)
     arrays["GAIN"] = gains
-    arrays["RESI"] = _compact_signed(residual_q)
+    residual_report: dict
+    stored_sections: set[str] = set()
+    if residual_codec == "liftpack":
+        residual_packet = encode_liftpack(
+            residual_q,
+            block_size=residual_block_size,
+        )
+        arrays["RSL1"] = np.frombuffer(
+            residual_packet.payload,
+            dtype=np.uint8,
+        ).copy()
+        residual_report = residual_packet.report
+        stored_sections.add("RSL1")
+    else:
+        arrays["RESI"] = _compact_signed(residual_q)
+        residual_report = {
+            "codec": "zlib-array",
+            "sample_count": int(samples.size),
+        }
 
     metadata = {
         "format_profile": PROFILE,
         "sample_rate": int(sample_rate),
         "sample_count": int(samples.size),
         "basis_mode": basis_mode,
+        "encoder_segment_mode": segment_mode,
         "basis_length": int(basis_length),
         "basis_correction_step": int(basis_correction_step),
         "gain_block_size": int(gain_block_size),
         "gain_shift": 15,
         "residual_step": int(residual_step),
+        "residual_codec": residual_codec,
+        "residual_block_size": int(residual_block_size),
         "transient_quantization_step": int(transient_quantization_step),
         "transient_event_count": (
             0
@@ -400,7 +485,11 @@ def encode_stateful_samples(
         "bases": basis_records,
         "pcm_sha256": _pcm_sha256(samples),
     }
-    payload = pack_container(metadata, arrays)
+    payload = pack_container(
+        metadata,
+        arrays,
+        stored_sections=stored_sections,
+    )
     packed_metadata, _ = unpack_container(payload)
     quality = _quality_report(samples, reconstructed)
     report = {
@@ -418,6 +507,8 @@ def encode_stateful_samples(
         "pitch_knot_count": pitch_offset,
         "periodic_fallback_atoms": periodic_fallback_atoms,
         "transient": transient_report,
+        "residual": residual_report,
+        "segmentation": segmentation_report,
         "cibs_integer_macs": total_cibs_macs,
         "section_raw_bytes": {
             name: int(array.nbytes) for name, array in arrays.items()
@@ -433,6 +524,101 @@ def encode_stateful_samples(
         ),
     }
     return EncodeResult(payload, reconstructed, report)
+
+
+def encode_stateful_rdo_samples(
+    samples: np.ndarray,
+    sample_rate: int,
+    *,
+    fixed_durations_seconds: Sequence[float] = (0.5, 1.0, 2.0),
+    adaptive_change_penalties: Sequence[float] = (100.0, 200.0, 400.0, 800.0),
+    segmentation_hop_samples: int = DEFAULT_HOP_SAMPLES,
+    minimum_segment_samples: int = DEFAULT_MINIMUM_SEGMENT_SAMPLES,
+    maximum_segment_samples: int | None = None,
+    **encoder_options,
+) -> EncodeResult:
+    """Select state boundaries by complete encoded bytes, not feature confidence.
+
+    The feature detector proposes partitions. Fixed lifetimes remain candidates
+    so the automatic compiler can explicitly decide that no acoustic boundary
+    model amortizes its Basis, Atom, phase, gain, and residual overhead.
+    """
+
+    forbidden = {
+        "segment_mode",
+        "segment_samples",
+        "segmentation_hop_samples",
+        "minimum_segment_samples",
+        "maximum_segment_samples",
+        "segmentation_change_penalty",
+        "phase_trajectories",
+        "analysis_periods",
+    }
+    overlap = forbidden.intersection(encoder_options)
+    if overlap:
+        names = ", ".join(sorted(overlap))
+        raise ValueError(f"segmentation RDO owns these options: {names}")
+    if not fixed_durations_seconds or not adaptive_change_penalties:
+        raise ValueError("segmentation RDO requires fixed and adaptive candidates")
+    maximum = maximum_segment_samples or 2 * sample_rate
+
+    candidates: list[tuple[str, EncodeResult]] = []
+    fixed_samples = sorted(
+        {
+            int(round(float(duration) * sample_rate))
+            for duration in fixed_durations_seconds
+        }
+    )
+    for segment_samples in fixed_samples:
+        if segment_samples < 64:
+            raise ValueError("fixed segmentation RDO candidate is too short")
+        result = encode_stateful_samples(
+            samples,
+            sample_rate,
+            segment_mode="fixed",
+            segment_samples=segment_samples,
+            **encoder_options,
+        )
+        candidates.append((f"fixed-{segment_samples}", result))
+
+    for penalty in sorted({float(value) for value in adaptive_change_penalties}):
+        result = encode_stateful_samples(
+            samples,
+            sample_rate,
+            segment_mode="adaptive",
+            segmentation_hop_samples=segmentation_hop_samples,
+            minimum_segment_samples=minimum_segment_samples,
+            maximum_segment_samples=maximum,
+            segmentation_change_penalty=penalty,
+            **encoder_options,
+        )
+        candidates.append((f"adaptive-{penalty:g}", result))
+
+    selected_name, selected = min(
+        candidates,
+        key=lambda item: (
+            len(item[1].payload),
+            item[0],
+        ),
+    )
+    candidate_reports = [
+        {
+            "name": name,
+            "stream_bytes": len(result.payload),
+            "atom_count": int(result.report["atom_count"]),
+            "snr_db": float(result.report["snr_db"]),
+            "segmentation": result.report["segmentation"],
+        }
+        for name, result in candidates
+    ]
+    report = dict(selected.report)
+    report["segmentation_rdo"] = {
+        "objective": "minimum complete stream bytes at one residual quantizer",
+        "selected_candidate": selected_name,
+        "candidate_count": len(candidates),
+        "candidates": candidate_reports,
+    }
+    return EncodeResult(selected.payload, selected.reconstructed, report)
 
 
 def _decode_basis_bank(
@@ -605,8 +791,37 @@ def decode_stateful_bytes(
     elif "TREV" in arrays or "TRCF" in arrays:
         raise ValueError("undeclared transient payload")
 
+    residual_codec = str(metadata.get("residual_codec", "zlib"))
+    if residual_codec == "liftpack":
+        residual_sections = [
+            section
+            for section in metadata.get("sections", [])
+            if section.get("name") == "RSL1"
+        ]
+        if (
+            len(residual_sections) != 1
+            or residual_sections[0].get("compression") != "stored"
+        ):
+            raise ValueError("LiftPack-1 requires one canonical stored section")
+        encoded_residual = arrays.get("RSL1")
+        if (
+            encoded_residual is None
+            or encoded_residual.dtype != np.uint8
+            or encoded_residual.ndim != 1
+        ):
+            raise ValueError("missing canonical LiftPack-1 residual")
+        residual_q = decode_liftpack(
+            encoded_residual.tobytes(),
+            expected_count=sample_count,
+        )
+    elif residual_codec == "zlib":
+        if "RESI" not in arrays:
+            raise ValueError("missing legacy residual array")
+        residual_q = arrays["RESI"]
+    else:
+        raise ValueError("unknown residual codec")
     residual = _dequantize_signed(
-        arrays["RESI"],
+        residual_q,
         int(metadata["residual_step"]),
     )
     if residual.shape != (sample_count,):
@@ -628,6 +843,7 @@ def decode_stateful_bytes(
             "basis_count": len(bases),
             "atom_count": int(atom_table.shape[0]),
             "transient_event_count": transient_count,
+            "residual_codec": residual_codec,
             "pcm_sha256": output_hash,
             "matches_source_hash": output_hash == metadata["pcm_sha256"],
         },

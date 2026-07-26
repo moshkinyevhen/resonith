@@ -39,6 +39,12 @@ Numbers from papers are statements made by the authors prior to independent repr
 
 - [ITU-R BS.1534 - MUSHRA](https://www.itu.int/rec/R-REC-BS.1534/en)
 
+## Reproducible audio sources
+
+- [Wikimedia Commons: Emotional piano, CC0](https://commons.wikimedia.org/wiki/File:Emotional_piano.wav)
+- [Wikimedia Commons: Patró de bateria, CC BY-SA 4.0](https://commons.wikimedia.org/wiki/File:Patr%C3%B3_de_bateria.wav)
+- [Wikimedia Commons: Corelli Violin Sonata Op. 5 No. 9, public domain](https://commons.wikimedia.org/wiki/File:Corelli_Violin_Sonata_Op_5_No_9.wav)
+
 ## Name and trademarks
 
 - [WIPO Global Brand Database](https://www.wipo.int/en/web/global-brand-database)

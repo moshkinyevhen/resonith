@@ -407,3 +407,53 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 - Canonical implementation and report:
   - `10_MAF_P0_IMPLEMENTATION.md`;
   - `../experiments/results/maf_p1_opus_2026-07-26.json`.
+
+## R-025 — LiftPack-1, full-stream state-boundary RDO, and real music
+
+- Date: 2026-07-26
+- Status: **IMPLEMENTED / EXPERIMENTAL RESULT**
+- Decision:
+  - replace the MAF-P1 zlib-array Truth residual with `LiftPack-1`, an
+    independently bounded reversible residual stream;
+  - split the residual into independently decodable blocks and compete
+    `IDENTITY`, first-difference, second-difference, and reversible integer
+    Haar lifting by exact coded size;
+  - use bounded escaped Rice or fixed-width zigzag packing per block;
+  - store the already entropy-coded residual without a second zlib layer;
+  - treat acoustic feature segmentation only as a candidate generator;
+  - make the final boundary decision by complete stream bytes, including
+    Basis, Atom, phase, gain, container, and residual cost;
+  - retain fixed-lifetime candidates so the compiler can prove that no
+    proposed acoustic boundary is profitable.
+- Real-music corpus:
+  - three pinned Wikimedia Commons PCM sources;
+  - CC0 recorded piano, CC BY-SA 4.0 recorded drum pattern, and one
+    public-domain Corelli score realization;
+  - deterministic PCM16 mono downmix with source and derived PCM hashes;
+  - 19.72 seconds total after declared crops.
+- Measured q64 results:
+  - LiftPack versus the previous zlib residual at identical fixed
+    segmentation and reconstruction:
+    - Corelli: 27.08% fewer complete-stream bytes;
+    - piano: 59.01% fewer;
+    - drums: 31.06% fewer;
+  - feature-only adaptive segmentation was inconsistent: −0.82%, +1.12%,
+    and −5.77% against the one-second fixed baseline;
+  - complete-stream boundary RDO improved on the fixed LiftPack baseline by
+    2.22%, 2.38%, and 2.04%, respectively;
+  - selected candidates were a two-second fixed lifetime for Corelli and
+    piano, and a high-penalty adaptive partition for drums.
+  - two independent full runs produced identical canonical report SHA-256
+    `5996c5591210f041ecd14542bd08453d82ad4f863759e1237a4beccc03981578`.
+- Interpretation:
+  - LiftPack passes this phase's kill-test on every declared real clip;
+  - feature confidence alone does not justify bitstream state;
+  - automatic segmentation remains accepted only behind full-stream RDO;
+  - the measured Opus anchor still uses libopus 1.3, and waveform SNR is not a
+    perceptual listening result.
+- Canonical implementation and evidence:
+  - `12_LIFTPACK_AND_STATE_RDO.md`;
+  - `../reference/maf_p0/residual.py`;
+  - `../reference/maf_p0/segmentation.py`;
+  - `../experiments/real_music_corpus.json`;
+  - `../experiments/results/maf_p2_real_music_2026-07-26.json`.
