@@ -1131,7 +1131,7 @@ new oscillator opcode.
 ## R-050 — Typed cached CIBS Basis before reopening source overlap
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING / NORMATIVE-DRAFT**
+- Status: **IMPLEMENTED / CROSS-PLATFORM VERIFIED / NORMATIVE-DRAFT**
 - Decision:
   - define critical `BCIB` schema 1 as a compact cached-Basis payload carrying
     a registered CIBS model ID, bounded int8 latent, declared mono Basis shape,
@@ -1160,3 +1160,22 @@ new oscillator opcode.
     that measured overhead in the production decoder path;
   - latent-only schema 1 is the smallest falsifiable bridge from cached learned
     synthesis to source overlap and adds no per-sample neural execution.
+- Result:
+  - Python and native primitives validate the fixed 48-byte header, canonical
+    UTF-8 model ID, latent and shape bounds, unique registry resolution, exact
+    staging size, and atomic expected-Basis hash;
+  - Main-0 accepts one consecutive mixed `BRAW`/`BCIB` Basis namespace through
+    explicit registry-aware inspect, whole-decode, player-open, and callback
+    functions while legacy BRAW entry points retain their ABI;
+  - CIBS materialization and LiftPack reuse one int64 staging region because
+    their lifetimes never overlap; inspection reports their exact maximum
+    rather than summing both buffers;
+  - every `BCIB` hash is preflighted before the first PCM write or callback,
+    and the last materialized Basis remains cached for immediate rendering;
+  - whole native decode, callback decode, and the Python reference agree
+    sample-for-sample on a generated registry-backed stream;
+  - primitive conformance passed run 30204417294; integrated Linux, Windows,
+    macOS, Android, x64/ARM64, GCC, Clang, MSVC, native-bridge, and sanitizer
+    gates passed run 30204865673;
+  - no simultaneous-Atom syntax is promoted by implementation alone. The next
+    step remains a held-out complete-byte gate with model-ROM accounting.

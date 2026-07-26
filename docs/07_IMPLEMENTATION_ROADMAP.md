@@ -32,15 +32,18 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
 - The optional source-bound RSI1 seek sidecar and its dedicated sanitized
   fuzzer are implemented. The mandatory Truth stream remains independently
   sequentially decodable.
+- Latent-only typed `BCIB` Basis records now resolve through immutable
+  application registries and decode through both whole-stream and callback
+  paths with preflighted Basis hashes and shared LiftPack/CIBS scratch.
 - The same Core passes native Linux, Windows, and macOS ARM64 tests and an
   Android NDK arm64-v8a build without platform-specific DSP source.
 - Variable block lifetimes and three bounded waveform-domain stereo families
   failed their declared promotion gates and added no Main syntax.
-- The next blocking milestone is typed CIBS Basis materialization inside RSC1,
-  followed by a complete-byte gate for simultaneous sources that reuse
-  cached/analytic Basis state. Raw per-Atom Basis overlap already failed its
-  declared gate and is not promoted. New coding tools resume only through
-  declared gates.
+- The next blocking milestone is a held-out complete-byte gate for simultaneous
+  sources that reuse cached/analytic Basis state. Model ROM is reported
+  separately and amortized; it is never treated as free per-stream knowledge.
+  Raw per-Atom Basis overlap already failed its declared gate and is not
+  promoted. New coding tools resume only through declared gates.
 
 Detailed measurements are in
 [10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) and

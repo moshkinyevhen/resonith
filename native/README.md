@@ -18,6 +18,9 @@ The native Core:
   pass and verifies section CRC-32 plus SHA-256 without dependencies;
 - materializes registered CIBS models once with bounded integer projection,
   adapter, refinement, correction, and atomic Basis-hash verification;
+- resolves latent-only typed `BCIB` Basis records through immutable
+  caller-owned registries, preflights every materialized hash before PCM
+  delivery, and shares non-overlapping int64 staging with LiftPack;
 - prepares absolute Q32 phase-knot origins once and renders arbitrary periodic
   slices with callback-size-independent Q16 interpolation;
 - applies sparse absolute Q17.15 gain events and objective Innovation in one
@@ -158,6 +161,6 @@ Python independently decodes the same stream and checks the exact PCM vector.
 The test also proves that a rejected undersized workspace leaves output PCM
 unchanged.
 
-This is not yet the full Resonith decoder. Typed CIBS stream integration,
-promoted transient rendering, gated simultaneous-Atom mixing, and
-multi-channel synthesis remain subsequent parity stages.
+This is not yet the full Resonith decoder. Promoted transient rendering,
+gated simultaneous-Atom mixing, and multi-channel synthesis remain subsequent
+parity stages.

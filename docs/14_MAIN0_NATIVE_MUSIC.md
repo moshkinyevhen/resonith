@@ -460,3 +460,31 @@ It does not reverse the earlier compression gates: additional raw periodic
 Atoms still cost more complete bytes on the licensed clips. The next source
 overlap experiment must first eliminate repeated raw Basis transport through
 typed CIBS or another already gated shared representation.
+
+## 20. Typed cached CIBS Basis integration
+
+`BCIB` schema 1 closes the executable gap between the existing CIBS-0 kernel
+and the production RSC1 path. Its stream payload contains only a registered
+model ID, bounded int8 latent, declared mono Basis shape, and the expected
+materialized-Basis SHA-256. Projection weights remain versioned decoder
+registry state and are not repeated in every stream.
+
+The native Core resolves model IDs without global state, rejects duplicate or
+missing registry entries, computes exact resource bounds, and materializes
+every cached Basis before the first PCM write or callback. CIBS and LiftPack
+reuse one int64 staging allocation because the operations do not overlap. This
+preserves the existing Main-0 workspace ABI and uses
+`max(CIBS scratch, LiftPack scratch)` rather than their sum.
+
+The Python reference builds a real typed stream from a trained mono CIBS model.
+Whole native decode and callback playback reproduce the reference
+sample-for-sample. Primitive conformance passed
+[run 30204417294](https://github.com/moshkinyevhen/resonith/actions/runs/30204417294);
+the integrated path passed Linux/Windows x64 and ARM64, macOS ARM64, Android
+arm64-v8a, GCC, Clang, MSVC, native-bridge, and sanitizer gates in
+[run 30204865673](https://github.com/moshkinyevhen/resonith/actions/runs/30204865673).
+
+This is implementation evidence, not compression evidence. A fixed model ROM
+must be trained without the evaluation segments, versioned, and reported
+separately. Simultaneous source syntax remains blocked until cached Basis reuse
+beats the complete RSL2 stream on held-out material.

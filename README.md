@@ -41,7 +41,9 @@ The repository contains:
 - the compact deterministic `RSC1` typed section-container candidate;
 - a dependency-free C++20 whole-RSC1 Golden Core behind a stable C99 ABI;
 - allocation-free block indexing, random block decode, linear residual
-  cursors, and callback-oriented zero-Atom PCM playback;
+  cursors, and callback-oriented zero-Atom/model-bearing PCM playback;
+- registry-backed latent-only `BCIB` Basis transport with preflighted
+  materialized hashes and shared non-overlapping CIBS/LiftPack staging;
 - an optional source-bound `RSI1` seek sidecar whose rejection never affects
   sequential Truth decode;
 - an explicit shared-Core Python bridge that gates typed-stream RDO on the
@@ -50,7 +52,7 @@ The repository contains:
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 86 pure reference/security/integration tests, five native decoder-in-loop
+- 90 pure reference/security/integration tests, six native decoder-in-loop
   integration tests, nine native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1 mutation targets.

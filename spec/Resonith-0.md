@@ -133,7 +133,10 @@ Schema 1 has no adapter or objective Basis correction. The decoder runs the
 registered CIBS-0 graph once when materializing the immutable Basis, computes
 the hash defined in section 6.0, and commits the Basis only when it equals
 `expected_basis_sha256`. CIBS staging memory is caller-owned, bounded, and
-reported during stream inspection.
+reported during stream inspection. The executable Main-0 ABI MAY reuse the
+LiftPack int64 staging region because residual decoding and Basis
+materialization do not overlap; its required capacity is the maximum of the
+two exact requirements.
 
 #### 4.1.3 Stream configuration section (`CONF`, schema 1)
 
