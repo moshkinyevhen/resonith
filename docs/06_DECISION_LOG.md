@@ -2037,7 +2037,7 @@ new oscillator opcode.
 ## R-075 — Transform-boundary packets replace repeated source context
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **EXACT PASS / 7.53%-7.75% SHORT-PACKET OVERHEAD**
 - Decision:
   - analyze and select the complete lapped coefficient field exactly once;
   - form an independent packet from only the transform frames that overlap its
@@ -2057,3 +2057,15 @@ new oscillator opcode.
     measured 23.80%-28.26% short-packet cost;
   - moving the boundary into transform space removes redundant work and bytes
     without a new DSP kernel, predictor, or persistent decoder dependency.
+- Result:
+  - the Python oracle packetizes one globally selected LPF1 field as direct
+    authenticated LSE2 children and duplicates one boundary transform frame;
+  - every LPS2 packet sequence reconstructed exactly the monolithic selected
+    LPF1 PCM, including after loss from the first later packet onward;
+  - GitHub Actions run 30211189623 measured 7.53%, 7.75%, and 7.68% complete
+    byte overhead for 243.81 ms packets, passing the 10% gate on every clip;
+  - the corresponding source-context LPS1 overheads were 23.80%, 27.10%, and
+    28.26%, so the same decoder transform with a smaller packet grammar removed
+    roughly two thirds of the short-packet tax;
+  - LPS2 remains prospective until its direct LSE2 path passes native parity,
+    bounded-resource, and hostile-input gates.

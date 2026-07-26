@@ -1,0 +1,45 @@
+{
+  "date": "2026-07-26",
+  "github_actions_run": 30211189623,
+  "configuration": {
+    "maximum_seconds": 3.0,
+    "packet_frames": 10752,
+    "packet_interval_milliseconds": 243.8095238095238,
+    "half_window": 512,
+    "packet_count": 13
+  },
+  "gate": {
+    "maximum_transform_packet_overhead_fraction": 0.1,
+    "exact_monolithic_reconstruction": true,
+    "exact_outside_loss": true,
+    "exact_first_later_packet": true,
+    "truth_reference_uses_concealment": false,
+    "passing_clips": 3,
+    "clip_count": 3
+  },
+  "clips": {
+    "corelli-sonata-realization": {
+      "monolithic_stream_bytes": 46265,
+      "source_context_packet_bytes": 57277,
+      "source_context_overhead_fraction": 0.23802010158867404,
+      "transform_packet_bytes": 49749,
+      "transform_packet_overhead_fraction": 0.07530530638711763
+    },
+    "emotional-piano-cc0": {
+      "monolithic_stream_bytes": 44583,
+      "source_context_packet_bytes": 56663,
+      "source_context_overhead_fraction": 0.27095529686203257,
+      "transform_packet_bytes": 48036,
+      "transform_packet_overhead_fraction": 0.0774510463629634
+    },
+    "patro-de-bateria": {
+      "monolithic_stream_bytes": 36170,
+      "source_context_packet_bytes": 46392,
+      "source_context_overhead_fraction": 0.28260989770528067,
+      "transform_packet_bytes": 38949,
+      "transform_packet_overhead_fraction": 0.07683162842134372
+    }
+  },
+  "status": "LPS2 transform-packet gate passed",
+  "conclusion": "Global transform selection, one duplicated boundary frame, and direct authenticated LSE2 children reduced 243.8 ms packet overhead to 7.53%-7.75% while preserving exact monolithic reconstruction and post-loss Truth recovery."
+}

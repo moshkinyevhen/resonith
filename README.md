@@ -51,13 +51,14 @@ The repository contains:
   sequential Truth decode;
 - an explicit shared-Core Python bridge that gates typed-stream RDO on the
   production decoder and exact cross-decoder PCM equality;
-- independently authenticated `LPS1` context packets for bounded-memory,
-  parallel, and random-access lapped decoding research;
+- independently authenticated `LPS1` source-context and `LPS2`
+  transform-boundary packets for bounded-memory, parallel, random-access, and
+  exactly loss-contained lapped decoding research;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 120 pure reference/security/integration tests, ten native decoder-in-loop
+- 122 pure reference/security/integration tests, ten native decoder-in-loop
   integration tests, ten native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1/LPF1 mutation targets.

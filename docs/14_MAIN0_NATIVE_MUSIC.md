@@ -949,3 +949,24 @@ global transform analysis. It may duplicate only the minimum transform-domain
 boundary state, not independently re-analyze and reallocate an entire
 contextual source crop. The compact result is
 [`lapped_packet_loss_2026-07-26_summary.json`](../experiments/results/lapped_packet_loss_2026-07-26_summary.json).
+
+## 40. Transform-boundary packet result
+
+`LPS2` performs one global transform analysis and coefficient selection. A
+logical interval spanning \(m\) half-windows carries only the \(m+1\)
+transform frames that overlap its output; adjacent packets duplicate their one
+common boundary frame. The authenticated child is direct LSE2 rather than a
+repeated RSC1/CONF/LPF1 container.
+
+| Crop | LPS1 context overhead | LPS2 transform overhead | LPS2 exact |
+| --- | ---: | ---: | --- |
+| Corelli | 23.80% | 7.53% | yes |
+| Piano | 27.10% | 7.75% | yes |
+| Drums | 28.26% | 7.68% | yes |
+
+These are complete bytes for 243.81 ms packets. LPS2 output equals monolithic
+LPF1 reconstruction exactly, and loss remains exactly confined to the missing
+logical interval. The improvement changes no transform or sample DSP; it
+removes redundant analysis, allocation, and nested headers. The compact record
+is
+[`lapped_transform_packet_2026-07-26_summary.json`](../experiments/results/lapped_transform_packet_2026-07-26_summary.json).
