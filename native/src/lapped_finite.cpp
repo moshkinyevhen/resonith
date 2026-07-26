@@ -9,6 +9,7 @@
 namespace {
 
 constexpr std::size_t kHeaderBytes = 43U;
+constexpr std::size_t kCompactHeaderBytes = 28U;
 constexpr std::uint8_t kVersion = 1U;
 constexpr std::uint8_t kEntropyRice = 0U;
 constexpr std::uint8_t kEntropyPacked = 1U;
@@ -452,6 +453,124 @@ resonith_status parse_finite(
     return RESONITH_STATUS_OK;
 }
 
+resonith_status parse_compact_finite(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_lapped_requirements& shape,
+    parsed_finite* parsed,
+    resonith_lapped_finite_requirements* requirements
+) noexcept {
+    if (
+        data == nullptr
+        || parsed == nullptr
+        || requirements == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *requirements = {};
+    if (data_size < kCompactHeaderBytes) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+    if (data_size > kMaximumPayloadBytes) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+
+    parsed->count_entropy = data[0U];
+    parsed->count_parameter = data[1U];
+    parsed->gap_threshold = read_u16(data + 2U);
+    parsed->frame_count = shape.transform_frame_count;
+    parsed->channels = shape.output_channels;
+    parsed->band_count = shape.band_count;
+    parsed->coefficient_count = read_u32(data + 4U);
+    parsed->scale_bits = read_u32(data + 8U);
+    parsed->count_bits = read_u32(data + 12U);
+    parsed->gap_bits = read_u32(data + 16U);
+    parsed->raw_gap_bits = read_u32(data + 20U);
+    parsed->value_bits = read_u32(data + 24U);
+    if (
+        !valid_entropy(
+            parsed->count_entropy,
+            parsed->count_parameter
+        )
+        || shape.transform_frame_count == 0U
+        || shape.output_channels == 0U
+        || shape.output_channels > kMaximumChannels
+        || shape.band_count == 0U
+        || shape.band_count > kMaximumBands
+        || shape.half_window < 2U
+        || shape.half_window > kMaximumHalfWindow
+        || parsed->gap_threshold == 0U
+        || parsed->gap_threshold > shape.half_window
+        || parsed->coefficient_count > kMaximumSymbols
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+
+    std::size_t channel_frames = 0U;
+    std::size_t scale_elements = 0U;
+    std::size_t maximum_coefficients = 0U;
+    if (
+        !checked_product(
+            shape.output_channels,
+            shape.transform_frame_count,
+            &channel_frames
+        )
+        || !checked_product(
+            channel_frames,
+            shape.band_count,
+            &scale_elements
+        )
+        || !checked_product(
+            channel_frames,
+            shape.half_window,
+            &maximum_coefficients
+        )
+        || scale_elements > kMaximumSymbols
+        || parsed->coefficient_count > maximum_coefficients
+        || shape.scale_elements != scale_elements
+        || shape.count_elements != channel_frames
+        || shape.position_elements != parsed->coefficient_count
+        || shape.coefficient_elements != parsed->coefficient_count
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+
+    const std::size_t scale_bytes = bit_bytes(parsed->scale_bits);
+    const std::size_t count_bytes = bit_bytes(parsed->count_bits);
+    const std::size_t gap_bytes = bit_bytes(parsed->gap_bits);
+    const std::size_t raw_gap_bytes = bit_bytes(parsed->raw_gap_bits);
+    const std::size_t value_bytes = bit_bytes(parsed->value_bits);
+    std::size_t consumed = kCompactHeaderBytes;
+    for (
+        const std::size_t field_bytes :
+        {scale_bytes, count_bytes, gap_bytes, raw_gap_bytes, value_bytes}
+    ) {
+        if (field_bytes > data_size - consumed) {
+            return RESONITH_STATUS_TRUNCATED;
+        }
+        consumed += field_bytes;
+    }
+    if (consumed != data_size) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+
+    parsed->scale_payload = data + kCompactHeaderBytes;
+    parsed->count_payload = parsed->scale_payload + scale_bytes;
+    parsed->gap_payload = parsed->count_payload + count_bytes;
+    parsed->raw_gap_payload = parsed->gap_payload + gap_bytes;
+    parsed->value_payload = parsed->raw_gap_payload + raw_gap_bytes;
+    requirements->transform_frame_count = shape.transform_frame_count;
+    requirements->channels = shape.output_channels;
+    requirements->band_count = shape.band_count;
+    requirements->half_window = shape.half_window;
+    requirements->gap_threshold = parsed->gap_threshold;
+    requirements->scale_elements = scale_elements;
+    requirements->count_elements = channel_frames;
+    requirements->position_elements = parsed->coefficient_count;
+    requirements->coefficient_elements = parsed->coefficient_count;
+    return RESONITH_STATUS_OK;
+}
+
 bool decode_unsigned(
     bit_reader* reader,
     std::uint8_t entropy,
@@ -740,6 +859,47 @@ resonith_status decode_finite(
 }
 
 }  // namespace
+
+namespace resonith::internal {
+
+resonith_status lapped_finite_compact_fields_decode(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_lapped_requirements& shape,
+    const resonith_lapped_workspace& workspace,
+    resonith_lapped_requirements* requirements
+) noexcept {
+    if (requirements == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *requirements = {};
+    parsed_finite parsed{};
+    resonith_lapped_finite_requirements finite_requirements{};
+    const resonith_status status = parse_compact_finite(
+        data,
+        data_size,
+        shape,
+        &parsed,
+        &finite_requirements
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    if (!valid_workspace(finite_requirements, workspace)) {
+        return RESONITH_STATUS_SCRATCH_TOO_SMALL;
+    }
+    const resonith_status decode_status = decode_finite(
+        parsed,
+        finite_requirements,
+        workspace
+    );
+    if (decode_status == RESONITH_STATUS_OK) {
+        *requirements = shape;
+    }
+    return decode_status;
+}
+
+}  // namespace resonith::internal
 
 extern "C" resonith_status resonith_lapped_finite_inspect(
     const std::uint8_t* data,

@@ -27,6 +27,19 @@ resonith_status lapped_compact_fields_decode(
 ) noexcept;
 
 /*
+ * Decodes one CRC-excluded LPS5 compact LAF1 record. `shape` carries only
+ * authenticated sequence and packet-derived values; the record must match it
+ * exactly before decoded fields can reach synthesis.
+ */
+resonith_status lapped_finite_compact_fields_decode(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_lapped_requirements& shape,
+    const resonith_lapped_workspace& workspace,
+    resonith_lapped_requirements* requirements
+) noexcept;
+
+/*
  * Renders current single-owner transform fields plus, when non-null, the first
  * transform frame from the next record. Validation completes before PCM write.
  */

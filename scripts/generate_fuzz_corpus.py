@@ -17,6 +17,7 @@ from maf_p0.finite_state_oracle import encode_finite_state_lapped  # noqa: E402
 from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
 from maf_p0.lapped_streaming import (  # noqa: E402
     encode_lapped_compact_packet_stream,
+    encode_lapped_finite_packet_stream,
     encode_lapped_packet_stream,
     encode_lapped_transform_packet_stream,
 )
@@ -197,6 +198,17 @@ def main() -> None:
     )
     (lapped_compact_directory / "single_owner.lps").write_bytes(
         compact_packeted.payload
+    )
+    finite_packeted = encode_lapped_finite_packet_stream(
+        lapped_samples,
+        48_000,
+        coefficients_per_frame=8,
+        packet_frames=64,
+        half_window=32,
+        band_count=4,
+    )
+    (lapped_compact_directory / "finite_single_owner.lps").write_bytes(
+        finite_packeted.payload
     )
 
 

@@ -33,6 +33,9 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   12,288 frames: prospective LPS5 saved 5.32% on piano, 3.43% on drums, and
   5.95% on Corelli against complete LPS4 bytes with identical reconstruction.
   The 34.8 ms point did not pass, so LPS4 remains the Realtime fallback.
+- Native LPS5 integration reuses the allocation-free LPS4 pull/stateless ABI
+  and is undergoing cross-compiler, decoder-in-loop, and sanitized mutation
+  gates under R-098.
 - The portable Core now decodes a complete typed mono RSC1 stream through one
   allocation-free C API call.
 - Python encoder RDO is bound to the native whole-stream decoder and rejects

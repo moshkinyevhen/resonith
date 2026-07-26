@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 /*
- * Allocation contract for prospective LPS4, Resonith-0 section 4.1.10.
+ * Allocation contract shared by prospective LPS4 and LPS5.
  *
  * A pull decoder owns one field workspace for the current record and one for
  * the following boundary record. The Core never allocates either workspace.
@@ -32,7 +32,8 @@ typedef struct resonith_lapped_compact_requirements {
 } resonith_lapped_compact_requirements;
 
 /*
- * Authenticated sequence context for independently transported LPS4 records.
+ * Authenticated sequence context for independently transported LPS4/LPS5
+ * records.
  *
  * The fixed 60-byte sequence header is immutable for the lifetime of this
  * context. A transport authenticates it once, then binds every record to the
@@ -46,6 +47,10 @@ typedef struct resonith_lapped_compact_sequence {
     uint16_t half_window;
     uint16_t band_count;
     uint16_t output_channels;
+    /*
+     * Opaque entropy transport kind returned by sequence_open. Callers must
+     * preserve this value unchanged when using stateless record operations.
+     */
     uint16_t reserved;
 } resonith_lapped_compact_sequence;
 
@@ -66,7 +71,7 @@ typedef struct resonith_lapped_compact_session {
 } resonith_lapped_compact_session;
 
 /*
- * Validates exactly one 60-byte LPS4 sequence header and its SHA-256.
+ * Validates exactly one 60-byte LPS4 or LPS5 sequence header and its SHA-256.
  *
  * This parser does not inspect packet records and performs no allocation.
  * SHA-256 and per-record CRC-32 detect corruption; neither authenticates an
@@ -90,7 +95,7 @@ RESONITH_API resonith_status resonith_lapped_compact_sequence_requirements(
 );
 
 /*
- * Fully preflights an LPS4 sequence without writing PCM or allocating memory.
+ * Fully preflights an LPS4/LPS5 sequence without PCM writes or allocation.
  *
  * The operation verifies the sequence SHA-256, every derived record length and
  * CRC-32, canonical bit padding, inherited shape, and bounded resource
@@ -104,7 +109,7 @@ RESONITH_API resonith_status resonith_lapped_compact_open(
 );
 
 /*
- * Transactionally decodes one logical LPS4 interval.
+ * Transactionally decodes one logical LPS4 or LPS5 interval.
  *
  * Non-final pulls require `lookahead_workspace`; the final pull permits NULL.
  * Entropy fields and synthesis bounds are validated before any PCM write, and
@@ -121,7 +126,7 @@ RESONITH_API resonith_status resonith_lapped_compact_decode_next(
 );
 
 /*
- * Transactionally decodes one independently framed LPS4 record.
+ * Transactionally decodes one independently framed LPS4 or LPS5 record.
  *
  * `packet_index` supplies the record's position in `sequence`. Every byte of
  * each supplied record must belong to that record. A non-final record requires

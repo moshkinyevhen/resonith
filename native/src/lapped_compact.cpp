@@ -15,6 +15,7 @@ namespace {
 constexpr std::size_t kHeaderBytes = 28U;
 constexpr std::size_t kDigestBytes = 32U;
 constexpr std::size_t kCompactDescriptorBytes = 27U;
+constexpr std::size_t kFiniteCompactDescriptorBytes = 28U;
 constexpr std::size_t kRecordCrcBytes = 4U;
 constexpr std::size_t kMaximumStreamBytes = 512U << 20U;
 constexpr std::uint32_t kMaximumPacketCount = 1U << 20U;
@@ -22,6 +23,8 @@ constexpr std::uint32_t kMaximumSymbols = 64U << 20U;
 constexpr std::uint8_t kEntropyRice = 0U;
 constexpr std::uint8_t kEntropyPacked = 1U;
 constexpr std::uint8_t kMaximumRiceParameter = 20U;
+constexpr std::uint16_t kTransportLps4 = 0U;
+constexpr std::uint16_t kTransportLps5 = 1U;
 
 struct compact_record_view {
     const std::uint8_t* data = nullptr;
@@ -153,7 +156,7 @@ bool packed_size_matches(
 bool valid_sequence_shape(
     const resonith_lapped_compact_sequence& sequence
 ) noexcept {
-    return sequence.reserved == 0U
+    return sequence.reserved <= kTransportLps5
         && sequence.sample_rate != 0U
         && sequence.frame_count != 0U
         && sequence.output_channels != 0U
@@ -188,7 +191,9 @@ resonith_status parse_sequence_header(
     if (data_size < kHeaderBytes + kDigestBytes) {
         return RESONITH_STATUS_TRUNCATED;
     }
-    if (std::memcmp(data, "LPS4", 4U) != 0) {
+    const bool is_lps4 = std::memcmp(data, "LPS4", 4U) == 0;
+    const bool is_lps5 = std::memcmp(data, "LPS5", 4U) == 0;
+    if (!is_lps4 && !is_lps5) {
         return RESONITH_STATUS_BAD_MAGIC;
     }
     if (data[4U] != 1U) {
@@ -209,7 +214,7 @@ resonith_status parse_sequence_header(
         read_u16(data + 16U),
         read_u16(data + 18U),
         read_u16(data + 6U),
-        0U,
+        is_lps5 ? kTransportLps5 : kTransportLps4,
     };
     if (!valid_sequence_shape(parsed)) {
         return RESONITH_STATUS_PROFILE_BOUND;
@@ -229,7 +234,7 @@ resonith_lapped_compact_sequence sequence_from_session(
         session.half_window,
         session.band_count,
         session.output_channels,
-        0U,
+        session.reserved,
     };
 }
 
@@ -358,7 +363,7 @@ void maximize(
     );
 }
 
-resonith_status parse_record_bytes(
+resonith_status parse_lps4_record_bytes(
     const resonith_lapped_compact_sequence& sequence,
     const std::uint8_t* record,
     std::size_t available,
@@ -531,6 +536,143 @@ resonith_status parse_record_bytes(
     return RESONITH_STATUS_OK;
 }
 
+resonith_status parse_lps5_record_bytes(
+    const resonith_lapped_compact_sequence& sequence,
+    const std::uint8_t* record,
+    std::size_t available,
+    std::uint32_t packet_index,
+    bool exact_framing,
+    compact_record_view* view
+) noexcept {
+    if (
+        record == nullptr
+        || view == nullptr
+        || packet_index >= sequence.packet_count
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *view = {};
+    if (available < kFiniteCompactDescriptorBytes + kRecordCrcBytes) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+
+    resonith_lapped_requirements shape{};
+    const resonith_status shape_status = sequence_record_requirements(
+        sequence,
+        packet_index,
+        &shape
+    );
+    if (shape_status != RESONITH_STATUS_OK) {
+        return shape_status;
+    }
+
+    const std::uint8_t count_entropy = record[0U];
+    const std::uint8_t count_parameter = record[1U];
+    const std::uint16_t gap_threshold = read_u16(record + 2U);
+    const std::uint32_t coefficient_count = read_u32(record + 4U);
+    const std::array<std::uint32_t, 5U> bit_counts = {
+        read_u32(record + 8U),
+        read_u32(record + 12U),
+        read_u32(record + 16U),
+        read_u32(record + 20U),
+        read_u32(record + 24U),
+    };
+    if (
+        !valid_entropy(count_entropy, count_parameter)
+        || gap_threshold == 0U
+        || gap_threshold > sequence.half_window
+        || coefficient_count > shape.position_elements
+        || bit_counts[0U] == 0U
+        || (
+            coefficient_count == 0U
+            && (bit_counts[2U] != 0U || bit_counts[4U] != 0U)
+        )
+        || (
+            coefficient_count != 0U
+            && (bit_counts[2U] == 0U || bit_counts[4U] == 0U)
+        )
+        || !packed_size_matches(
+            count_entropy,
+            count_parameter,
+            shape.count_elements,
+            bit_counts[1U]
+        )
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+
+    std::array<std::size_t, 5U> field_bytes{};
+    std::size_t record_size = kFiniteCompactDescriptorBytes;
+    for (std::size_t field = 0U; field < field_bytes.size(); ++field) {
+        field_bytes[field] = bit_bytes(bit_counts[field]);
+        if (!checked_add(record_size, field_bytes[field], &record_size)) {
+            return RESONITH_STATUS_PROFILE_BOUND;
+        }
+    }
+    if (
+        record_size > kMaximumStreamBytes
+        || record_size > available
+        || available - record_size < kRecordCrcBytes
+    ) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+    const std::size_t framed_size = record_size + kRecordCrcBytes;
+    if (exact_framing && framed_size != available) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    if (
+        resonith::internal::crc32(record, record_size)
+        != read_u32(record + record_size)
+    ) {
+        return RESONITH_STATUS_CHECKSUM_MISMATCH;
+    }
+
+    const std::uint8_t* field = record + kFiniteCompactDescriptorBytes;
+    for (std::size_t index = 0U; index < field_bytes.size(); ++index) {
+        if (!valid_padding(field, field_bytes[index], bit_counts[index])) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+        field += field_bytes[index];
+    }
+
+    view->data = record;
+    view->size = record_size;
+    view->framed_size = framed_size;
+    view->logical_count = shape.frame_count;
+    view->requirements = shape;
+    view->requirements.position_elements = coefficient_count;
+    view->requirements.coefficient_elements = coefficient_count;
+    return RESONITH_STATUS_OK;
+}
+
+resonith_status parse_record_bytes(
+    const resonith_lapped_compact_sequence& sequence,
+    const std::uint8_t* record,
+    std::size_t available,
+    std::uint32_t packet_index,
+    bool exact_framing,
+    compact_record_view* view
+) noexcept {
+    if (sequence.reserved == kTransportLps5) {
+        return parse_lps5_record_bytes(
+            sequence,
+            record,
+            available,
+            packet_index,
+            exact_framing,
+            view
+        );
+    }
+    return parse_lps4_record_bytes(
+        sequence,
+        record,
+        available,
+        packet_index,
+        exact_framing,
+        view
+    );
+}
+
 resonith_status parse_record(
     const resonith_lapped_compact_session& session,
     std::size_t offset,
@@ -556,6 +698,35 @@ resonith_status parse_record(
         view->next_offset = offset + view->framed_size;
     }
     return status;
+}
+
+resonith_status decode_record_fields(
+    const resonith_lapped_compact_sequence& sequence,
+    const compact_record_view& view,
+    const resonith_lapped_workspace& workspace,
+    resonith_lapped_requirements* requirements
+) noexcept {
+    if (sequence.reserved == kTransportLps5) {
+        return resonith::internal::lapped_finite_compact_fields_decode(
+            view.data,
+            view.size,
+            view.requirements,
+            workspace,
+            requirements
+        );
+    }
+    return resonith::internal::lapped_compact_fields_decode(
+        view.data,
+        view.size,
+        sequence.sample_rate,
+        view.logical_count,
+        view.requirements.transform_frame_count,
+        sequence.output_channels,
+        sequence.half_window,
+        sequence.band_count,
+        workspace,
+        requirements
+    );
 }
 
 resonith_status decode_record_views(
@@ -593,34 +764,21 @@ resonith_status decode_record_views(
     }
 
     resonith_lapped_requirements decoded_current{};
-    resonith_status status =
-        resonith::internal::lapped_compact_fields_decode(
-            current.data,
-            current.size,
-            sequence.sample_rate,
-            current.logical_count,
-            current.requirements.transform_frame_count,
-            sequence.output_channels,
-            sequence.half_window,
-            sequence.band_count,
-            current_workspace,
-            &decoded_current
-        );
+    resonith_status status = decode_record_fields(
+        sequence,
+        current,
+        current_workspace,
+        &decoded_current
+    );
     if (status != RESONITH_STATUS_OK) {
         return status;
     }
 
     resonith_lapped_requirements decoded_lookahead{};
     if (!final_packet) {
-        status = resonith::internal::lapped_compact_fields_decode(
-            lookahead->data,
-            lookahead->size,
-            sequence.sample_rate,
-            lookahead->logical_count,
-            lookahead->requirements.transform_frame_count,
-            sequence.output_channels,
-            sequence.half_window,
-            sequence.band_count,
+        status = decode_record_fields(
+            sequence,
+            *lookahead,
             *lookahead_workspace,
             &decoded_lookahead
         );
@@ -774,7 +932,7 @@ extern "C" resonith_status resonith_lapped_compact_open(
         sequence.half_window,
         sequence.band_count,
         sequence.output_channels,
-        0U,
+        sequence.reserved,
     };
 
     resonith_lapped_requirements maximum_current{};
@@ -1051,15 +1209,9 @@ extern "C" resonith_status resonith_lapped_compact_decode_record_prefix(
         return status;
     }
     resonith_lapped_requirements decoded_current{};
-    status = resonith::internal::lapped_compact_fields_decode(
-        current.data,
-        current.size,
-        sequence->sample_rate,
-        current.logical_count,
-        current.requirements.transform_frame_count,
-        sequence->output_channels,
-        sequence->half_window,
-        sequence->band_count,
+    status = decode_record_fields(
+        *sequence,
+        current,
         *current_workspace,
         &decoded_current
     );

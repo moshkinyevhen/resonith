@@ -127,9 +127,11 @@ The session borrows immutable input bytes and contains no hidden allocation or
 persistent transform state.
 
 `resonith_lapped_compact_open()` separately preflights prospective `LPS4`
-single-owner records. It verifies the sequence SHA-256, derived record lengths,
-every CRC-32, canonical padding, inherited shape, and maximum current plus
-one-record-lookahead resources without allocation.
+and `LPS5` single-owner records. It verifies the sequence SHA-256, derived
+record lengths, every CRC-32, canonical padding, inherited shape, and maximum
+current plus one-record-lookahead resources without allocation. LPS4 decodes
+bounded LSE2 fields; LPS5 decodes independently reset compact LAF1 fields
+through the same public ABI and synthesis path.
 `resonith_lapped_compact_decode_next()` then decodes both caller-owned field
 workspaces and renders the shared transform boundary transactionally. Frozen,
 long-stream cross-decoder, hosted resource, and sanitized mutation gates pass.

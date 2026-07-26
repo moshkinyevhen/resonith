@@ -362,6 +362,76 @@ int main() {
         return 1;
     }
 
+    resonith_lapped_compact_session finite_session{};
+    resonith_lapped_compact_requirements finite_requirements{};
+    if (!expect(
+            resonith_lapped_compact_open(
+                kLappedFinitePacketStream.data(),
+                kLappedFinitePacketStream.size(),
+                &finite_session,
+                &finite_requirements
+            ) == RESONITH_STATUS_OK
+                && finite_session.reserved == 1U
+                && finite_requirements.frame_count == 96U
+                && finite_requirements.packet_frames == 64U
+                && finite_requirements.packet_count == 2U
+                && finite_requirements.maximum_current
+                    .transform_frame_count == 2U
+                && finite_requirements.maximum_current.scale_elements == 16U
+                && finite_requirements.maximum_current.count_elements == 4U
+                && finite_requirements.maximum_current.position_elements
+                    == 39U,
+            "LPS5 bounded adaptive preflight"
+        )) {
+        return 1;
+    }
+    packet_pcm.fill(0);
+    for (std::uint32_t packet = 0U; packet < 2U; ++packet) {
+        logical_start = 99U;
+        logical_frames = 99U;
+        if (!expect(
+                resonith_lapped_compact_decode_next(
+                    &finite_session,
+                    &packet_workspace,
+                    &compact_lookahead_workspace,
+                    logical_output.data(),
+                    logical_output.size(),
+                    &logical_start,
+                    &logical_frames
+                ) == RESONITH_STATUS_OK
+                    && logical_start == (packet == 0U ? 0U : 64U)
+                    && logical_frames == (packet == 0U ? 64U : 32U),
+                "LPS5 two-workspace transactional pull"
+            )) {
+            return 1;
+        }
+        std::copy_n(
+            logical_output.begin(),
+            logical_frames * 2U,
+            packet_pcm.begin()
+                + static_cast<std::ptrdiff_t>(logical_start * 2U)
+        );
+    }
+    if (!expect(
+            packet_pcm == kExpectedAdaptiveLappedPcm,
+            "LPS5 output equals LPS4 and monolithic adaptive PCM"
+        )) {
+        return 1;
+    }
+    auto finite_corrupted = kLappedFinitePacketStream;
+    finite_corrupted[finite_corrupted.size() - 5U] ^= 1U;
+    if (!expect(
+            resonith_lapped_compact_open(
+                finite_corrupted.data(),
+                finite_corrupted.size(),
+                &finite_session,
+                &finite_requirements
+            ) == RESONITH_STATUS_CHECKSUM_MISMATCH,
+            "LPS5 CRC corruption rejection"
+        )) {
+        return 1;
+    }
+
     constexpr std::size_t compact_header_size = 60U;
     const std::size_t compact_first_size = kLappedCompactRecordSizes[0U];
     const std::size_t compact_second_offset =

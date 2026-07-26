@@ -2890,3 +2890,24 @@ new oscillator opcode.
   - LPS5 is approved as a prospective Streaming/Main transport with a 278.6 ms
     nominal record. LPS4 remains the Realtime fallback, and a fixed-prior
     experiment may target shorter records without cross-record state.
+
+## R-098 — Native LPS5 transport integration gate
+
+- Date: 2026-07-26
+- Status: **IN PROGRESS**
+- Decision:
+  - reuse the existing allocation-free compact streaming ABI for LPS4 and
+    LPS5 instead of adding a parallel player interface;
+  - retain the public structure layout and preserve the sequence parser's
+    opaque transport discriminator across sequential and stateless calls;
+  - decode compact LAF1 directly from inherited sequence shape, without
+    materializing a synthetic 43-byte LAF1 header or allocating memory.
+- Gate:
+  - frozen Python-authored LPS5 vector must reconstruct byte-identical PCM in
+    the native pull path and match both Python LPS5 and the LPS4 reconstruction;
+  - corrupt CRC, malformed lengths, noncanonical padding, wrong inherited
+    shape, and undersized workspaces must fail before PCM delivery;
+  - GCC, Clang, MSVC, x64, ARM64, AppleClang, Linux ARM64, and Android builds
+    must pass with warnings as errors;
+  - Python/native LPS5 decoder-in-loop parity and sanitized compact-stream
+    mutation tests must pass before the status changes to PASS.
