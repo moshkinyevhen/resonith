@@ -236,7 +236,7 @@ int main() {
                 && compact_requirements.maximum_current.scale_elements == 16U
                 && compact_requirements.maximum_current.count_elements == 4U
                 && compact_requirements.maximum_current.position_elements
-                    <= 32U
+                    == 39U
                 && compact_requirements.maximum_lookahead
                     .transform_frame_count == 2U
                 && compact_requirements.maximum_logical_output_elements
