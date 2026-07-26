@@ -461,7 +461,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-026 — Allocation-free native LiftPack Golden Core
 
 - Date: 2026-07-26
-- Status: **IMPLEMENTED / AWAITING CROSS-COMPILER EVIDENCE**
+- Status: **IMPLEMENTED / CROSS-COMPILER VERIFIED**
 - Decision:
   - expose the first frozen decoder primitive through a C99-compatible,
     versionable ABI implemented in dependency-free portable C++20;
@@ -487,7 +487,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-027 — RSC1 compact deterministic section container
 
 - Date: 2026-07-26
-- Status: **NORMATIVE-DRAFT / IMPLEMENTATION IN PROGRESS**
+- Status: **IMPLEMENTED / NORMATIVE-DRAFT**
 - Decision:
   - do not port the experimental JSON/zlib `MAF0` research container into the
     Golden Core;
@@ -516,7 +516,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-028 — Registry-backed native CIBS materialization
 
 - Date: 2026-07-26
-- Status: **NORMATIVE-DRAFT / IMPLEMENTATION IN PROGRESS**
+- Status: **IMPLEMENTED / NORMATIVE-DRAFT**
 - Decision:
   - port the complete bounded CIBS-0 integer synthesis operator to the native
     Golden Core before freezing a production model package;
@@ -542,7 +542,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-029 — Prepared absolute phase trajectories
 
 - Date: 2026-07-26
-- Status: **NORMATIVE-DRAFT / IMPLEMENTATION IN PROGRESS**
+- Status: **IMPLEMENTED / NORMATIVE-DRAFT**
 - Decision:
   - represent periodic Atom motion as absolute piecewise-linear unsigned Q32
     phase increments over strictly increasing sample positions;
@@ -568,7 +568,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-030 — Sparse gain events and one-pass Truth composition
 
 - Date: 2026-07-26
-- Status: **NORMATIVE-DRAFT / IMPLEMENTATION IN PROGRESS**
+- Status: **IMPLEMENTED / NORMATIVE-DRAFT**
 - Decision:
   - replace the conceptual requirement for fixed gain blocks with a sparse
     absolute event law: one signed Q17.15 gain remains active until the next
@@ -590,7 +590,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-031 — Minimal typed raw Basis payload
 
 - Date: 2026-07-26
-- Status: **NORMATIVE-DRAFT / IMPLEMENTATION IN PROGRESS**
+- Status: **IMPLEMENTED / NORMATIVE-DRAFT**
 - Decision:
   - define RSC1 section type `BRAW`, schema version 1, as an eight-byte typed
     header followed by channel-major little-endian int16 Basis samples;
@@ -606,3 +606,24 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
     arrays;
   - the eight-byte header is sufficient for exact materialization on
     little-endian, big-endian, desktop, mobile, and embedded targets.
+
+## R-032 — First complete native causal pipeline vector
+
+- Date: 2026-07-26
+- Status: **IMPLEMENTED / CROSS-COMPILER VERIFIED**
+- Implemented chain:
+  - decode one typed `BRAW` immutable Basis;
+  - prepare an absolute Q32 phase law;
+  - render periodic prediction;
+  - decode quantized objective Innovation from `LiftPack-1`;
+  - prepare sparse Q17.15 gain events;
+  - compose and saturate final int16 Truth PCM.
+- Evidence:
+  - Python and C++ reproduce all 40 PCM samples exactly;
+  - output PCM SHA-256 is
+    `5c065cb48f1d7581ff2c7160b5ff0cb7923ff0f1377b7c3e314b494a64e933fd`;
+  - GCC, Clang, MSVC, and the complete Python/Opus workflow pass.
+- Remaining boundary:
+  - the vector calls typed primitives directly;
+  - compact `ATOM`/configuration payload parsing and whole-RSC1 decoder
+    orchestration are the next stage.
