@@ -103,6 +103,23 @@ if(RESONITH_BUILD_TOOLS)
         PROPERTIES CXX_EXTENSIONS OFF
     )
     resonith_enable_warnings(resonith_lapped_device_bench)
+
+    add_executable(resonith_lapped_finite_bench
+        tools/lapped_finite_bench.cpp
+    )
+    target_compile_features(
+        resonith_lapped_finite_bench
+        PRIVATE cxx_std_20
+    )
+    target_link_libraries(
+        resonith_lapped_finite_bench
+        PRIVATE Resonith::Core
+    )
+    set_target_properties(
+        resonith_lapped_finite_bench
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_lapped_finite_bench)
 endif()
 
 if(RESONITH_BUILD_FUZZERS)

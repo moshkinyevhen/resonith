@@ -78,6 +78,12 @@ jobs:
           name: resonith-device-bench-windows-x64
           path: build/native/Release/resonith_lapped_device_bench.exe
           if-no-files-found: error
+      - name: Publish Windows x64 adaptive entropy benchmark
+        uses: actions/upload-artifact@v7
+        with:
+          name: resonith-finite-bench-windows-x64
+          path: build/native/Release/resonith_lapped_finite_bench.exe
+          if-no-files-found: error
 
   native-linux-arm64:
     name: Native / Linux ARM64 / GCC
@@ -149,6 +155,12 @@ jobs:
           name: resonith-device-bench-android-arm64
           path: build/android-arm64/resonith_lapped_device_bench
           if-no-files-found: error
+      - name: Publish Android arm64 adaptive entropy benchmark
+        uses: actions/upload-artifact@v7
+        with:
+          name: resonith-finite-bench-android-arm64
+          path: build/android-arm64/resonith_lapped_finite_bench
+          if-no-files-found: error
 
   native-python-bridge:
     name: Native decoder-in-loop / Python
@@ -167,7 +179,10 @@ jobs:
             -DBUILD_TESTING=OFF \
             -DRESONITH_WARNINGS_AS_ERRORS=ON
           cmake --build build/native \
-            --target resonith_core_shared resonith_lapped_device_bench \
+            --target
+            resonith_core_shared
+            resonith_lapped_device_bench
+            resonith_lapped_finite_bench
             --parallel
       - name: Run native decoder-in-loop tests
         env:
