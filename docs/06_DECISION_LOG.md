@@ -2167,3 +2167,30 @@ new oscillator opcode.
     first transform frame;
   - native scheduling is deferred until a packet-duration/half-window frontier
     identifies viable Realtime latency and rate points.
+
+## R-079 — Measured Realtime latency/rate frontier
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - sweep fixed half-windows 128, 256, and 512 with approximately 20, 40, and
+    80 ms LPS3 packet intervals on every pinned music clip;
+  - scale coefficient budget with half-window duration so the first comparison
+    keeps approximately equal selected coefficients per second;
+  - report complete LPS3 bytes, overhead against same-transform monolithic
+    LPF1, estimated packet-plus-half-window algorithmic latency, waveform SNR,
+    multi-resolution spectral error, and transient pre-echo diagnostics;
+  - use the current 512-half-window monolithic candidate as the declared
+    internal quality/rate anchor;
+  - identify a Realtime candidate only if estimated latency is at most 50 ms,
+    complete bytes are no more than 15% above the anchor, waveform SNR loses no
+    more than 1 dB, and mean spectral error loses no more than 1 dB on every
+    clip.
+- Rationale:
+  - packet overhead alone cannot select a Realtime profile because a shorter
+    transform changes temporal resolution, scale metadata, and coefficient
+    efficiency;
+  - a joint frontier exposes whether low latency is paid in packet headers,
+    transform inefficiency, or objective quality before any native LPS3 state
+    machine is frozen;
+  - the metrics remain diagnostics. A passing point still requires listening.

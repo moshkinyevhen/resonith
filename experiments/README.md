@@ -106,6 +106,8 @@ reproducible command and independent decode.
   packet recovery.
 - `results/lapped_chained_packet_2026-07-26_summary.json` — the R-078 exact
   LPS3 pass with 2.98%-3.67% complete-byte overhead.
+- `lapped_realtime_frontier.py` — R-079 joint half-window, packet-duration,
+  complete-rate, spectral, pre-echo, and estimated-latency sweep.
 - `results/native_lapped_frontier_timing_2026-07-26_summary.json` — the R-070
   exact native-RDO speedup over the shared-analysis Python path.
 - `results/native_lapped_analysis_timing_2026-07-26_summary.json` — the R-068
