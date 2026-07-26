@@ -1561,7 +1561,7 @@ new oscillator opcode.
 ## R-060 — Allocation-explicit native LPF1 decoder gate
 
 - Date: 2026-07-26
-- Status: **IMPLEMENTED / CROSS-PLATFORM VERIFICATION PENDING / RESEARCH**
+- Status: **IMPLEMENTED / CROSS-PLATFORM VERIFIED / RESEARCH**
 - Decision:
   - add a standalone C99 ABI for prospective fixed/bounded LPF1 inspection and
     whole-stream decode without merging the research syntax into Main-0;
@@ -1582,3 +1582,14 @@ new oscillator opcode.
     visible before syntax promotion;
   - quarter-wave symmetry reduces compiled table storage from a full transform
     matrix to 4,098 int32 ROM values while preserving exact coefficients.
+- Result:
+  - the Python-authored conformance vector and dynamic native bridge reproduce
+    fixed/bounded LPF1 PCM sample-for-sample;
+  - inspection reports exact caller-owned scale, position, coefficient,
+    overlap, and output capacities; undersized workspace is rejected before
+    PCM changes;
+  - GCC, Clang, MSVC, Linux ARM64, Windows ARM64, macOS ARM64, Android
+    arm64-v8a, reference tests, native bridge, and sanitized builds pass in
+    GitHub Actions run 30207598669;
+  - real-device thermal/deadline measurements and blinded listening remain
+    promotion blockers.

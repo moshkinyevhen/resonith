@@ -652,3 +652,23 @@ does not promote `LPF1`. The next engineering gate is an allocation-bounded
 native independent decoder using compiled reviewed ROM, followed by
 cross-decoder PCM equality and measured timing. Blinded listening remains
 mandatory because the SNR deltas are only waveform sanity diagnostics.
+
+## 27. Native fixed/bounded lapped decoder
+
+The prospective LPF1 path now has a separate C99 ABI and dependency-free
+C++20 implementation. Inspection validates complete RSC1/CONF/LPF1 integrity,
+entropy lengths, canonical padding, cross-section dimensions, and exact
+caller-owned storage requirements. Decode reconstructs scale deltas, sorted
+position gaps, and signed values before its first PCM write.
+
+The synthesis kernel contains no floating point, allocation, lock, mutable
+global state, or general decompressor. Two 2,049-entry int32 quarter-wave ROMs
+serve every supported power-of-two half-window through symmetry and integer
+stride. A conservative per-frame bound rejects any hostile coefficient/scale
+combination that could exceed int64 during two-frame overlap.
+
+The Python-authored static vector and dynamic native bridge require exact PCM
+equality. GCC, Clang, MSVC, Linux ARM64, Windows ARM64, macOS ARM64, Android
+arm64-v8a, and sanitized builds passed in
+[run 30207598669](https://github.com/moshkinyevhen/resonith/actions/runs/30207598669).
+This closes native feasibility, not perceptual quality or real-device timing.

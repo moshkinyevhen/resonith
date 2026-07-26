@@ -28,6 +28,9 @@ The native Core:
   bounded saturating Truth-composition pass;
 - decodes bounded LiftPack-1 and LiftPack-2 residuals, including Main-0 Q12
   LPC with an order-16 ceiling;
+- independently inspects and decodes the prospective fixed/bounded LPF1
+  research path through Q14/Q15 quarter-wave ROM, sparse Rice/packed fields,
+  caller-owned overlap memory, and preflighted int64 arithmetic;
 - validates and exports caller-owned byte/sample block indexes for bounded
   seek planning without decoding PCM or allocating memory;
 - builds and verifies optional source-bound `RSI1` seek sidecars with
