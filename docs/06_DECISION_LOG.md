@@ -2507,3 +2507,27 @@ new oscillator opcode.
   - the runner refuses ambiguous device selection and hash mismatch;
   - a named physical phone report is required before any mobile energy or
     thermal claim.
+
+## R-087 — Reproducible physical-host benchmark artifacts
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - publish the warning-clean Windows x64 and Android arm64 callback benchmark
+    executables as immutable artifacts of the same GitHub commit;
+  - generate named LPS4 device streams from the pinned licensed corpus with
+    explicit codec parameters and record their hashes;
+  - download the Windows artifact to the current physical host and run sustained
+    callback timing on all three streams without requiring a local compiler;
+  - record CPU, OS, executable hash, input hashes, raw JSON, and the worst
+    callback tails separately from CI-hosted results.
+- Rationale:
+  - a CI compile proves portability but not the user's actual machine;
+  - distributing the exact Android executable also removes local NDK/toolchain
+    ambiguity when a phone becomes available;
+  - commit-bound binary artifacts and stream hashes make later device
+    comparisons reproducible.
+- Gate:
+  - artifact publication succeeds from warning-as-error jobs;
+  - all physical-host runs have zero deadline misses and stable PCM hashes;
+  - desktop results MUST NOT be presented as phone energy or thermal evidence.

@@ -72,6 +72,12 @@ jobs:
           ctest --test-dir build/native
           --build-config Release
           --output-on-failure
+      - name: Publish Windows x64 callback benchmark
+        uses: actions/upload-artifact@v7
+        with:
+          name: resonith-device-bench-windows-x64
+          path: build/native/Release/resonith_lapped_device_bench.exe
+          if-no-files-found: error
 
   native-linux-arm64:
     name: Native / Linux ARM64 / GCC
@@ -137,6 +143,12 @@ jobs:
           -DRESONITH_WARNINGS_AS_ERRORS=ON
       - name: Build
         run: cmake --build build/android-arm64 --parallel
+      - name: Publish Android arm64 callback benchmark
+        uses: actions/upload-artifact@v7
+        with:
+          name: resonith-device-bench-android-arm64
+          path: build/android-arm64/resonith_lapped_device_bench
+          if-no-files-found: error
 
   native-python-bridge:
     name: Native decoder-in-loop / Python
