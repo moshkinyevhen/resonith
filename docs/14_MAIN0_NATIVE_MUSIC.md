@@ -1228,3 +1228,31 @@ discarded.
 
 The compact record is
 [`windows_x64_device_gate_2026-07-26_summary.json`](../experiments/results/windows_x64_device_gate_2026-07-26_summary.json).
+
+## 51. Header-only memory and exact loss-prefix salvage
+
+An independently transported receiver can now allocate before packet records
+arrive. The authenticated 60-byte sequence context alone yields conservative
+maximum current, lookahead, overlap, and logical-output requirements. For the
+H512 stereo Realtime point with 1536-frame records, the complete ceiling is
+45,368 bytes of caller arrays. A file decoder may still use complete-stream
+preflight for the tighter 29.5–37.8 KB observed on current material.
+
+Loss containment is also narrower. If a valid non-final current record reaches
+playout without its immediate successor, the Core can render only the prefix
+that is mathematically independent of that successor. At the selected point:
+
+- complete logical record: 1536 frames, 34.83 ms;
+- exact salvageable prefix: 1024 frames, 23.22 ms;
+- unresolved output-only suffix: 512 frames, 11.61 ms.
+
+The frozen vector proves that every salvaged sample is bit-identical to complete
+record-pair decode and that the unresolved suffix is not written. Corruption,
+undersized output, and final-record misuse fail transactionally. The compact
+fuzzer repeats the prefix/full equality check for every accepted non-final
+record.
+
+GitHub Actions run
+[30215434818](https://github.com/moshkinyevhen/resonith/actions/runs/30215434818)
+passed all cross-platform, C99, decoder-in-loop, Android, and sanitizer/fuzzer
+gates.

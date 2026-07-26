@@ -421,6 +421,12 @@ current, immediate-lookahead, overlap, and logical-output storage solely from
 the authenticated sequence context. It MUST NOT need a complete stream or
 unverified record fields to establish its memory ceiling. A file decoder MAY
 use complete-stream preflight to obtain tighter content-dependent requirements.
+
+If a valid non-final record is present but its immediate successor is absent at
+playout, a decoder MAY emit the exact prefix ending one half-window before the
+record's logical end. It MUST NOT expose the unresolved suffix as Truth. Any
+concealment of that suffix is output-only and MUST NOT become reference state.
+The normal complete path still requires the immediate successor.
 Cryptographic transport integration, physical-device resource measurements,
 reordered/lost-packet scheduling, and listening still MUST pass before LPS4
 becomes mandatory.

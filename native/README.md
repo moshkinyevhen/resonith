@@ -146,6 +146,12 @@ receiver workspace ceiling from that context alone. A datagram receiver can
 therefore allocate once before any record arrives. Complete-stream preflight
 remains available when a file host wants tighter content-dependent sizes.
 
+If a valid non-final record reaches its playout deadline without lookahead,
+`resonith_lapped_compact_decode_record_prefix()` emits only the exact
+`logical_count - half_window` prefix. The unresolved suffix is never written
+or counted. An external scheduler may conceal that suffix, but concealment
+never enters Truth state.
+
 ## Physical-device callback benchmark
 
 `resonith_lapped_device_bench` is built from the same portable source on

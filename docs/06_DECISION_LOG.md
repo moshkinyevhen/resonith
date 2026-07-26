@@ -2549,7 +2549,7 @@ new oscillator opcode.
 ## R-088 — Header-only receiver workspace contract
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **PASS / ACCEPTED**
 - Decision:
   - expose conservative maximum current, lookahead, and logical-output
     requirements derived only from the authenticated LPS4 sequence context;
@@ -2570,11 +2570,21 @@ new oscillator opcode.
   - header-only maxima cover every exact requirement from complete preflight;
   - frozen stateless decode succeeds using only header-derived workspace;
   - overflow, invalid context, C99, cross-platform, and hostile-input gates pass.
+- Result:
+  - `resonith_lapped_compact_sequence_requirements` derives current,
+    lookahead, overlap, and output maxima without packet bytes or allocation;
+  - the frozen vector proves every header-derived field covers the tighter
+    complete-stream requirement and decodes exact stateless PCM using only the
+    conservative workspace;
+  - the H512, stereo, 1536-frame Realtime profile needs at most 45,368 bytes of
+    caller arrays under the header-only ceiling;
+  - GitHub Actions run 30215434818 passed all desktop, ARM64, Android, C99,
+    decoder-in-loop, and sanitizer/fuzzer gates.
 
 ## R-089 — Exact prefix salvage without lookahead
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **PASS / ACCEPTED**
 - Decision:
   - when a non-final current LPS4 record is valid but its immediate lookahead is
     unavailable at playout, permit decoding only the mathematically complete
@@ -2597,3 +2607,17 @@ new oscillator opcode.
   - corrupt current input writes no PCM; final packets and undersized outputs
     are rejected;
   - cross-platform, C99, sanitizer, and mutation gates pass.
+- Result:
+  - `resonith_lapped_compact_decode_record_prefix` validates and entropy-decodes
+    one exact non-final record, renders only its complete prefix, and never
+    writes the unresolved suffix;
+  - the frozen H32 vector returns 32 exact frames from a 64-frame logical
+    record and matches complete record-pair PCM sample-for-sample;
+  - corrupt input is transactional, output bounds are enforced, and final
+    records reject the prefix-only path;
+  - at the selected H512/1536-frame Realtime point, 1024 frames or 23.22 ms are
+    salvageable and only 512 frames or 11.61 ms require concealment when
+    lookahead is absent;
+  - run 30215434818 passed every cross-platform and hostile-input gate, with the
+    fuzzer comparing the exact prefix against complete decode for each accepted
+    non-final record.
