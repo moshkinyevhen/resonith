@@ -37,18 +37,22 @@ The repository contains:
 - absolute continuous Q32 pitch/phase trajectories with random access;
 - bounded reversible integer-lifting transient events;
 - RAW and CIBS Basis banks plus the bounded `LiftPack-1` objective residual;
+- a dependency-free C++20 `LiftPack-1` Golden Core behind a stable C99 ABI;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 42 reference, security, and integration tests when the Opus tool is
-  configured.
+- 44 Python reference/security/integration tests when the Opus tool is
+  configured, plus two native conformance targets built with GCC, Clang, and
+  MSVC.
 
 All current MAF-P1/Opus results are deliberately labeled diagnostics, not
 general codec claims. See
 [MAF-P0 and MAF-P1 Executable Prototypes](docs/10_MAF_P0_IMPLEMENTATION.md)
 and
 [LiftPack-1 and Full-Stream Acoustic-State RDO](docs/12_LIFTPACK_AND_STATE_RDO.md).
+The first portable decoder subset is documented in
+[the native Golden Core README](native/README.md).
 
 ## Documentation
 

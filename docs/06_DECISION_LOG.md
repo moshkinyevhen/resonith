@@ -457,3 +457,29 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
   - `../reference/maf_p0/segmentation.py`;
   - `../experiments/real_music_corpus.json`;
   - `../experiments/results/maf_p2_real_music_2026-07-26.json`.
+
+## R-026 — Allocation-free native LiftPack Golden Core
+
+- Date: 2026-07-26
+- Status: **IMPLEMENTED / AWAITING CROSS-COMPILER EVIDENCE**
+- Decision:
+  - expose the first frozen decoder primitive through a C99-compatible,
+    versionable ABI implemented in dependency-free portable C++20;
+  - keep all buffers caller-owned and forbid allocation, I/O, logging, locks,
+    exceptions across the ABI, and global mutable state;
+  - validate the complete `LiftPack-1` envelope and CRC before exposing sizes
+    or reconstructing coefficients;
+  - provide an explicit worst-case scratch query in `int64_t` elements;
+  - compile the public header from a C99 translation unit;
+  - require the embedded native conformance stream to equal the Python Golden
+    Encoder byte-for-byte;
+  - build and test with GCC, Clang, and MSVC with warnings treated as errors.
+- Scope:
+  - this phase decodes only the objective residual primitive;
+  - the MAF container, CIBS Basis materialization, Atom state, trajectories,
+    gain laws, and channel renderer remain later native parity stages.
+- Canonical implementation:
+  - `../native/include/resonith/liftpack.h`;
+  - `../native/src/liftpack.cpp`;
+  - `../native/tests/liftpack_test.cpp`;
+  - `../native/README.md`.

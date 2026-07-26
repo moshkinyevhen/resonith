@@ -25,3 +25,48 @@ jobs:
         env:
           RESONITH_OPUS_TOOLS: /usr/bin
         run: python -m unittest discover -s tests -v
+
+  native-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: GCC
+            cc: gcc
+            cxx: g++
+          - name: Clang
+            cc: clang
+            cxx: clang++
+    name: Native / Linux / ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure
+        run: >
+          cmake -S native -B build/native
+          -DCMAKE_BUILD_TYPE=Release
+          -DRESONITH_WARNINGS_AS_ERRORS=ON
+      - name: Build
+        run: cmake --build build/native --parallel
+      - name: Test
+        run: ctest --test-dir build/native --output-on-failure
+
+  native-windows:
+    name: Native / Windows / MSVC
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Configure
+        run: >
+          cmake -S native -B build/native
+          -DRESONITH_WARNINGS_AS_ERRORS=ON
+      - name: Build
+        run: cmake --build build/native --config Release --parallel
+      - name: Test
+        run: >
+          ctest --test-dir build/native
+          --build-config Release
+          --output-on-failure
