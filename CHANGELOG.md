@@ -14,6 +14,8 @@ version.
 - Closed R-103 after its active-band coefficient selector failed the speech
   fast gate. The negative machine report is published; no bitstream, decoder,
   or default-encoder behavior changed.
+- Closed R-104 after its recursive voiced long-term predictor improved
+  log-mel detail but failed SNR, STOI, and ESTOI. No decoder syntax was added.
 
 ### Research
 

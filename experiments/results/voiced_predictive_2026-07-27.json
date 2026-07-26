@@ -1,0 +1,187 @@
+{
+  "decision": "R-104",
+  "energy": {
+    "bytes": 17744,
+    "coefficients_per_frame": 64,
+    "metrics": {
+      "spectral": {
+        "log_mel_rmse": 3.824907831178985,
+        "log_spectral_distance_db": 30.4922679367686,
+        "magnitude_cosine_similarity": 0.9836168006223431,
+        "multiresolution_stft": {
+          "1024": {
+            "log_magnitude_mae": 2.747713194240054,
+            "spectral_convergence": 0.0813625391283082
+          },
+          "256": {
+            "log_magnitude_mae": 2.935948831848762,
+            "spectral_convergence": 0.08202576143087768
+          },
+          "512": {
+            "log_magnitude_mae": 2.9223490931611327,
+            "spectral_convergence": 0.08211254199855221
+          }
+        }
+      },
+      "speech": {
+        "estoi": 0.9029693058296409,
+        "stoi": 0.9498939387322677
+      },
+      "waveform": {
+        "maximum_absolute_error": 0.07763671875,
+        "rms_error": 0.006471867680555471,
+        "segmental_snr_db": 17.646313201670743,
+        "si_sdr_db": 19.570913235477786,
+        "snr_db": 19.618562792604504
+      }
+    },
+    "sha256": "7494ff8b425c0dacbb2bfb579e7f106abd0fe0b2de7730835fe9e7abe5a6b18c"
+  },
+  "fast_gate_passed": false,
+  "opus": {
+    "bytes": 17942,
+    "decoded_sha256": "8125700a4ceab5a34f4259e7168a38a8aac8c8b83bfe1230c2fe2e37e0c72b6a",
+    "decoder_version": "opus-tools 0.2 / libopus 1.6.1",
+    "metrics": {
+      "alignment_lag_samples": 0,
+      "spectral": {
+        "log_mel_rmse": 0.6011680709866213,
+        "log_spectral_distance_db": 11.196922123954055,
+        "magnitude_cosine_similarity": 0.9735693750921546,
+        "multiresolution_stft": {
+          "1024": {
+            "log_magnitude_mae": 0.6829298187302947,
+            "spectral_convergence": 0.18836846108465527
+          },
+          "256": {
+            "log_magnitude_mae": 0.6798483111021106,
+            "spectral_convergence": 0.1907094170946533
+          },
+          "512": {
+            "log_magnitude_mae": 0.6834620321838313,
+            "spectral_convergence": 0.18927212274118627
+          }
+        }
+      },
+      "speech": {
+        "estoi": 0.9880461884303828,
+        "stoi": 0.9931723093721826
+      },
+      "waveform": {
+        "maximum_absolute_error": 0.34344482421875,
+        "rms_error": 0.021236646592585128,
+        "segmental_snr_db": 12.625698682303828,
+        "si_sdr_db": 8.755288247642131,
+        "snr_db": 9.297436583803522
+      }
+    },
+    "sha256": "cbfdd8da42cb28a90a336bb162adbf72d3d6129b62ecc1e452a6da10220d67e6"
+  },
+  "schema": "resonith-voiced-predictive-gate-1",
+  "shortlist": [
+    {
+      "block_size": 256,
+      "byte_delta_fraction": -0.004846708746618522,
+      "bytes": 17658,
+      "coefficients_per_frame": 58,
+      "estoi": 0.8127937526354541,
+      "log_mel_rmse": 2.7844241750932706,
+      "snr_db": 15.947095630577895,
+      "stoi": 0.8921022330397993,
+      "voiced_block_fraction": 0.5300546448087432
+    },
+    {
+      "block_size": 512,
+      "byte_delta_fraction": 0.0014652840396753852,
+      "bytes": 17770,
+      "coefficients_per_frame": 61,
+      "estoi": 0.8448177046942902,
+      "log_mel_rmse": 2.8223588995990943,
+      "snr_db": 16.549127414885618,
+      "stoi": 0.9085415578995096,
+      "voiced_block_fraction": 0.4918032786885246
+    },
+    {
+      "block_size": 1024,
+      "byte_delta_fraction": 0.0007326420198376926,
+      "bytes": 17757,
+      "coefficients_per_frame": 62,
+      "estoi": 0.8718741153599662,
+      "log_mel_rmse": 2.9411032639804837,
+      "snr_db": 17.321057833071283,
+      "stoi": 0.9274439160127008,
+      "voiced_block_fraction": 0.5108695652173914
+    },
+    {
+      "block_size": 2048,
+      "byte_delta_fraction": 0.005241208295762023,
+      "bytes": 17837,
+      "coefficients_per_frame": 63,
+      "estoi": 0.8867970417324965,
+      "log_mel_rmse": 3.2895118410061643,
+      "snr_db": 18.124522789098123,
+      "stoi": 0.9382072158433161,
+      "voiced_block_fraction": 0.43478260869565216
+    }
+  ],
+  "source": {
+    "bytes": 187404,
+    "frames": 93680,
+    "path": "speech-original.wav",
+    "sample_rate": 16000,
+    "sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46"
+  },
+  "status": "speech fast gate failed; do not add decoder syntax",
+  "voiced_predictive": {
+    "bitstream_status": "prospective research VPR1",
+    "block_count": 92,
+    "block_size": 1024,
+    "byte_delta_fraction": 0.0007326420198376926,
+    "bytes": 17757,
+    "coefficients_per_frame": 62,
+    "decoder_change": true,
+    "log_mel_ratio": 0.7689344145774937,
+    "metrics": {
+      "spectral": {
+        "log_mel_rmse": 2.9411032639804837,
+        "log_spectral_distance_db": 20.271760923921967,
+        "magnitude_cosine_similarity": 0.979622866111578,
+        "multiresolution_stft": {
+          "1024": {
+            "log_magnitude_mae": 1.9017123947333412,
+            "spectral_convergence": 0.09605442946041237
+          },
+          "256": {
+            "log_magnitude_mae": 2.091922874669504,
+            "spectral_convergence": 0.09848187427218556
+          },
+          "512": {
+            "log_magnitude_mae": 2.05016651221534,
+            "spectral_convergence": 0.09782848329891324
+          }
+        }
+      },
+      "speech": {
+        "estoi": 0.8718741153599662,
+        "stoi": 0.9274439160127008
+      },
+      "waveform": {
+        "maximum_absolute_error": 0.122467041015625,
+        "rms_error": 0.008431500641267894,
+        "segmental_snr_db": 15.17549628761386,
+        "si_sdr_db": 17.246631136648695,
+        "snr_db": 17.321057833071283
+      }
+    },
+    "parameter_envelope_bytes": 305,
+    "residual_stream_bytes": 17452,
+    "sha256": "5a5817c4d150c6f3c12d2ee36779253dc6c15b0ba03cb861d97126e8fec91dbd",
+    "snr_delta_db": -2.297504959533221,
+    "status": "R-104 research oracle; no Main syntax assigned",
+    "stream_bytes": 17757,
+    "stream_sha256": "5a5817c4d150c6f3c12d2ee36779253dc6c15b0ba03cb861d97126e8fec91dbd",
+    "voiced_block_count": 47,
+    "voiced_block_fraction": 0.5108695652173914
+  },
+  "wall_seconds": 151.20662910000829
+}

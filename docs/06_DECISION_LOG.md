@@ -3080,3 +3080,53 @@ new oscillator opcode.
     as required, and the production/default energy selector remains
     unchanged. The explicit research backend is retained only to reproduce
     this closed negative result.
+
+## R-104 — Bounded voiced long-term predictor oracle
+
+- Date: 2026-07-27
+- Status: **RESEARCH — CLOSED / SPEECH FAST GATE FAILED**
+- Hypothesis:
+  - voiced speech repeatedly pays transform coefficients for energy that is
+    causally predictable from an earlier pitch period;
+  - transmit one bounded pitch lag and Q7 gain per fixed acoustic interval,
+    transform-code only the prediction Innovation, and reconstruct through one
+    integer multiply-accumulate per sample;
+  - include the complete parameter envelope, checksum, residual stream, and
+    actual inverse-predictor output in RDO.
+- Constraints:
+  - lag is bounded to the declared speech pitch range, gain is nonnegative and
+    strictly below unity, and every arithmetic operation has an explicit
+    signed rounding and saturation rule;
+  - low-correlation, clipped, initial, or invalid intervals use gain zero and
+    become the unchanged transform fallback;
+  - the first oracle is mono and research-only; no Main syntax is assigned
+    before an independent parser/decoder, corruption tests, and the
+    complete-byte gate pass;
+  - encoder pitch analysis may use floating point, but the prospective decoder
+    uses only transmitted integers.
+- Fast gate:
+  - compare the pinned LibriSpeech excerpt against the preceding energy
+    selector and current public Opus anchor;
+  - match complete candidate bytes within 0.5% of the preceding Resonith
+    stream, including pitch metadata and checksum;
+  - both STOI and ESTOI must improve, SNR may not regress by more than 0.5 dB,
+    and log-mel RMSE may not regress by more than 5%.
+- Promotion gate:
+  - a speech pass proceeds to Emotional piano as the false-positive guard,
+    then to the complete Mozart/native-decoder/publication gate;
+  - any failure closes the candidate without adding decoder syntax.
+- Result:
+  - the selected 1,024-sample state used 62 coefficients per transform frame,
+    marked 51.1% of intervals voiced, and produced 17,757 complete bytes
+    against the 17,744-byte energy baseline, a 0.073% difference;
+  - log-mel RMSE improved from 3.8249 to 2.9411, but SNR fell from 19.619 to
+    17.321 dB, STOI from 0.94989 to 0.92744, and ESTOI from 0.90297 to
+    0.87187;
+  - every rate-near block lifetime showed the same failure pattern: quieter
+    spectral detail improved while recursive reconstruction error damaged
+    waveform accuracy and intelligibility;
+  - the candidate is closed before the music and Mozart gates, no VPR1 syntax
+    enters Main, and the ordinary transform remains the decoder fallback;
+  - the next voiced experiment must use a nonrecursive excitation/harmonic
+    Basis with absolute phase or a genuinely closed-loop analysis-by-synthesis
+    design. Copying lossy reconstructed history is not sufficient.

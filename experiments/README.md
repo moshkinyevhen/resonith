@@ -81,6 +81,10 @@ reproducible command and independent decode.
   preserve quiet active bands before global energy allocation.
 - `results/active_band_selection_2026-07-27.json` — the R-103 negative
   speech/piano fast-gate report; the complete Mozart run was correctly skipped.
+- `voiced_predictive_gate.py` — R-104 bounded pitch/gain Innovation oracle
+  with an independently parsed prospective decoder and complete-byte RDO.
+- `results/voiced_predictive_2026-07-27.json` — the R-104 negative speech
+  result that keeps recursive long-term prediction out of Main.
 - `results/lapped_density_2026-07-26_summary.json` — R-061 closest-byte
   fixed/variable-density comparison showing implicit acoustic-state
   localization without a separate classifier.
