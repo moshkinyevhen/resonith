@@ -41,6 +41,8 @@ Numbers from papers are statements made by the authors prior to independent repr
 
 ## Reproducible audio sources
 
+- [OpenSLR 12: LibriSpeech, CC BY 4.0](https://www.openslr.org/12/)
+- [Wikimedia Commons: Mozart, *Die Zauberflöte*, K. 620 — Overture, public domain](https://commons.wikimedia.org/wiki/File:Mozart_-_Die_Zauberfl%C3%B6te,_K620_-_Overture_(Musopen_Symphony).flac)
 - [Wikimedia Commons: Emotional piano, CC0](https://commons.wikimedia.org/wiki/File:Emotional_piano.wav)
 - [Wikimedia Commons: Patró de bateria, CC BY-SA 4.0](https://commons.wikimedia.org/wiki/File:Patr%C3%B3_de_bateria.wav)
 - [Wikimedia Commons: Corelli Violin Sonata Op. 5 No. 9, public domain](https://commons.wikimedia.org/wiki/File:Corelli_Violin_Sonata_Op_5_No_9.wav)

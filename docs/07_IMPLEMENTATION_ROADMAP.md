@@ -158,6 +158,29 @@ the rest is bitstream.
 The Immersive room model and Perceptual profile start only after the Core
 demonstrates a gain on broad objective and perceptual tests.
 
+## Mandatory continuous evidence loop
+
+Every material milestone uses the same loop:
+
+1. implement one falsifiable change behind an ablation switch;
+2. run unit, conformance, corruption, and native decoder parity tests;
+3. encode the pinned LibriSpeech excerpt and complete Mozart overture;
+4. rate-match the current official Opus anchor by complete Ogg bytes;
+5. decode through the exact release decoder and measure waveform,
+   multi-resolution spectral, log-mel, harmonic, and speech-intelligibility
+   diagnostics;
+6. compare complete bytes and quality against both the preceding Resonith
+   version and Opus;
+7. remove a losing mechanism or retain it under an explicit research status;
+8. publish the report, listening artifacts, hashes, tool versions, source
+   commit, and wall times;
+9. update `CHANGELOG.md`, the semantic version, and the matching local and
+   GitHub release.
+
+Objective diagnostics never authorize a transparent or perceptually superior
+claim without controlled blinded listening. The detailed contract is
+[15_CONTINUOUS_EVIDENCE.md](15_CONTINUOUS_EVIDENCE.md).
+
 ## Code architecture target
 
 ```text

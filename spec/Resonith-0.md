@@ -1,6 +1,6 @@
 # Resonith-0 Bitstream and Decoding Process
 
-Version: 0.0.7
+Version: 0.0.8
 Status: **NORMATIVE-DRAFT**
 Architecture: **MAF - Memory-oriented Acoustic Field**
 
@@ -1148,7 +1148,41 @@ Decoder MUST:
 - follow a deterministic error path;
 - reject any Atom that references an undefined or expired Basis.
 
-## 16. Open items
+## 16. Continuous evidence and release protocol
+
+This clause governs official Resonith performance claims and project releases;
+it does not add work to a conforming decoder.
+
+Every material encoder, decoder, entropy, transport, Basis, allocation, or
+playback milestone MUST:
+
+1. rerun the pinned LibriSpeech `1272-128104-0000` speech reference and the
+   complete 400.773-second Mozart *Die Zauberflöte* overture;
+2. account for the complete `.resonith` file and a current official Opus
+   anchor matched by complete Ogg bytes from the identical PCM16 input;
+3. obtain evaluated PCM from the actual released decoders;
+4. publish source, executable, configuration, version, commit, wall-time, byte,
+   bitrate, hash, waveform, multi-resolution spectral, log-spectral, log-mel,
+   harmonic, and speech-intelligibility diagnostics;
+5. publish the inputs and listening files with their licenses and hashes,
+   including results in which Resonith loses;
+6. keep perceptual claims conditional on controlled blinded listening.
+
+Every released improvement MUST have a semantic version and an English
+`CHANGELOG.md` entry linked to the evidence report. The entry MUST identify
+measured improvements and regressions separately from targets or hypotheses.
+Local artifacts and the corresponding public release MUST identify the same
+version, source commit, filenames, and SHA-256 hashes.
+
+A normative syntax or decoder-behavior change MUST declare bitstream and ABI
+compatibility and increment the appropriate version. An unversioned change
+without reproducible before/after evidence remains an experiment and MUST NOT
+be presented as a released improvement.
+
+The complete operational procedure is defined by
+[`docs/15_CONTINUOUS_EVIDENCE.md`](../docs/15_CONTINUOUS_EVIDENCE.md).
+
+## 17. Open items
 
 - final record packing outside LiftPack-1;
 - adaptive entropy contexts beyond LiftPack-1;

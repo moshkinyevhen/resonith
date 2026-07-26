@@ -17,6 +17,7 @@
 | [12_LIFTPACK_AND_STATE_RDO.md](12_LIFTPACK_AND_STATE_RDO.md) | Native residual entropy, state candidates, full-stream RDO, and real-music results |
 | [13_RSC1_CONTAINER.md](13_RSC1_CONTAINER.md) | Compact deterministic typed section container |
 | [14_MAIN0_NATIVE_MUSIC.md](14_MAIN0_NATIVE_MUSIC.md) | First Golden-Core-gated music and listening diagnostic |
+| [15_CONTINUOUS_EVIDENCE.md](15_CONTINUOUS_EVIDENCE.md) | Per-milestone benchmark, publication, versioning, and player-coupled release gate |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
 
 Normative draft:

@@ -28,6 +28,9 @@ Resonith is independent of SceneLith Video and always supports standalone
 decoding. Their optional specialized integration is defined separately by the
 SceneLith AV Bridge.
 
+Current implementation version: **0.1.0-alpha.1**. The bitstream specification
+is an independently versioned normative draft.
+
 ## Executable status
 
 The repository contains:
@@ -177,6 +180,21 @@ python -m http.server 8765
 Open `http://127.0.0.1:8765/`, export all blinded results, and only then use
 `experiments/listening_results.py` with the separate answer key. The harness
 does not turn an informal or undersized panel into a MUSHRA claim.
+
+## Continuous public evidence
+
+Every material Resonith milestone must be tested on the pinned LibriSpeech
+speech excerpt and the complete Mozart *Die Zauberflöte* overture. The released
+Resonith file is compared with both the preceding Resonith version and a
+current official Opus encode matched by complete container bytes. Reports use
+PCM from the real decoders and publish complete sizes, hashes, timings,
+waveform and multi-resolution spectral diagnostics, speech intelligibility,
+and any regressions.
+
+An improvement is not released until its semantic version and English
+[`CHANGELOG.md`](CHANGELOG.md) entry link to reproducible evidence. The exact
+protocol is in
+[Continuous Evidence and Release Protocol](docs/15_CONTINUOUS_EVIDENCE.md).
 
 An explicit shared Golden Core can replace Python forward analysis without
 changing the selected bitstream:
