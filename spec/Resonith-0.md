@@ -480,9 +480,10 @@ semantic context, heap allocation, or floating-point operation is normative.
 
 R-095 measured identical reconstruction and complete-byte reductions of 6.47%
 on piano, 5.34% on drums, and 7.67% on Corelli at the three R-084 operating
-points. These are corpus results, not a general codec claim. `LAF1` remains
-prospective until native resource timing and the existing blinded-listening
-gate pass; Main-0 does not yet require it.
+points. These are corpus results, not a general codec claim. Native parity,
+cross-platform, hostile-input, and desktop resource gates have passed. `LAF1`
+remains prospective until the existing blinded-listening gate passes; Main-0
+does not yet require it.
 
 A transport scheduler MUST keep authentication, replay policy, reordering, and
 playout deadlines outside the decoder Core. At each deadline it selects

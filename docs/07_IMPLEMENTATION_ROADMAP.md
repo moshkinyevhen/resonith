@@ -27,7 +27,8 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   reconstruction exactly and reduced complete R-084 bytes by 6.47% on piano,
   5.34% on drums, and 7.67% on Corelli. Its allocation-free C99 path passes
   Python parity, x64/ARM64 cross-compilation, Android NDK, and sanitized
-  mutation gates; physical timing is in progress before profile promotion.
+  mutation gates. On the physical Xeon host its complete-field entropy stage
+  ran at 259x–357x realtime median with 81.8–119.1 KB caller workspace.
 - The portable Core now decodes a complete typed mono RSC1 stream through one
   allocation-free C API call.
 - Python encoder RDO is bound to the native whole-stream decoder and rejects
@@ -58,9 +59,8 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   zero Atoms won all three clips because residual savings did not repay the
   `BCIB`, `ATOM`, and directory records. Simultaneous periodic mixing is not
   promoted.
-- The next blocking evidence is real blinded listening, named physical-phone
-  timing, and native `LAF1` entropy timing. No new lossy syntax is promoted
-  while these gates are open.
+- The next blocking evidence is real blinded listening and named physical-phone
+  timing. No new lossy syntax is promoted while these gates are open.
 - New compression tools resume only through declared complete-byte or
   matched-listening gates. Model ROM is always reported separately and
   amortized; it is never treated as free per-stream knowledge.

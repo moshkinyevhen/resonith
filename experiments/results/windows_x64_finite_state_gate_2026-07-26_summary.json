@@ -1,0 +1,52 @@
+{
+  "benchmark": {
+    "executable_sha256": "d35d7514b4e85a41483a35e83c11308a1586f84ba4b45d3a58d834b0eba11ec5",
+    "github_actions_run": 30216878420,
+    "iterations_per_clip": 500,
+    "warmups_per_clip": 50
+  },
+  "clips": {
+    "corelli-sonata-realization": {
+      "adaptive_stream_bytes": 38260,
+      "field_hash_fnv1a64": "19c61ddfd2c63b42",
+      "maximum_ms": 14.2594,
+      "median_ms": 9.80295,
+      "p95_ms": 10.350015,
+      "p99_ms": 12.420323,
+      "realtime_speed_median": 305.558444107,
+      "workspace_bytes": 97384
+    },
+    "emotional-piano-cc0": {
+      "adaptive_stream_bytes": 42528,
+      "field_hash_fnv1a64": "d6311ca982464743",
+      "maximum_ms": 15.7743,
+      "median_ms": 11.5433,
+      "p95_ms": 12.08432,
+      "p99_ms": 13.06015,
+      "realtime_speed_median": 259.490280046,
+      "workspace_bytes": 119140
+    },
+    "patro-de-bateria": {
+      "adaptive_stream_bytes": 32752,
+      "field_hash_fnv1a64": "916fa3a2e280bfc",
+      "maximum_ms": 19.2528,
+      "median_ms": 8.3937,
+      "p95_ms": 8.61228,
+      "p99_ms": 8.900229,
+      "realtime_speed_median": 356.859805528,
+      "workspace_bytes": 81844
+    }
+  },
+  "duration_seconds_per_clip": 2.99537414966,
+  "host": {
+    "architecture": "64-bit",
+    "logical_processors": 20,
+    "manufacturer": "MSI",
+    "memory_bytes": 34254712832,
+    "model": "MS-7885",
+    "processor": "Intel Xeon E5-2650 v3 @ 2.30GHz",
+    "windows_build": "22631"
+  },
+  "result": "PASS",
+  "research_only": true
+}

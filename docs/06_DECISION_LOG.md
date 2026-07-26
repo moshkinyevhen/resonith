@@ -2817,3 +2817,36 @@ new oscillator opcode.
     5.34% on drums, and 7.67% on Corelli, with a 6.49% arithmetic mean;
   - the research gate passes and justifies native parity, hostile-input,
     cross-compiler, and timing work before any Main-profile promotion.
+
+## R-096 — Native LAF1 portability and resource gate
+
+- Date: 2026-07-26
+- Status: **PASS / PROSPECTIVE LAPPED PROMOTION APPROVED**
+- Decision:
+  - implement LAF1 behind a stable C99 inspection/decode ABI with no heap,
+    global mutable state, locks, callbacks, or floating point;
+  - keep the arithmetic model independently reset per entropy field and retain
+    LSE2 as the mandatory fallback until transport integration is complete;
+  - measure entropy decode separately from inverse transform so its sequential
+    cost cannot hide inside DSP timing.
+- Gate:
+  - exact Python/native field parity;
+  - GCC, Clang, MSVC x64 and ARM64, AppleClang ARM64, Linux ARM64, and Android
+    NDK builds with warnings as errors;
+  - ASan/UBSan/libFuzzer mutation coverage from a valid LAF1 seed;
+  - at least 100x realtime median entropy decode on the current physical
+    desktop for every three-second R-084 clip, with stable field hashes.
+- Result:
+  - GitHub Actions run 30216722725 passed the first cross-platform/native
+    parity matrix, and run 30216803304 passed the dedicated LAF1 sanitized
+    mutation gate;
+  - the exact CI-built Windows x64 benchmark executable has SHA-256
+    `d35d7514b4e85a41483a35e83c11308a1586f84ba4b45d3a58d834b0eba11ec5`;
+  - on the physical MSI MS-7885 / Xeon E5-2650 v3 host, 500 measured passes
+    after 50 warmups produced median entropy speeds of 259.49x realtime for
+    piano, 356.86x for drums, and 305.56x for Corelli;
+  - p99 latency was 13.06 ms, 8.90 ms, and 12.42 ms respectively for complete
+    2.995-second fields, with 81.8–119.1 KB caller workspace and stable hashes;
+  - native resource and portability gates pass. LAF1 may enter a prospective
+    lapped transport, but Main promotion still waits for the shared blinded
+    listening gate.

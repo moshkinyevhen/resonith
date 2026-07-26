@@ -199,6 +199,12 @@ build/native/resonith_lapped_finite_bench \
   input.laf 512 44100 100 10
 ```
 
+On the 2026-07-26 physical Xeon E5-2650 v3 gate, the exact CI-built Windows
+x64 executable decoded each complete 2.995-second R-084 entropy field at
+259x–357x realtime median using 81.8–119.1 KB of caller workspace. This is
+desktop entropy-stage evidence, not phone, total-codec, energy, or listening
+evidence.
+
 ## Sanitized fuzzing
 
 Clang builds the LiftPack, Main-0, seek-sidecar, and lapped-stream parsers and
