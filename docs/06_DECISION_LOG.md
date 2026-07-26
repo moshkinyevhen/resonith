@@ -1849,7 +1849,7 @@ new oscillator opcode.
 ## R-069 — Hoist invariant forward-window work
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **EXACT PARITY PASS / 2.19X KERNEL SPEEDUP**
 - Decision:
   - materialize one signed Q15 windowed PCM block per channel and transform
     frame on the stack;
@@ -1863,3 +1863,13 @@ new oscillator opcode.
   - the same input sample and window value were recomputed `half_window` times;
   - hoisting a mathematical invariant is simpler and more portable than adding
     architecture intrinsics before the scalar dataflow is clean.
+- Result:
+  - every compiler, sanitizer, frozen-vector, and dynamic Python/native parity
+    gate passed in GitHub Actions run 30209438911;
+  - the automated timing run 30209438939 reduced median native analysis from
+    269.80-270.27 ms to 123.17-123.37 ms per one-second stereo crop;
+  - the rewrite is 2.19x faster than the preserved scalar baseline, 8.1x real
+    time, and 1.16x-1.19x faster than NumPy on the same hosted runner;
+  - explicit SIMD/CUDA is not the next bottleneck. Candidate reconstruction
+    still uses the slower Python synthesis and should move through the already
+    verified native decoder before adding architecture-specific code.

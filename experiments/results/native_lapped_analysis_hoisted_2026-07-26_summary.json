@@ -1,0 +1,33 @@
+{
+  "baseline_run": 30209344885,
+  "clips": {
+    "corelli-sonata-realization": {
+      "baseline_native_seconds": 0.2698042640000011,
+      "native_realtime_factor_median": 0.12336680199999961,
+      "native_wall_seconds_median": 0.12336680199999961,
+      "python_wall_seconds_median": 0.14671979699999582,
+      "speedup_over_baseline": 2.18700865732097,
+      "speedup_vs_python_median": 1.1892972389767895
+    },
+    "emotional-piano-cc0": {
+      "baseline_native_seconds": 0.2702704659999995,
+      "native_realtime_factor_median": 0.12317198149999697,
+      "native_wall_seconds_median": 0.12317198149999697,
+      "python_wall_seconds_median": 0.14300411899999688,
+      "speedup_over_baseline": 2.1942528057812085,
+      "speedup_vs_python_median": 1.161011759805134
+    },
+    "patro-de-bateria": {
+      "baseline_native_seconds": 0.2702221364999957,
+      "native_realtime_factor_median": 0.12325070450000197,
+      "native_wall_seconds_median": 0.12325070450000197,
+      "python_wall_seconds_median": 0.14693818500000333,
+      "speedup_over_baseline": 2.19245916359035,
+      "speedup_vs_python_median": 1.1921894125968342
+    }
+  },
+  "conclusion": "Hoisting one exact Q15 windowed block per transform frame made scalar native analysis 2.19x faster, 8.1x real time, and 1.16x-1.19x faster than the NumPy oracle without SIMD.",
+  "exact_array_parity": true,
+  "github_actions_run": 30209438939,
+  "research_only": true
+}

@@ -87,6 +87,8 @@ reproducible command and independent decode.
   timing and exact array parity against the fixed Python oracle.
 - `results/native_lapped_analysis_timing_2026-07-26_summary.json` — the R-068
   exact-but-slower scalar baseline that directs kernel optimization.
+- `results/native_lapped_analysis_hoisted_2026-07-26_summary.json` — the R-069
+  exact hoisted-window result, measured against the preserved scalar baseline.
 - `results/native_lapped_timing_2026-07-26_summary.json` — the R-063 hosted
   x64 timing result; physical-device energy and thermal gates remain open.
 - `lapped_frontier_timing.py` — R-066 exact-stream comparison and development

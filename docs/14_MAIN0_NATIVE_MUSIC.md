@@ -816,3 +816,23 @@ once per transform frame without changing arithmetic. That exact-preserving
 rewrite is the next gate; explicit SIMD and CUDA remain downstream choices.
 The compact record is
 [`native_lapped_analysis_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_analysis_timing_2026-07-26_summary.json).
+
+## 34. Exact invariant-hoisting result
+
+R-069 materialized the padded, Q15-windowed input once per channel and
+transform frame, then reused it across coefficient dot products. Multiplication
+order and the Q29 accumulator stayed unchanged. All portability, sanitizer,
+frozen-vector, and dynamic parity gates passed.
+
+| Crop | Scalar baseline | Hoisted scalar | Kernel speedup | Versus NumPy |
+| --- | ---: | ---: | ---: | ---: |
+| Corelli | 269.80 ms | 123.37 ms | 2.19x | 1.19x |
+| Piano | 270.27 ms | 123.17 ms | 2.19x | 1.16x |
+| Drums | 270.22 ms | 123.25 ms | 2.19x | 1.19x |
+
+The portable scalar path is now approximately 8.1x real time without SIMD.
+That changes the next optimization choice: repeated candidate reconstruction,
+not forward analysis, dominates the current six-budget Python frontier. RDO
+should invoke the already exact native decoder before CPU intrinsics or CUDA
+are justified. The compact record is
+[`native_lapped_analysis_hoisted_2026-07-26_summary.json`](../experiments/results/native_lapped_analysis_hoisted_2026-07-26_summary.json).
