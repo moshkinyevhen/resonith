@@ -4,6 +4,8 @@ Version: 0.0.7
 Status: **NORMATIVE-DRAFT**
 Architecture: **MAF - Memory-oriented Acoustic Field**
 
+Canonical standalone filename extension: `.resonith`.
+
 This document defines the semantic spine. Binary packing, entropy tables,
 fixed-point precisions and profile limits will be frozen after oracle and
 conformance experiments.
@@ -17,6 +19,10 @@ interpreted as described by RFC 2119 and RFC 8174.
 
 Resonith-0 defines a self-contained deterministic audio bitstream and a
 resource-bounded integer decoding process.
+
+The stable public filename extension is `.resonith`. Transport-development
+suffixes such as `.lps5` identify experimental packing revisions and are not
+part of the final user-facing naming contract.
 
 Resonith-0:
 

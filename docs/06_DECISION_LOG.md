@@ -2917,3 +2917,21 @@ new oscillator opcode.
     <https://github.com/moshkinyevhen/resonith/actions/runs/30219506924>;
   - the same commit passed the release native decode/analysis/RDO benchmark:
     <https://github.com/moshkinyevhen/resonith/actions/runs/30219506918>.
+
+## R-099 — Canonical public names and filename extensions
+
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Decision:
+  - the standalone audio codec is **Resonith**, pronounced `re-zo-nit`;
+  - `.resonith` is the canonical filename extension for a standalone Resonith
+    audio bitstream;
+  - `.lps`, `.lps4`, `.lps5`, and `.rsc` remain research transport or
+    container revision identifiers and MUST NOT be presented as the stable
+    public media extension;
+  - the standalone video codec is **SceneLith**, pronounced `seen-lit`, with
+    `.scenelith` as its independent visual-bitstream extension;
+  - **Orkela**, pronounced `or-ke-la`, is the standalone player;
+  - `.orka` is reserved for an Orkela synchronized media package that can bind
+    independent Resonith and SceneLith streams through the separate SceneLith
+    AV Bridge without merging their Truth reference graphs.
