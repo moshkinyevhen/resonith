@@ -550,6 +550,66 @@ inverse prediction, and reject any reconstructed value outside the profile
 sample bound. An `RSL1` payload MUST reject transform ID 4. Main-0 permits
 exactly one of `RSL1` or `RSL2`, never both.
 
+#### 6.6.3 Optional `RSI1` seek sidecar
+
+`RSI1` is non-Truth metadata bound to one exact complete `RSL1` or `RSL2`
+payload. It MAY be stored out of band or in a non-critical RSC1 section with
+type `RSI1`, schema version 1, instance ID zero, and start tick zero. Its
+absence or rejection MUST NOT prevent sequential Truth decode.
+
+The 64-byte little-endian header contains:
+
+| Offset | Bytes | Field |
+|---:|---:|---|
+| 0 | 4 | magic `RSI1` |
+| 4 | 1 | version `1` |
+| 5 | 1 | flags, zero |
+| 6 | 2 | header bytes, `64` |
+| 8 | 2 | entry bytes, `32` |
+| 10 | 2 | reserved, zero |
+| 12 | 4 | block count |
+| 16 | 2 | LiftPack block size |
+| 18 | 2 | reserved, zero |
+| 20 | 4 | source sample count |
+| 24 | 8 | complete source payload bytes |
+| 32 | 32 | SHA-256 of the complete source payload |
+
+Each fixed 32-byte entry contains:
+
+| Offset | Bytes | Field |
+|---:|---:|---|
+| 0 | 8 | block byte offset in the source |
+| 8 | 8 | complete block bytes |
+| 16 | 4 | output-sample offset |
+| 20 | 4 | entropy bit count |
+| 24 | 2 | output-sample count |
+| 26 | 1 | transform ID |
+| 27 | 1 | entropy ID |
+| 28 | 1 | entropy parameter |
+| 29 | 1 | LPC order, zero for non-LPC |
+| 30 | 2 | reserved, zero |
+
+The table ends with CRC-32 followed by SHA-256 over the header and all entries,
+for a total size of \(100+32\cdot block\_count\) bytes. Main-0 limits RSI1 to
+1,000,000 entries.
+
+Before exposing an entry, a player MUST:
+
+1. validate the RSI1 version, fixed sizes, reserved fields, total length,
+   CRC-32, and SHA-256;
+2. validate the complete source LiftPack checksum;
+3. match source byte length, SHA-256, block size, block count, and sample
+   count;
+4. parse every source block envelope and require exact equality with its RSI1
+   entry;
+5. require canonical final source-byte and output-sample coverage.
+
+After those checks, a player MAY use an entry to initialize a block cursor and
+decode that independently seeded block without scanning earlier envelopes.
+The opened view and both backing byte arrays MUST remain immutable. If a
+transport requires RSI1 for its advertised seek behavior, its bytes MUST be
+included in that transport's complete-rate accounting.
+
 ### 6.7 `SPATIAL`
 
 Defines source routing, gain/delay laws, and a bounded integer mix matrix.

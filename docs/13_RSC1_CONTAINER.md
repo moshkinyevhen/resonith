@@ -127,8 +127,13 @@ cursor. Applications can stream canonical PCM16 through a callback with one
 block of live work memory. Separate sanitized fuzz targets cover LiftPack and
 the complete typed container-to-PCM path.
 
+`RSI1` is the optional persisted form of that index. It may travel out of band
+or as a non-critical RSC1 section. Its own CRC-32/SHA-256 protects the fixed
+table, while a complete source SHA-256 prevents a stale table from being
+paired with another residual. Opening it still reparses every source block
+once; subsequent selected-block decode no longer scans earlier envelopes.
+
 Main-0 still needs typed CIBS, transients, simultaneous Atom mixing,
-multi-channel output, and an independently authenticated optional serialized
-seek/checkpoint table. Each new syntax must enter through the same
+and multi-channel output. Each new syntax must enter through the same
 inspect-first, caller-owned-memory decoder boundary; no generic metadata
 archive is added.

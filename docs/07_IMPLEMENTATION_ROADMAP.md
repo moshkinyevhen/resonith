@@ -28,11 +28,16 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
 - Exact block indexing, independent block decode, a linear forward cursor,
   callback-oriented zero-Atom playback, and separate LiftPack/Main-0 sanitized
   fuzz targets are implemented and cross-compiler verified.
+- The optional source-bound RSI1 seek sidecar and its dedicated sanitized
+  fuzzer are implemented. The mandatory Truth stream remains independently
+  sequentially decodable.
+- The same Core passes native Linux, Windows, and macOS ARM64 tests and an
+  Android NDK arm64-v8a build without platform-specific DSP source.
 - Variable block lifetimes and three bounded waveform-domain stereo families
   failed their declared promotion gates and added no Main syntax.
-- The next blocking milestone is an optional authenticated seek/checkpoint
-  sidecar followed by mobile/ARM build coverage and real-time callback
-  measurement. New coding tools resume only through declared gates.
+- The next blocking milestone is callback playback for model-bearing state
+  partitions followed by simultaneous Atom mixing. New coding tools resume
+  only through declared gates.
 
 Detailed measurements are in
 [10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) and

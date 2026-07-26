@@ -1082,7 +1082,7 @@ new oscillator opcode.
 ## R-049 — Optional residual seek sidecar
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **IMPLEMENTED / CROSS-PLATFORM VERIFIED / NORMATIVE-DRAFT**
 - Decision:
   - define `RSI1` as an optional, non-Truth seek sidecar for one exact RSL1 or
     RSL2 payload;
@@ -1108,3 +1108,14 @@ new oscillator opcode.
   - keeping the table outside mandatory Truth avoids adding bitrate to
     sequential files and lets containers, HTTP manifests, and players choose
     their own caching policy.
+- Result:
+  - the C99 ABI reports exact sidecar size, builds RSI1 without allocation,
+    verifies both byte arrays and every entry, exposes bounded lookup, and
+    decodes a selected block without parsing earlier envelopes;
+  - the conformance vector produces a 228-byte table for four source blocks,
+    rejects a damaged entry atomically, and reproduces the direct decoder's
+    exact selected PCM;
+  - Linux x64/ARM64, Windows x64/ARM64, macOS ARM64, Android arm64-v8a, GCC,
+    Clang, MSVC, and the native bridge passed in run 30203602697;
+  - a dedicated ASan/UBSan/libFuzzer target passed 5,000 bounded canonical-XOR
+    and raw-sidecar mutations in run 30203691322.

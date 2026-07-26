@@ -390,3 +390,51 @@ Hardening passed:
 Each fuzz target executed 5,000 bounded mutations from deterministic valid
 seeds. These runs are a reproducible hardening checkpoint, not a claim that
 the parsers are free of every possible defect.
+
+## 17. Callback playback and ARM portability diagnostic
+
+The Python/native bridge now drives the public one-block callback ABI and
+requires its complete PCM to equal the native whole-stream decoder. A repeated
+licensed one-second run measured:
+
+| Clip | Whole decode | Callback decode | Callback / real time |
+|---|---:|---:|---:|
+| Corelli realization | 1.623 ms | 1.685 ms | 0.169% |
+| Recorded piano | 1.779 ms | 2.215 ms | 0.221% |
+| Recorded drums | 1.817 ms | 2.008 ms | 0.201% |
+
+The callback figures include the Python ctypes boundary and player
+inspection/open work. They demonstrate ample desktop-runner headroom for
+these one-second mono diagnostics; they are not a mobile deadline guarantee.
+
+Run:
+[30203460481](https://github.com/moshkinyevhen/resonith/actions/runs/30203460481).
+Raw report SHA-256:
+
+```text
+bcb6e461df8488d40697b5ed525b9aa2676b04da363813b0d57a0f027e6fb61b
+```
+
+The identical source then passed native Linux ARM64, macOS ARM64, Windows
+ARM64, and an Android NDK arm64-v8a build in
+[run 30203385185](https://github.com/moshkinyevhen/resonith/actions/runs/30203385185).
+This verifies source portability and deterministic conformance on the tested
+runners; real phones still require device thermal, deadline, and battery
+measurements.
+
+## 18. Optional RSI1 seek sidecar
+
+R-049 persists the already verified block index as a fixed source-bound
+sidecar. The mandatory audio payload and sequential cursor remain unchanged.
+Opening RSI1 verifies its CRC/SHA, the complete residual identity, and exact
+equality between every entry and parsed source block.
+
+For the one-second winners above, the optional table would contain 164 to 452
+bytes depending on selected block size. Those bytes are zero for sequential
+delivery because the sidecar is absent; a delivery profile that requires it
+must count it in its complete rate.
+
+The conformance implementation passed every x64/ARM64/Android target in
+[run 30203602697](https://github.com/moshkinyevhen/resonith/actions/runs/30203602697).
+Its dedicated 5,000-mutation ASan/UBSan/libFuzzer target passed in
+[run 30203691322](https://github.com/moshkinyevhen/resonith/actions/runs/30203691322).
