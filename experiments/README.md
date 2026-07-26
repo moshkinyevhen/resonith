@@ -83,6 +83,11 @@ reproducible command and independent decode.
 - `native_lapped_timing.py` — R-063 release C++ decode timing, exact
   Python/native parity, and caller-owned workspace accounting on the pinned
   real-music crops.
+- `window_transient_gate.py` — R-064 all-long/all-short nearest-byte
+  comparison using waveform, multi-resolution spectral, and onset-local
+  pre-echo diagnostics before any mixed-window syntax.
+- `results/window_transient_2026-07-26_summary.json` — the R-064 negative
+  result that keeps short-window switching out of prospective LPF1.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

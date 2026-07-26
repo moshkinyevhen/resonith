@@ -706,3 +706,25 @@ existing signed entropy field. The parser verifies the decoded count sum
 against the declared sparse total before positions or PCM are trusted.
 Python/native exact PCM parity and the complete cross-platform matrix passed
 in [run 30208161776](https://github.com/moshkinyevhen/resonith/actions/runs/30208161776).
+
+## 29. Short-window kill gate
+
+R-064 added deterministic multi-resolution spectral convergence and
+onset-local pre-echo diagnostics, then compared the accepted 512-sample
+half-window against an all-short 128-sample half-window at nearest Opus bytes.
+Lower pre-echo values indicate less error immediately before strong source
+onsets.
+
+| Crop | Long bytes | Short bytes | Long/short SNR | Long/short pre-echo |
+| --- | ---: | ---: | ---: | ---: |
+| Corelli | 15,409 | 15,828 | 25.59/20.56 dB | -27.60/-22.70 dB |
+| Piano | 15,461 | 15,468 | 39.82/36.47 dB | -40.23/-36.38 dB |
+| Drums | 12,514 | 11,920 | 28.84/26.64 dB | -25.46/-23.13 dB |
+
+The long path won SNR, spectral convergence, and mean pre-echo on every clip.
+On drums it also beat the Opus pre-echo diagnostic (-25.46 versus -19.36 dB)
+at 12,514 versus 12,599 bytes. These metrics are not listening equivalence,
+but they provide no evidence that short-window switching earns decoder state.
+Mixed-window syntax is therefore closed, preserving one regular transform.
+The compact record is
+[`window_transient_2026-07-26_summary.json`](../experiments/results/window_transient_2026-07-26_summary.json).

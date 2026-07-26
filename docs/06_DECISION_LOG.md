@@ -1687,3 +1687,36 @@ new oscillator opcode.
     margin;
   - using real selected streams reveals parser, entropy, sparse-density, ROM
     lookup, overlap, interleave, and host binding costs together.
+
+## R-064 — Short-window transient oracle before window-switch syntax
+
+- Date: 2026-07-26
+- Status: **MEASURED FAIL / MIXED-WINDOW SYNTAX CLOSED / RESEARCH**
+- Decision:
+  - add deterministic multi-resolution spectral and onset-local pre-echo
+    diagnostics that operate on source/reconstruction PCM without changing the
+    decoder;
+  - compare the accepted 512-sample half-window against an all-short
+    128-sample half-window at nearest complete Opus bytes on the pinned corpus;
+  - treat waveform SNR, spectral error, and pre-echo as diagnostics with
+    different failure modes; none is a listening conclusion;
+  - add mixed long/short window syntax only if the all-short oracle materially
+    improves attack-local error on transient material while long windows retain
+    a clear efficiency advantage elsewhere.
+- Rationale:
+  - variable density locates attacks but cannot shorten a transform's temporal
+    support;
+  - an all-short comparison isolates whether window duration is still a real
+    artifact source before introducing switching transitions and new state.
+- Result:
+  - at nearest Opus bytes, the 512 half-window beat the 128 half-window in
+    waveform SNR, multi-resolution spectral convergence, and mean onset-local
+    pre-echo error on all three clips;
+  - mean long/short pre-echo diagnostics were -27.60/-22.70 dB on Corelli,
+    -40.23/-36.38 dB on piano, and -25.46/-23.13 dB on drums, where lower is
+    better;
+  - on drums, the long path also beat Opus in this diagnostic (-25.46 versus
+    -19.36 dB) while using 12,514 versus 12,599 complete bytes;
+  - no short-window or window-switch state is added. The density law remains
+    the only automatic acoustic-complexity mechanism until blinded listening
+    supplies contrary evidence.

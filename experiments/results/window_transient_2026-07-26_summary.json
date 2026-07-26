@@ -1,0 +1,62 @@
+{
+  "clip_count": 3,
+  "clips": {
+    "corelli-sonata-realization": {
+      "long": {
+        "average_coefficients": 59,
+        "mean_pre_echo_error_db": -27.604046080247464,
+        "snr_db_diagnostic": 25.587625347127148,
+        "spectral_convergence_db": -28.157017148793585,
+        "stream_bytes": 15409
+      },
+      "opus_stream_bytes": 15356,
+      "short": {
+        "average_coefficients": 16,
+        "mean_pre_echo_error_db": -22.701574442627567,
+        "snr_db_diagnostic": 20.559944554289142,
+        "spectral_convergence_db": -22.55883783518874,
+        "stream_bytes": 15828
+      }
+    },
+    "emotional-piano-cc0": {
+      "long": {
+        "average_coefficients": 67,
+        "mean_pre_echo_error_db": -40.22881555471807,
+        "snr_db_diagnostic": 39.82146287859259,
+        "spectral_convergence_db": -42.6031416208098,
+        "stream_bytes": 15461
+      },
+      "opus_stream_bytes": 15552,
+      "short": {
+        "average_coefficients": 16,
+        "mean_pre_echo_error_db": -36.38420808295005,
+        "snr_db_diagnostic": 36.46572077756305,
+        "spectral_convergence_db": -39.091542719894406,
+        "stream_bytes": 15468
+      }
+    },
+    "patro-de-bateria": {
+      "long": {
+        "average_coefficients": 46,
+        "mean_pre_echo_error_db": -25.45608673612762,
+        "snr_db_diagnostic": 28.835431925613214,
+        "spectral_convergence_db": -31.70605827202872,
+        "stream_bytes": 12514
+      },
+      "opus": {
+        "mean_pre_echo_error_db": -19.358153456407944,
+        "stream_bytes": 12599
+      },
+      "short": {
+        "average_coefficients": 10,
+        "mean_pre_echo_error_db": -23.125122450288806,
+        "snr_db_diagnostic": 26.642706300829108,
+        "spectral_convergence_db": -29.317413867167016,
+        "stream_bytes": 11920
+      }
+    }
+  },
+  "conclusion": "The all-short oracle loses every declared objective diagnostic; mixed-window syntax remains closed.",
+  "metric_warning": "Waveform, spectral, and pre-echo metrics are diagnostics, not perceptual equivalence.",
+  "research_only": true
+}
