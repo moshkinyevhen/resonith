@@ -3,6 +3,8 @@
 #include "resonith/container.h"
 #include "resonith/stream.h"
 
+#include "lapped_internal.h"
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -16,6 +18,7 @@ constexpr std::uint16_t kSchemaVersion = 1U;
 constexpr std::size_t kLappedHeaderBytes = 28U;
 constexpr std::size_t kSparseHeaderBytes = 34U;
 constexpr std::size_t kVariableSparseHeaderBytes = 42U;
+constexpr std::size_t kCompactVariableSparseHeaderBytes = 27U;
 constexpr std::uint8_t kLappedVersion = 1U;
 constexpr std::uint8_t kSparseVersion = 1U;
 constexpr std::uint8_t kFixedLappedFlags = 3U;
@@ -200,82 +203,32 @@ bool valid_entropy(std::uint8_t mode, std::uint8_t parameter) noexcept {
     );
 }
 
-resonith_status parse_sparse_fields(
+resonith_status finish_sparse_fields(
     parsed_lapped* parsed,
-    resonith_lapped_requirements* requirements
+    resonith_lapped_requirements* requirements,
+    std::size_t sparse_header_bytes,
+    std::uint32_t declared_sparse_elements
 ) noexcept {
     if (parsed == nullptr || requirements == nullptr) {
         return RESONITH_STATUS_INVALID_ARGUMENT;
     }
-    const std::size_t sparse_header_bytes = parsed->variable_density
-        ? kVariableSparseHeaderBytes
-        : kSparseHeaderBytes;
     if (
         parsed->sparse == nullptr
         || parsed->sparse_size < sparse_header_bytes
     ) {
         return RESONITH_STATUS_TRUNCATED;
     }
-
     const std::uint8_t* sparse = parsed->sparse;
-    const char* expected_sparse_magic = parsed->variable_density
-        ? "LSE2"
-        : "LSE1";
-    if (std::memcmp(sparse, expected_sparse_magic, 4U) != 0) {
-        return RESONITH_STATUS_BAD_MAGIC;
-    }
-    if (sparse[4] != kSparseVersion) {
-        return RESONITH_STATUS_UNSUPPORTED_VERSION;
-    }
-    parsed->scale_entropy = sparse[6U];
-    parsed->scale_parameter = sparse[7U];
-    std::uint32_t declared_sparse_elements = 0U;
-    if (parsed->variable_density) {
-        parsed->count_entropy = sparse[8U];
-        parsed->count_parameter = sparse[9U];
-        parsed->position_parameter = sparse[10U];
-        parsed->value_entropy = sparse[11U];
-        parsed->value_parameter = sparse[12U];
-        declared_sparse_elements = read_u32(sparse + 22U);
-        parsed->scale_bits = read_u32(sparse + 26U);
-        parsed->count_bits = read_u32(sparse + 30U);
-        parsed->position_bits = read_u32(sparse + 34U);
-        parsed->value_bits = read_u32(sparse + 38U);
-        if (
-            sparse[5U] != 0U
-            || sparse[13U] != 0U
-            || read_u32(sparse + 14U) != parsed->transform_frames
-            || read_u16(sparse + 18U) != parsed->channels
-            || read_u16(sparse + 20U) != parsed->band_count
-            || !valid_entropy(
+
+    if (
+        !valid_entropy(parsed->scale_entropy, parsed->scale_parameter)
+        || (
+            parsed->variable_density
+            && !valid_entropy(
                 parsed->count_entropy,
                 parsed->count_parameter
             )
-        ) {
-            return RESONITH_STATUS_MALFORMED;
-        }
-    } else {
-        parsed->position_parameter = sparse[8U];
-        parsed->value_entropy = sparse[9U];
-        parsed->value_parameter = sparse[10U];
-        parsed->coefficients_per_frame = read_u16(sparse + 20U);
-        parsed->scale_bits = read_u32(sparse + 22U);
-        parsed->position_bits = read_u32(sparse + 26U);
-        parsed->value_bits = read_u32(sparse + 30U);
-        if (
-            sparse[5U] != 0U
-            || sparse[11U] != 0U
-            || read_u32(sparse + 12U) != parsed->transform_frames
-            || read_u16(sparse + 16U) != parsed->channels
-            || read_u16(sparse + 18U) != parsed->band_count
-            || parsed->coefficients_per_frame == 0U
-            || parsed->coefficients_per_frame > parsed->half_window
-        ) {
-            return RESONITH_STATUS_MALFORMED;
-        }
-    }
-    if (
-        !valid_entropy(parsed->scale_entropy, parsed->scale_parameter)
+        )
         || !valid_entropy(parsed->value_entropy, parsed->value_parameter)
         || parsed->position_parameter
             > static_cast<std::uint8_t>(
@@ -383,6 +336,84 @@ resonith_status parse_sparse_fields(
         + 2U * parsed->half_window;
     requirements->output_elements = output_elements;
     return RESONITH_STATUS_OK;
+}
+
+resonith_status parse_sparse_fields(
+    parsed_lapped* parsed,
+    resonith_lapped_requirements* requirements
+) noexcept {
+    if (parsed == nullptr || requirements == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    const std::size_t sparse_header_bytes = parsed->variable_density
+        ? kVariableSparseHeaderBytes
+        : kSparseHeaderBytes;
+    if (
+        parsed->sparse == nullptr
+        || parsed->sparse_size < sparse_header_bytes
+    ) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+
+    const std::uint8_t* sparse = parsed->sparse;
+    const char* expected_sparse_magic = parsed->variable_density
+        ? "LSE2"
+        : "LSE1";
+    if (std::memcmp(sparse, expected_sparse_magic, 4U) != 0) {
+        return RESONITH_STATUS_BAD_MAGIC;
+    }
+    if (sparse[4] != kSparseVersion) {
+        return RESONITH_STATUS_UNSUPPORTED_VERSION;
+    }
+    parsed->scale_entropy = sparse[6U];
+    parsed->scale_parameter = sparse[7U];
+    std::uint32_t declared_sparse_elements = 0U;
+    if (parsed->variable_density) {
+        parsed->count_entropy = sparse[8U];
+        parsed->count_parameter = sparse[9U];
+        parsed->position_parameter = sparse[10U];
+        parsed->value_entropy = sparse[11U];
+        parsed->value_parameter = sparse[12U];
+        declared_sparse_elements = read_u32(sparse + 22U);
+        parsed->scale_bits = read_u32(sparse + 26U);
+        parsed->count_bits = read_u32(sparse + 30U);
+        parsed->position_bits = read_u32(sparse + 34U);
+        parsed->value_bits = read_u32(sparse + 38U);
+        if (
+            sparse[5U] != 0U
+            || sparse[13U] != 0U
+            || read_u32(sparse + 14U) != parsed->transform_frames
+            || read_u16(sparse + 18U) != parsed->channels
+            || read_u16(sparse + 20U) != parsed->band_count
+        ) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+    } else {
+        parsed->position_parameter = sparse[8U];
+        parsed->value_entropy = sparse[9U];
+        parsed->value_parameter = sparse[10U];
+        parsed->coefficients_per_frame = read_u16(sparse + 20U);
+        parsed->scale_bits = read_u32(sparse + 22U);
+        parsed->position_bits = read_u32(sparse + 26U);
+        parsed->value_bits = read_u32(sparse + 30U);
+        if (
+            sparse[5U] != 0U
+            || sparse[11U] != 0U
+            || read_u32(sparse + 12U) != parsed->transform_frames
+            || read_u16(sparse + 16U) != parsed->channels
+            || read_u16(sparse + 18U) != parsed->band_count
+            || parsed->coefficients_per_frame == 0U
+            || parsed->coefficients_per_frame > parsed->half_window
+        ) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+    }
+    return finish_sparse_fields(
+        parsed,
+        requirements,
+        sparse_header_bytes,
+        declared_sparse_elements
+    );
 }
 
 resonith_status parse_lapped(
@@ -580,6 +611,82 @@ resonith_status parse_selected_lapped(
     parsed->band_count = band_count;
     parsed->variable_density = true;
     return parse_sparse_fields(parsed, requirements);
+}
+
+resonith_status parse_compact_selected_lapped(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    std::uint32_t sample_rate,
+    std::uint32_t sample_count,
+    std::uint32_t transform_frames,
+    std::uint16_t channels,
+    std::uint16_t half_window,
+    std::uint16_t band_count,
+    parsed_lapped* parsed,
+    resonith_lapped_requirements* requirements
+) noexcept {
+    if (
+        data == nullptr
+        || parsed == nullptr
+        || requirements == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *parsed = {};
+    *requirements = {};
+    if (
+        data_size < kCompactVariableSparseHeaderBytes
+        || data_size > kMaximumPayloadBytes
+    ) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+    if (
+        sample_rate == 0U
+        || sample_count == 0U
+        || transform_frames == 0U
+        || channels == 0U
+        || channels > kMaximumChannels
+        || half_window < 32U
+        || half_window > kMaximumHalfWindow
+        || !is_power_of_two(half_window)
+        || kRomHalfWindow % half_window != 0U
+        || band_count == 0U
+        || band_count > kMaximumBands
+        || (
+            transform_frames != sample_count / half_window
+            && transform_frames != sample_count / half_window + 1U
+        )
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+
+    parsed->sparse = data;
+    parsed->sparse_size = data_size;
+    parsed->sample_rate = sample_rate;
+    parsed->sample_count = sample_count;
+    parsed->transform_frames = transform_frames;
+    parsed->channels = channels;
+    parsed->half_window = half_window;
+    parsed->band_count = band_count;
+    parsed->variable_density = true;
+    parsed->scale_entropy = data[0U];
+    parsed->scale_parameter = data[1U];
+    parsed->count_entropy = data[2U];
+    parsed->count_parameter = data[3U];
+    parsed->position_parameter = data[4U];
+    parsed->value_entropy = data[5U];
+    parsed->value_parameter = data[6U];
+    const std::uint32_t sparse_elements = read_u32(data + 7U);
+    parsed->scale_bits = read_u32(data + 11U);
+    parsed->count_bits = read_u32(data + 15U);
+    parsed->position_bits = read_u32(data + 19U);
+    parsed->value_bits = read_u32(data + 23U);
+    return finish_sparse_fields(
+        parsed,
+        requirements,
+        kCompactVariableSparseHeaderBytes,
+        sparse_elements
+    );
 }
 
 bool decode_unsigned(
@@ -944,6 +1051,69 @@ std::int64_t round_shift_signed(
         : -(((-value) + rounding) >> shift);
 }
 
+void add_transform_frame(
+    const parsed_lapped& parsed,
+    const resonith_lapped_workspace& workspace,
+    std::size_t coefficient_count,
+    std::size_t sparse_base,
+    std::size_t scale_base,
+    std::uint32_t output_frame,
+    const std::array<std::uint16_t, kMaximumBands + 1U>& edges,
+    std::int64_t* overlap_q29
+) noexcept {
+    std::array<std::int64_t, kMaximumHalfWindow> values{};
+    std::uint16_t band = 0U;
+    for (std::size_t index = 0U; index < coefficient_count; ++index) {
+        const std::uint16_t position =
+            workspace.positions[sparse_base + index];
+        while (
+            band + 1U < parsed.band_count
+            && position >= edges[band + 1U]
+        ) {
+            ++band;
+        }
+        values[index] = (
+            static_cast<std::int64_t>(
+                workspace.coefficients[sparse_base + index]
+            )
+            * (1LL << workspace.scales[scale_base + band])
+        );
+    }
+
+    const std::uint32_t rom_stride =
+        kRomHalfWindow / parsed.half_window;
+    for (
+        std::uint32_t sample = 0U;
+        sample < 2U * parsed.half_window;
+        ++sample
+    ) {
+        std::int64_t time_q14 = 0;
+        for (std::size_t index = 0U; index < coefficient_count; ++index) {
+            const std::uint32_t position =
+                workspace.positions[sparse_base + index];
+            const std::int64_t phase = static_cast<std::int64_t>(
+                (2U * position + 1U)
+                * (2U * sample + 1U + parsed.half_window)
+                * rom_stride
+            );
+            time_q14 += values[index]
+                * quarter_lookup(kCosineQuarterQ14, phase);
+        }
+        const std::int64_t window_phase =
+            (
+                2LL * parsed.half_window
+                - (2LL * sample + 1LL)
+            )
+            * rom_stride;
+        const std::int64_t weighted_q29 = time_q14
+            * quarter_lookup(kCosineQuarterQ15, window_phase);
+        overlap_q29[
+            static_cast<std::size_t>(output_frame) * parsed.half_window
+                + sample
+        ] += weighted_q29;
+    }
+}
+
 resonith_status validate_synthesis_bounds(
     const parsed_lapped& parsed,
     const resonith_lapped_workspace& workspace
@@ -1026,8 +1196,6 @@ void render_channel(
     static_cast<void>(
         build_band_edges(parsed.half_window, parsed.band_count, &edges)
     );
-    const std::uint32_t rom_stride =
-        kRomHalfWindow / parsed.half_window;
     const std::size_t transform_frames = parsed.transform_frames;
     std::size_t sparse_cursor = 0U;
     if (parsed.variable_density) {
@@ -1049,61 +1217,16 @@ void render_channel(
         const std::size_t scale_base = (
             static_cast<std::size_t>(channel) * transform_frames + frame
         ) * parsed.band_count;
-        std::array<std::int64_t, kMaximumHalfWindow> values{};
-        std::uint16_t band = 0U;
-        for (
-            std::size_t index = 0U;
-            index < coefficient_count;
-            ++index
-        ) {
-            const std::uint16_t position =
-                workspace.positions[sparse_base + index];
-            while (
-                band + 1U < parsed.band_count
-                && position >= edges[band + 1U]
-            ) {
-                ++band;
-            }
-            values[index] = (
-                static_cast<std::int64_t>(
-                    workspace.coefficients[sparse_base + index]
-                )
-                * (1LL << workspace.scales[scale_base + band])
-            );
-        }
-        for (
-            std::uint32_t sample = 0U;
-            sample < 2U * parsed.half_window;
-            ++sample
-        ) {
-            std::int64_t time_q14 = 0;
-            for (
-                std::size_t index = 0U;
-                index < coefficient_count;
-                ++index
-            ) {
-                const std::uint32_t position =
-                    workspace.positions[sparse_base + index];
-                const std::int64_t phase = static_cast<std::int64_t>(
-                    (2U * position + 1U)
-                    * (2U * sample + 1U + parsed.half_window)
-                    * rom_stride
-                );
-                time_q14 += values[index]
-                    * quarter_lookup(kCosineQuarterQ14, phase);
-            }
-            const std::int64_t window_phase =
-                (
-                    2LL * parsed.half_window
-                    - (2LL * sample + 1LL)
-                )
-                * rom_stride;
-            const std::int64_t weighted_q29 = time_q14
-                * quarter_lookup(kCosineQuarterQ15, window_phase);
-            workspace.overlap_q29[
-                static_cast<std::size_t>(frame) * parsed.half_window + sample
-            ] += weighted_q29;
-        }
+        add_transform_frame(
+            parsed,
+            workspace,
+            coefficient_count,
+            sparse_base,
+            scale_base,
+            frame,
+            edges,
+            workspace.overlap_q29
+        );
         if (parsed.variable_density) {
             sparse_cursor += coefficient_count;
         }
@@ -1130,6 +1253,144 @@ void render_channel(
     }
 }
 
+void render_chained_channel(
+    const parsed_lapped& current,
+    const resonith_lapped_workspace& current_workspace,
+    const parsed_lapped* lookahead,
+    const resonith_lapped_workspace* lookahead_workspace,
+    std::uint16_t channel,
+    std::int16_t* output
+) noexcept {
+    std::fill(
+        current_workspace.overlap_q29,
+        current_workspace.overlap_q29
+            + static_cast<std::ptrdiff_t>(
+                current.sample_count + 2U * current.half_window
+            ),
+        0
+    );
+    std::array<std::uint16_t, kMaximumBands + 1U> edges{};
+    static_cast<void>(
+        build_band_edges(current.half_window, current.band_count, &edges)
+    );
+
+    std::size_t sparse_cursor = 0U;
+    const std::size_t preceding_current_frames =
+        static_cast<std::size_t>(channel) * current.transform_frames;
+    for (
+        std::size_t index = 0U;
+        index < preceding_current_frames;
+        ++index
+    ) {
+        sparse_cursor += current_workspace.counts[index];
+    }
+    for (
+        std::uint32_t frame = 0U;
+        frame < current.transform_frames;
+        ++frame
+    ) {
+        const std::size_t count_index =
+            static_cast<std::size_t>(channel) * current.transform_frames
+                + frame;
+        const std::size_t coefficient_count =
+            current_workspace.counts[count_index];
+        const std::size_t scale_base = count_index * current.band_count;
+        add_transform_frame(
+            current,
+            current_workspace,
+            coefficient_count,
+            sparse_cursor,
+            scale_base,
+            frame,
+            edges,
+            current_workspace.overlap_q29
+        );
+        sparse_cursor += coefficient_count;
+    }
+
+    if (lookahead != nullptr && lookahead_workspace != nullptr) {
+        std::size_t lookahead_cursor = 0U;
+        const std::size_t preceding_lookahead_frames =
+            static_cast<std::size_t>(channel)
+                * lookahead->transform_frames;
+        for (
+            std::size_t index = 0U;
+            index < preceding_lookahead_frames;
+            ++index
+        ) {
+            lookahead_cursor += lookahead_workspace->counts[index];
+        }
+        const std::size_t count_index =
+            static_cast<std::size_t>(channel)
+                * lookahead->transform_frames;
+        add_transform_frame(
+            current,
+            *lookahead_workspace,
+            lookahead_workspace->counts[count_index],
+            lookahead_cursor,
+            count_index * current.band_count,
+            current.transform_frames,
+            edges,
+            current_workspace.overlap_q29
+        );
+    }
+
+    const std::uint32_t normalization_shift = static_cast<std::uint32_t>(
+        28U + log2_power_of_two(current.half_window)
+    );
+    for (std::uint32_t frame = 0U; frame < current.sample_count; ++frame) {
+        const std::int64_t rounded = round_shift_signed(
+            current_workspace.overlap_q29[
+                static_cast<std::size_t>(current.half_window) + frame
+            ],
+            normalization_shift
+        );
+        const std::int64_t clipped = std::clamp<std::int64_t>(
+            rounded,
+            -32768,
+            32767
+        );
+        output[
+            static_cast<std::size_t>(frame) * current.channels + channel
+        ] = static_cast<std::int16_t>(clipped);
+    }
+}
+
+bool field_workspace_fits(
+    const resonith_lapped_requirements& requirements,
+    const resonith_lapped_workspace& workspace
+) noexcept {
+    return workspace.scales != nullptr
+        && workspace.positions != nullptr
+        && workspace.coefficients != nullptr
+        && workspace.scale_capacity >= requirements.scale_elements
+        && (
+            requirements.count_elements == 0U
+            || (
+                workspace.counts != nullptr
+                && workspace.count_capacity >= requirements.count_elements
+            )
+        )
+        && workspace.position_capacity >= requirements.position_elements
+        && workspace.coefficient_capacity
+            >= requirements.coefficient_elements;
+}
+
+resonith_status decode_parsed_fields(
+    const parsed_lapped& parsed,
+    const resonith_lapped_requirements& requirements,
+    const resonith_lapped_workspace& workspace
+) noexcept {
+    if (!field_workspace_fits(requirements, workspace)) {
+        return RESONITH_STATUS_SCRATCH_TOO_SMALL;
+    }
+    resonith_status status = decode_fields(parsed, requirements, workspace);
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    return validate_synthesis_bounds(parsed, workspace);
+}
+
 resonith_status decode_parsed_lapped(
     const parsed_lapped& parsed,
     const resonith_lapped_requirements& requirements,
@@ -1142,34 +1403,16 @@ resonith_status decode_parsed_lapped(
         return RESONITH_STATUS_OUTPUT_TOO_SMALL;
     }
     if (
-        workspace.scales == nullptr
-        || workspace.positions == nullptr
-        || workspace.coefficients == nullptr
-        || workspace.overlap_q29 == nullptr
-        || workspace.scale_capacity < requirements.scale_elements
-        || (
-            requirements.count_elements != 0U
-            && (
-                workspace.counts == nullptr
-                || workspace.count_capacity < requirements.count_elements
-            )
-        )
-        || workspace.position_capacity < requirements.position_elements
-        || workspace.coefficient_capacity
-            < requirements.coefficient_elements
+        workspace.overlap_q29 == nullptr
         || workspace.overlap_capacity < requirements.overlap_elements
     ) {
         return RESONITH_STATUS_SCRATCH_TOO_SMALL;
     }
-    resonith_status status = decode_fields(
+    resonith_status status = decode_parsed_fields(
         parsed,
         requirements,
         workspace
     );
-    if (status != RESONITH_STATUS_OK) {
-        return status;
-    }
-    status = validate_synthesis_bounds(parsed, workspace);
     if (status != RESONITH_STATUS_OK) {
         return status;
     }
@@ -1185,6 +1428,173 @@ resonith_status decode_parsed_lapped(
 }
 
 }  // namespace
+
+namespace resonith::internal {
+
+resonith_status lapped_compact_fields_decode(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    std::uint32_t sample_rate,
+    std::uint32_t sample_count,
+    std::uint32_t transform_frames,
+    std::uint16_t channels,
+    std::uint16_t half_window,
+    std::uint16_t band_count,
+    const resonith_lapped_workspace& workspace,
+    resonith_lapped_requirements* requirements
+) noexcept {
+    if (requirements == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    parsed_lapped parsed{};
+    resonith_status status = parse_compact_selected_lapped(
+        data,
+        data_size,
+        sample_rate,
+        sample_count,
+        transform_frames,
+        channels,
+        half_window,
+        band_count,
+        &parsed,
+        requirements
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    return decode_parsed_fields(parsed, *requirements, workspace);
+}
+
+resonith_status lapped_render_chained(
+    const resonith_lapped_requirements& current_requirements,
+    const resonith_lapped_workspace& current_workspace,
+    const resonith_lapped_requirements* lookahead_requirements,
+    const resonith_lapped_workspace* lookahead_workspace,
+    std::int16_t* output,
+    std::size_t output_capacity,
+    std::size_t* frames_written
+) noexcept {
+    if (output == nullptr || frames_written == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *frames_written = 0U;
+    if (
+        current_requirements.frame_count == 0U
+        || current_requirements.half_window == 0U
+        || current_requirements.output_channels == 0U
+        || current_requirements.count_elements == 0U
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    const std::uint32_t base_transform_frames =
+        current_requirements.frame_count
+            / current_requirements.half_window;
+    const bool requires_lookahead =
+        current_requirements.transform_frame_count == base_transform_frames;
+    if (
+        current_requirements.transform_frame_count
+                != base_transform_frames
+            && current_requirements.transform_frame_count
+                != base_transform_frames + 1U
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    if (output_capacity < current_requirements.output_elements) {
+        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    }
+    if (
+        !field_workspace_fits(current_requirements, current_workspace)
+        || current_workspace.overlap_q29 == nullptr
+        || current_workspace.overlap_capacity
+            < current_requirements.overlap_elements
+    ) {
+        return RESONITH_STATUS_SCRATCH_TOO_SMALL;
+    }
+    if (
+        requires_lookahead
+        != (
+            lookahead_requirements != nullptr
+            && lookahead_workspace != nullptr
+        )
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+
+    parsed_lapped current{};
+    current.sample_rate = current_requirements.sample_rate;
+    current.sample_count = current_requirements.frame_count;
+    current.transform_frames =
+        current_requirements.transform_frame_count;
+    current.channels = current_requirements.output_channels;
+    current.half_window = current_requirements.half_window;
+    current.band_count = current_requirements.band_count;
+    current.variable_density = true;
+
+    parsed_lapped lookahead{};
+    if (requires_lookahead) {
+        if (
+            lookahead_requirements->sample_rate
+                != current_requirements.sample_rate
+            || lookahead_requirements->output_channels
+                != current_requirements.output_channels
+            || lookahead_requirements->half_window
+                != current_requirements.half_window
+            || lookahead_requirements->band_count
+                != current_requirements.band_count
+            || lookahead_requirements->transform_frame_count == 0U
+            || lookahead_requirements->count_elements == 0U
+            || !field_workspace_fits(
+                *lookahead_requirements,
+                *lookahead_workspace
+            )
+        ) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+        lookahead.sample_rate = lookahead_requirements->sample_rate;
+        lookahead.sample_count = lookahead_requirements->frame_count;
+        lookahead.transform_frames =
+            lookahead_requirements->transform_frame_count;
+        lookahead.channels = lookahead_requirements->output_channels;
+        lookahead.half_window = lookahead_requirements->half_window;
+        lookahead.band_count = lookahead_requirements->band_count;
+        lookahead.variable_density = true;
+    }
+
+    resonith_status status = validate_synthesis_bounds(
+        current,
+        current_workspace
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    if (requires_lookahead) {
+        status = validate_synthesis_bounds(
+            lookahead,
+            *lookahead_workspace
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+    }
+    for (
+        std::uint16_t channel = 0U;
+        channel < current.channels;
+        ++channel
+    ) {
+        render_chained_channel(
+            current,
+            current_workspace,
+            requires_lookahead ? &lookahead : nullptr,
+            requires_lookahead ? lookahead_workspace : nullptr,
+            channel,
+            output
+        );
+    }
+    *frames_written = current.sample_count;
+    return RESONITH_STATUS_OK;
+}
+
+}  // namespace resonith::internal
 
 extern "C" resonith_status resonith_lapped_inspect(
     const std::uint8_t* data,

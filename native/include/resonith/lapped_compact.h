@@ -61,6 +61,23 @@ RESONITH_API resonith_status resonith_lapped_compact_open(
     resonith_lapped_compact_requirements* requirements
 );
 
+/*
+ * Transactionally decodes one logical LPS4 interval.
+ *
+ * Non-final pulls require `lookahead_workspace`; the final pull permits NULL.
+ * Entropy fields and synthesis bounds are validated before any PCM write, and
+ * the session advances only after the complete interval succeeds.
+ */
+RESONITH_API resonith_status resonith_lapped_compact_decode_next(
+    resonith_lapped_compact_session* session,
+    const resonith_lapped_workspace* current_workspace,
+    const resonith_lapped_workspace* lookahead_workspace,
+    int16_t* logical_output,
+    size_t logical_output_capacity,
+    uint32_t* logical_start,
+    size_t* frames_written
+);
+
 #ifdef __cplusplus
 }
 #endif

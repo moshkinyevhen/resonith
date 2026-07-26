@@ -1,6 +1,7 @@
 #include "resonith/lapped_compact.h"
 
 #include "integrity.h"
+#include "lapped_internal.h"
 
 #include <algorithm>
 #include <array>
@@ -469,5 +470,124 @@ extern "C" resonith_status resonith_lapped_compact_open(
     requirements->maximum_current = maximum_current;
     requirements->maximum_lookahead = maximum_lookahead;
     requirements->maximum_logical_output_elements = maximum_output;
+    return RESONITH_STATUS_OK;
+}
+
+extern "C" resonith_status resonith_lapped_compact_decode_next(
+    resonith_lapped_compact_session* session,
+    const resonith_lapped_workspace* current_workspace,
+    const resonith_lapped_workspace* lookahead_workspace,
+    std::int16_t* logical_output,
+    std::size_t logical_output_capacity,
+    std::uint32_t* logical_start,
+    std::size_t* frames_written
+) {
+    if (
+        session == nullptr
+        || current_workspace == nullptr
+        || logical_output == nullptr
+        || logical_start == nullptr
+        || frames_written == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *logical_start = 0U;
+    *frames_written = 0U;
+    if (session->next_packet >= session->packet_count) {
+        return RESONITH_STATUS_NOT_FOUND;
+    }
+
+    compact_record_view current{};
+    resonith_status status = parse_record(
+        *session,
+        session->next_offset,
+        session->next_packet,
+        &current
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    if (logical_output_capacity < current.requirements.output_elements) {
+        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    }
+
+    const bool final_packet =
+        session->next_packet + 1U == session->packet_count;
+    compact_record_view lookahead{};
+    if (!final_packet) {
+        if (lookahead_workspace == nullptr) {
+            return RESONITH_STATUS_INVALID_ARGUMENT;
+        }
+        status = parse_record(
+            *session,
+            current.next_offset,
+            session->next_packet + 1U,
+            &lookahead
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+    }
+
+    resonith_lapped_requirements decoded_current{};
+    status = resonith::internal::lapped_compact_fields_decode(
+        current.data,
+        current.size,
+        session->sample_rate,
+        current.logical_count,
+        current.requirements.transform_frame_count,
+        session->output_channels,
+        session->half_window,
+        session->band_count,
+        *current_workspace,
+        &decoded_current
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+
+    resonith_lapped_requirements decoded_lookahead{};
+    if (!final_packet) {
+        status = resonith::internal::lapped_compact_fields_decode(
+            lookahead.data,
+            lookahead.size,
+            session->sample_rate,
+            lookahead.logical_count,
+            lookahead.requirements.transform_frame_count,
+            session->output_channels,
+            session->half_window,
+            session->band_count,
+            *lookahead_workspace,
+            &decoded_lookahead
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+    }
+
+    std::size_t rendered_frames = 0U;
+    status = resonith::internal::lapped_render_chained(
+        decoded_current,
+        *current_workspace,
+        final_packet ? nullptr : &decoded_lookahead,
+        final_packet ? nullptr : lookahead_workspace,
+        logical_output,
+        logical_output_capacity,
+        &rendered_frames
+    );
+    if (
+        status != RESONITH_STATUS_OK
+        || rendered_frames != current.logical_count
+    ) {
+        return status == RESONITH_STATUS_OK
+            ? RESONITH_STATUS_MALFORMED
+            : status;
+    }
+
+    *logical_start = session->next_frame;
+    *frames_written = rendered_frames;
+    session->next_offset = current.next_offset;
+    ++session->next_packet;
+    session->next_frame += current.logical_count;
     return RESONITH_STATUS_OK;
 }

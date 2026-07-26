@@ -258,6 +258,108 @@ int main() {
         )) {
         return 1;
     }
+    std::array<std::uint8_t, 16> compact_lookahead_scales{};
+    std::array<std::uint16_t, 4> compact_lookahead_counts{};
+    std::array<std::uint16_t, 39> compact_lookahead_positions{};
+    std::array<std::int8_t, 39> compact_lookahead_coefficients{};
+    resonith_lapped_workspace compact_lookahead_workspace = {
+        compact_lookahead_scales.data(),
+        compact_lookahead_scales.size(),
+        compact_lookahead_counts.data(),
+        compact_lookahead_counts.size(),
+        compact_lookahead_positions.data(),
+        compact_lookahead_positions.size(),
+        compact_lookahead_coefficients.data(),
+        compact_lookahead_coefficients.size(),
+        nullptr,
+        0U,
+    };
+
+    compact_corrupted[compact_corrupted.size() - 5U] ^= 1U;
+    if (!expect(
+            resonith_lapped_compact_open(
+                compact_corrupted.data(),
+                compact_corrupted.size(),
+                &compact_session,
+                &compact_requirements
+            ) == RESONITH_STATUS_OK,
+            "LPS4 transactional fixture preflight"
+        )) {
+        return 1;
+    }
+    compact_corrupted[compact_corrupted.size() - 5U] ^= 1U;
+    logical_output.fill(1234);
+    logical_start = 99U;
+    logical_frames = 99U;
+    if (!expect(
+            resonith_lapped_compact_decode_next(
+                &compact_session,
+                &packet_workspace,
+                &compact_lookahead_workspace,
+                logical_output.data(),
+                logical_output.size(),
+                &logical_start,
+                &logical_frames
+            ) == RESONITH_STATUS_CHECKSUM_MISMATCH
+                && compact_session.next_packet == 0U
+                && compact_session.next_frame == 0U
+                && logical_start == 0U
+                && logical_frames == 0U
+                && std::all_of(
+                    logical_output.begin(),
+                    logical_output.end(),
+                    [](std::int16_t sample) { return sample == 1234; }
+                ),
+            "LPS4 failed lookahead pull is transactional"
+        )) {
+        return 1;
+    }
+    compact_corrupted[compact_corrupted.size() - 5U] ^= 1U;
+
+    if (!expect(
+            resonith_lapped_compact_open(
+                kLappedCompactPacketStream.data(),
+                kLappedCompactPacketStream.size(),
+                &compact_session,
+                &compact_requirements
+            ) == RESONITH_STATUS_OK,
+            "LPS4 pull-session preflight"
+        )) {
+        return 1;
+    }
+    packet_pcm.fill(0);
+    for (std::uint32_t packet = 0U; packet < 2U; ++packet) {
+        logical_start = 99U;
+        logical_frames = 99U;
+        if (!expect(
+                resonith_lapped_compact_decode_next(
+                    &compact_session,
+                    &packet_workspace,
+                    &compact_lookahead_workspace,
+                    logical_output.data(),
+                    logical_output.size(),
+                    &logical_start,
+                    &logical_frames
+                ) == RESONITH_STATUS_OK
+                    && logical_start == (packet == 0U ? 0U : 64U)
+                    && logical_frames == (packet == 0U ? 64U : 32U),
+                "LPS4 two-workspace transactional pull"
+            )) {
+            return 1;
+        }
+        std::copy_n(
+            logical_output.begin(),
+            logical_frames * 2U,
+            packet_pcm.begin()
+                + static_cast<std::ptrdiff_t>(logical_start * 2U)
+        );
+    }
+    if (!expect(
+            packet_pcm == kExpectedAdaptiveLappedPcm,
+            "LPS4 output equals monolithic adaptive LPF1"
+        )) {
+        return 1;
+    }
 
     resonith_lapped_requirements requirements{};
     if (!expect(
