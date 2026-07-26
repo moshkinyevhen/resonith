@@ -788,13 +788,17 @@ def pack_lapped_selected_grid(
 
     if sample_rate <= 0:
         raise ValueError("selected lapped sample rate must be positive")
+    scale_grid = np.asarray(scales)
+    if (
+        scale_grid.ndim != 3
+        or scale_grid.shape[1] != sample_count // half_window + 1
+    ):
+        raise ValueError("selected LPF1 transform-frame count is invalid")
     entropy_payload = pack_lapped_selected_payload(
         scales,
         coefficients,
-        sample_count=sample_count,
         half_window=half_window,
     )
-    scale_grid = np.asarray(scales)
     channels, frame_count, band_count = scale_grid.shape
     inner = (
         HEADER.pack(
@@ -831,7 +835,6 @@ def pack_lapped_selected_payload(
     scales: np.ndarray,
     coefficients: np.ndarray,
     *,
-    sample_count: int,
     half_window: int,
 ) -> bytes:
     """Pack only bounded LSE2 fields under stream-level lapped parameters."""
@@ -845,14 +848,12 @@ def pack_lapped_selected_payload(
         or coefficient_grid.ndim != 3
         or scale_grid.shape[:2] != coefficient_grid.shape[:2]
         or coefficient_grid.shape[2] != half_window
-        or sample_count <= 0
     ):
         raise TypeError("invalid selected lapped grid")
     channels, frame_count, band_count = scale_grid.shape
     _band_edges(half_window, band_count)
     if (
         not 1 <= channels <= MAX_CHANNELS
-        or frame_count != sample_count // half_window + 1
         or np.any(scale_grid > 31)
     ):
         raise ValueError("selected lapped grid exceeds the profile")

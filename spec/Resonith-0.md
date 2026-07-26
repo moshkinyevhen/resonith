@@ -345,6 +345,35 @@ Concealed samples MUST NOT enter Truth, overlap, density, entropy, or future
 packet state. Corrupted packets remain hard errors. `LPS2` is not mandatory
 until native parity, hostile-input, resource, and listening gates pass.
 
+#### 4.1.9 Prospective `LPS3` single-owner transform sequence
+
+`LPS3` is a Realtime research alternative to `LPS2`. It uses the same global
+analysis, direct LSE2 child grammar, authenticated envelope, packet records,
+and canonical logical coverage. Its magic is `LPS3`.
+
+Every selected transform frame MUST occur in exactly one packet. A non-final
+packet owns the transform frames whose origins fall within its logical
+interval and does not repeat the right boundary frame. The next packet owns
+that shared frame. A final packet additionally owns the terminal transform
+frame required to finish the track.
+
+The receiver may synthesize most of packet \(k\) immediately, but MUST wait for
+the first transform frame of packet \(k+1\) before committing the final
+half-window of packet \(k\). This is bounded transform lookahead, not
+predictive reference state. Complete uninterrupted LPS3 reconstruction MUST
+equal monolithic synthesis of the globally selected field exactly.
+
+If packet \(k\) is absent, its logical interval MAY be concealed. The final
+half-window of packet \(k-1\), which awaited packet \(k\)'s first transform
+frame, MAY also be concealed. Packet \(k+1\) and every later packet MUST remain
+exactly decodable from received Truth fields. Concealment MUST NOT enter any
+future codec state.
+
+LPS3 trades strict packet independence for zero boundary-frame duplication,
+one-half-window lookahead, and a bounded one-half-window backward loss
+extension. It is not mandatory until native scheduling, loss, latency,
+hostile-input, and listening gates pass.
+
 ## 5. State records
 
 ### 5.1 `STREAM_CONFIG`

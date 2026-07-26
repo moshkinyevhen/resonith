@@ -101,6 +101,9 @@ reproducible command and independent decode.
   pass and the measured short independent-context packet rate failure.
 - `results/lapped_transform_packet_2026-07-26_summary.json` — the R-075 LPS2
   exact-monolithic pass and 7.53%-7.75% short-packet overhead result.
+- `lapped_chained_packet_gate.py` — R-078 single-owner transform-frame
+  packetization, bounded one-half-window loss extension, and exact later
+  packet recovery.
 - `results/native_lapped_frontier_timing_2026-07-26_summary.json` — the R-070
   exact native-RDO speedup over the shared-analysis Python path.
 - `results/native_lapped_analysis_timing_2026-07-26_summary.json` — the R-068

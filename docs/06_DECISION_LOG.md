@@ -2130,3 +2130,27 @@ new oscillator opcode.
     transform packets reduce the largest live packet storage by approximately
     four times while also lowering complete bytes;
   - physical mobile energy, thermal behavior, and transport I/O remain open.
+
+## R-078 — Single-owner transform boundaries for Realtime
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / ORACLE IMPLEMENTING**
+- Decision:
+  - test an `LPS3` research packet sequence in which every globally selected
+    transform frame belongs to exactly one packet;
+  - let packet \(k\) own the transform frames beginning in its logical
+    interval, while its final half-window becomes decodable when the first
+    transform frame of packet \(k+1\) arrives;
+  - let the final packet also own the terminal transform frame;
+  - on loss, permit output-only concealment of the missing logical interval
+    plus at most the preceding half-window that awaited its boundary frame;
+  - require every later packet to reconstruct exactly and require complete
+    243.81 ms packet overhead below 4% on every pinned clip before native work.
+- Rationale:
+  - LPS2 duplicates exactly one boundary transform frame to make every packet
+    independently complete; this is the remaining dominant rate cost;
+  - normal transform playback already has half-window lookahead. Assigning the
+    shared frame once converts duplicate bytes into bounded lookahead without
+    predictive Truth state;
+  - a lost packet cannot contaminate future coefficient or overlap state:
+    only output that explicitly depended on the absent boundary is concealed.

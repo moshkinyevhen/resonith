@@ -12,9 +12,11 @@ sys.path.insert(0, str(REPOSITORY_ROOT / "reference"))
 
 from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
 from maf_p0.lapped_streaming import (  # noqa: E402
+    decode_lapped_chained_packet_view,
     decode_lapped_packet_stream,
     decode_lapped_packet_view,
     encode_lapped_packet_stream,
+    encode_lapped_chained_packet_stream,
     encode_lapped_transform_packet_stream,
     index_lapped_packet_stream,
 )
@@ -170,6 +172,44 @@ class LappedStreamingTests(unittest.TestCase):
         corrupted[-1] ^= 1
         with self.assertRaises(ValueError):
             decode_lapped_packet_stream(bytes(corrupted))
+
+    def test_chained_packets_own_each_transform_frame_once(self) -> None:
+        source = self._stereo(4096)
+        independent = encode_lapped_transform_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+        )
+        chained = encode_lapped_chained_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+        )
+        info = index_lapped_packet_stream(chained.payload)
+
+        self.assertTrue(info.chained_boundary)
+        self.assertFalse(info.transform_boundary)
+        self.assertEqual(
+            chained.report["duplicated_boundary_transform_frames"],
+            0,
+        )
+        self.assertLess(len(chained.payload), len(independent.payload))
+        np.testing.assert_array_equal(
+            chained.reconstruction,
+            independent.reconstruction,
+        )
+        np.testing.assert_array_equal(
+            decode_lapped_chained_packet_view(info, 2),
+            chained.reconstruction[2048:3072],
+        )
+        with self.assertRaises(ValueError):
+            decode_lapped_packet_view(info, info.packets[0])
 
 
 if __name__ == "__main__":

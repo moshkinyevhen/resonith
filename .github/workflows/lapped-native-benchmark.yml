@@ -10,6 +10,7 @@ on:
       - "experiments/native_lapped_frontier_timing.py"
       - "experiments/native_lapped_packet_timing.py"
       - "experiments/lapped_packet_loss_gate.py"
+      - "experiments/lapped_chained_packet_gate.py"
       - "experiments/real_music_corpus.json"
       - "native/**"
       - "reference/maf_p0/fixed_lapped.py"
@@ -98,6 +99,13 @@ jobs:
           --maximum-seconds 3.0
           --packet-seconds 0.25
           --output artifacts/lapped_packet_loss/report.json
+      - name: Gate single-owner transform packets
+        run: >
+          python experiments/lapped_chained_packet_gate.py
+          --cache artifacts/real_music_source
+          --maximum-seconds 3.0
+          --packet-seconds 0.25
+          --output artifacts/lapped_chained_packet/report.json
       - uses: actions/upload-artifact@v6
         with:
           name: lapped-native-timing-linux-x64
@@ -127,4 +135,9 @@ jobs:
         with:
           name: lapped-packet-loss-linux-x64
           path: artifacts/lapped_packet_loss/report.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v6
+        with:
+          name: lapped-chained-packet-linux-x64
+          path: artifacts/lapped_chained_packet/report.json
           if-no-files-found: error

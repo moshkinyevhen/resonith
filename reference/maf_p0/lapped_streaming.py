@@ -25,6 +25,7 @@ from .sparse_entropy import decode_variable_sparse_lapped
 
 MAGIC = b"LPS1"
 TRANSFORM_MAGIC = b"LPS2"
+CHAINED_MAGIC = b"LPS3"
 VERSION = 1
 HEADER = struct.Struct("<4sBBHIIHHII")
 PACKET_HEADER = struct.Struct("<III")
@@ -71,6 +72,7 @@ class LappedPacketStreamInfo:
     band_count: int
     packet_frames: int
     transform_boundary: bool
+    chained_boundary: bool
     packets: tuple[LappedPacketView, ...]
 
 
@@ -111,10 +113,14 @@ def decode_lapped_packet_stream(
     info = index_lapped_packet_stream(payload)
     output = np.empty((info.total_frames, info.channels), dtype=np.int16)
     for packet in info.packets:
-        block = decode_lapped_packet_view(
-            info,
-            packet,
-            native_decoder=native_decoder,
+        block = (
+            decode_lapped_chained_packet_view(info, packet.packet_index)
+            if info.chained_boundary
+            else decode_lapped_packet_view(
+                info,
+                packet,
+                native_decoder=native_decoder,
+            )
         )
         output[
             packet.logical_start : packet.logical_start + packet.logical_count
@@ -157,7 +163,11 @@ def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
         packet_frames,
         packet_count,
     ) = HEADER.unpack(header_bytes)
-    if magic not in (MAGIC, TRANSFORM_MAGIC) or version != VERSION or flags != 0:
+    if (
+        magic not in (MAGIC, TRANSFORM_MAGIC, CHAINED_MAGIC)
+        or version != VERSION
+        or flags != 0
+    ):
         raise ValueError("unsupported lapped packet envelope")
     _validate_header(
         channels,
@@ -217,6 +227,7 @@ def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
         band_count,
         packet_frames,
         magic == TRANSFORM_MAGIC,
+        magic == CHAINED_MAGIC,
         tuple(packets),
     )
 
@@ -238,34 +249,17 @@ def decode_lapped_packet_view(
         or info.packets[packet.packet_index] != packet
     ):
         raise ValueError("lapped packet view is not part of this envelope")
+    if info.chained_boundary:
+        raise ValueError("LPS3 decode requires the following boundary packet")
     if info.transform_boundary:
         frame_count = packet.logical_count // info.half_window + 1
-        fields = decode_variable_sparse_lapped(
-            packet.child_payload,
-            half_window=info.half_window,
-            expected_channels=info.channels,
-            expected_frames=frame_count,
-            expected_bands=info.band_count,
+        scales, coefficient_grid = _decode_selected_packet_fields(
+            info,
+            packet,
+            frame_count,
         )
-        coefficient_grid = np.zeros(
-            (info.channels, frame_count, info.half_window),
-            dtype=np.int8,
-        )
-        cursor = 0
-        for channel in range(info.channels):
-            for frame in range(frame_count):
-                count = int(fields.counts[channel, frame])
-                end = cursor + count
-                coefficient_grid[
-                    channel,
-                    frame,
-                    fields.positions[cursor:end],
-                ] = fields.values[cursor:end]
-                cursor = end
-        if cursor != fields.positions.size:
-            raise ValueError("LPS2 coefficient coverage mismatch")
         return synthesize_lapped_selected_grid(
-            fields.scales,
+            scales,
             coefficient_grid,
             sample_count=packet.logical_count,
             half_window=info.half_window,
@@ -297,6 +291,89 @@ def decode_lapped_packet_view(
     ]
     logical.flags.writeable = False
     return logical
+
+
+def _decode_selected_packet_fields(
+    info: LappedPacketStreamInfo,
+    packet: LappedPacketView,
+    expected_frames: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Decode one direct LSE2 packet into bounded selected fields."""
+
+    fields = decode_variable_sparse_lapped(
+        packet.child_payload,
+        half_window=info.half_window,
+        expected_channels=info.channels,
+        expected_frames=expected_frames,
+        expected_bands=info.band_count,
+    )
+    coefficient_grid = np.zeros(
+        (info.channels, expected_frames, info.half_window),
+        dtype=np.int8,
+    )
+    cursor = 0
+    for channel in range(info.channels):
+        for frame in range(expected_frames):
+            count = int(fields.counts[channel, frame])
+            end = cursor + count
+            coefficient_grid[
+                channel,
+                frame,
+                fields.positions[cursor:end],
+            ] = fields.values[cursor:end]
+            cursor = end
+    if cursor != fields.positions.size:
+        raise ValueError("lapped packet coefficient coverage mismatch")
+    return fields.scales, coefficient_grid
+
+
+def decode_lapped_chained_packet_view(
+    info: LappedPacketStreamInfo,
+    packet_index: int,
+) -> np.ndarray:
+    """Decode one LPS3 interval with one following boundary-frame lookahead."""
+
+    if not info.chained_boundary:
+        raise ValueError("packet sequence is not LPS3")
+    if not 0 <= packet_index < len(info.packets):
+        raise ValueError("LPS3 packet index exceeds the sequence")
+    packet = info.packets[packet_index]
+    final_packet = packet_index + 1 == len(info.packets)
+    owned_frames = (
+        packet.logical_count // info.half_window
+        + (1 if final_packet else 0)
+    )
+    scales, coefficients = _decode_selected_packet_fields(
+        info,
+        packet,
+        owned_frames,
+    )
+    if not final_packet:
+        next_scales, next_coefficients = _decode_selected_packet_fields(
+            info,
+            info.packets[packet_index + 1],
+            (
+                info.packets[packet_index + 1].logical_count
+                // info.half_window
+                + (
+                    1
+                    if packet_index + 2 == len(info.packets)
+                    else 0
+                )
+            ),
+        )
+        scales = np.concatenate((scales, next_scales[:, :1]), axis=1)
+        coefficients = np.concatenate(
+            (coefficients, next_coefficients[:, :1]),
+            axis=1,
+        )
+    return synthesize_lapped_selected_grid(
+        scales,
+        coefficients,
+        sample_count=packet.logical_count,
+        half_window=info.half_window,
+        fixed_transform=True,
+    )
 
 
 def encode_lapped_packet_stream(
@@ -505,7 +582,6 @@ def encode_lapped_transform_packet_stream(
             monolithic.selected_coefficients[
                 :, first_transform:transform_end
             ],
-            sample_count=logical_count,
             half_window=half_window,
         )
         packet_header = PACKET_HEADER.pack(
@@ -541,6 +617,138 @@ def encode_lapped_transform_packet_stream(
         "packet_count": packet_count,
         "packet_payload_bytes": child_bytes,
         "duplicated_boundary_transform_frames": max(0, packet_count - 1),
+        "monolithic_stream_bytes": len(monolithic.payload),
+        "packet_byte_overhead_fraction": (
+            len(payload) / len(monolithic.payload) - 1.0
+        ),
+        "exact_monolithic_reconstruction": True,
+        **_quality_report(
+            source.reshape(-1),
+            decoded.samples.reshape(-1),
+        ),
+    }
+    return LappedPacketEncodeResult(
+        payload,
+        decoded.samples,
+        report,
+    )
+
+
+def encode_lapped_chained_packet_stream(
+    samples: np.ndarray,
+    sample_rate: int,
+    *,
+    coefficients_per_frame: int,
+    packet_frames: int,
+    half_window: int = 512,
+    band_count: int = 24,
+    native_core=None,
+) -> LappedPacketEncodeResult:
+    """Assign every selected transform frame to exactly one LPS3 packet."""
+
+    source_view = np.asarray(samples)
+    if (
+        source_view.dtype != np.int16
+        or source_view.ndim != 2
+        or source_view.shape[0] == 0
+    ):
+        raise TypeError("LPS3 input must be frame-major PCM16")
+    source = np.array(source_view, dtype=np.int16, copy=True)
+    packet_count = (
+        source.shape[0] + packet_frames - 1
+    ) // packet_frames
+    _validate_header(
+        source.shape[1],
+        sample_rate,
+        source.shape[0],
+        half_window,
+        band_count,
+        packet_frames,
+        packet_count,
+    )
+    analysis = analyze_lapped_source(
+        source,
+        sample_rate,
+        half_window=half_window,
+        band_count=band_count,
+        transform_backend="fixed",
+        native_analyzer=native_core,
+    )
+    monolithic = encode_lapped_analysis(
+        analysis,
+        coefficients_per_frame=coefficients_per_frame,
+        entropy_backend="bounded",
+        density_backend="adaptive",
+        native_decoder=native_core,
+    )
+    header = HEADER.pack(
+        CHAINED_MAGIC,
+        VERSION,
+        0,
+        source.shape[1],
+        sample_rate,
+        source.shape[0],
+        half_window,
+        band_count,
+        packet_frames,
+        packet_count,
+    )
+    body = bytearray(header + hashlib.sha256(header).digest())
+    child_bytes = []
+    logical_starts = list(range(0, source.shape[0], packet_frames))
+    for packet_index, logical_start in enumerate(logical_starts):
+        logical_count = min(
+            packet_frames,
+            source.shape[0] - logical_start,
+        )
+        final_packet = packet_index + 1 == packet_count
+        first_transform = logical_start // half_window
+        owned_frames = (
+            logical_count // half_window
+            + (1 if final_packet else 0)
+        )
+        transform_end = first_transform + owned_frames
+        child_payload = pack_lapped_selected_payload(
+            monolithic.selected_scales[
+                :, first_transform:transform_end
+            ],
+            monolithic.selected_coefficients[
+                :, first_transform:transform_end
+            ],
+            half_window=half_window,
+        )
+        packet_header = PACKET_HEADER.pack(
+            logical_start,
+            logical_count,
+            len(child_payload),
+        )
+        body += packet_header
+        body += child_payload
+        body += hashlib.sha256(packet_header + child_payload).digest()
+        child_bytes.append(len(child_payload))
+
+    payload = bytes(body)
+    decoded = decode_lapped_packet_stream(payload)
+    if not np.array_equal(decoded.samples, monolithic.reconstruction):
+        raise RuntimeError("LPS3 packet reconstruction differs from LPF1")
+    report = {
+        "status": "single-owner transform packet research stream",
+        "format_profile": "prospective-LPS3",
+        "stream_bytes": len(payload),
+        "stream_sha256": hashlib.sha256(payload).hexdigest(),
+        "sample_rate": sample_rate,
+        "frame_count": int(source.shape[0]),
+        "channel_count": int(source.shape[1]),
+        "half_window": half_window,
+        "band_count": band_count,
+        "coefficients_per_frame": coefficients_per_frame,
+        "density_backend": "adaptive-global",
+        "packet_frames": packet_frames,
+        "packet_count": packet_count,
+        "packet_payload_bytes": child_bytes,
+        "duplicated_boundary_transform_frames": 0,
+        "lookahead_frames": half_window,
+        "maximum_loss_extension_frames": half_window,
         "monolithic_stream_bytes": len(monolithic.payload),
         "packet_byte_overhead_fraction": (
             len(payload) / len(monolithic.payload) - 1.0
