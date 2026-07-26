@@ -19,7 +19,11 @@ from .model import (
 from .main0 import decode_main0_raw_stream
 from .lapped_oracle import decode_lapped_stream, encode_lapped_stream
 from .lapped_streaming import (
+    CHAINED_MAGIC as LAPPED_CHAINED_MAGIC,
+    COMPACT_MAGIC as LAPPED_COMPACT_MAGIC,
+    FINITE_COMPACT_MAGIC as LAPPED_FINITE_MAGIC,
     MAGIC as LAPPED_PACKET_MAGIC,
+    TRANSFORM_MAGIC as LAPPED_TRANSFORM_MAGIC,
     decode_lapped_packet_stream,
     encode_lapped_finite_packet_stream,
     encode_lapped_packet_stream,
@@ -332,7 +336,13 @@ def _decode_lapped(args: argparse.Namespace) -> None:
 
     payload = Path(args.input).read_bytes()
     started = time.perf_counter()
-    packeted = payload.startswith(LAPPED_PACKET_MAGIC)
+    packeted = payload[:4] in {
+        LAPPED_PACKET_MAGIC,
+        LAPPED_TRANSFORM_MAGIC,
+        LAPPED_CHAINED_MAGIC,
+        LAPPED_COMPACT_MAGIC,
+        LAPPED_FINITE_MAGIC,
+    }
     result = (
         decode_lapped_packet_stream(payload)
         if packeted

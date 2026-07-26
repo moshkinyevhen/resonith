@@ -102,12 +102,23 @@ class LappedCliTests(unittest.TestCase):
             report = json.loads(encoded_output.getvalue())
             payload = stream_path.read_bytes()
             decoded = decode_lapped_packet_stream(payload)
+            decoded_path = directory / "decoded.wav"
+            with redirect_stdout(io.StringIO()):
+                _decode_lapped(
+                    argparse.Namespace(
+                        input=stream_path,
+                        output=decoded_path,
+                    )
+                )
+            decoded_rate, decoded_from_cli = read_pcm16_channels(decoded_path)
 
         self.assertEqual(report["format_profile"], "prospective-LPS5")
         self.assertEqual(report["packet_frames"], 4096)
         self.assertTrue(payload.startswith(b"LPS5"))
         self.assertEqual(decoded.sample_rate, 16000)
         self.assertEqual(decoded.samples.shape, source.shape)
+        self.assertEqual(decoded_rate, 16000)
+        np.testing.assert_array_equal(decoded_from_cli, decoded.samples)
 
 
 if __name__ == "__main__":
