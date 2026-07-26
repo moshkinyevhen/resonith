@@ -68,6 +68,12 @@ int main(void) {
         0U,
         0U,
         0U,
+        0U,
+        NULL,
+        0U,
+        0U,
+        0U,
+        0U,
         0U
     };
     resonith_seek_index_view seek_view = {
@@ -215,6 +221,19 @@ int main(void) {
             0U,
             NULL,
             0U,
+            NULL,
+            0U,
+            NULL,
+            NULL,
+            &block_samples_written
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_main0_player_stream_complete(
+            &player,
+            NULL,
             NULL,
             0U,
             NULL,

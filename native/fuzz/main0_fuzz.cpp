@@ -196,5 +196,28 @@ extern "C" int LLVMFuzzerTestOneInput(
             __builtin_trap();
         }
     }
+    if (
+        decode_status == RESONITH_STATUS_OK
+        && player.block_count != 0U
+    ) {
+        std::vector<std::int16_t> block_output(player.block_size);
+        CallbackOracle oracle = {&output, 0U};
+        std::size_t samples_emitted = 0U;
+        if (
+            resonith_main0_player_stream_complete(
+                &player,
+                &workspace,
+                block_output.data(),
+                block_output.size(),
+                compare_callback,
+                &oracle,
+                &samples_emitted
+            ) != RESONITH_STATUS_OK
+            || samples_emitted != output.size()
+            || oracle.cursor != output.size()
+        ) {
+            __builtin_trap();
+        }
+    }
     return 0;
 }

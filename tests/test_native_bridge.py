@@ -154,6 +154,8 @@ class NativeBridgeTests(unittest.TestCase):
         self.assertEqual(native.requirements.basis_count, 1)
         self.assertEqual(native.requirements.render_elements, max(durations))
         np.testing.assert_array_equal(native.samples, reference.samples)
+        streamed = self.decoder.decode_streaming(stream)
+        np.testing.assert_array_equal(streamed.samples, native.samples)
 
     def test_complete_byte_state_rdo_keeps_one_state_fallback(self) -> None:
         encoded = encode_main0_state_rdo(

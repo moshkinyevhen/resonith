@@ -6,6 +6,7 @@
 #include "resonith/liftpack.h"
 #include "resonith/trajectory.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -431,6 +432,118 @@ bool workspace_large_enough(
             >= requirements.liftpack_scratch_elements;
 }
 
+struct player_atom_state {
+    resonith_periodic_atom_info atom{};
+    resonith_prepared_phase_trajectory phase{};
+    resonith_prepared_gain_law gain{};
+    std::uint32_t start_sample = 0U;
+    std::uint32_t end_sample = 0U;
+    std::size_t basis_elements = 0U;
+};
+
+resonith_status prepare_player_atom(
+    const main0_sections& parsed,
+    std::uint32_t atom_id,
+    resonith_main0_workspace& workspace,
+    std::uint32_t& cached_basis_id,
+    std::size_t& cached_basis_elements,
+    player_atom_state& state
+) {
+    resonith_container_section atom_section{};
+    resonith_status status = resonith_container_find_section(
+        &parsed.view,
+        kAtomType,
+        atom_id,
+        &atom_section
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    resonith_periodic_atom_info atom{};
+    status = resonith_periodic_atom_decode(
+        atom_section.payload,
+        atom_section.payload_size,
+        workspace.phase_positions,
+        workspace.phase_increments_q32,
+        workspace.phase_capacity,
+        workspace.gain_positions,
+        workspace.gains_q15,
+        workspace.gain_capacity,
+        &atom
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+
+    if (cached_basis_id != atom.basis_instance_id) {
+        resonith_container_section basis_section{};
+        status = resonith_container_find_section(
+            &parsed.view,
+            kBasisType,
+            atom.basis_instance_id,
+            &basis_section
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        std::size_t basis_written = 0U;
+        status = resonith_raw_basis_decode(
+            basis_section.payload,
+            basis_section.payload_size,
+            workspace.basis,
+            workspace.basis_capacity,
+            &basis_written
+        );
+        if (status != RESONITH_STATUS_OK || basis_written < 2U) {
+            return status == RESONITH_STATUS_OK
+                ? RESONITH_STATUS_MALFORMED
+                : status;
+        }
+        cached_basis_id = atom.basis_instance_id;
+        cached_basis_elements = basis_written;
+    }
+
+    const resonith_phase_trajectory phase_source = {
+        workspace.phase_positions,
+        workspace.phase_increments_q32,
+        atom.phase_knot_count,
+        atom.phase_origin_q32,
+    };
+    resonith_prepared_phase_trajectory phase{};
+    status = resonith_phase_prepare(
+        &phase_source,
+        workspace.phase_origins_q32,
+        workspace.phase_capacity,
+        &phase
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    const resonith_gain_event_law gain_source = {
+        workspace.gain_positions,
+        workspace.gains_q15,
+        atom.gain_event_count,
+        atom.duration_samples,
+    };
+    resonith_prepared_gain_law gain{};
+    status = resonith_gain_prepare(&gain_source, &gain);
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    if (atom_section.start_tick > kMaximumSampleCount) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    const std::uint32_t start =
+        static_cast<std::uint32_t>(atom_section.start_tick);
+    state.atom = atom;
+    state.phase = phase;
+    state.gain = gain;
+    state.start_sample = start;
+    state.end_sample = start + atom.duration_samples;
+    state.basis_elements = cached_basis_elements;
+    return RESONITH_STATUS_OK;
+}
+
 }  // namespace
 
 extern "C" resonith_status resonith_stream_config_parse(
@@ -825,6 +938,12 @@ extern "C" resonith_status resonith_main0_player_open(
         requirements.liftpack_scratch_elements;
     view->output_channels = requirements.output_channels;
     view->reserved = 0U;
+    view->stream_data = data;
+    view->stream_size = data_size;
+    view->basis_elements = requirements.basis_elements;
+    view->phase_knot_count = requirements.phase_knot_count;
+    view->gain_event_count = requirements.gain_event_count;
+    view->basis_count = requirements.basis_count;
     return RESONITH_STATUS_OK;
 }
 
@@ -986,4 +1105,233 @@ extern "C" resonith_status resonith_main0_player_stream(
     return *samples_emitted == view->sample_count
         ? RESONITH_STATUS_OK
         : RESONITH_STATUS_MALFORMED;
+}
+
+extern "C" resonith_status resonith_main0_player_stream_complete(
+    const resonith_main0_player_view* view,
+    resonith_main0_workspace* workspace,
+    std::int16_t* output,
+    std::size_t output_capacity,
+    resonith_pcm16_callback callback,
+    void* user,
+    std::size_t* samples_emitted
+) {
+    if (samples_emitted == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *samples_emitted = 0U;
+    if (
+        view == nullptr
+        || workspace == nullptr
+        || output == nullptr
+        || callback == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    if (
+        view->stream_data == nullptr
+        || view->stream_size == 0U
+        || workspace->innovation_q == nullptr
+        || workspace->liftpack_scratch == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+
+    main0_sections parsed{};
+    resonith_main0_requirements requirements{};
+    resonith_status status = parse_main0(
+        view->stream_data,
+        view->stream_size,
+        &parsed,
+        &requirements
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    if (
+        parsed.innovation.payload != view->innovation_data
+        || parsed.innovation.payload_size != view->innovation_size
+        || requirements.sample_count != view->sample_count
+        || requirements.atom_count != view->atom_count
+        || requirements.basis_count != view->basis_count
+        || requirements.basis_elements != view->basis_elements
+        || requirements.phase_knot_count != view->phase_knot_count
+        || requirements.gain_event_count != view->gain_event_count
+        || parsed.innovation_info.block_size != view->block_size
+        || parsed.innovation_info.block_count != view->block_count
+        || requirements.liftpack_scratch_elements
+            != view->liftpack_scratch_elements
+        || requirements.timebase_hz != view->timebase_hz
+        || requirements.output_channels != view->output_channels
+        || parsed.stream_config.innovation_step != view->innovation_step
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+
+    const std::size_t stream_render_elements = std::min<std::size_t>(
+        view->block_size,
+        requirements.render_elements
+    );
+    if (
+        (
+            requirements.basis_elements != 0U
+            && workspace->basis == nullptr
+        )
+        || (
+            requirements.phase_knot_count != 0U
+            && (
+                workspace->phase_positions == nullptr
+                || workspace->phase_increments_q32 == nullptr
+                || workspace->phase_origins_q32 == nullptr
+            )
+        )
+        || (
+            requirements.gain_event_count != 0U
+            && (
+                workspace->gain_positions == nullptr
+                || workspace->gains_q15 == nullptr
+            )
+        )
+        || (
+            stream_render_elements != 0U
+            && workspace->unity_prediction == nullptr
+        )
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    if (
+        workspace->basis_capacity < requirements.basis_elements
+        || workspace->phase_capacity < requirements.phase_knot_count
+        || workspace->gain_capacity < requirements.gain_event_count
+        || workspace->unity_capacity < stream_render_elements
+        || workspace->innovation_capacity < view->block_size
+        || workspace->liftpack_scratch_capacity
+            < requirements.liftpack_scratch_elements
+        || output_capacity < view->block_size
+    ) {
+        return RESONITH_STATUS_SCRATCH_TOO_SMALL;
+    }
+
+    resonith_liftpack_cursor cursor{};
+    status = resonith_liftpack_cursor_open(
+        view->innovation_data,
+        view->innovation_size,
+        &cursor
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+
+    std::uint32_t next_atom_id = 0U;
+    std::uint32_t cached_basis_id = 0xffff'ffffU;
+    std::size_t cached_basis_elements = 0U;
+    player_atom_state state{};
+    bool state_ready = false;
+    while (cursor.next_block < cursor.info.block_count) {
+        std::uint32_t block_offset = 0U;
+        std::size_t block_samples = 0U;
+        status = resonith_liftpack_cursor_decode_next(
+            &cursor,
+            workspace->innovation_q,
+            workspace->innovation_capacity,
+            workspace->liftpack_scratch,
+            workspace->liftpack_scratch_capacity,
+            &block_offset,
+            &block_samples
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+
+        if (requirements.atom_count == 0U) {
+            for (std::size_t sample = 0U; sample < block_samples; ++sample) {
+                output[sample] = scale_innovation(
+                    workspace->innovation_q[sample],
+                    parsed.stream_config.innovation_step
+                );
+            }
+        } else {
+            std::size_t block_cursor = 0U;
+            while (block_cursor < block_samples) {
+                const std::uint32_t absolute_sample = block_offset
+                    + static_cast<std::uint32_t>(block_cursor);
+                while (
+                    !state_ready
+                    || absolute_sample >= state.end_sample
+                ) {
+                    if (next_atom_id >= requirements.atom_count) {
+                        return RESONITH_STATUS_MALFORMED;
+                    }
+                    status = prepare_player_atom(
+                        parsed,
+                        next_atom_id,
+                        *workspace,
+                        cached_basis_id,
+                        cached_basis_elements,
+                        state
+                    );
+                    if (status != RESONITH_STATUS_OK) {
+                        return status;
+                    }
+                    ++next_atom_id;
+                    state_ready = true;
+                }
+                if (absolute_sample < state.start_sample) {
+                    return RESONITH_STATUS_MALFORMED;
+                }
+                const std::uint32_t local_sample =
+                    absolute_sample - state.start_sample;
+                const std::size_t segment_samples = std::min<std::size_t>(
+                    block_samples - block_cursor,
+                    state.end_sample - absolute_sample
+                );
+                status = resonith_periodic_render(
+                    workspace->basis,
+                    state.basis_elements,
+                    &state.phase,
+                    local_sample,
+                    segment_samples,
+                    workspace->unity_prediction,
+                    workspace->unity_capacity
+                );
+                if (status != RESONITH_STATUS_OK) {
+                    return status;
+                }
+                status = resonith_compose_truth(
+                    workspace->unity_prediction,
+                    workspace->innovation_q + block_cursor,
+                    parsed.stream_config.innovation_step,
+                    &state.gain,
+                    local_sample,
+                    segment_samples,
+                    output + block_cursor,
+                    output_capacity - block_cursor
+                );
+                if (status != RESONITH_STATUS_OK) {
+                    return status;
+                }
+                block_cursor += segment_samples;
+            }
+        }
+
+        status = callback(user, block_offset, output, block_samples);
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        *samples_emitted += block_samples;
+    }
+    if (
+        *samples_emitted != view->sample_count
+        || (
+            requirements.atom_count != 0U
+            && (
+                !state_ready
+                || state.end_sample != view->sample_count
+                || next_atom_id != requirements.atom_count
+            )
+        )
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    return RESONITH_STATUS_OK;
 }

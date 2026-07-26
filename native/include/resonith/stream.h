@@ -88,6 +88,12 @@ typedef struct resonith_main0_player_view {
     size_t liftpack_scratch_elements;
     uint16_t output_channels;
     uint16_t reserved;
+    const uint8_t* stream_data;
+    size_t stream_size;
+    uint32_t basis_elements;
+    uint32_t phase_knot_count;
+    uint32_t gain_event_count;
+    uint32_t basis_count;
 } resonith_main0_player_view;
 
 /*
@@ -196,6 +202,24 @@ RESONITH_API resonith_status resonith_main0_player_stream(
     size_t innovation_capacity,
     int64_t* liftpack_scratch,
     size_t liftpack_scratch_capacity,
+    int16_t* output,
+    size_t output_capacity,
+    resonith_pcm16_callback callback,
+    void* user,
+    size_t* samples_emitted
+);
+
+/*
+ * Streams complete Main-0 Truth, including state-local periodic prediction.
+ *
+ * The existing workspace layout is reused, but Innovation and unity buffers
+ * need only `block_size` elements. Other model arrays use the maxima exposed
+ * by the player view. A residual block may cross Atom boundaries; the Core
+ * resolves those boundaries before emitting one complete PCM callback.
+ */
+RESONITH_API resonith_status resonith_main0_player_stream_complete(
+    const resonith_main0_player_view* view,
+    resonith_main0_workspace* workspace,
     int16_t* output,
     size_t output_capacity,
     resonith_pcm16_callback callback,

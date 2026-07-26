@@ -34,6 +34,12 @@ class _Requirements(ctypes.Structure):
         ("liftpack_scratch_elements", ctypes.c_size_t),
         ("output_channels", ctypes.c_uint16),
         ("reserved", ctypes.c_uint16),
+        ("stream_data", ctypes.POINTER(ctypes.c_uint8)),
+        ("stream_size", ctypes.c_size_t),
+        ("basis_elements", ctypes.c_uint32),
+        ("phase_knot_count", ctypes.c_uint32),
+        ("gain_event_count", ctypes.c_uint32),
+        ("basis_count", ctypes.c_uint32),
     ]
 
 
@@ -163,6 +169,18 @@ class NativeMain0Decoder:
             ctypes.POINTER(ctypes.c_size_t),
         ]
         self._library.resonith_main0_player_stream.restype = ctypes.c_int
+        self._library.resonith_main0_player_stream_complete.argtypes = [
+            ctypes.POINTER(_PlayerView),
+            ctypes.POINTER(_Workspace),
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            _Pcm16Callback,
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        self._library.resonith_main0_player_stream_complete.restype = (
+            ctypes.c_int
+        )
         self._library.resonith_status_string.argtypes = [ctypes.c_int]
         self._library.resonith_status_string.restype = ctypes.c_char_p
 
@@ -278,7 +296,7 @@ class NativeMain0Decoder:
         )
 
     def decode_streaming(self, payload: bytes) -> NativeMain0DecodeResult:
-        """Decode the zero-Atom path through the one-block callback API."""
+        """Decode complete Main-0 through the one-block callback API."""
 
         requirements = self.inspect(payload)
         source = self._input_buffer(payload)
@@ -293,11 +311,47 @@ class NativeMain0Decoder:
         if int(player.sample_count) != requirements.sample_count:
             raise RuntimeError("native player metadata differs from inspect")
 
+        basis = (ctypes.c_int16 * requirements.basis_elements)()
+        phase_positions = (
+            ctypes.c_uint32 * requirements.phase_knot_count
+        )()
+        phase_increments = (
+            ctypes.c_uint32 * requirements.phase_knot_count
+        )()
+        phase_origins = (
+            ctypes.c_uint32 * requirements.phase_knot_count
+        )()
+        gain_positions = (
+            ctypes.c_uint32 * requirements.gain_event_count
+        )()
+        gains = (ctypes.c_int32 * requirements.gain_event_count)()
+        render_elements = min(
+            int(player.block_size),
+            requirements.render_elements,
+        )
+        unity = (ctypes.c_int16 * render_elements)()
         innovation = (ctypes.c_int64 * int(player.block_size))()
         scratch = (
             ctypes.c_int64 * int(player.liftpack_scratch_elements)
         )()
         block_output = (ctypes.c_int16 * int(player.block_size))()
+        workspace = _Workspace(
+            basis,
+            requirements.basis_elements,
+            phase_positions,
+            phase_increments,
+            phase_origins,
+            requirements.phase_knot_count,
+            gain_positions,
+            gains,
+            requirements.gain_event_count,
+            unity,
+            render_elements,
+            innovation,
+            int(player.block_size),
+            scratch,
+            int(player.liftpack_scratch_elements),
+        )
         result = np.empty(requirements.sample_count, dtype=np.int16)
         callback_error: list[BaseException] = []
 
@@ -324,12 +378,9 @@ class NativeMain0Decoder:
 
         callback = _Pcm16Callback(collect)
         emitted = ctypes.c_size_t()
-        status = self._library.resonith_main0_player_stream(
+        status = self._library.resonith_main0_player_stream_complete(
             ctypes.byref(player),
-            innovation,
-            int(player.block_size),
-            scratch,
-            int(player.liftpack_scratch_elements),
+            ctypes.byref(workspace),
             block_output,
             int(player.block_size),
             callback,

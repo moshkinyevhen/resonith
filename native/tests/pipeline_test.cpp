@@ -72,6 +72,39 @@ bool expect(bool condition, const char* message) {
     return condition;
 }
 
+struct CallbackState {
+    std::array<std::int16_t, 40> output{};
+    std::size_t cursor = 0U;
+    std::uint32_t calls = 0U;
+};
+
+resonith_status collect_pcm(
+    void* user,
+    std::uint32_t sample_offset,
+    const std::int16_t* samples,
+    std::size_t sample_count
+) {
+    auto* state = static_cast<CallbackState*>(user);
+    if (
+        state == nullptr
+        || samples == nullptr
+        || sample_offset != state->cursor
+        || state->cursor > state->output.size()
+        || sample_count > state->output.size() - state->cursor
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    std::copy(
+        samples,
+        samples + sample_count,
+        state->output.begin()
+            + static_cast<std::ptrdiff_t>(state->cursor)
+    );
+    state->cursor += sample_count;
+    ++state->calls;
+    return RESONITH_STATUS_OK;
+}
+
 }  // namespace
 
 int main() {
@@ -137,6 +170,42 @@ int main() {
                 && written == output.size()
                 && output == kExpectedPcm,
             "RSC1 to exact PCM"
+        )) {
+        return 1;
+    }
+
+    resonith_main0_player_view player{};
+    if (!expect(
+            resonith_main0_player_open(
+                kMain0Stream.data(),
+                kMain0Stream.size(),
+                &player
+            ) == RESONITH_STATUS_OK
+                && player.atom_count == 1U
+                && player.block_size == 16U
+                && player.block_count == 3U,
+            "open model-bearing callback player"
+        )) {
+        return 1;
+    }
+    std::array<std::int16_t, 16> block_output{};
+    CallbackState callback_state{};
+    std::size_t emitted = 99U;
+    if (!expect(
+            resonith_main0_player_stream_complete(
+                &player,
+                &workspace,
+                block_output.data(),
+                block_output.size(),
+                collect_pcm,
+                &callback_state,
+                &emitted
+            ) == RESONITH_STATUS_OK
+                && emitted == kExpectedPcm.size()
+                && callback_state.cursor == kExpectedPcm.size()
+                && callback_state.calls == 3U
+                && callback_state.output == kExpectedPcm,
+            "model-bearing callback PCM equals whole decode"
         )) {
         return 1;
     }
