@@ -139,6 +139,19 @@ coefficient-count range, table identity, and wall time. This path has passed
 objective and native portability gates but remains prospective until blinded
 listening and real-device timing pass.
 
+The canonical filename path uses independently reset prospective LPS5 records:
+
+```sh
+PYTHONPATH=reference python -m maf_p0 encode-resonith \
+  input.wav output.resonith --average-coefficients 64
+PYTHONPATH=reference python -m maf_p0 decode-lapped \
+  output.resonith decoded.wav
+```
+
+When `--packet-frames` is omitted, the encoder selects a transform-aligned
+record duration near 256 ms. The public `.resonith` extension is stable; the
+embedded LPS5 research transport remains prospective.
+
 The first physical Windows x64 callback gate has passed 26,100 observations
 with zero deadline misses, 9.81x–12.33x realtime decode, and 29.5–37.8 KB
 caller workspace. This is desktop feasibility only; Android thermal and energy

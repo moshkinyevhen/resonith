@@ -21,6 +21,7 @@ from .lapped_oracle import decode_lapped_stream, encode_lapped_stream
 from .lapped_streaming import (
     MAGIC as LAPPED_PACKET_MAGIC,
     decode_lapped_packet_stream,
+    encode_lapped_finite_packet_stream,
     encode_lapped_packet_stream,
 )
 from .multichannel import (
@@ -290,6 +291,42 @@ def _encode_lapped(args: argparse.Namespace) -> None:
     print(json.dumps(report, indent=2, default=_json_default))
 
 
+def _encode_resonith(args: argparse.Namespace) -> None:
+    """Encode PCM16 WAV to the canonical extension using prospective LPS5."""
+
+    sample_rate, samples = read_pcm16_channels(args.input)
+    native_core = getattr(args, "native_core", None)
+    native_analyzer = (
+        NativeMain0Decoder(native_core) if native_core is not None else None
+    )
+    packet_frames = args.packet_frames
+    if packet_frames == 0:
+        # Keep independently reset records close to 256 ms while preserving
+        # exact transform alignment at every supported sample rate.
+        packet_frames = max(
+            args.half_window,
+            round(
+                sample_rate * 0.256 / args.half_window
+            ) * args.half_window,
+        )
+    started = time.perf_counter()
+    result = encode_lapped_finite_packet_stream(
+        samples,
+        sample_rate,
+        coefficients_per_frame=args.average_coefficients,
+        packet_frames=packet_frames,
+        half_window=args.half_window,
+        band_count=args.bands,
+        native_core=native_analyzer,
+    )
+    encode_seconds = time.perf_counter() - started
+    Path(args.output).write_bytes(result.payload)
+    report = dict(result.report)
+    report["encode_wall_seconds"] = encode_seconds
+    report["output"] = str(args.output)
+    print(json.dumps(report, indent=2, default=_json_default))
+
+
 def _decode_lapped(args: argparse.Namespace) -> None:
     """Decode prospective LPF1 through the independent Python reference."""
 
@@ -387,6 +424,35 @@ def build_parser() -> argparse.ArgumentParser:
         help="use the explicit shared Golden Core for forward analysis",
     )
     encode_lapped.set_defaults(function=_encode_lapped)
+
+    encode_resonith = commands.add_parser(
+        "encode-resonith",
+        help="encode PCM16 WAV to a prospective LPS5 .resonith stream",
+    )
+    encode_resonith.add_argument("input")
+    encode_resonith.add_argument("output")
+    encode_resonith.add_argument(
+        "--average-coefficients",
+        type=int,
+        default=64,
+    )
+    encode_resonith.add_argument("--half-window", type=int, default=512)
+    encode_resonith.add_argument("--bands", type=int, default=24)
+    encode_resonith.add_argument(
+        "--packet-frames",
+        type=int,
+        default=0,
+        help=(
+            "independently reset record size aligned to half-window; "
+            "zero selects about 256 ms"
+        ),
+    )
+    encode_resonith.add_argument(
+        "--native-core",
+        type=Path,
+        help="use the shared Golden Core for forward analysis",
+    )
+    encode_resonith.set_defaults(function=_encode_resonith)
 
     decode_lapped = commands.add_parser(
         "decode-lapped",

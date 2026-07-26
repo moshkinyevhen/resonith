@@ -15,7 +15,11 @@ import numpy as np
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT / "reference"))
 
-from maf_p0.cli import _decode_lapped, _encode_lapped  # noqa: E402
+from maf_p0.cli import (  # noqa: E402
+    _decode_lapped,
+    _encode_lapped,
+    _encode_resonith,
+)
 from maf_p0.lapped_streaming import decode_lapped_packet_stream  # noqa: E402
 from maf_p0.wav_io import (  # noqa: E402
     read_pcm16_channels,
@@ -69,6 +73,41 @@ class LappedCliTests(unittest.TestCase):
         self.assertEqual(report["packet_count"], 4)
         self.assertGreater(report["stream_bytes"], 0)
         np.testing.assert_array_equal(decoded, reference.samples)
+
+    def test_canonical_resonith_encode_uses_lps5_and_auto_packet_size(
+        self,
+    ) -> None:
+        frame = np.arange(8192, dtype=np.float64)
+        source = np.rint(
+            11000 * np.sin(2 * np.pi * frame / 83)
+        ).astype(np.int16).reshape(-1, 1)
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            source_path = directory / "speech.wav"
+            stream_path = directory / "speech.resonith"
+            write_pcm16_channels(source_path, 16000, source)
+            encoded_output = io.StringIO()
+            with redirect_stdout(encoded_output):
+                _encode_resonith(
+                    argparse.Namespace(
+                        input=source_path,
+                        output=stream_path,
+                        average_coefficients=24,
+                        half_window=512,
+                        bands=24,
+                        packet_frames=0,
+                        native_core=None,
+                    )
+                )
+            report = json.loads(encoded_output.getvalue())
+            payload = stream_path.read_bytes()
+            decoded = decode_lapped_packet_stream(payload)
+
+        self.assertEqual(report["format_profile"], "prospective-LPS5")
+        self.assertEqual(report["packet_frames"], 4096)
+        self.assertTrue(payload.startswith(b"LPS5"))
+        self.assertEqual(decoded.sample_rate, 16000)
+        self.assertEqual(decoded.samples.shape, source.shape)
 
 
 if __name__ == "__main__":
