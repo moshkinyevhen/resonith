@@ -74,6 +74,7 @@ The first portable decoder subset is documented in
 - [Implementation language and runtime](docs/11_IMPLEMENTATION_LANGUAGE.md)
 - [LiftPack-1 and full-stream state RDO](docs/12_LIFTPACK_AND_STATE_RDO.md)
 - [RSC1 compact deterministic section container](docs/13_RSC1_CONTAINER.md)
+- [First native typed-stream music diagnostic](docs/14_MAIN0_NATIVE_MUSIC.md)
 - [Primary sources](docs/REFERENCES.md)
 - [Resonith-0 normative draft](spec/Resonith-0.md)
 

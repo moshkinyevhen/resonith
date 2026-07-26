@@ -1,0 +1,53 @@
+{
+  "actions_run": "https://github.com/moshkinyevhen/resonith/actions/runs/30198613411",
+  "clips": {
+    "corelli-sonata-realization": {
+      "encode_wall_seconds": 1.6892385020000091,
+      "native_decode_wall_seconds": 0.00139316900001063,
+      "native_workspace_bytes": 546220,
+      "opus_48k_effective_kbps": 58.6,
+      "opus_48k_snr_db": 19.31,
+      "opus_96k_effective_kbps": 117.96,
+      "opus_96k_snr_db": 26.03,
+      "resonith_effective_kbps": 97.22,
+      "resonith_max_abs_error": 32,
+      "resonith_selected_candidate": "constant-gain-4096",
+      "resonith_snr_db": 24.08943404012947,
+      "resonith_stream_bytes": 12153,
+      "resonith_stream_sha256": "5f815ca8fbc9ce543ce420f0fe9472a4be8c9b13c3bfcfe7defbb073fcd1ac49"
+    },
+    "emotional-piano-cc0": {
+      "encode_wall_seconds": 2.1902062720000117,
+      "native_decode_wall_seconds": 0.0015168049999942923,
+      "native_workspace_bytes": 546220,
+      "opus_48k_effective_kbps": 62.18,
+      "opus_48k_snr_db": 25.81,
+      "opus_96k_effective_kbps": 118.46,
+      "opus_96k_snr_db": 29.04,
+      "resonith_effective_kbps": 113.34,
+      "resonith_max_abs_error": 32,
+      "resonith_selected_candidate": "constant-gain-4096",
+      "resonith_snr_db": 47.14482498676723,
+      "resonith_stream_bytes": 14167,
+      "resonith_stream_sha256": "22248b274e78a8c2a5936137adf9cf6c4e8a772ea23a5983c740449e3b938b0e"
+    },
+    "patro-de-bateria": {
+      "encode_wall_seconds": 1.8011070430000018,
+      "native_decode_wall_seconds": 0.0015720789999988938,
+      "native_workspace_bytes": 546220,
+      "opus_48k_effective_kbps": 47.56,
+      "opus_48k_snr_db": 21.92,
+      "opus_96k_effective_kbps": 99.38,
+      "opus_96k_snr_db": 22.19,
+      "resonith_effective_kbps": 119.59,
+      "resonith_max_abs_error": 32,
+      "resonith_selected_candidate": "constant-gain-4096",
+      "resonith_snr_db": 40.10469795695827,
+      "resonith_stream_bytes": 14949,
+      "resonith_stream_sha256": "618dfc63bdf19e285d66b1b1a10ecffe655b3e61cdc42d640d95a22febfa4581"
+    }
+  },
+  "maximum_seconds_per_clip": 1.0,
+  "raw_report_sha256": "371154c136a254e2ad1cce61346a6c91529bbdcef66c99b50c95b0f3211502f4",
+  "status": "measured diagnostic; not a perceptually matched codec-victory claim"
+}

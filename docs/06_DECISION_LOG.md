@@ -687,7 +687,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-035 — Licensed typed-stream evidence and blinded listening artifacts
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / EXPERIMENTAL**
+- Status: **IMPLEMENTED FIRST RUN / MEASURED-DIAGNOSTIC**
 - Decision:
   - run the executable typed Main-0 encoder only through the R-034 native
     decoder gate on the existing pinned and licensed real-music corpus;

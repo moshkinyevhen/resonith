@@ -16,6 +16,7 @@
 | [11_IMPLEMENTATION_LANGUAGE.md](11_IMPLEMENTATION_LANGUAGE.md) | Native Golden Core, safe player runtime, portability, and quality gates |
 | [12_LIFTPACK_AND_STATE_RDO.md](12_LIFTPACK_AND_STATE_RDO.md) | Native residual entropy, state candidates, full-stream RDO, and real-music results |
 | [13_RSC1_CONTAINER.md](13_RSC1_CONTAINER.md) | Compact deterministic typed section container |
+| [14_MAIN0_NATIVE_MUSIC.md](14_MAIN0_NATIVE_MUSIC.md) | First Golden-Core-gated music and listening diagnostic |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
 
 Normative draft:
