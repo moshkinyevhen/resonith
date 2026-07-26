@@ -543,6 +543,7 @@ def encode_lapped_analysis(
     coefficients_per_frame: int,
     entropy_backend: str = "bounded",
     density_backend: str = "fixed",
+    native_decoder=None,
 ) -> LappedEncodeResult:
     """Select, pack, and verify one stream from reusable source analysis."""
 
@@ -719,7 +720,18 @@ def encode_lapped_analysis(
         level=5,
         timebase_hz=sample_rate,
     )
-    decoded = decode_lapped_stream(payload)
+    if native_decoder is None:
+        reconstruction = decode_lapped_stream(payload).samples
+        reconstruction_backend = "python fixed reference"
+    else:
+        native = native_decoder.decode_lapped(payload)
+        if (
+            native.sample_rate != sample_rate
+            or native.samples.shape != source.shape
+        ):
+            raise RuntimeError("native lapped reconstruction shape differs")
+        reconstruction = native.samples
+        reconstruction_backend = "native C99 Golden Core"
     report = {
         "status": "research lapped Innovation; syntax is non-normative",
         "format_profile": "prospective-LPF1-RSC1-level-5",
@@ -729,6 +741,7 @@ def encode_lapped_analysis(
         ),
         "fixed_table_sha256": table_sha256,
         "analysis_backend": analysis.analysis_backend,
+        "reconstruction_backend": reconstruction_backend,
         "density_backend": density_backend,
         "stream_bytes": len(payload),
         "stream_sha256": hashlib.sha256(payload).hexdigest(),
@@ -747,10 +760,10 @@ def encode_lapped_analysis(
         "compressed_grid_bytes": len(entropy_payload),
         **_quality_report(
             source.reshape(-1),
-            decoded.samples.reshape(-1),
+            reconstruction.reshape(-1),
         ),
     }
-    return LappedEncodeResult(payload, decoded.samples, report)
+    return LappedEncodeResult(payload, reconstruction, report)
 
 
 def encode_lapped_stream(
@@ -764,6 +777,7 @@ def encode_lapped_stream(
     transform_backend: str = "fixed",
     density_backend: str = "fixed",
     native_analyzer=None,
+    native_decoder=None,
 ) -> LappedEncodeResult:
     """Analyze source PCM, then encode one exact-byte lapped candidate."""
 
@@ -780,4 +794,5 @@ def encode_lapped_stream(
         coefficients_per_frame=coefficients_per_frame,
         entropy_backend=entropy_backend,
         density_backend=density_backend,
+        native_decoder=native_decoder,
     )

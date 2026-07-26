@@ -334,6 +334,7 @@ class NativeBridgeTests(unittest.TestCase):
             transform_backend="fixed",
             density_backend="adaptive",
             native_analyzer=self.decoder,
+            native_decoder=self.decoder,
         )
         python_encoded = encode_lapped_stream(
             stereo,
@@ -349,6 +350,10 @@ class NativeBridgeTests(unittest.TestCase):
         self.assertEqual(
             native_encoded.report["analysis_backend"],
             "native C99 fixed Q15/Q14",
+        )
+        self.assertEqual(
+            native_encoded.report["reconstruction_backend"],
+            "native C99 Golden Core",
         )
 
 

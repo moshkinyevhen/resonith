@@ -1873,3 +1873,22 @@ new oscillator opcode.
   - explicit SIMD/CUDA is not the next bottleneck. Candidate reconstruction
     still uses the slower Python synthesis and should move through the already
     verified native decoder before adding architecture-specific code.
+
+## R-070 — Native candidate reconstruction in encoder RDO
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - allow exact-byte candidate packing to request reconstruction from the
+    independent native Golden Decoder;
+  - retain Python decode as the portable fallback and require payload and PCM
+    parity between both paths;
+  - when the CLI is given `--native-core`, use that same explicit library for
+    forward analysis and every candidate reconstruction;
+  - keep coefficient selection and bounded entropy encoder-side in Python until
+    timing identifies either as the next bottleneck.
+- Rationale:
+  - native decode already measures 17x-20x real time while Python synthesis is
+    repeated for every RDO candidate;
+  - using the production decoder inside RDO accelerates search and strengthens
+    acceptance: distortion is measured from the implementation users run.

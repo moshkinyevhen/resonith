@@ -262,6 +262,7 @@ def _encode_lapped(args: argparse.Namespace) -> None:
         transform_backend="fixed",
         density_backend=args.density,
         native_analyzer=native_analyzer,
+        native_decoder=native_analyzer,
     )
     encode_seconds = time.perf_counter() - started
     Path(args.output).write_bytes(result.payload)
