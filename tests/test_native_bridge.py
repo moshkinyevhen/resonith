@@ -27,6 +27,7 @@ from maf_p0.lapped_oracle import (  # noqa: E402
 )
 from maf_p0.lapped_streaming import (  # noqa: E402
     decode_lapped_packet_stream,
+    encode_lapped_compact_packet_stream,
     encode_lapped_packet_stream,
     encode_lapped_transform_packet_stream,
 )
@@ -395,6 +396,28 @@ class NativeBridgeTests(unittest.TestCase):
         native = self.decoder.decode_lapped_packets(encoded.payload)
 
         self.assertEqual(native.packet_count, 4)
+        self.assertLess(native.workspace_bytes, 1 << 20)
+        np.testing.assert_array_equal(native.samples, reference.samples)
+        np.testing.assert_array_equal(
+            native.samples,
+            encoded.reconstruction,
+        )
+
+    def test_lapped_compact_pull_matches_monolithic(self) -> None:
+        right = np.roll(self.samples, 37)
+        stereo = np.stack((self.samples, right), axis=1)
+        encoded = encode_lapped_compact_packet_stream(
+            stereo,
+            48_000,
+            coefficients_per_frame=48,
+            packet_frames=1536,
+            half_window=256,
+            band_count=16,
+        )
+        reference = decode_lapped_packet_stream(encoded.payload)
+        native = self.decoder.decode_lapped_compact_packets(encoded.payload)
+
+        self.assertEqual(native.packet_count, 6)
         self.assertLess(native.workspace_bytes, 1 << 20)
         np.testing.assert_array_equal(native.samples, reference.samples)
         np.testing.assert_array_equal(

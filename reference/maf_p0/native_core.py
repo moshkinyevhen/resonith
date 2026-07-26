@@ -173,6 +173,40 @@ class _LappedPacketSession(ctypes.Structure):
     ]
 
 
+class _LappedCompactRequirements(ctypes.Structure):
+    _fields_ = [
+        ("sample_rate", ctypes.c_uint32),
+        ("frame_count", ctypes.c_uint32),
+        ("packet_frames", ctypes.c_uint32),
+        ("packet_count", ctypes.c_uint32),
+        ("half_window", ctypes.c_uint16),
+        ("band_count", ctypes.c_uint16),
+        ("output_channels", ctypes.c_uint16),
+        ("reserved", ctypes.c_uint16),
+        ("maximum_current", _LappedRequirements),
+        ("maximum_lookahead", _LappedRequirements),
+        ("maximum_logical_output_elements", ctypes.c_size_t),
+    ]
+
+
+class _LappedCompactSession(ctypes.Structure):
+    _fields_ = [
+        ("data", ctypes.POINTER(ctypes.c_uint8)),
+        ("data_size", ctypes.c_size_t),
+        ("next_offset", ctypes.c_size_t),
+        ("next_packet", ctypes.c_uint32),
+        ("next_frame", ctypes.c_uint32),
+        ("sample_rate", ctypes.c_uint32),
+        ("frame_count", ctypes.c_uint32),
+        ("packet_frames", ctypes.c_uint32),
+        ("packet_count", ctypes.c_uint32),
+        ("half_window", ctypes.c_uint16),
+        ("band_count", ctypes.c_uint16),
+        ("output_channels", ctypes.c_uint16),
+        ("reserved", ctypes.c_uint16),
+    ]
+
+
 class _MultichannelPlayerView(ctypes.Structure):
     _fields_ = [
         (
@@ -671,6 +705,23 @@ class NativeMain0Decoder:
             ctypes.POINTER(ctypes.c_size_t),
         ]
         self._library.resonith_lapped_packet_decode_next.restype = ctypes.c_int
+        self._library.resonith_lapped_compact_open.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(_LappedCompactSession),
+            ctypes.POINTER(_LappedCompactRequirements),
+        ]
+        self._library.resonith_lapped_compact_open.restype = ctypes.c_int
+        self._library.resonith_lapped_compact_decode_next.argtypes = [
+            ctypes.POINTER(_LappedCompactSession),
+            ctypes.POINTER(_LappedWorkspace),
+            ctypes.POINTER(_LappedWorkspace),
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_uint32),
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        self._library.resonith_lapped_compact_decode_next.restype = ctypes.c_int
         self._library.resonith_status_string.argtypes = [ctypes.c_int]
         self._library.resonith_status_string.restype = ctypes.c_char_p
 
@@ -1047,6 +1098,143 @@ class NativeMain0Decoder:
             )
         if session.next_frame != requirements.frame_count:
             raise RuntimeError("native LPS1 session returned partial PCM")
+        output.flags.writeable = False
+        return NativeLappedPacketDecodeResult(
+            output,
+            int(requirements.sample_rate),
+            int(requirements.packet_frames),
+            int(requirements.packet_count),
+            workspace_bytes,
+        )
+
+    def decode_lapped_compact_packets(
+        self,
+        payload: bytes,
+    ) -> NativeLappedPacketDecodeResult:
+        """Decode an LPS4 sequence through the bounded two-workspace session."""
+
+        source = self._input_buffer(payload)
+        session = _LappedCompactSession()
+        requirements = _LappedCompactRequirements()
+        self._check(
+            self._library.resonith_lapped_compact_open(
+                source,
+                len(payload),
+                ctypes.byref(session),
+                ctypes.byref(requirements),
+            )
+        )
+        current = requirements.maximum_current
+        lookahead = requirements.maximum_lookahead
+        workspace_bytes = (
+            int(current.scale_elements)
+            + 2 * int(current.count_elements)
+            + 2 * int(current.position_elements)
+            + int(current.coefficient_elements)
+            + 8 * int(current.overlap_elements)
+            + int(lookahead.scale_elements)
+            + 2 * int(lookahead.count_elements)
+            + 2 * int(lookahead.position_elements)
+            + int(lookahead.coefficient_elements)
+            + 2 * int(requirements.maximum_logical_output_elements)
+        )
+        if workspace_bytes > self._max_workspace_bytes:
+            raise MemoryError(
+                "native LPS4 workspace exceeds the configured host ceiling"
+            )
+
+        current_scales = (
+            ctypes.c_uint8 * max(1, int(current.scale_elements))
+        )()
+        current_counts = (
+            ctypes.c_uint16 * max(1, int(current.count_elements))
+        )()
+        current_positions = (
+            ctypes.c_uint16 * max(1, int(current.position_elements))
+        )()
+        current_coefficients = (
+            ctypes.c_int8 * max(1, int(current.coefficient_elements))
+        )()
+        current_overlap = (
+            ctypes.c_int64 * max(1, int(current.overlap_elements))
+        )()
+        current_workspace = _LappedWorkspace(
+            current_scales,
+            int(current.scale_elements),
+            current_counts,
+            int(current.count_elements),
+            current_positions,
+            int(current.position_elements),
+            current_coefficients,
+            int(current.coefficient_elements),
+            current_overlap,
+            int(current.overlap_elements),
+        )
+
+        lookahead_scales = (
+            ctypes.c_uint8 * max(1, int(lookahead.scale_elements))
+        )()
+        lookahead_counts = (
+            ctypes.c_uint16 * max(1, int(lookahead.count_elements))
+        )()
+        lookahead_positions = (
+            ctypes.c_uint16 * max(1, int(lookahead.position_elements))
+        )()
+        lookahead_coefficients = (
+            ctypes.c_int8 * max(1, int(lookahead.coefficient_elements))
+        )()
+        lookahead_workspace = _LappedWorkspace(
+            lookahead_scales,
+            int(lookahead.scale_elements),
+            lookahead_counts,
+            int(lookahead.count_elements),
+            lookahead_positions,
+            int(lookahead.position_elements),
+            lookahead_coefficients,
+            int(lookahead.coefficient_elements),
+            None,
+            0,
+        )
+        logical_output = (
+            ctypes.c_int16
+            * int(requirements.maximum_logical_output_elements)
+        )()
+        output = np.empty(
+            (
+                int(requirements.frame_count),
+                int(requirements.output_channels),
+            ),
+            dtype=np.int16,
+        )
+        for expected_packet in range(int(requirements.packet_count)):
+            logical_start = ctypes.c_uint32()
+            frames_written = ctypes.c_size_t()
+            self._check(
+                self._library.resonith_lapped_compact_decode_next(
+                    ctypes.byref(session),
+                    ctypes.byref(current_workspace),
+                    ctypes.byref(lookahead_workspace),
+                    logical_output,
+                    int(requirements.maximum_logical_output_elements),
+                    ctypes.byref(logical_start),
+                    ctypes.byref(frames_written),
+                )
+            )
+            if session.next_packet != expected_packet + 1:
+                raise RuntimeError("native LPS4 session did not advance once")
+            element_count = (
+                int(frames_written.value)
+                * int(requirements.output_channels)
+            )
+            block = np.ctypeslib.as_array(logical_output)[:element_count]
+            start = int(logical_start.value)
+            end = start + int(frames_written.value)
+            output[start:end] = block.reshape(
+                int(frames_written.value),
+                int(requirements.output_channels),
+            )
+        if session.next_frame != requirements.frame_count:
+            raise RuntimeError("native LPS4 session returned partial PCM")
         output.flags.writeable = False
         return NativeLappedPacketDecodeResult(
             output,
