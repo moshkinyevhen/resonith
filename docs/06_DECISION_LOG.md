@@ -958,7 +958,7 @@ new oscillator opcode.
 ## R-045 — Reversible stereo lifting before spatial syntax
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / RESEARCH**
+- Status: **MEASURED 1/3 WON / GATE FAILED / RESEARCH-ONLY**
 - Decision:
   - test stereo first as one bounded reversible two-channel lifting choice
     followed by two unchanged independent RSL2 streams;
@@ -979,3 +979,29 @@ new oscillator opcode.
     while entropy, prediction, checksums, and bounded memory stay unchanged;
   - starting with a whole-stream lift creates a falsifiable lower bound before
     considering time-varying or frequency-selective stereo state.
+- Result:
+  - independent channels remained optimal for Corelli and piano;
+  - left/side saved 0.42% on drums;
+  - the mean was 0.14%, so no whole-stream stereo-lift syntax is promoted.
+
+## R-046 — One-MAC cross-channel gain-delay predictor
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / RESEARCH**
+- Decision:
+  - test one decoded channel as an immutable Truth reference for the other;
+  - predict the target with one signed Q12 gain and one bounded integer sample
+    delay, then code the exact target residual with unchanged RSL2;
+  - compete both channel directions and delays from -32 through +32 samples;
+  - use encoder-only residual energy to shortlist at most four gain-delay
+    candidates per direction, then select only by complete RSC1 bytes;
+  - retain the full R-045 winner as a mandatory fallback;
+  - promote only if the cross-channel predictor saves at least 3% on two clips
+    and at least 5% on the arithmetic mean.
+- Rationale:
+  - fixed mid/side assumes equal gain and zero delay, which the licensed stereo
+    recordings demonstrably do not satisfy;
+  - gain-delay prediction adds only one MAC per target sample, a tiny header,
+    and bounded lookahead/state while leaving both RSL2 kernels unchanged;
+  - failure closes the simple waveform-domain stereo family before considering
+    more expensive time-varying or frequency-selective spatial models.

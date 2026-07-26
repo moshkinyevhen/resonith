@@ -54,6 +54,9 @@ reproducible command and independent decode.
 - `stereo_lifting_oracle_benchmark.py` — R-045 complete-byte competition
   among independent, reversible mid/side, left/side, and right/side stereo
   representations over the original licensed source channels.
+- `cross_channel_oracle_benchmark.py` — R-046 bounded one-MAC Q12 gain-delay
+  prediction in both channel directions, shortlisted by energy and selected
+  against the full R-045 fallback only by complete bytes.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

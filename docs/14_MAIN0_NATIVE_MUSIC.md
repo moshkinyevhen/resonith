@@ -288,3 +288,30 @@ Raw report SHA-256:
 
 Canonical compact evidence:
 [`../experiments/results/variable_block_oracle_2026-07-26_summary.json`](../experiments/results/variable_block_oracle_2026-07-26_summary.json).
+
+## 13. Whole-stream reversible stereo gate
+
+R-045 returned to the original licensed stereo channels and competed
+independent left/right, reversible mid/side, left/side, and right/side maps.
+All modes reconstructed the same independently quantized channel Truth.
+
+| Clip | Independent | Selected | Reduction |
+|---|---:|---:|---:|
+| Corelli realization | 20,654 bytes | 20,654, independent | 0.00% |
+| Recorded piano | 24,855 bytes | 24,855, independent | 0.00% |
+| Recorded drums | 26,041 bytes | 25,932, left/side | 0.42% |
+
+The 0.14% mean is far below the 12% gate. A global mid/side opcode is not
+promoted merely because it is conventional; the next bounded oracle tests the
+narrow missing factor of unequal gain and short inter-channel delay.
+
+Run:
+[30201931759](https://github.com/moshkinyevhen/resonith/actions/runs/30201931759).
+Raw report SHA-256:
+
+```text
+7cf7eb825500ecc7c73aca4685cab2486a29ca1cec2742d0d0580d2790009030
+```
+
+Canonical compact evidence:
+[`../experiments/results/stereo_lifting_oracle_2026-07-26_summary.json`](../experiments/results/stereo_lifting_oracle_2026-07-26_summary.json).

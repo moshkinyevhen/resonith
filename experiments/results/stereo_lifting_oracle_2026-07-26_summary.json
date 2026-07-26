@@ -1,0 +1,27 @@
+{
+  "actions_run": "https://github.com/moshkinyevhen/resonith/actions/runs/30201931759",
+  "clips": {
+    "corelli-sonata-realization": {
+      "independent_anchor_bytes": 20654,
+      "reduction_vs_independent": 0.0,
+      "selected_bytes": 20654,
+      "selected_mode": "independent"
+    },
+    "emotional-piano-cc0": {
+      "independent_anchor_bytes": 24855,
+      "reduction_vs_independent": 0.0,
+      "selected_bytes": 24855,
+      "selected_mode": "independent"
+    },
+    "patro-de-bateria": {
+      "independent_anchor_bytes": 26041,
+      "reduction_vs_independent": 0.004185707154103158,
+      "selected_bytes": 25932,
+      "selected_mode": "left_side"
+    }
+  },
+  "gate_passed": false,
+  "mean_reduction_vs_independent": 0.001395235718034386,
+  "raw_report_sha256": "7cf7eb825500ecc7c73aca4685cab2486a29ca1cec2742d0d0580d2790009030",
+  "status": "global reversible stereo lifting failed; no syntax promoted"
+}
