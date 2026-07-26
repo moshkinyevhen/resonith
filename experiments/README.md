@@ -94,6 +94,8 @@ reproducible command and independent decode.
 - `lapped_packet_loss_gate.py` — R-074 authenticated-packet absence,
   deterministic output-only concealment, and exact later-Truth recovery on
   pinned real music.
+- `results/lapped_packet_loss_2026-07-26_summary.json` — exact containment
+  pass and the measured short independent-context packet rate failure.
 - `results/native_lapped_frontier_timing_2026-07-26_summary.json` — the R-070
   exact native-RDO speedup over the shared-analysis Python path.
 - `results/native_lapped_analysis_timing_2026-07-26_summary.json` — the R-068

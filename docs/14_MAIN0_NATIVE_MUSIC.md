@@ -928,3 +928,24 @@ the final NumPy copy. Thus packet independence has not introduced a material
 hosted-CPU regression relative to the earlier 17x-20x monolithic LPF1 range.
 This is not a mobile energy or thermal claim. The compact record is
 [`native_lapped_packet_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_packet_timing_2026-07-26_summary.json).
+
+## 39. Packet-loss containment and the short-packet limit
+
+The transport-loss experiment removed one authenticated packet after
+demultiplexing, concealed only its output interval, and decoded every later
+packet independently. All three clips reproduced uninterrupted Truth exactly
+outside the missing interval and from the first later packet onward. Thus
+neither overlap, adaptive density, entropy, nor concealment contaminates future
+reference state.
+
+The same experiment exposed a rate limit. At 10,752 frames (243.81 ms), full
+independent source context cost 23.80% on Corelli, 27.10% on piano, and 28.26%
+on drums relative to monolithic LPF1. That is not acceptable as the default
+Realtime profile. Approximately one-second packets retain their earlier
+6.80%-7.31% file/parallel-decode result.
+
+The next packet experiment must preserve exact containment while reusing one
+global transform analysis. It may duplicate only the minimum transform-domain
+boundary state, not independently re-analyze and reallocate an entire
+contextual source crop. The compact result is
+[`lapped_packet_loss_2026-07-26_summary.json`](../experiments/results/lapped_packet_loss_2026-07-26_summary.json).

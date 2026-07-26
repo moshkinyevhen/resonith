@@ -2001,7 +2001,7 @@ new oscillator opcode.
 ## R-074 — Packet loss never mutates lapped Truth
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **TRUTH CONTAINMENT PASS / SHORT-PACKET RATE FAIL**
 - Decision:
   - expose one independently authenticated LPS1 packet view after envelope
     demultiplexing and decode each available child without earlier children;
@@ -2020,3 +2020,16 @@ new oscillator opcode.
     corruption must remain a hard error, while absence may be concealed;
   - a simple exact containment gate should precede FEC or learned concealment,
     both of which can improve missing audio without changing codec Truth.
+- Result:
+  - GitHub Actions run 30210723866 dropped one authenticated 243.81 ms packet
+    after demultiplexing on each pinned three-second music crop;
+  - every non-lost frame and the first later packet matched uninterrupted Truth
+    exactly on all three clips;
+  - deterministic integer fade remained output-only and never entered a codec
+    reference;
+  - complete-byte overhead versus monolithic LPF1 was 23.80%, 27.10%, and
+    28.26%, much higher than the 6.80%-7.31% measured near one second;
+  - therefore the construction is retained for file, parallel, and coarse
+    random-access packets but rejected as the current Realtime packet profile.
+    A shorter-packet design must reuse global analysis and pay only for the
+    minimum boundary state.

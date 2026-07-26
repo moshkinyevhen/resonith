@@ -1,0 +1,37 @@
+{
+  "date": "2026-07-26",
+  "github_actions_run": 30210723866,
+  "gate": {
+    "exact_outside_loss": true,
+    "exact_first_later_packet": true,
+    "truth_reference_uses_concealment": false,
+    "passing_clips": 3,
+    "clip_count": 3
+  },
+  "configuration": {
+    "maximum_seconds": 3.0,
+    "packet_frames": 10752,
+    "packet_interval_milliseconds": 243.8095238095238,
+    "half_window": 512,
+    "lost_packets_per_clip": 1
+  },
+  "clips": {
+    "corelli-sonata-realization": {
+      "packet_count": 13,
+      "packet_byte_overhead_fraction": 0.23802010158867404,
+      "concealed_snr_db_diagnostic": 12.576882755030873
+    },
+    "emotional-piano-cc0": {
+      "packet_count": 13,
+      "packet_byte_overhead_fraction": 0.2710123146631973,
+      "concealed_snr_db_diagnostic": 8.98854709230986
+    },
+    "patro-de-bateria": {
+      "packet_count": 13,
+      "packet_byte_overhead_fraction": 0.2825744380857593,
+      "concealed_snr_db_diagnostic": 12.881081747763696
+    }
+  },
+  "status": "Truth containment passed; short independent-context packet rate gate failed",
+  "conclusion": "Independent context prevents all post-loss Truth propagation, but 243.8 ms packets add 23.8%-28.3% complete bytes. This construction remains suitable for approximately one-second file/parallel packets and is not promoted as the Realtime packet profile."
+}
