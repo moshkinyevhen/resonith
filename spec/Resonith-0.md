@@ -97,6 +97,15 @@ views. It MUST validate both section CRC-32 and SHA-256 before passing that
 payload to a normative decoder primitive. Unknown critical types MUST cause
 profile rejection. Non-critical unknown types MAY be skipped.
 
+#### 4.1.1 Raw Basis section (`BRAW`, schema 1)
+
+The payload contains `u16 channels`, zero `u16 flags`,
+`u32 samples_per_channel`, then exactly
+`channels * samples_per_channel` channel-major little-endian int16 samples.
+Channels are in \([1,8]\), total elements do not exceed 16,384, and trailing
+bytes are prohibited. Implementations decode to aligned host-endian Basis
+memory before state commit.
+
 ## 5. State records
 
 ### 5.1 `STREAM_CONFIG`

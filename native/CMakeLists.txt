@@ -5,6 +5,7 @@ project(resonith_core VERSION 0.1.0 LANGUAGES C CXX)
 option(RESONITH_WARNINGS_AS_ERRORS "Treat native-core warnings as errors" ON)
 
 add_library(resonith_core STATIC
+    src/basis.cpp
     src/cibs.cpp
     src/composition.cpp
     src/container.cpp
@@ -103,4 +104,13 @@ if(BUILD_TESTING)
     )
     resonith_enable_warnings(resonith_composition_test)
     add_test(NAME composition_conformance COMMAND resonith_composition_test)
+
+    add_executable(resonith_basis_test
+        tests/basis_test.cpp
+    )
+    target_compile_features(resonith_basis_test PRIVATE cxx_std_20)
+    target_link_libraries(resonith_basis_test PRIVATE Resonith::Core)
+    set_target_properties(resonith_basis_test PROPERTIES CXX_EXTENSIONS OFF)
+    resonith_enable_warnings(resonith_basis_test)
+    add_test(NAME basis_conformance COMMAND resonith_basis_test)
 endif()

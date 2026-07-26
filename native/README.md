@@ -22,6 +22,8 @@ The native Core:
   slices with callback-size-independent Q16 interpolation;
 - applies sparse absolute Q17.15 gain events and objective Innovation in one
   bounded saturating Truth-composition pass;
+- decodes minimal typed `BRAW` Basis payloads into aligned caller-owned
+  host-endian memory without generic array metadata;
 - rejects non-canonical lengths, trailing bytes, non-zero padding, profile
   bound violations, and undersized buffers;
 - uses a portable scalar implementation with no third-party dependency;
@@ -71,6 +73,9 @@ callback partitions.
 `native/tests/composition_test.cpp` verifies sparse gain events, negative
 floor-division, Innovation scaling, saturation, and slice independence.
 
-This is not yet the full Resonith decoder. Typed Basis/Atom payload parsing,
+`native/tests/basis_test.cpp` verifies the first typed acoustic payload and
+cross-endian sample reconstruction.
+
+This is not yet the full Resonith decoder. Typed CIBS/Atom payload parsing,
 transient rendering, and multi-channel synthesis remain subsequent parity
 stages.

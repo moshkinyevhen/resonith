@@ -586,3 +586,23 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
   - the same small mechanism handles abrupt amplitude events and long-lived
     constants while preserving exact compatibility with the P1 diagnostic
     when needed.
+
+## R-031 — Minimal typed raw Basis payload
+
+- Date: 2026-07-26
+- Status: **NORMATIVE-DRAFT / IMPLEMENTATION IN PROGRESS**
+- Decision:
+  - define RSC1 section type `BRAW`, schema version 1, as an eight-byte typed
+    header followed by channel-major little-endian int16 Basis samples;
+  - carry only `u16 channels`, zero `u16 flags`, and
+    `u32 samples_per_channel` before sample data;
+  - use the RSC1 directory for type, schema, instance ID, lifetime origin,
+    extent, CRC, and hash rather than duplicating those fields inside payload;
+  - decode into caller-owned aligned host-endian memory instead of exposing an
+    unsafe cast into unaligned little-endian bytes;
+  - cap total Basis elements at 16,384.
+- Rationale:
+  - the final decoder needs typed acoustic objects, not generic dtype/shape
+    arrays;
+  - the eight-byte header is sufficient for exact materialization on
+    little-endian, big-endian, desktop, mobile, and embedded targets.
