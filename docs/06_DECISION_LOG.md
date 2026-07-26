@@ -631,7 +631,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-033 — Typed Main-0 stream state and whole-container decoding
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / NORMATIVE-DRAFT**
+- Status: **IMPLEMENTED / CROSS-COMPILER VERIFIED / NORMATIVE-DRAFT**
 - Decision:
   - define `CONF` schema 1 as one fixed 16-byte stream contract carrying
     sample count, objective-Innovation step, output-channel count, and zero
@@ -657,3 +657,29 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
     format while preserving the causal model and a small embedded decoder;
   - exact workspace discovery keeps the decoder deterministic and free of
     hidden allocation.
+
+## R-034 — Native decoder-in-loop is an encoder acceptance gate
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / NORMATIVE-DRAFT**
+- Decision:
+  - build a shared-library form of the exact same Golden Core sources and C
+    ABI used by native conformance tests;
+  - load that library from Python only by an explicit path or environment
+    variable, never by silently substituting another decoder;
+  - inspect exact native workspace requirements before allocating binding
+    buffers and apply a host-side memory ceiling before allocation;
+  - require every new typed-RSC1 encoder candidate to decode successfully in
+    the native Core and match the Python reference PCM sample-for-sample before
+    it may participate in RDO;
+  - reject a candidate on native status failure or cross-decoder mismatch
+    rather than assigning it an optimistic proxy cost;
+  - exercise this boundary in CI against the shared Core, in addition to
+    keeping pure-Python reference tests independently runnable.
+- Rationale:
+  - encoder RDO must optimize the format that production devices execute, not
+    an accidentally more permissive research decoder;
+  - one source set for static and shared builds prevents binding-specific DSP
+    drift;
+  - explicit loading and resource ceilings keep experiment provenance and
+    hostile-input behavior auditable.

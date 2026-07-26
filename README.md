@@ -38,14 +38,16 @@ The repository contains:
 - bounded reversible integer-lifting transient events;
 - RAW and CIBS Basis banks plus the bounded `LiftPack-1` objective residual;
 - the compact deterministic `RSC1` typed section-container candidate;
-- a dependency-free C++20 `LiftPack-1` Golden Core behind a stable C99 ABI;
+- a dependency-free C++20 whole-RSC1 Golden Core behind a stable C99 ABI;
+- an explicit shared-Core Python bridge that gates typed-stream RDO on the
+  production decoder and exact cross-decoder PCM equality;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 65 Python reference/security/integration tests when the Opus tool is
-  configured, plus seven native conformance targets built with GCC, Clang, and
-  MSVC.
+- 65 pure reference/security/integration tests, two native decoder-in-loop
+  integration tests, and seven native conformance targets built with GCC,
+  Clang, and MSVC.
 
 All current MAF-P1/Opus results are deliberately labeled diagnostics, not
 general codec claims. See

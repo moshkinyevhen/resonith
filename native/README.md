@@ -50,6 +50,18 @@ ctest --test-dir build/native --build-config Release --output-on-failure
 with GCC, Clang, and MSVC. The C header is compiled by a C99 translation unit,
 while the implementation remains C++20.
 
+The build also emits `resonith_core_shared` from the identical source set.
+Python RDO loads it only through an explicit `RESONITH_NATIVE_CORE` path:
+
+```sh
+cmake --build build/native --target resonith_core_shared
+export RESONITH_NATIVE_CORE="$PWD/build/native/libresonith_core_shared.so"
+python -m unittest discover -s tests -p test_native_bridge.py -v
+```
+
+The binding inspects exact workspace counts and applies a host memory ceiling
+before creating caller-owned arrays.
+
 ## Conformance anchor
 
 `native/tests/liftpack_test.cpp` embeds the canonical 203-byte stream from the

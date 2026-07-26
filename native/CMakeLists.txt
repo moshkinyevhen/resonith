@@ -28,6 +28,33 @@ set_target_properties(resonith_core PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
 
+add_library(resonith_core_shared SHARED
+    src/basis.cpp
+    src/cibs.cpp
+    src/composition.cpp
+    src/container.cpp
+    src/integrity.cpp
+    src/liftpack.cpp
+    src/status.cpp
+    src/stream.cpp
+    src/trajectory.cpp
+)
+add_library(Resonith::CoreShared ALIAS resonith_core_shared)
+target_compile_features(resonith_core_shared PUBLIC cxx_std_20)
+target_include_directories(resonith_core_shared
+    PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:include>"
+)
+target_compile_definitions(resonith_core_shared
+    PUBLIC RESONITH_SHARED
+    PRIVATE RESONITH_BUILDING_LIBRARY
+)
+set_target_properties(resonith_core_shared PROPERTIES
+    CXX_EXTENSIONS OFF
+    POSITION_INDEPENDENT_CODE ON
+)
+
 function(resonith_enable_warnings target)
     if(MSVC)
         target_compile_options(${target} PRIVATE /W4)
@@ -49,8 +76,10 @@ function(resonith_enable_warnings target)
 endfunction()
 
 resonith_enable_warnings(resonith_core)
+resonith_enable_warnings(resonith_core_shared)
 if(MSVC)
     target_compile_options(resonith_core PRIVATE /permissive-)
+    target_compile_options(resonith_core_shared PRIVATE /permissive-)
 endif()
 
 include(CTest)

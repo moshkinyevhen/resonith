@@ -7,7 +7,14 @@ from .model import (
     save_analysis_model,
     train_linear_cibs,
 )
-from .main0 import Main0DecodeResult, decode_main0_raw_stream, pack_main0_raw_stream
+from .main0 import (
+    Main0DecodeResult,
+    Main0EncodeResult,
+    decode_main0_raw_stream,
+    encode_main0_periodic_rdo,
+    pack_main0_raw_stream,
+)
+from .native_core import NativeMain0Decoder
 from .periodic import PhaseTrajectory
 from .residual import ResidualPacket, decode_liftpack, encode_liftpack
 from .segmentation import SegmentationResult, segment_acoustic_states
@@ -22,8 +29,11 @@ __all__ = [
     "DecodeResult",
     "EncodeResult",
     "Main0DecodeResult",
+    "Main0EncodeResult",
+    "NativeMain0Decoder",
     "decode_bytes",
     "decode_main0_raw_stream",
+    "encode_main0_periodic_rdo",
     "encode_samples",
     "pack_main0_raw_stream",
     "decode_stateful_bytes",

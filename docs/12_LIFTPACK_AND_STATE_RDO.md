@@ -176,10 +176,29 @@ Two independent complete runs produced the same canonical report SHA-256:
 5996c5591210f041ecd14542bd08453d82ad4f863759e1237a4beccc03981578
 ```
 
-## 9. Next gates
+## 9. Native typed-stream RDO gate
 
-1. Port LiftPack-1 decode to the portable C++20 Golden Core and cross-check
-   conformance hashes.
+The first executable RSC1 encoder search now competes constant and continuous
+phase laws plus multiple sparse gain-event granularities. Every candidate is:
+
+1. packed as complete `CONF`/`ATOM`/`BRAW`/`RSL1` bytes;
+2. decoded by the independent Python reference;
+3. decoded by the shared C++20 Golden Core through the stable C ABI;
+4. rejected unless sample rate and every PCM sample match;
+5. ranked by complete stream bytes only after that acceptance gate.
+
+The binding loads only an explicitly named library, asks the native inspector
+for exact workspace counts, and rejects allocations above a configured host
+ceiling. CI builds the shared Core from the same sources as the static
+conformance library and runs this RDO path.
+
+This closes a major validity gap in the earlier `MAF0` experiments: encoder
+search can no longer optimize behavior accepted only by the Python oracle.
+
+## 10. Next gates
+
+1. ~~Port LiftPack-1 and whole typed-stream decode to the portable C++20
+   Golden Core, then bind it into final candidate RDO.~~ Implemented.
 2. Add stereo decorrelation and independently coded channel residuals.
 3. Add multi-Atom overlap so a state boundary does not require replacing the
    entire active acoustic field.

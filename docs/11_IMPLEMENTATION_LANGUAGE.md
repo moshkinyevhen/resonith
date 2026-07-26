@@ -141,6 +141,12 @@ independent oracle and must never silently define the bitstream.
 The first C++ parity target is deliberately small. It must not trigger a
 rewrite of the research encoder.
 
+Steps 2 through 5 now have an executable mono periodic subset: RSC1, `CONF`,
+`ATOM`, `BRAW`, and `RSL1` decode through one allocation-free C call, and
+Python candidate RDO accepts a stream only after native/reference PCM equality.
+Typed CIBS integration, transients, multiple simultaneous Atoms, and channels
+remain outside that completed subset.
+
 ## 8. Player and cross-platform runtime
 
 The codec library and the player are separate layers:
