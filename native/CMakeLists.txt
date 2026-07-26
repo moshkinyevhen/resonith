@@ -123,6 +123,26 @@ if(RESONITH_BUILD_FUZZERS)
         PROPERTIES CXX_EXTENSIONS OFF
     )
     resonith_enable_warnings(resonith_main0_fuzz)
+
+    add_executable(resonith_seek_fuzz
+        ${RESONITH_CORE_SOURCES}
+        fuzz/seek_fuzz.cpp
+    )
+    target_compile_features(resonith_seek_fuzz PRIVATE cxx_std_20)
+    target_include_directories(resonith_seek_fuzz
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    )
+    target_compile_options(resonith_seek_fuzz
+        PRIVATE -fsanitize=fuzzer,address,undefined
+    )
+    target_link_options(resonith_seek_fuzz
+        PRIVATE -fsanitize=fuzzer,address,undefined
+    )
+    set_target_properties(
+        resonith_seek_fuzz
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_seek_fuzz)
 endif()
 
 include(CTest)

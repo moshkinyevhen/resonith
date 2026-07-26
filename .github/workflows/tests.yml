@@ -185,7 +185,10 @@ jobs:
       - name: Build sanitized fuzz target
         run: >
           cmake --build build/fuzz
-          --target resonith_liftpack_fuzz resonith_main0_fuzz
+          --target
+          resonith_liftpack_fuzz
+          resonith_main0_fuzz
+          resonith_seek_fuzz
           --parallel
       - name: Generate deterministic valid corpus
         run: python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
@@ -200,6 +203,13 @@ jobs:
         run: >
           build/fuzz/resonith_main0_fuzz
           artifacts/fuzz_corpus/main0
+          -runs=5000
+          -max_len=65536
+          -timeout=10
+      - name: Run bounded seek-sidecar mutation smoke test
+        run: >
+          build/fuzz/resonith_seek_fuzz
+          artifacts/fuzz_corpus/seek
           -runs=5000
           -max_len=65536
           -timeout=10

@@ -29,8 +29,10 @@ def main() -> None:
     args = parser.parse_args()
     liftpack_directory = args.output_directory / "liftpack"
     main0_directory = args.output_directory / "main0"
+    seek_directory = args.output_directory / "seek"
     liftpack_directory.mkdir(parents=True, exist_ok=True)
     main0_directory.mkdir(parents=True, exist_ok=True)
+    seek_directory.mkdir(parents=True, exist_ok=True)
 
     structured = np.concatenate(
         (
@@ -89,6 +91,7 @@ def main() -> None:
             lpc_orders=(4,),
         )
     )
+    (seek_directory / "canonical_mode.bin").write_bytes(b"\x00")
 
 
 if __name__ == "__main__":
