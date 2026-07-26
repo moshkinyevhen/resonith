@@ -27,7 +27,8 @@ typedef struct resonith_periodic_atom_info {
 
 /*
  * Exact caller-owned memory needed by the executable mono Main-0 subset.
- * Counts are elements, never bytes. The RSC1 timebase is the PCM sample rate.
+ * Counts are elements, never bytes. A zero-Atom Truth stream reports zero for
+ * every model buffer. The RSC1 timebase is the PCM sample rate.
  */
 typedef struct resonith_main0_requirements {
     uint32_t timebase_hz;
@@ -109,7 +110,7 @@ RESONITH_API resonith_status resonith_main0_inspect(
 );
 
 /*
- * Executes RSC1 -> Basis/Atom/Innovation -> exact mono int16 PCM.
+ * Executes RSC1 -> optional Basis/Atom prediction + Innovation -> mono PCM16.
  * See Resonith-0 sections 4.1.1, 5.1, and 5.5.
  */
 RESONITH_API resonith_status resonith_main0_decode(

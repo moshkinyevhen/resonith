@@ -151,3 +151,29 @@ R-039 tests the narrower remaining explanation: useful tonal structure may
 exist, but its representation must be an analytic or cached decoder Basis and
 many records must share one directory entry. That experiment remains
 encoder-side until its own complete-byte gate passes.
+
+## 9. Analytic oscillator and zero-Atom result
+
+R-039 replaced each 520-byte raw Basis with one verified fixed sine ROM and
+batched all prospective oscillator records into one `HBNK` section. The
+complete-byte result was:
+
+| Clip | Raw-Basis anchor | Zero Atom | Selected analytic | Result |
+|---|---:|---:|---:|---|
+| Corelli realization | 12,042 | 11,402 | 11,402, 0 Atoms | oscillator rejected |
+| Recorded piano | 14,167 | 13,539 | 13,535, 1 Atom | -4 bytes |
+| Recorded drums | 14,964 | 14,207 | 14,207, 0 Atoms | oscillator rejected |
+
+Run:
+[30200069831](https://github.com/moshkinyevhen/resonith/actions/runs/30200069831).
+Raw report SHA-256:
+
+```text
+6919c598e24cb1937617859aea6e75aee395c103ac4b58243290f17ed3d29fac
+```
+
+The analytic-bank gate failed one of three and no opcode is promoted. The
+simpler result is stronger: an identically zero predictor reduced the complete
+stream by 4.4% to 5.3% against the mandatory raw-Basis anchor on every clip.
+R-040 therefore makes `CONF` plus `RSL1` with no `ATOM`/`BRAW` a normative
+Main-0 form and a mandatory encoder candidate.

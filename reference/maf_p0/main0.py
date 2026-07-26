@@ -35,7 +35,8 @@ if TYPE_CHECKING:
     from .native_core import NativeMain0Decoder
 
 
-REQUIRED_TYPES = frozenset({b"ATOM", b"BRAW", b"CONF", b"RSL1"})
+KNOWN_TYPES = frozenset({b"ATOM", b"BRAW", b"CONF", b"RSL1"})
+MANDATORY_TYPES = frozenset({b"CONF", b"RSL1"})
 
 
 @dataclass(frozen=True)
@@ -62,6 +63,44 @@ class Main0State:
     basis: np.ndarray
     trajectory: PhaseTrajectory
     gain_law: GainEventLaw
+
+
+def pack_main0_residual_stream(
+    *,
+    sample_rate: int,
+    innovation_q: np.ndarray,
+    innovation_step: int,
+    residual_block_size: int = 1024,
+) -> bytes:
+    """Pack the canonical zero-Atom Main-0 Truth stream from R-040."""
+
+    innovation = np.asarray(innovation_q)
+    if (
+        innovation.ndim != 1
+        or innovation.size == 0
+        or not np.issubdtype(innovation.dtype, np.signedinteger)
+    ):
+        raise TypeError("Main-0 Innovation must be a signed integer vector")
+    config = StreamConfig(
+        sample_count=int(innovation.size),
+        innovation_step=innovation_step,
+        output_channels=1,
+    )
+    return pack_rsc1(
+        [
+            RSC1Section("CONF", pack_conf(config)),
+            RSC1Section(
+                "RSL1",
+                encode_liftpack(
+                    innovation,
+                    block_size=residual_block_size,
+                ).payload,
+            ),
+        ],
+        profile=0,
+        level=0,
+        timebase_hz=sample_rate,
+    )
 
 
 def pack_main0_raw_stream(
@@ -172,11 +211,11 @@ def decode_main0_raw_stream(payload: bytes) -> Main0DecodeResult:
         raise ValueError("unsupported Resonith profile or level")
 
     required: dict[bytes, list[RSC1Section]] = {
-        type_code: [] for type_code in REQUIRED_TYPES
+        type_code: [] for type_code in KNOWN_TYPES
     }
     for section in info.sections:
         type_code = bytes(section.type_code)
-        if type_code not in REQUIRED_TYPES:
+        if type_code not in KNOWN_TYPES:
             if section.flags & SECTION_CRITICAL:
                 raise ValueError("unknown critical Main-0 section")
             continue
@@ -185,8 +224,8 @@ def decode_main0_raw_stream(payload: bytes) -> Main0DecodeResult:
         required[type_code].append(section)
     missing = sorted(
         type_code
-        for type_code, sections in required.items()
-        if not sections
+        for type_code in MANDATORY_TYPES
+        if not required[type_code]
     )
     if missing:
         raise ValueError(f"missing required Main-0 section: {missing!r}")
@@ -205,6 +244,8 @@ def decode_main0_raw_stream(payload: bytes) -> Main0DecodeResult:
             section.instance_id for section in required[type_code]
         ] != list(range(len(required[type_code]))):
             raise ValueError("non-canonical Main-0 section instances")
+    if bool(required[b"ATOM"]) != bool(required[b"BRAW"]):
+        raise ValueError("Main-0 Atom and Basis sections must coexist")
 
     config = unpack_conf(required[b"CONF"][0].payload)
     if config.output_channels != 1:
@@ -220,6 +261,15 @@ def decode_main0_raw_stream(payload: bytes) -> Main0DecodeResult:
         expected_count=config.sample_count,
     ).astype(np.int64, copy=False)
     output = np.empty(config.sample_count, dtype=np.int16)
+    if not required[b"ATOM"]:
+        output[:] = np.clip(
+            innovation * config.innovation_step,
+            -32768,
+            32767,
+        ).astype(np.int16)
+        output.flags.writeable = False
+        return Main0DecodeResult(output, info.timebase_hz)
+
     cursor = 0
     for section in required[b"ATOM"]:
         if section.start_tick != cursor:
@@ -279,7 +329,7 @@ def encode_main0_periodic_rdo(
     residual_block_size: int = 1024,
     phase_knot_interval: int = 4096,
 ) -> Main0EncodeResult:
-    """RDO periodic candidates only after exact native decoder acceptance."""
+    """RDO zero or periodic prediction after native decoder acceptance."""
 
     source = np.asarray(samples)
     if source.dtype != np.int16 or source.ndim != 1:
@@ -294,21 +344,61 @@ def encode_main0_periodic_rdo(
     if not blocks or blocks[0] <= 0:
         raise ValueError("gain_block_sizes must contain positive values")
 
-    analysis = analyze_periodic_basis(
-        source,
-        sample_rate,
-        basis_length=basis_length,
+    candidates: list[tuple[str, bytes, np.ndarray, dict]] = []
+    residual_innovation = _quantize_signed(
+        source.astype(np.int64),
+        innovation_step,
     )
-    phase_candidates: list[tuple[str, PhaseTrajectory]] = [
-        (
-            "constant",
-            constant_phase_trajectory(
-                int(source.size),
-                analysis.phase_increment_q32,
-            ),
+    residual_payload = pack_main0_residual_stream(
+        sample_rate=sample_rate,
+        innovation_q=residual_innovation,
+        innovation_step=innovation_step,
+        residual_block_size=residual_block_size,
+    )
+    residual_reference = decode_main0_raw_stream(residual_payload)
+    residual_native = native_decoder.decode(residual_payload)
+    if (
+        residual_native.sample_rate != residual_reference.sample_rate
+        or not np.array_equal(
+            residual_native.samples,
+            residual_reference.samples,
         )
-    ]
+    ):
+        raise RuntimeError(
+            "native decoder disagrees with residual-only Main-0"
+        )
+    residual_report = {
+        "name": "residual-only",
+        "stream_bytes": len(residual_payload),
+        "phase_knots": 0,
+        "gain_events": 0,
+        **_quality_report(source, residual_reference.samples),
+    }
+    candidates.append(
+        (
+            "residual-only",
+            residual_payload,
+            residual_reference.samples,
+            residual_report,
+        )
+    )
+
+    phase_candidates: list[tuple[str, PhaseTrajectory]] = []
     try:
+        analysis = analyze_periodic_basis(
+            source,
+            sample_rate,
+            basis_length=basis_length,
+        )
+        phase_candidates.append(
+            (
+                "constant",
+                constant_phase_trajectory(
+                    int(source.size),
+                    analysis.phase_increment_q32,
+                ),
+            )
+        )
         estimated = estimate_phase_trajectory(
             source,
             sample_rate,
@@ -328,7 +418,6 @@ def encode_main0_periodic_rdo(
     except ValueError:
         pass
 
-    candidates: list[tuple[str, bytes, np.ndarray, dict]] = []
     for phase_name, trajectory in phase_candidates:
         unity = render_basis_trajectory(analysis.basis, trajectory)
         for block_size in blocks:
@@ -391,6 +480,7 @@ def encode_main0_periodic_rdo(
             "minimum complete typed stream bytes at one Innovation step"
         ),
         "selected_candidate": selected_name,
+        "residual_only_bytes": len(residual_payload),
         "candidate_count": len(candidates),
         "candidates": [item[3] for item in candidates],
     }
@@ -428,7 +518,7 @@ def encode_main0_state_rdo(
     segmentation_hop_samples: int = 1024,
     minimum_state_samples: int = 4096,
 ) -> Main0EncodeResult:
-    """Select state boundaries by native-decoded complete RSC1 bytes."""
+    """RDO zero or state-partition prediction by native-decoded bytes."""
 
     source = np.asarray(samples)
     if source.dtype != np.int16 or source.ndim != 1:
@@ -478,6 +568,46 @@ def encode_main0_state_rdo(
         )
 
     candidates: list[tuple[str, bytes, np.ndarray, dict]] = []
+    residual_innovation = _quantize_signed(
+        source.astype(np.int64),
+        innovation_step,
+    )
+    residual_payload = pack_main0_residual_stream(
+        sample_rate=sample_rate,
+        innovation_q=residual_innovation,
+        innovation_step=innovation_step,
+        residual_block_size=residual_block_size,
+    )
+    residual_reference = decode_main0_raw_stream(residual_payload)
+    residual_native = native_decoder.decode(residual_payload)
+    if (
+        residual_native.sample_rate != residual_reference.sample_rate
+        or not np.array_equal(
+            residual_native.samples,
+            residual_reference.samples,
+        )
+    ):
+        raise RuntimeError(
+            "native decoder disagrees with residual-only Main-0"
+        )
+    residual_report = {
+        "name": "residual-only",
+        "stream_bytes": len(residual_payload),
+        "state_count": 0,
+        "basis_count": 0,
+        "phase_knots": 0,
+        "gain_events": 0,
+        "partition": {"mode": "residual-only", "state_count": 0},
+        **_quality_report(source, residual_reference.samples),
+    }
+    candidates.append(
+        (
+            "residual-only",
+            residual_payload,
+            residual_reference.samples,
+            residual_report,
+        )
+    )
     for intervals, (partition_name, partition_report) in partitions.items():
         for gain_block_size in gain_blocks:
             states: list[Main0State] = []
@@ -579,6 +709,7 @@ def encode_main0_state_rdo(
         ),
         "selected_candidate": selected_name,
         "one_state_bytes": one_state_bytes,
+        "residual_only_bytes": len(residual_payload),
         "selected_reduction_vs_one_state": (
             1.0 - len(payload) / one_state_bytes
         ),

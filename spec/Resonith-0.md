@@ -154,15 +154,27 @@ later than the Atom start tick.
 #### 4.1.4 First executable Main-0 stream
 
 A profile-zero, level-zero stream contains exactly one critical instance-zero
-`CONF`, exactly one critical instance-zero `RSL1`, one or more critical
-`ATOM` records, and one or more critical `BRAW` records. `ATOM` instance IDs
-and `BRAW` instance IDs each form a consecutive zero-based sequence.
+`CONF`, exactly one critical instance-zero `RSL1`, and either no model records
+or one or more critical `ATOM` plus one or more critical `BRAW` records.
+`ATOM` and `BRAW` MUST be both absent or both present. When present, their
+instance IDs each form a consecutive zero-based sequence.
 
-Atoms are ordered by instance ID. The first MUST start at tick zero, every
-subsequent Atom MUST start exactly where the previous Atom ends, and the final
-Atom MUST end at the `CONF` sample count. Simultaneous overlap is not supported
-by this executable subset. Any number of Atoms MAY reference one immutable
-Basis. The `RSL1` decoded sample count MUST equal the `CONF` sample count.
+When Atoms are present, they are ordered by instance ID. The first MUST start
+at tick zero, every subsequent Atom MUST start exactly where the previous Atom
+ends, and the final Atom MUST end at the `CONF` sample count. Simultaneous
+overlap is not supported by this executable subset. Any number of Atoms MAY
+reference one immutable Basis.
+
+When no Atoms are present, prediction is identically zero and each output
+sample is:
+
+\[
+\hat{x}[n]=\operatorname{sat}_{16}
+\left(\operatorname{RSL1}[n]\cdot innovation\_step\right).
+\]
+
+The `RSL1` decoded sample count MUST equal the `CONF` sample count in both
+forms.
 
 Additional unknown non-critical sections MAY be skipped. Unknown critical
 sections, unsupported schemas, non-canonical instance IDs, gaps, overlaps, or
@@ -172,7 +184,8 @@ A decoder MUST verify all required section hashes and all cross-section
 lifetimes before rendering. It MUST be able to inspect the stream first,
 report the maximum per-Atom Basis, phase, gain, and render workspace plus the
 stream-wide Innovation workspace, and then reuse those buffers without hidden
-allocation.
+allocation. The zero-Atom form reports zero for every model workspace and
+requires only Innovation, LiftPack scratch, and output storage.
 
 ## 5. State records
 
@@ -654,8 +667,8 @@ Acoustic feature analysis MAY propose Atom and Basis lifetimes. A proposed
 boundary MUST NOT be treated as valuable merely because a classifier or
 change-point detector is confident. Studio and Foundry encoders SHOULD compare
 the complete resulting streams, including Basis, Atom, trajectory, gain,
-Innovation, checkpoint, and container cost. A fixed-lifetime or universal
-Innovation candidate MUST remain available.
+Innovation, checkpoint, and container cost. The canonical zero-Atom
+Innovation stream from clause 4.1.4 MUST remain an RDO candidate.
 
 ## 15. Security
 

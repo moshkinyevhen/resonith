@@ -57,6 +57,25 @@ std::int32_t read_i32(const std::uint8_t* data) noexcept {
     return -1 - static_cast<std::int32_t>(~raw);
 }
 
+std::int16_t scale_innovation(
+    std::int64_t value,
+    std::uint32_t step
+) noexcept {
+    const auto positive_limit =
+        static_cast<std::int64_t>(32767) / step;
+    const auto negative_limit =
+        static_cast<std::int64_t>(-32768) / step;
+    if (value > positive_limit) {
+        return 32767;
+    }
+    if (value < negative_limit) {
+        return -32768;
+    }
+    return static_cast<std::int16_t>(
+        value * static_cast<std::int64_t>(step)
+    );
+}
+
 bool type_is(
     const std::uint8_t actual[4],
     const char (&expected)[5]
@@ -219,13 +238,11 @@ resonith_status parse_main0(
             found_innovation = true;
         }
     }
-    if (
-        atom_count == 0U
-        || basis_count == 0U
-        || !found_config
-        || !found_innovation
-    ) {
+    if (!found_config || !found_innovation) {
         return RESONITH_STATUS_NOT_FOUND;
+    }
+    if ((atom_count == 0U) != (basis_count == 0U)) {
+        return RESONITH_STATUS_MALFORMED;
     }
 
     status = resonith_stream_config_parse(
@@ -346,7 +363,10 @@ resonith_status parse_main0(
             maximum_atom_samples = atom_info.duration_samples;
         }
     }
-    if (cursor != parsed->stream_config.sample_count) {
+    if (
+        atom_count != 0U
+        && cursor != parsed->stream_config.sample_count
+    ) {
         return RESONITH_STATUS_MALFORMED;
     }
 
@@ -367,15 +387,32 @@ resonith_status parse_main0(
 }
 
 bool workspace_present(
-    const resonith_main0_workspace& workspace
+    const resonith_main0_workspace& workspace,
+    const resonith_main0_requirements& requirements
 ) noexcept {
-    return workspace.basis != nullptr
-        && workspace.phase_positions != nullptr
-        && workspace.phase_increments_q32 != nullptr
-        && workspace.phase_origins_q32 != nullptr
-        && workspace.gain_positions != nullptr
-        && workspace.gains_q15 != nullptr
-        && workspace.unity_prediction != nullptr
+    return (
+            requirements.basis_elements == 0U
+            || workspace.basis != nullptr
+        )
+        && (
+            requirements.phase_knot_count == 0U
+            || (
+                workspace.phase_positions != nullptr
+                && workspace.phase_increments_q32 != nullptr
+                && workspace.phase_origins_q32 != nullptr
+            )
+        )
+        && (
+            requirements.gain_event_count == 0U
+            || (
+                workspace.gain_positions != nullptr
+                && workspace.gains_q15 != nullptr
+            )
+        )
+        && (
+            requirements.render_elements == 0U
+            || workspace.unity_prediction != nullptr
+        )
         && workspace.innovation_q != nullptr
         && workspace.liftpack_scratch != nullptr;
 }
@@ -596,7 +633,7 @@ extern "C" resonith_status resonith_main0_decode(
     if (output_capacity < requirements.sample_count) {
         return RESONITH_STATUS_OUTPUT_TOO_SMALL;
     }
-    if (!workspace_present(*workspace)) {
+    if (!workspace_present(*workspace, requirements)) {
         return RESONITH_STATUS_INVALID_ARGUMENT;
     }
     if (!workspace_large_enough(*workspace, requirements)) {
@@ -620,6 +657,21 @@ extern "C" resonith_status resonith_main0_decode(
         return status == RESONITH_STATUS_OK
             ? RESONITH_STATUS_MALFORMED
             : status;
+    }
+
+    if (requirements.atom_count == 0U) {
+        for (
+            std::uint32_t sample = 0U;
+            sample < requirements.sample_count;
+            ++sample
+        ) {
+            output[sample] = scale_innovation(
+                workspace->innovation_q[sample],
+                parsed.stream_config.innovation_step
+            );
+        }
+        *samples_written = requirements.sample_count;
+        return RESONITH_STATUS_OK;
     }
 
     std::uint32_t output_cursor = 0U;

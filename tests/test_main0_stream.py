@@ -15,6 +15,7 @@ from maf_p0.main0 import (  # noqa: E402
     Main0State,
     decode_main0_raw_stream,
     pack_main0_raw_stream,
+    pack_main0_residual_stream,
     pack_main0_state_stream,
 )
 from maf_p0.periodic import PhaseTrajectory, render_basis_trajectory  # noqa: E402
@@ -154,6 +155,25 @@ class Main0StreamTests(unittest.TestCase):
             [b"ATOM", b"BRAW", b"CONF", b"RSL1"],
         )
 
+    def test_zero_atom_stream_is_saturated_dequantized_truth(self) -> None:
+        stream = pack_main0_residual_stream(
+            sample_rate=48_000,
+            innovation_q=self.innovation,
+            innovation_step=3,
+            residual_block_size=16,
+        )
+        decoded = decode_main0_raw_stream(stream)
+        expected = np.clip(
+            self.innovation * 3,
+            -32768,
+            32767,
+        ).astype(np.int16)
+        np.testing.assert_array_equal(decoded.samples, expected)
+        self.assertEqual(
+            [bytes(section.type_code) for section in parse_rsc1(stream).sections],
+            [b"CONF", b"RSL1"],
+        )
+
     def test_state_partition_reuses_one_basis_and_covers_time_exactly(self) -> None:
         first_phase = PhaseTrajectory(
             np.asarray([0, 5, 17], dtype=np.int64),
@@ -223,6 +243,27 @@ class Main0StreamTests(unittest.TestCase):
         unknown = pack_rsc1([RSC1Section("ZZZZ", b"critical")])
         with self.assertRaisesRegex(ValueError, "unknown critical"):
             decode_main0_raw_stream(unknown)
+
+        complete = pack_main0_raw_stream(
+            sample_rate=48_000,
+            basis=self.basis,
+            trajectory=self.trajectory,
+            gain_law=self.gain,
+            innovation_q=self.innovation,
+            innovation_step=3,
+            residual_block_size=16,
+        )
+        parsed = parse_rsc1(complete)
+        orphan_atom = pack_rsc1(
+            [
+                section
+                for section in parsed.sections
+                if bytes(section.type_code) != b"BRAW"
+            ],
+            timebase_hz=parsed.timebase_hz,
+        )
+        with self.assertRaisesRegex(ValueError, "must coexist"):
+            decode_main0_raw_stream(orphan_atom)
 
     def test_corrupt_atom_shape_and_cross_section_lifetime_are_rejected(self) -> None:
         atom = bytearray(

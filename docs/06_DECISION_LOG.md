@@ -797,7 +797,7 @@ reject cheaper analytic or cached Basis families.
 ## R-039 — Batched analytic oscillator oracle before new Core syntax
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / RESEARCH**
+- Status: **MEASURED KILL-GATE FAILED / RESEARCH**
 - Decision:
   - test a fixed decoder-ROM sinusoidal Basis with no per-stream `BRAW`;
   - derive a bounded spectral frequency shortlist and estimate phase
@@ -818,3 +818,34 @@ reject cheaper analytic or cached Basis families.
     records;
   - this isolates whether the failure was caused by metadata granularity or by
     an absence of useful stable tonal structure.
+
+The licensed one-second run selected zero oscillators for Corelli and drums.
+Piano selected one oscillator but reduced the complete stream by only four
+bytes. The gate therefore failed one of three. The zero-Atom envelope beat the
+best raw-Basis envelope on all three clips, which triggered R-040 instead of a
+new oscillator opcode.
+
+## R-040 — Zero-Atom Truth stream is a mandatory Main-0 candidate
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING / NORMATIVE-DRAFT**
+- Decision:
+  - permit a canonical Main-0 stream containing `CONF` and `RSL1` with no
+    `ATOM` or `BRAW` sections;
+  - define the absent prediction as mathematical zero, so output is the
+    saturated dequantized Innovation;
+  - require `ATOM` and `BRAW` to be either both absent or both present and
+    cross-valid;
+  - report zero Basis, phase, gain, render, Atom, and Basis-bank workspace for
+    the residual-only stream;
+  - make residual-only a mandatory full-byte RDO candidate for every Main-0
+    encoder invocation;
+  - retain all existing state and raw-Basis paths only when they beat this
+    simpler complete stream.
+- Rationale:
+  - the preliminary R-039 licensed run showed that a mandatory periodic
+    predictor can increase total bytes on heterogeneous music;
+  - optional modeling preserves the universal Truth fallback and makes a
+    failed semantic or acoustic hypothesis cost zero decoder complexity;
+  - this is both a compression improvement and a simplification of resource
+    requirements.

@@ -1,0 +1,27 @@
+{
+  "actions_run": "https://github.com/moshkinyevhen/resonith/actions/runs/30200069831",
+  "clips": {
+    "corelli-sonata-realization": {
+      "analytic_bytes": 11402,
+      "raw_basis_anchor_bytes": 12042,
+      "selected_atom_count": 0,
+      "zero_atom_bytes": 11402
+    },
+    "emotional-piano-cc0": {
+      "analytic_bytes": 13535,
+      "raw_basis_anchor_bytes": 14167,
+      "selected_atom_count": 1,
+      "zero_atom_bytes": 13539
+    },
+    "patro-de-bateria": {
+      "analytic_bytes": 14207,
+      "raw_basis_anchor_bytes": 14964,
+      "selected_atom_count": 0,
+      "zero_atom_bytes": 14207
+    }
+  },
+  "gate_passed": false,
+  "raw_report_sha256": "6919c598e24cb1937617859aea6e75aee395c103ac4b58243290f17ed3d29fac",
+  "status": "static analytic oscillator gate failed; zero-Atom Truth won all clips",
+  "winning_clips": 1
+}

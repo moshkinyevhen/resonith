@@ -108,6 +108,12 @@ parses the same embedded bytes and reproduces all 40 output samples. The native
 inspection API reports exact Basis, phase, gain, output, Innovation, and
 LiftPack workspace element counts before any decode call.
 
+R-040 additionally permits the strictly smaller `CONF` plus `RSL1` form. Its
+prediction is identically zero; inspection reports zero model workspace and
+decode saturates `Innovation * innovation_step` directly to PCM16. `ATOM` and
+`BRAW` are either both absent or both present, so an orphan model record is
+always malformed.
+
 ## 7. What remains
 
 The mono periodic path now supports a canonical state partition with
