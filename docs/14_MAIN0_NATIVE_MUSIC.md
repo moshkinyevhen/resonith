@@ -909,3 +909,22 @@ complete available sequence. The next transport experiment must prove that a
 missing logical interval can be concealed without changing any later
 authenticated packet, and must keep concealment outside Truth reference
 state.
+
+## 38. Hosted packet resource result
+
+The release `LPS1` path passed its declared hosted resource gate on all pinned
+three-second music crops:
+
+| Crop | Median decode | Real-time speed | Complete workspace |
+| --- | ---: | ---: | ---: |
+| Corelli | 180.79 ms | 16.59x | 762,194 bytes |
+| Piano | 162.07 ms | 18.51x | 764,864 bytes |
+| Drums | 139.22 ms | 21.55x | 754,184 bytes |
+
+All outputs matched the Python packet decoder exactly. The timed scope includes
+complete-sequence preflight, packet and child authentication, caller-array
+allocation, entropy decode, integer synthesis, context trim, interleave, and
+the final NumPy copy. Thus packet independence has not introduced a material
+hosted-CPU regression relative to the earlier 17x-20x monolithic LPF1 range.
+This is not a mobile energy or thermal claim. The compact record is
+[`native_lapped_packet_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_packet_timing_2026-07-26_summary.json).

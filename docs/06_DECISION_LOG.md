@@ -1971,7 +1971,7 @@ new oscillator opcode.
 ## R-073 — Hosted native `LPS1` resource gate
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **PASS / 16.59X-21.55X REAL TIME / 754-765 KB**
 - Decision:
   - benchmark the release native packet pull path on every pinned music crop;
   - include open/preflight time, per-packet pull time, complete sequence time,
@@ -1986,3 +1986,14 @@ new oscillator opcode.
     hidden throughput cost that monolithic LPF1 timing does not measure;
   - a reproducible CI artifact is more useful than a development-machine
     timing anecdote, while physical mobile energy remains a later gate.
+- Result:
+  - GitHub Actions run 30210498613 passed all three pinned three-second music
+    crops with exact Python/native PCM equality;
+  - median complete-sequence decode speed was 16.59x real time on Corelli,
+    18.51x on piano, and 21.55x on drums;
+  - complete caller-owned workspace was 762,194, 764,864, and 754,184 bytes,
+    respectively, below the declared 2 MiB ceiling;
+  - timing includes complete-sequence preflight, repeated packet and child
+    validation, allocation of caller arrays, entropy decode, integer
+    synthesis, context trim, interleave, and NumPy copy;
+  - physical-device power, thermal throttling, and transport I/O remain open.

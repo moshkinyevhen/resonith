@@ -1,0 +1,47 @@
+{
+  "date": "2026-07-26",
+  "gate": {
+    "exact_python_native_pcm": true,
+    "maximum_workspace_bytes": 2097152,
+    "minimum_realtime_speed": 4.0,
+    "passing_clips": 3,
+    "clip_count": 3
+  },
+  "hosted_runner": {
+    "architecture": "X64",
+    "operating_system": "Linux",
+    "python": "3.12.13",
+    "github_actions_run": 30210498613
+  },
+  "clips": {
+    "corelli-sonata-realization": {
+      "duration_seconds": 3.0,
+      "packet_count": 4,
+      "stream_bytes": 49409,
+      "workspace_bytes": 762194,
+      "decode_wall_seconds_median": 0.18078519699999873,
+      "decode_realtime_speed_median": 16.594279010576408,
+      "exact_python_native_pcm": true
+    },
+    "emotional-piano-cc0": {
+      "duration_seconds": 3.0,
+      "packet_count": 4,
+      "stream_bytes": 47840,
+      "workspace_bytes": 764864,
+      "decode_wall_seconds_median": 0.16206725949999168,
+      "decode_realtime_speed_median": 18.510833151961542,
+      "exact_python_native_pcm": true
+    },
+    "patro-de-bateria": {
+      "duration_seconds": 3.0,
+      "packet_count": 4,
+      "stream_bytes": 38675,
+      "workspace_bytes": 754184,
+      "decode_wall_seconds_median": 0.13921678799999881,
+      "decode_realtime_speed_median": 21.549125239120052,
+      "exact_python_native_pcm": true
+    }
+  },
+  "status": "native packet resource gate passed",
+  "measurement_limit": "Hosted x64 wall time and caller-owned storage only; physical-device energy, thermal behavior, and transport I/O remain pending."
+}
