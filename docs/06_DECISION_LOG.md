@@ -2961,3 +2961,53 @@ new oscillator opcode.
     The next speech experiment must change the predictive/Basis model or use
     verified perceptual RDO, not merely constrain the existing coefficient
     allocator.
+
+## R-101 — Continuous public-reference evidence gate
+
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Decision:
+  - every material encoder, decoder, entropy, transport, Basis, or allocation
+    milestone MUST rerun the pinned public speech and long-form music
+    references before a performance claim or release is published;
+  - the initial pinned set is LibriSpeech `1272-128104-0000` and the complete
+    400.773-second Mozart *Die Zauberflöte* overture performed by the Musopen
+    Symphony;
+  - every comparison MUST include the exact PCM16 input, complete Resonith
+    file bytes, and a current official Opus anchor rate-matched by complete Ogg
+    bytes, not nominal bitrate;
+  - decoded PCM MUST come from the actual Resonith and Opus decoders used by
+    listeners;
+  - the machine report MUST include hashes, tool versions, wall time, complete
+    bitrate, SNR, SI-SDR, segmental SNR, multi-resolution STFT error,
+    log-spectral and log-mel error, magnitude similarity, harmonic-peak
+    preservation/frequency/amplitude error, and STOI/ESTOI for speech;
+  - reports and the three listening files MUST be published even when a
+    candidate loses. A failed idea is removed or explicitly retained as
+    research; it is never hidden by changing the corpus or metric after the
+    result;
+  - controlled blinded listening remains mandatory for perceptual claims
+    because objective metrics are diagnostics, not a replacement for human
+    hearing.
+- Player coupling:
+  - every Orkela release that changes decode, playback, or UI behavior MUST
+    test both a short and the pinned long `.resonith` file;
+  - the release gate includes real playback, responsive background decode,
+    malformed-input rejection, timeline and spectrum motion, seeking, file
+    association, and high-DPI visual inspection;
+  - the public benchmark report MUST identify the exact Orkela build used for
+    playback verification.
+- Version and publication coupling:
+  - every published Resonith or Orkela improvement MUST have a semantic
+    version, an English `CHANGELOG.md` entry, and a link to its reproducible
+    benchmark or release-evidence report;
+  - the changelog entry MUST distinguish measured improvements, regressions,
+    fixes, format changes, implementation-only changes, and open perceptual
+    questions. Targets and hypotheses MUST NOT appear as achieved gains;
+  - local release artifacts and the corresponding GitHub release MUST carry
+    the same version, source commit, filenames, and SHA-256 hashes;
+  - any change to normative syntax or decoder behavior requires an explicit
+    bitstream or ABI compatibility statement and an appropriate version
+    increment;
+  - a change without versioned before/after evidence remains an experiment and
+    MUST NOT be described as a released improvement.
