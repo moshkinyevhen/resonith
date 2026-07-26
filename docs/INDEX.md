@@ -12,7 +12,7 @@
 | [07_IMPLEMENTATION_ROADMAP.md](07_IMPLEMENTATION_ROADMAP.md) | Sequence of the first implementation and gates |
 | [08_RESEARCH_DIRECTIONS_AND_CODEC_TARGETS.md](08_RESEARCH_DIRECTIONS_AND_CODEC_TARGETS.md) | Remaining directions and forecast against anchors |
 | [09_CIBS_NORMATIVE_DESIGN.md](09_CIBS_NORMATIVE_DESIGN.md) | Accepted Cached Integer Basis Synthesis |
-| [10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) | First end-to-end codec and measured results |
+| [10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) | MAF-P0/P1 executable codecs, Opus anchor, and measured results |
 | [11_IMPLEMENTATION_LANGUAGE.md](11_IMPLEMENTATION_LANGUAGE.md) | Native Golden Core, safe player runtime, portability, and quality gates |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
 

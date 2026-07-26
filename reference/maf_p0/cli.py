@@ -9,12 +9,14 @@ from pathlib import Path
 import numpy as np
 
 from .codec import decode_bytes, encode_samples
+from .container import unpack_container
 from .model import (
     load_analysis_model,
     save_analysis_model,
     train_linear_cibs,
 )
 from .periodic import analyze_periodic_basis
+from .stateful import decode_stateful_bytes, encode_stateful_samples
 from .wav_io import read_pcm16_mono, write_pcm16_mono
 
 
@@ -63,23 +65,40 @@ def _train(args: argparse.Namespace) -> None:
 def _encode(args: argparse.Namespace) -> None:
     sample_rate, samples = read_pcm16_mono(args.input)
     model = load_analysis_model(args.model) if args.model else None
-    result = encode_samples(
-        samples,
-        sample_rate,
-        basis_mode=args.mode,
-        cibs_model=model,
-        basis_length=args.basis_length,
-        gain_block_size=args.gain_block,
-        basis_correction_step=args.basis_q,
-        residual_step=args.residual_q,
-    )
+    common = {
+        "basis_mode": args.mode,
+        "cibs_model": model,
+        "basis_length": args.basis_length,
+        "gain_block_size": args.gain_block,
+        "basis_correction_step": args.basis_q,
+        "residual_step": args.residual_q,
+    }
+    if args.profile == "p1":
+        result = encode_stateful_samples(
+            samples,
+            sample_rate,
+            segment_samples=args.segment_samples,
+            pitch_knot_samples=args.pitch_knot,
+            transient_mode=args.transient,
+            transient_quantization_step=args.transient_q,
+            transient_window_size=args.transient_window,
+            **common,
+        )
+    else:
+        result = encode_samples(samples, sample_rate, **common)
     Path(args.output).write_bytes(result.payload)
     print(json.dumps(result.report, indent=2, default=_json_default))
 
 
 def _decode(args: argparse.Namespace) -> None:
     model = load_analysis_model(args.model) if args.model else None
-    result = decode_bytes(Path(args.input).read_bytes(), cibs_model=model)
+    payload = Path(args.input).read_bytes()
+    metadata, _ = unpack_container(payload)
+    result = (
+        decode_stateful_bytes(payload, cibs_model=model)
+        if metadata.get("format_profile") == "MAF-P1"
+        else decode_bytes(payload, cibs_model=model)
+    )
     write_pcm16_mono(args.output, result.sample_rate, result.samples)
     print(json.dumps(result.report, indent=2))
 
@@ -89,19 +108,34 @@ def _benchmark(args: argparse.Namespace) -> None:
     model = load_analysis_model(args.model)
     reports = {}
     for mode in ("raw", "cibs"):
-        result = encode_samples(
-            samples,
-            sample_rate,
-            basis_mode=mode,
-            cibs_model=model if mode == "cibs" else None,
-            basis_length=args.basis_length,
-            gain_block_size=args.gain_block,
-            basis_correction_step=args.basis_q,
-            residual_step=args.residual_q,
+        common = {
+            "basis_mode": mode,
+            "cibs_model": model if mode == "cibs" else None,
+            "basis_length": args.basis_length,
+            "gain_block_size": args.gain_block,
+            "basis_correction_step": args.basis_q,
+            "residual_step": args.residual_q,
+        }
+        result = (
+            encode_stateful_samples(
+                samples,
+                sample_rate,
+                segment_samples=args.segment_samples,
+                pitch_knot_samples=args.pitch_knot,
+                transient_mode=args.transient,
+                transient_quantization_step=args.transient_q,
+                transient_window_size=args.transient_window,
+                **common,
+            )
+            if args.profile == "p1"
+            else encode_samples(samples, sample_rate, **common)
         )
         reports[mode] = result.report
         if args.output_prefix:
-            Path(f"{args.output_prefix}.{mode}.maf0").write_bytes(result.payload)
+            extension = "maf1" if args.profile == "p1" else "maf0"
+            Path(f"{args.output_prefix}.{mode}.{extension}").write_bytes(
+                result.payload
+            )
     reports["model_package_bytes"] = Path(args.model).stat().st_size
     print(json.dumps(reports, indent=2, default=_json_default))
 
@@ -121,12 +155,18 @@ def build_parser() -> argparse.ArgumentParser:
     encode = commands.add_parser("encode")
     encode.add_argument("input")
     encode.add_argument("output")
+    encode.add_argument("--profile", choices=("p0", "p1"), default="p1")
     encode.add_argument("--mode", choices=("raw", "cibs"), default="cibs")
     encode.add_argument("--model")
     encode.add_argument("--basis-length", type=int, default=256)
     encode.add_argument("--gain-block", type=int, default=1024)
     encode.add_argument("--basis-q", type=int, default=1)
     encode.add_argument("--residual-q", type=int, default=1)
+    encode.add_argument("--segment-samples", type=int, default=24000)
+    encode.add_argument("--pitch-knot", type=int, default=4096)
+    encode.add_argument("--transient", choices=("off", "on", "auto"), default="auto")
+    encode.add_argument("--transient-q", type=int, default=1)
+    encode.add_argument("--transient-window", type=int, default=256)
     encode.set_defaults(function=_encode)
 
     decode = commands.add_parser("decode")
@@ -138,11 +178,17 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark = commands.add_parser("benchmark")
     benchmark.add_argument("input")
     benchmark.add_argument("model")
+    benchmark.add_argument("--profile", choices=("p0", "p1"), default="p1")
     benchmark.add_argument("--output-prefix")
     benchmark.add_argument("--basis-length", type=int, default=256)
     benchmark.add_argument("--gain-block", type=int, default=1024)
     benchmark.add_argument("--basis-q", type=int, default=1)
     benchmark.add_argument("--residual-q", type=int, default=1)
+    benchmark.add_argument("--segment-samples", type=int, default=24000)
+    benchmark.add_argument("--pitch-knot", type=int, default=4096)
+    benchmark.add_argument("--transient", choices=("off", "on", "auto"), default="auto")
+    benchmark.add_argument("--transient-q", type=int, default=1)
+    benchmark.add_argument("--transient-window", type=int, default=256)
     benchmark.set_defaults(function=_benchmark)
     return parser
 

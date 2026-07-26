@@ -28,6 +28,24 @@ Resonith is independent of SceneLith Video and always supports standalone
 decoding. Their optional specialized integration is defined separately by the
 SceneLith AV Bridge.
 
+## Executable status
+
+The repository contains:
+
+- MAF-P0 single-Basis baseline;
+- MAF-P1 immutable multi-Basis Bank with validated lifetimes and reuse;
+- absolute continuous Q32 pitch/phase trajectories with random access;
+- bounded reversible integer-lifting transient events;
+- RAW and CIBS Basis banks plus objective residual;
+- a reproducible external Opus anchor with full Ogg byte accounting and tool
+  provenance;
+- 27 reference, security, and integration tests when the Opus tool is
+  configured.
+
+The first MAF-P1/Opus result is deliberately labeled a synthetic diagnostic,
+not a general codec claim. See
+[MAF-P0 and MAF-P1 Executable Prototypes](docs/10_MAF_P0_IMPLEMENTATION.md).
+
 ## Documentation
 
 - [Documentation index](docs/INDEX.md)
@@ -41,7 +59,7 @@ SceneLith AV Bridge.
 - [Implementation roadmap](docs/07_IMPLEMENTATION_ROADMAP.md)
 - [Research directions and codec targets](docs/08_RESEARCH_DIRECTIONS_AND_CODEC_TARGETS.md)
 - [CIBS normative design](docs/09_CIBS_NORMATIVE_DESIGN.md)
-- [MAF-P0 executable prototype](docs/10_MAF_P0_IMPLEMENTATION.md)
+- [MAF-P0/P1 executable prototypes and measured results](docs/10_MAF_P0_IMPLEMENTATION.md)
 - [Implementation language and runtime](docs/11_IMPLEMENTATION_LANGUAGE.md)
 - [Primary sources](docs/REFERENCES.md)
 - [Resonith-0 normative draft](spec/Resonith-0.md)

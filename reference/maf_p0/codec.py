@@ -186,6 +186,7 @@ def encode_samples(
     report = {
         **quality,
         "stream_bytes": len(payload),
+        "stream_sha256": hashlib.sha256(payload).hexdigest(),
         "pcm_bytes": int(samples.nbytes),
         "ratio_vs_pcm": len(payload) / samples.nbytes,
         "saving_vs_pcm": 1.0 - len(payload) / samples.nbytes,

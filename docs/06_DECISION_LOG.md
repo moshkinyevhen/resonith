@@ -370,3 +370,40 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
     commit.
 - Canonical contract:
   section 11 of `11_IMPLEMENTATION_LANGUAGE.md`.
+
+## R-024 — MAF-P1 lifetimes, phase trajectories, transients, and Opus anchor
+
+- Date: 2026-07-26
+- Status: **IMPLEMENTED / EXPERIMENTAL RESULT**
+- Implemented:
+  - immutable content-addressed multi-Basis Bank with explicit half-open
+    lifetimes, reuse, and rejection when an Atom outlives its Basis;
+  - absolute piecewise-linear Q32 pitch/phase law with canonical signed
+    rounding, bounded knot spans, random access, and block-size-independent
+    output;
+  - bounded non-overlapping transient events using reversible integer Haar
+    lifting and exact zero contribution outside declared support;
+  - residual-aware transient RDO with `off`, `on`, and `auto` modes;
+  - RAW and CIBS MAF-P1 Basis banks with exact PCM reconstruction when
+    quantization steps equal one;
+  - external official `opusenc/opusdec` runner with complete Ogg byte
+    accounting, decoded PCM, tool versions, and executable SHA-256;
+  - official Windows opus-tools installer with a pinned archive hash and Linux
+    CI integration.
+- Measured deterministic three-second synthetic experiment:
+  - P0 single-Basis q16: 455.55 kbit/s, 60.96 dB SNR;
+  - P1 multi-Basis q16: 349.16 kbit/s, 60.99 dB SNR;
+  - reduction against P0 on this declared class: 23.35%;
+  - forced transient path was 0.72% larger, and `auto` correctly rejected it;
+  - P1 q256: 74.33 kbit/s, 36.93 dB SNR;
+  - official libopus 1.3 anchor at requested 48k VBR: actual 86.80 kbit/s,
+    27.78 dB SNR.
+- Limitations:
+  - this is a synthetic, highly structured, waveform-SNR diagnostic;
+  - it is not a MUSHRA result or a broad music claim;
+  - the official binary uses libopus 1.3, not current libopus 1.6.1;
+  - zlib remains the residual entropy placeholder;
+  - transient coding has not yet demonstrated a net win.
+- Canonical implementation and report:
+  - `10_MAF_P0_IMPLEMENTATION.md`;
+  - `../experiments/results/maf_p1_opus_2026-07-26.json`.

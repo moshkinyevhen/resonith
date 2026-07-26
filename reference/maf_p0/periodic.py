@@ -10,6 +10,7 @@ import numpy as np
 
 PHASE_SCALE = 1 << 32
 GAIN_SHIFT = 15
+MAX_PHASE_KNOT_SPAN = 32768
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,242 @@ class PeriodicAnalysis:
     period_samples: int
     phase_increment_q32: int
     basis: np.ndarray
+
+
+@dataclass(frozen=True)
+class PhaseTrajectory:
+    """Absolute piecewise-linear Q32 phase law.
+
+    Contract:
+    - positions are local sample indices and include both 0 and sample_count;
+    - increments are unsigned Q0.32 cycles/sample at the corresponding knots;
+    - phase is evaluated from an absolute polynomial, never from a previous
+      render block, so slicing and random access are bit-exact.
+    """
+
+    positions: np.ndarray
+    increments_q32: np.ndarray
+    phase_origin_q32: int = 0
+
+    def __post_init__(self) -> None:
+        positions = np.asarray(self.positions, dtype=np.int64).copy()
+        increments = np.asarray(self.increments_q32, dtype=np.uint32).copy()
+        if positions.ndim != 1 or increments.ndim != 1:
+            raise TypeError("trajectory arrays must be one-dimensional")
+        if positions.size < 2 or positions.size != increments.size:
+            raise ValueError("trajectory requires matching endpoint knots")
+        if int(positions[0]) != 0 or np.any(np.diff(positions) <= 0):
+            raise ValueError("trajectory positions must start at zero and increase")
+        if np.any(np.diff(positions) > MAX_PHASE_KNOT_SPAN):
+            raise ValueError("trajectory knot span exceeds the P1 arithmetic bound")
+        if not 0 <= int(self.phase_origin_q32) <= 0xFFFFFFFF:
+            raise ValueError("phase origin is outside Q32 range")
+        positions.setflags(write=False)
+        increments.setflags(write=False)
+        object.__setattr__(self, "positions", positions)
+        object.__setattr__(self, "increments_q32", increments)
+
+    @property
+    def sample_count(self) -> int:
+        return int(self.positions[-1])
+
+
+def _round_divide_signed_array(
+    numerator: np.ndarray,
+    denominator: int,
+) -> np.ndarray:
+    """Round signed int64 values to nearest, with ties away from zero."""
+
+    if denominator <= 0:
+        raise ValueError("denominator must be positive")
+    magnitude = np.abs(numerator)
+    rounded = (magnitude + denominator // 2) // denominator
+    return np.where(numerator < 0, -rounded, rounded)
+
+
+def _phase_advance_q32(length: int, start_increment: int, end_increment: int) -> int:
+    """Return the exact discrete phase advance of one linear-law interval."""
+
+    if length <= 0 or length > MAX_PHASE_KNOT_SPAN:
+        raise ValueError("phase interval length is outside the P1 bound")
+    delta = int(end_increment) - int(start_increment)
+    curve = delta * length * (length - 1)
+    magnitude = abs(curve)
+    rounded = (magnitude + length) // (2 * length)
+    if curve < 0:
+        rounded = -rounded
+    return length * int(start_increment) + rounded
+
+
+def _trajectory_phase_origins(trajectory: PhaseTrajectory) -> np.ndarray:
+    """Materialize Q32 phase at every knot for bounded random access."""
+
+    origins = np.empty(trajectory.positions.size, dtype=np.uint32)
+    phase = int(trajectory.phase_origin_q32)
+    origins[0] = np.uint32(phase)
+    for index in range(trajectory.positions.size - 1):
+        length = int(trajectory.positions[index + 1] - trajectory.positions[index])
+        phase = (
+            phase
+            + _phase_advance_q32(
+                length,
+                int(trajectory.increments_q32[index]),
+                int(trajectory.increments_q32[index + 1]),
+            )
+        ) & 0xFFFFFFFF
+        origins[index + 1] = np.uint32(phase)
+    return origins
+
+
+def phase_values_q32(
+    trajectory: PhaseTrajectory,
+    *,
+    output_start: int = 0,
+    output_count: int | None = None,
+) -> np.ndarray:
+    """Evaluate absolute Q32 phases for an arbitrary output slice."""
+
+    if output_start < 0 or output_start > trajectory.sample_count:
+        raise ValueError("output_start is outside the trajectory")
+    count = (
+        trajectory.sample_count - output_start
+        if output_count is None
+        else int(output_count)
+    )
+    if count < 0 or output_start + count > trajectory.sample_count:
+        raise ValueError("requested phase slice is outside the trajectory")
+    if count == 0:
+        return np.empty(0, dtype=np.uint32)
+
+    output = np.empty(count, dtype=np.uint32)
+    absolute_end = output_start + count
+    knot_origins = _trajectory_phase_origins(trajectory)
+
+    # Each interval is evaluated from its stored knot phase. No previous output
+    # sample or caller block size participates in the result.
+    for interval in range(trajectory.positions.size - 1):
+        interval_start = int(trajectory.positions[interval])
+        interval_end = int(trajectory.positions[interval + 1])
+        start = max(output_start, interval_start)
+        end = min(absolute_end, interval_end)
+        if start >= end:
+            continue
+        local = np.arange(start - interval_start, end - interval_start, dtype=np.int64)
+        length = interval_end - interval_start
+        increment0 = int(trajectory.increments_q32[interval])
+        delta = int(trajectory.increments_q32[interval + 1]) - increment0
+        curve_numerator = delta * local * (local - 1)
+        curve = _round_divide_signed_array(curve_numerator, 2 * length)
+        phase = (
+            np.int64(int(knot_origins[interval]))
+            + local * np.int64(increment0)
+            + curve
+        ) & np.int64(0xFFFFFFFF)
+        destination = slice(start - output_start, end - output_start)
+        output[destination] = phase.astype(np.uint32)
+    return output
+
+
+def render_basis_trajectory(
+    basis: np.ndarray,
+    trajectory: PhaseTrajectory,
+    *,
+    output_start: int = 0,
+    output_count: int | None = None,
+) -> np.ndarray:
+    """Render one immutable Basis under an absolute continuous phase law."""
+
+    if basis.dtype != np.int16 or basis.ndim != 1:
+        raise TypeError("basis must be an int16 vector")
+    if basis.size < 2:
+        raise ValueError("basis must contain at least two samples")
+    phases = phase_values_q32(
+        trajectory,
+        output_start=output_start,
+        output_count=output_count,
+    ).astype(np.uint64)
+    positions = phases * np.uint64(basis.size)
+    base_index = (positions >> np.uint64(32)).astype(np.int64)
+    fraction_q16 = ((positions >> np.uint64(16)) & 0xFFFF).astype(np.int64)
+    next_index = (base_index + 1) % basis.size
+    left = basis[base_index].astype(np.int64)
+    right = basis[next_index].astype(np.int64)
+    interpolated = (
+        left * (65536 - fraction_q16) + right * fraction_q16 + 32768
+    ) >> 16
+    return np.clip(interpolated, -32768, 32767).astype(np.int16)
+
+
+def constant_phase_trajectory(
+    sample_count: int,
+    phase_increment_q32: int,
+    *,
+    phase_origin_q32: int = 0,
+) -> PhaseTrajectory:
+    if sample_count <= 0:
+        raise ValueError("sample_count must be positive")
+    if sample_count > MAX_PHASE_KNOT_SPAN:
+        positions = list(range(0, sample_count, MAX_PHASE_KNOT_SPAN))
+        positions.append(sample_count)
+    else:
+        positions = [0, sample_count]
+    increments = np.full(len(positions), phase_increment_q32, dtype=np.uint32)
+    return PhaseTrajectory(
+        np.asarray(positions, dtype=np.int64),
+        increments,
+        phase_origin_q32,
+    )
+
+
+def estimate_phase_trajectory(
+    samples: np.ndarray,
+    sample_rate: int,
+    *,
+    knot_interval: int = 4096,
+    minimum_frequency: float = 50.0,
+    maximum_frequency: float = 2000.0,
+) -> PhaseTrajectory:
+    """Estimate a bounded pitch law; all floating-point work is encoder-only."""
+
+    if samples.dtype != np.int16 or samples.ndim != 1:
+        raise TypeError("samples must be mono int16")
+    if samples.size < 64:
+        raise ValueError("not enough samples for pitch trajectory analysis")
+    if knot_interval < 64 or knot_interval > MAX_PHASE_KNOT_SPAN:
+        raise ValueError("knot_interval is outside the P1 bound")
+
+    positions = list(range(0, samples.size, knot_interval))
+    if positions[-1] != samples.size:
+        positions.append(samples.size)
+    increments: list[int] = []
+    half_window = max(2048, knot_interval)
+    fallback_period = estimate_period(
+        samples,
+        sample_rate,
+        minimum_frequency=minimum_frequency,
+        maximum_frequency=maximum_frequency,
+    )
+    previous_period = fallback_period
+    for position in positions:
+        start = max(0, position - half_window)
+        end = min(samples.size, position + half_window)
+        window = samples[start:end]
+        try:
+            period = estimate_period(
+                window,
+                sample_rate,
+                minimum_frequency=minimum_frequency,
+                maximum_frequency=maximum_frequency,
+                analysis_samples=min(window.size, 16384),
+            )
+        except ValueError:
+            period = previous_period
+        previous_period = period
+        increments.append(int(round(PHASE_SCALE / period)) & 0xFFFFFFFF)
+    return PhaseTrajectory(
+        np.asarray(positions, dtype=np.int64),
+        np.asarray(increments, dtype=np.uint32),
+    )
 
 
 def estimate_period(

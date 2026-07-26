@@ -22,3 +22,15 @@ The report for each clip must be stored:
 
 No aggregate gain is considered a result without a per-clip table,
 reproducible command and independent decode.
+
+## Implemented experiments
+
+- `maf_p0_benchmark.py` — original single-Basis and CIBS amortization test.
+- `maf_p1_benchmark.py` — multi-Basis lifetime, continuous phase,
+  transient-RDO, and real Opus ablation.
+- `opus_anchor.py` — run official external `opusenc/opusdec` on a supplied WAV.
+- `results/maf_p1_opus_2026-07-26.json` — raw first MAF-P1/Opus diagnostic.
+
+The Opus runner counts the complete Ogg file and records executable version
+and SHA-256. A missing external tool is reported explicitly; it is never
+silently replaced by a simulation.

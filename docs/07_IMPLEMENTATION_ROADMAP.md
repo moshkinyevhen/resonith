@@ -6,6 +6,24 @@ The goal of the first branch is not to immediately implement all families, but t
 falsifiable codec loop, in which each new mechanism proves its own
 net gain.
 
+## Execution update — 2026-07-26
+
+Status: **IMPLEMENTED / EXPERIMENTAL**
+
+- MAF-P0 periodic RAW/CIBS loop is complete.
+- MAF-P1 multi-Basis lifetimes, content reuse, and absolute phase trajectories
+  are complete in the Python oracle.
+- The bounded reversible transient path is complete, but its first forced
+  ablation lost 0.72%; `auto` correctly rejected it.
+- A real official Opus encode/decode anchor is integrated locally and in Linux
+  CI with full container-byte and executable-provenance accounting.
+- The next blocking milestone is the general integer-lifting/entropy residual,
+  followed by automatic change-point segmentation and real licensed corpus
+  tests.
+
+Detailed measurements are in
+[10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md).
+
 ## Milestone 0 - Golden Core
 
 Artifacts:

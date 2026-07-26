@@ -1,6 +1,6 @@
 # Resonith-0 Bitstream and Decoding Process
 
-Version: 0.0.2
+Version: 0.0.3
 Status: **NORMATIVE-DRAFT**
 Architecture: **MAF - Memory-oriented Acoustic Field**
 
@@ -69,11 +69,16 @@ Defines:
 
 Atomically clears the Atom namespace, Basis Bank, and dependent filter state.
 
-### 5.3 `BASIS_SET(t, basis_id, family, payload)`
+### 5.3 `BASIS_SET(t, basis_id, family, lifetime, payload)`
 
 Creates an immutable Basis. Reusing a `basis_id` before reset is prohibited.
 `family` MAY identify a waveform/timbre Basis, filter/resonator Basis, or
 `CONTROL_BASIS`.
+
+`lifetime` defines a half-open interval beginning at `t` and ending at an
+absolute `death_time`, or an open-ended lifetime terminated by `BASIS_END`.
+Content-identical Basis payloads MAY be deduplicated by the encoder, but every
+normative reference resolves to one explicit immutable Basis ID.
 
 `payload_mode` MUST be:
 
@@ -85,26 +90,36 @@ A Main-0 decoder MUST implement all three modes. A CIBS payload MUST contain
 `synth_model_id`, target schema, quantized latent, optional bounded adapter,
 optional objective correction and expected Basis hash.
 
-### 5.4 `ATOM_SET(t, atom_id, changed_fields, payload)`
+### 5.4 `BASIS_END(t, basis_id)`
+
+Terminates a Basis immediately before sample `t`. No live Atom may reference a
+Basis at or after its termination time. A decoder MUST validate the complete
+mutation before removing the Basis.
+
+### 5.5 `ATOM_SET(t, atom_id, changed_fields, payload)`
 
 Creates an atom or atomically modifies the listed fields. Unspecified fields
 retain the same value.
 
-### 5.5 `ATOM_END(t, atom_id)`
+Every Atom that references a Basis MUST have a lifetime fully contained by the
+Basis lifetime. An update that violates this invariant MUST be rejected before
+state commit.
+
+### 5.6 `ATOM_END(t, atom_id)`
 
 Terminates an Atom immediately before sample `t`.
 
-### 5.6 `INNOVATION(t, duration, payload)`
+### 5.7 `INNOVATION(t, duration, payload)`
 
 Adds a bounded objective residual. `EXACT_REPLACE` MUST be able to define any
 interval completely, independently of model Atoms.
 
-### 5.7 `CHECKPOINT(t)`
+### 5.8 `CHECKPOINT(t)`
 
 Contains a self-contained Core state, or a `STATE_RESET` followed by enough
 payload to provide bounded random access.
 
-### 5.8 `PERCEPTUAL(t, duration, payload)`
+### 5.9 `PERCEPTUAL(t, duration, payload)`
 
 Defines a discardable enhancement and MUST NOT change Core state.
 
@@ -184,6 +199,19 @@ Unbounded convolution and undefined recursive state are prohibited.
 Uses an onset-relative bounded envelope and/or a short inverse-integer-lifting
 Basis. Long-window pre-echo MUST have a separate conformance test.
 
+A Main transient event:
+
+- has explicit half-open sample support;
+- MUST reconstruct the identity contribution outside that support;
+- MUST use a profile-bounded transform length and coefficient count;
+- MUST NOT overlap another exact-replacement transient event in the same
+  dependency layer;
+- MAY be skipped by the encoder when its event, coefficient, and remaining
+  Innovation cost is not lower than the universal fallback.
+
+Detection is non-normative. The declared support and transmitted objective
+payload, not an inferred onset label, determine decoder output.
+
 ### 6.6 `INNOVATION`
 
 Uses inverse integer lifting, sparse coefficients and exact replacement.
@@ -238,6 +266,24 @@ Main-0 MUST support bounded piecewise:
 The profile defines maximum duration, knot count, coefficient range, and
 derivative. A track is evaluated from its absolute event origin.
 
+For a piecewise-linear Q32 phase-increment interval of length \(L\), local
+offset \(r\), starting phase \(\phi_0\), and endpoint increments
+\(\omega_0,\omega_1\), Main-0 uses the absolute law:
+
+\[
+\phi(r)=\phi_0+r\omega_0+
+RoundAway\left(
+\frac{(\omega_1-\omega_0)r(r-1)}{2L}
+\right)
+\quad(\bmod\ 2^{32}).
+\]
+
+The next interval origin is \(\phi(L)\). `RoundAway` rounds to nearest with
+ties away from zero. A profile MUST bound \(L\) so that the specified
+accumulator cannot overflow. Rendering a full interval, arbitrary slices, or
+different implementation block sizes MUST produce identical phases and
+samples.
+
 Atom MAY reference immutable `CONTROL_BASIS`:
 
 \[
@@ -288,6 +334,10 @@ Each level MUST define:
 - maximum MAC/sample/channel;
 - maximum mix sources and channels;
 - maximum parameter knots per unit of time;
+- maximum phase-law knot span and accumulator width;
+- maximum Basis creations, terminations, and total lifetimes per time unit;
+- maximum transient events, support length, transform length, and coefficients
+  per time unit;
 - maximum checkpoint distance;
 - maximum entropy payload;
 - maximum state bytes;

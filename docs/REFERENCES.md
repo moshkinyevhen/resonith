@@ -1,4 +1,4 @@
-# ResonithPrimarySources
+# Resonith Primary Sources
 
 Last update: 2026-07-26.
 
@@ -7,6 +7,8 @@ Numbers from papers are statements made by the authors prior to independent repr
 ## Standards and anchors
 
 - [RFC 6716 - Definition of the Opus Audio Codec](https://datatracker.ietf.org/doc/html/rfc6716)
+- [Official Opus releases and current implementation](https://www.opus-codec.org/)
+- [Official opus-tools 0.2 documentation](https://www.opus-codec.org/docs/opus-tools/opusenc.html)
 - [MPEG-4 Audio](https://www.mpeg.org/standards/MPEG-4/3/)
 - [MPEG-D suite, including Unified Speech and Audio Coding](https://www.mpeg.org/standards/MPEG-D/)
 - [Fraunhofer IIS: xHE-AAC](https://www.iis.fraunhofer.de/en/ff/amm/broadcast-streaming/xheaac.html)
