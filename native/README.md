@@ -115,7 +115,8 @@ cmake -S native -B build/fuzz \
   -DBUILD_TESTING=OFF \
   -DRESONITH_BUILD_FUZZERS=ON
 cmake --build build/fuzz \
-  --target resonith_liftpack_fuzz resonith_main0_fuzz resonith_seek_fuzz
+  --target resonith_liftpack_fuzz resonith_main0_fuzz resonith_seek_fuzz \
+  resonith_lapped_fuzz
 python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
 build/fuzz/resonith_liftpack_fuzz \
   artifacts/fuzz_corpus/liftpack -runs=5000
@@ -123,6 +124,8 @@ build/fuzz/resonith_main0_fuzz \
   artifacts/fuzz_corpus/main0 -runs=5000
 build/fuzz/resonith_seek_fuzz \
   artifacts/fuzz_corpus/seek -runs=5000
+build/fuzz/resonith_lapped_fuzz \
+  artifacts/fuzz_corpus/lapped -runs=5000
 ```
 
 The harnesses cap host allocations after a successful envelope inspection;

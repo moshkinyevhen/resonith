@@ -1,4 +1,4 @@
-"""Generate deterministic valid LiftPack and Main-0 seeds for fuzzing."""
+"""Generate deterministic valid decoder seeds for native fuzzing."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
 from maf_p0.lpc_oracle import encode_lpc_liftpack_oracle  # noqa: E402
+from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
 from maf_p0.main0 import (  # noqa: E402
     Main0State,
     pack_main0_lpc_residual_stream,
@@ -31,9 +32,11 @@ def main() -> None:
     liftpack_directory = args.output_directory / "liftpack"
     main0_directory = args.output_directory / "main0"
     seek_directory = args.output_directory / "seek"
+    lapped_directory = args.output_directory / "lapped"
     liftpack_directory.mkdir(parents=True, exist_ok=True)
     main0_directory.mkdir(parents=True, exist_ok=True)
     seek_directory.mkdir(parents=True, exist_ok=True)
+    lapped_directory.mkdir(parents=True, exist_ok=True)
 
     structured = np.concatenate(
         (
@@ -103,6 +106,25 @@ def main() -> None:
         )
     )
     (seek_directory / "canonical_mode.bin").write_bytes(b"\x00")
+
+    lapped_samples = np.stack(
+        (tonal[:96], np.roll(tonal[:96], 13)),
+        axis=1,
+    )
+    for density in ("fixed", "adaptive"):
+        encoded = encode_lapped_stream(
+            lapped_samples,
+            48_000,
+            coefficients_per_frame=8,
+            half_window=32,
+            band_count=4,
+            entropy_backend="bounded",
+            transform_backend="fixed",
+            density_backend=density,
+        )
+        (lapped_directory / f"{density}_density.rsc").write_bytes(
+            encoded.payload
+        )
 
 
 if __name__ == "__main__":

@@ -1731,3 +1731,23 @@ new oscillator opcode.
   - no short-window or window-switch state is added. The density law remains
     the only automatic acoustic-complexity mechanism until blinded listening
     supplies contrary evidence.
+
+## R-065 — Sanitized LPF1 hostile-stream gate
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - fuzz the complete native LPF1 inspect/decode boundary with fixed- and
+    adaptive-density valid seeds;
+  - run libFuzzer with AddressSanitizer and UndefinedBehaviorSanitizer on every
+    repository test workflow;
+  - cap harness allocations and estimated synthesis work independently of the
+    normative parser bounds so mutation throughput cannot be dominated by one
+    valid but expensive stream;
+  - assert the public write-count contract: success writes exactly the declared
+    frame count and every failure reports zero frames.
+- Rationale:
+  - exact conformance vectors cover known streams but not adversarial section,
+    entropy, count, position, or arithmetic combinations;
+  - LPF1 is the first prospective public path that combines persistent parser
+    state, variable symbol counts, bounded entropy, and integer synthesis.
