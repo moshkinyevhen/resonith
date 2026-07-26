@@ -55,7 +55,7 @@ The repository contains:
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 98 pure reference/security/integration tests, seven native decoder-in-loop
+- 101 pure reference/security/integration tests, seven native decoder-in-loop
   integration tests, nine native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1 mutation targets.

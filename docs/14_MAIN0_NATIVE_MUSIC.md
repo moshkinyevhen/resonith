@@ -542,3 +542,31 @@ This is a deployability result, not a stereo compression claim. Independent
 channels are the required fallback because all earlier coupled waveform tools
 lost their declared gates. A later source-aware stereo or spatial
 representation must beat this executable fallback before replacing it.
+
+## 23. Pull playback and packet-loss containment
+
+The device-facing Core now exposes a caller-owned pull session. It retains one
+forward cursor per channel and returns one aligned interleaved block per call.
+Cursor advances are staged in local copies and committed only after every
+channel succeeds. An undersized-output rejection leaves the session at the
+same block; canonical exhaustion returns `NOT_FOUND`. Pull, whole, and
+push-callback outputs are sample-identical. The complete cross-platform and
+sanitized matrix passed in
+[run 30206070812](https://github.com/moshkinyevhen/resonith/actions/runs/30206070812).
+
+R-054 then lost one internal aligned block on each pinned stereo music crop.
+Every frame outside that block, including the first following block, returned
+to exact Truth. This confirms that block-local LPC seeds contain damage and no
+concealment enters future prediction.
+
+Complete-byte Main RDO selected 4,096-frame blocks, making a loss last 92.88 ms
+at 44.1 kHz. A Realtime ceiling of 512 frames reduced the interval to 11.61 ms
+but increased complete stream bytes by 12.95%, 13.37%, and 9.59% on Corelli,
+piano, and drums respectively. The ceiling is therefore a latency/recovery
+profile trade-off, not a compression improvement.
+
+The current integer fade concealment is deliberately only a baseline. Its
+quality was weak on exposed piano even though damage remained bounded. Future
+PLC or FEC must be judged by matched listening and must never become Truth
+reference state. The compact evidence is
+[`packet_loss_2026-07-26_summary.json`](../experiments/results/packet_loss_2026-07-26_summary.json).

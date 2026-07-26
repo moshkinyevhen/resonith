@@ -1,0 +1,64 @@
+{
+  "clip_count": 3,
+  "clips": {
+    "corelli-sonata-realization": {
+      "main": {
+        "affected_milliseconds": 92.87981859410431,
+        "block_size": 4096,
+        "lost_payload_bytes": 1804,
+        "stream_bytes": 20917
+      },
+      "pcm16_sha256": "d98482a3f06b52314120bb5a7419ab118fe8c17b60edabba5da1526d5060074f",
+      "realtime": {
+        "affected_milliseconds": 11.609977324263038,
+        "block_size": 512,
+        "lost_payload_bytes": 257,
+        "stream_bytes": 23625
+      },
+      "realtime_byte_increase": 0.12946407228570062
+    },
+    "emotional-piano-cc0": {
+      "main": {
+        "affected_milliseconds": 92.87981859410431,
+        "block_size": 4096,
+        "lost_payload_bytes": 2286,
+        "stream_bytes": 26417
+      },
+      "pcm16_sha256": "4934934d46263b080bffc5ad8ab88163ff19717a2976ab5f08b40fa37cb5158c",
+      "realtime": {
+        "affected_milliseconds": 11.609977324263038,
+        "block_size": 512,
+        "lost_payload_bytes": 317,
+        "stream_bytes": 29949
+      },
+      "realtime_byte_increase": 0.13370178294280198
+    },
+    "patro-de-bateria": {
+      "main": {
+        "affected_milliseconds": 92.87981859410431,
+        "block_size": 4096,
+        "lost_payload_bytes": 2413,
+        "stream_bytes": 26083
+      },
+      "pcm16_sha256": "b9fd350b60d03aadcb9cbbb2c3eb04eba92e2030e9a4cec3fabf4135672fbb34",
+      "realtime": {
+        "affected_milliseconds": 11.609977324263038,
+        "block_size": 512,
+        "lost_payload_bytes": 344,
+        "stream_bytes": 28584
+      },
+      "realtime_byte_increase": 0.09588620940842695
+    }
+  },
+  "commands": {
+    "main": "python experiments/packet_loss_benchmark.py --cache artifacts/real_music_source --maximum-seconds 1.0 --innovation-step 64 --residual-blocks 1024 2048 4096 --output-directory artifacts/packet_loss_local",
+    "realtime": "python experiments/packet_loss_benchmark.py --cache artifacts/real_music_source --maximum-seconds 1.0 --innovation-step 64 --residual-blocks 256 512 --output-directory artifacts/packet_loss_realtime_local"
+  },
+  "containment_rule": "PCM outside lost aligned blocks and the first following block must equal undamaged Truth exactly.",
+  "innovation_step": 64,
+  "main_all_clips_contained": true,
+  "maximum_seconds_per_clip": 1.0,
+  "realtime_all_clips_contained": true,
+  "research_only": true,
+  "status": "block-local containment passed; 512-frame Realtime ceiling remains a profile target"
+}

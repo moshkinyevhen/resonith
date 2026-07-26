@@ -1290,7 +1290,7 @@ new oscillator opcode.
 ## R-053 — Pull-oriented realtime player session
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING / NORMATIVE-DRAFT**
+- Status: **IMPLEMENTED / CROSS-PLATFORM VERIFIED / NORMATIVE-DRAFT**
 - Decision:
   - add a mutable caller-owned multichannel session that borrows the immutable
     verified player view and retains one forward LiftPack cursor per channel;
@@ -1317,3 +1317,78 @@ new oscillator opcode.
   - transactional cursor commit prevents one damaged channel from advancing
     ahead of the others and preserves deterministic retry/concealment policy
     for the application.
+- Result:
+  - the native session retains eight fixed cursor slots, commits only the
+    declared active channels, and returns one canonical interleaved block per
+    call;
+  - an undersized output rejection reports zero frames and leaves
+    `next_block` unchanged; canonical exhaustion returns `NOT_FOUND`;
+  - native pull output equals both whole decode and push-callback output on the
+    generated stereo conformance stream;
+  - GCC, Clang, MSVC, Linux ARM64, Windows ARM64, macOS ARM64, Android
+    arm64-v8a, Python/native parity, and sanitized fuzzing passed in run
+    30206070812.
+
+## R-054 — Block-local packet-loss containment simulator
+
+- Date: 2026-07-26
+- Status: **MEASURED / CONTAINMENT PASSED / RESEARCH**
+- Decision:
+  - expose independently verified RSL2 block indexing and single-block decode
+    in the Python reference, mirroring the native LiftPack API;
+  - simulate loss at aligned multichannel block granularity without modifying
+    the intact source stream or pretending that container checksums survived a
+    truncated file;
+  - conceal only the missing frame interval with a deterministic bounded fade
+    from the last available interleaved frame toward zero;
+  - decode every received block from its own transmitted seeds and require the
+    first block after a loss run to match undamaged Truth exactly;
+  - report affected frames, lost payload bytes, loss-run boundaries, objective
+    concealment error, and exact equality outside lost intervals;
+  - keep concealment an application policy, not normative Truth and not a
+    reference state. Future packet framing/FEC must receive its own transport
+    syntax and overhead gate.
+- Rationale:
+  - block-local LPC seeds should bound damage naturally, but the property must
+    be executed and measured rather than inferred;
+  - mutating an RSC1 section and ignoring its SHA-256 would test a non-conformant
+    file decoder, not realistic packet loss;
+  - a simple poor-but-bounded concealment baseline makes recovery behavior
+    falsifiable before spending decoder complexity on neural PLC or FEC.
+- Result:
+  - single-block Python decode equals full RSL2 decode for first, middle, and
+    final blocks, matching the already executable native independent-block
+    property;
+  - on all three one-second stereo music crops, losing one internal aligned
+    block changed only its declared frames and the first following block
+    returned to exact Truth;
+  - unrestricted complete-byte RDO selected 4,096-frame blocks. One loss then
+    affected 92.88 ms at 44.1 kHz, which is contained but too long for the
+    Realtime target;
+  - a 512-frame ceiling reduced the affected interval to 11.61 ms. Complete
+    stream size increased by 12.95% on Corelli, 13.37% on piano, and 9.59% on
+    drums relative to the 4,096-frame winners;
+  - simple fade concealment remained audibly risky on exposed piano and is
+    retained only as a bounded baseline. No concealment output becomes Truth
+    or future prediction state.
+
+## R-055 — Realtime residual block ceiling candidate
+
+- Date: 2026-07-26
+- Status: **TARGET / NORMATIVE-DRAFT**
+- Decision:
+  - cap the initial Realtime profile at 512 PCM frames per independently seeded
+    residual block for 44.1 and 48 kHz material;
+  - permit Main/Studio encoders to choose longer blocks by complete-byte RDO;
+  - count the measured rate penalty explicitly rather than presenting the
+    latency profile as a compression win;
+  - require a later native timing gate to show worst-case one-block decode
+    below the device callback budget on reference mobile hardware;
+  - revisit the ceiling only with packet-loss listening evidence, not with
+    bitrate alone.
+- Rationale:
+  - 512 frames bounds coded loss and algorithmic block recovery to 11.61 ms at
+    44.1 kHz and 10.67 ms at 48 kHz;
+  - the measured 9.59% to 13.37% byte cost is material but acceptable as an
+    explicit Realtime trade-off, while a 4,096-frame loss is too long for a
+    credible low-latency profile.

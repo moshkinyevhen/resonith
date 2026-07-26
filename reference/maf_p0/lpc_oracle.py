@@ -50,6 +50,37 @@ class LPCOracleResult:
     report: dict
 
 
+@dataclass(frozen=True)
+class LPCBlockInfo:
+    """Canonical byte/sample interval for one independently seeded block."""
+
+    block_index: int
+    byte_offset: int
+    byte_size: int
+    sample_offset: int
+    sample_count: int
+    transform: int
+    entropy: int
+    lpc_order: int
+    bit_count: int
+
+
+@dataclass(frozen=True)
+class _LPCBlockView:
+    info: LPCBlockInfo
+    parameter: int
+    coefficient_count: int
+    coefficients_q: np.ndarray | None
+    entropy_payload: bytes
+
+
+@dataclass(frozen=True)
+class _LPCStreamView:
+    block_size: int
+    sample_count: int
+    blocks: tuple[_LPCBlockView, ...]
+
+
 def _round_shift(value: int, precision: int) -> int:
     magnitude = (abs(value) + (1 << (precision - 1))) >> precision
     return -magnitude if value < 0 else magnitude
@@ -307,12 +338,8 @@ def encode_lpc_liftpack_oracle(
     }
 
 
-def decode_lpc_liftpack_oracle(
-    payload: bytes,
-    *,
-    expected_count: int | None = None,
-) -> np.ndarray:
-    """Independently parse and exactly invert one prospective RSL2 payload."""
+def _parse_lpc_liftpack(payload: bytes) -> _LPCStreamView:
+    """Validate one RSL2 envelope and index every block without decoding."""
 
     if len(payload) < STREAM_HEADER.size + CHECKSUM.size:
         raise ValueError("truncated RSL2 stream")
@@ -338,20 +365,18 @@ def decode_lpc_liftpack_oracle(
     )
     if block_count != expected_blocks:
         raise ValueError("non-canonical RSL2 block count")
-    if expected_count is not None and sample_count != expected_count:
-        raise ValueError("RSL2 sample count mismatch")
-
-    output = np.empty(sample_count, dtype=np.int64)
     cursor = STREAM_HEADER.size
-    output_cursor = 0
-    for _ in range(block_count):
+    sample_offset = 0
+    blocks: list[_LPCBlockView] = []
+    for block_index in range(block_count):
+        block_start = cursor
         if cursor + BLOCK_HEADER.size > len(body):
             raise ValueError("truncated RSL2 block header")
         length, transform, entropy, parameter, bit_count = (
             BLOCK_HEADER.unpack_from(body, cursor)
         )
         cursor += BLOCK_HEADER.size
-        expected_length = min(block_size, sample_count - output_cursor)
+        expected_length = min(block_size, sample_count - sample_offset)
         if length != expected_length:
             raise ValueError("non-canonical RSL2 block length")
 
@@ -372,6 +397,7 @@ def decode_lpc_liftpack_oracle(
                 body[cursor:end],
                 dtype="<i2",
             ).copy()
+            coefficients_q.flags.writeable = False
             if (
                 int(np.sum(np.abs(coefficients_q.astype(np.int64))))
                 > MAX_COEFFICIENT_SUM_Q
@@ -389,23 +415,96 @@ def decode_lpc_liftpack_oracle(
         end = cursor + payload_bytes
         if end > len(body):
             raise ValueError("truncated RSL2 entropy payload")
-        coefficients = _decode_entropy(
-            body[cursor:end],
-            bit_count,
-            coefficient_count,
-            entropy,
-            parameter,
+        blocks.append(
+            _LPCBlockView(
+                info=LPCBlockInfo(
+                    block_index=block_index,
+                    byte_offset=block_start,
+                    byte_size=end - block_start,
+                    sample_offset=sample_offset,
+                    sample_count=length,
+                    transform=transform,
+                    entropy=entropy,
+                    lpc_order=(
+                        0
+                        if coefficients_q is None
+                        else int(coefficients_q.size)
+                    ),
+                    bit_count=bit_count,
+                ),
+                parameter=parameter,
+                coefficient_count=coefficient_count,
+                coefficients_q=coefficients_q,
+                entropy_payload=body[cursor:end],
+            )
         )
-        restored = (
-            _inverse_lpc(coefficients, coefficients_q)
-            if coefficients_q is not None
-            else _inverse_transform(coefficients, transform, length)
-        )
-        output[output_cursor : output_cursor + length] = restored[:length]
-        output_cursor += length
+        sample_offset += length
         cursor = end
-    if output_cursor != sample_count or cursor != len(body):
+    if sample_offset != sample_count or cursor != len(body):
         raise ValueError("trailing or incomplete RSL2 data")
+    return _LPCStreamView(
+        block_size=block_size,
+        sample_count=sample_count,
+        blocks=tuple(blocks),
+    )
+
+
+def _decode_lpc_block(block: _LPCBlockView) -> np.ndarray:
+    coefficients = _decode_entropy(
+        block.entropy_payload,
+        block.info.bit_count,
+        block.coefficient_count,
+        block.info.entropy,
+        block.parameter,
+    )
+    restored = (
+        _inverse_lpc(coefficients, block.coefficients_q)
+        if block.coefficients_q is not None
+        else _inverse_transform(
+            coefficients,
+            block.info.transform,
+            block.info.sample_count,
+        )
+    )
+    return restored[: block.info.sample_count]
+
+
+def index_lpc_liftpack_blocks(payload: bytes) -> tuple[LPCBlockInfo, ...]:
+    """Return immutable canonical RSL2 block intervals after full validation."""
+
+    return tuple(block.info for block in _parse_lpc_liftpack(payload).blocks)
+
+
+def decode_lpc_liftpack_block(
+    payload: bytes,
+    block_index: int,
+) -> tuple[LPCBlockInfo, np.ndarray]:
+    """Independently reconstruct one block without decoding earlier samples."""
+
+    stream = _parse_lpc_liftpack(payload)
+    if not 0 <= block_index < len(stream.blocks):
+        raise IndexError("RSL2 block index is out of range")
+    block = stream.blocks[block_index]
+    output = _decode_lpc_block(block)
+    output.flags.writeable = False
+    return block.info, output
+
+
+def decode_lpc_liftpack_oracle(
+    payload: bytes,
+    *,
+    expected_count: int | None = None,
+) -> np.ndarray:
+    """Independently parse and exactly invert one prospective RSL2 payload."""
+
+    stream = _parse_lpc_liftpack(payload)
+    if expected_count is not None and stream.sample_count != expected_count:
+        raise ValueError("RSL2 sample count mismatch")
+    output = np.empty(stream.sample_count, dtype=np.int64)
+    for block in stream.blocks:
+        start = block.info.sample_offset
+        end = start + block.info.sample_count
+        output[start:end] = _decode_lpc_block(block)
     return output
 
 

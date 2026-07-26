@@ -18,9 +18,12 @@ from .model import (
     train_linear_cibs,
 )
 from .lpc_oracle import (
+    LPCBlockInfo,
     LPCOracleResult,
+    decode_lpc_liftpack_block,
     decode_lpc_liftpack_oracle,
     encode_lpc_liftpack_oracle,
+    index_lpc_liftpack_blocks,
     run_lpc_liftpack_oracle,
 )
 from .main0 import (
@@ -47,6 +50,10 @@ from .native_core import (
     NativeMain0Decoder,
     NativeMultichannelDecodeResult,
     NativeMultichannelRequirements,
+)
+from .packet_loss import (
+    PacketLossSimulationResult,
+    simulate_aligned_packet_loss,
 )
 from .periodic import PhaseTrajectory
 from .residual import ResidualPacket, decode_liftpack, encode_liftpack
@@ -75,9 +82,11 @@ __all__ = [
     "IndependentChannelDecodeResult",
     "IndependentChannelEncodeResult",
     "LPCOracleResult",
+    "LPCBlockInfo",
     "NativeMain0Decoder",
     "NativeMultichannelDecodeResult",
     "NativeMultichannelRequirements",
+    "PacketLossSimulationResult",
     "decode_bytes",
     "decode_main0_raw_stream",
     "decode_main0_independent_stream",
@@ -99,10 +108,13 @@ __all__ = [
     "ResidualPacket",
     "decode_liftpack",
     "decode_lpc_liftpack_oracle",
+    "decode_lpc_liftpack_block",
     "encode_liftpack",
     "encode_lpc_liftpack_oracle",
+    "index_lpc_liftpack_blocks",
     "SegmentationResult",
     "segment_acoustic_states",
+    "simulate_aligned_packet_loss",
     "encode_basis_latent",
     "load_analysis_model",
     "save_analysis_model",

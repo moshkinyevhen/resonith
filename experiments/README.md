@@ -66,6 +66,11 @@ reproducible command and independent decode.
   amortization.
 - `results/cached_cibs_additive_2026-07-26_summary.json` — the reproducible
   R-051 negative result that keeps simultaneous mixing out of Main-0.
+- `packet_loss_benchmark.py` — R-054 aligned multichannel block-loss
+  simulation on the pinned music corpus, with deterministic bounded
+  concealment and exact post-loss Truth recovery checks.
+- `results/packet_loss_2026-07-26_summary.json` — unrestricted and
+  512-frame-ceiling containment results plus the measured Realtime byte cost.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never
