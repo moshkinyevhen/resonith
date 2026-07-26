@@ -2252,7 +2252,7 @@ new oscillator opcode.
 ## R-081 — Separate bounded native LPS4 pull ABI
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **PASS / ACCEPTED**
 - Decision:
   - add a separate C99-compatible LPS4 session API instead of changing the
     established LPS1/LPS2 packet-session layout or semantics;
@@ -2366,3 +2366,18 @@ new oscillator opcode.
     still decodes exactly;
   - exact framing, C99 compilation, cross-platform builds, and sanitized
     mutation coverage pass before the mapping is recorded as accepted.
+- Result:
+  - `resonith_lapped_compact_sequence_open` validates exactly the immutable
+    60-byte sequence context without scanning records or allocating memory;
+  - `resonith_lapped_compact_decode_record_pair` accepts only exact current
+    and immediate-lookahead record frames under an explicit packet index;
+  - the frozen vector proves sequential/stateless/monolithic PCM identity,
+    rejects missing, corrupt, and trailing-byte lookahead transactionally, and
+    decodes a later valid packet after the simulated earlier loss;
+  - the compact mutation target executes both sequential and stateless paths
+    and compares their PCM for every accepted input;
+  - GitHub Actions run 30213950494 passed GCC, Clang, AppleClang, MSVC,
+    Linux/Windows/macOS ARM64, Android arm64-v8a, the C99 header test, native
+    decoder-in-loop parity, and ASan/UBSan/libFuzzer;
+  - cryptographic transport integration, real packet reordering tests,
+    physical-device measurements, and blinded listening remain open.

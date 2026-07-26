@@ -1106,3 +1106,35 @@ copy. It is hosted Linux x64 evidence, not mobile energy or thermal evidence.
 
 The compact record is
 [`native_lapped_compact_packet_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_compact_packet_timing_2026-07-26_summary.json).
+
+## 47. Stateless authenticated-transport mapping
+
+The Core no longer requires a complete-file byte offset to decode an LPS4
+transport record. One allocation-free call validates exactly the immutable
+60-byte sequence header and SHA-256. A second call receives an explicit packet
+index, one exact current record, and its exact immediate successor when the
+current record is non-final.
+
+Logical start, logical length, transform ownership, and workspace shape are
+derived from the sequence context and packet index. Trailing bytes, a missing
+lookahead, CRC corruption, non-canonical entropy padding, and shape violations
+are rejected before PCM output. The final record forbids lookahead.
+
+The frozen transport vector proves:
+
+- stateless, sequential, and monolithic PCM are bit-identical;
+- corrupt or missing lookahead writes no PCM;
+- a later valid packet still decodes exactly after an earlier simulated loss;
+- every accepted compact fuzz input produces identical sequential and
+  stateless output.
+
+GitHub Actions run
+[30213950494](https://github.com/moshkinyevhen/resonith/actions/runs/30213950494)
+passed GCC, Clang, AppleClang, MSVC, Linux/Windows/macOS ARM64, Android
+arm64-v8a, C99 ABI, native decoder-in-loop, and ASan/UBSan/libFuzzer gates.
+
+This closes the codec-to-transport record mapping, not transport security.
+QUIC, SRTP, or another profile must authenticate sequence identity, packet
+index, and record bytes and enforce replay policy before calling the Core.
+CRC-32 remains only an accidental-corruption check. Real reordering/loss
+scheduling, physical-device measurements, and listening remain open.

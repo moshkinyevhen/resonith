@@ -411,10 +411,14 @@ authentication from its transport, such as an authenticated SRTP or QUIC
 mapping. A CRC-valid packet from an unauthenticated adversary MUST NOT be
 treated as trusted media.
 
-LPS4 remains prospective after passing native parsing, exact pull,
-cross-platform, and hostile-input gates. Authenticated transport mapping,
-physical-device resource measurements, loss scheduling, and listening still
-MUST pass before LPS4 becomes mandatory.
+LPS4 remains prospective after passing native parsing, exact sequential and
+stateless record-pair pull, cross-platform, and hostile-input gates. The
+stateless Core mapping accepts an authenticated 60-byte sequence context,
+explicit packet index, exact current record, and exact immediate lookahead
+record; it derives all logical shape rather than trusting record metadata.
+Cryptographic transport integration, physical-device resource measurements,
+reordered/lost-packet scheduling, and listening still MUST pass before LPS4
+becomes mandatory.
 
 ## 5. State records
 

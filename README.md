@@ -54,7 +54,8 @@ The repository contains:
 - independently authenticated `LPS1` source-context, `LPS2` independent
   transform-boundary, `LPS3` single-owner transform packets, and compact
   transport-framed `LPS4` records for bounded-memory, parallel, random-access,
-  and loss-contained lapped research;
+  and loss-contained lapped research, including exact stateless record-pair
+  decode under an authenticated sequence context and packet index;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;

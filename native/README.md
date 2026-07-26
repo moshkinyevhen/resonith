@@ -129,7 +129,16 @@ one-record-lookahead resources without allocation.
 `resonith_lapped_compact_decode_next()` then decodes both caller-owned field
 workspaces and renders the shared transform boundary transactionally. Frozen,
 long-stream cross-decoder, hosted resource, and sanitized mutation gates pass;
-authenticated transport, physical-device, loss-scheduling, and listening gates
+
+For independently transported records,
+`resonith_lapped_compact_sequence_open()` validates exactly the immutable
+60-byte context and `resonith_lapped_compact_decode_record_pair()` decodes an
+exact record frame under an explicit packet index. Non-final records require
+their immediate successor; final records forbid lookahead. The transport must
+authenticate the context, index, and bytes and enforce replay policy before
+calling the Core. CRC-32 is not authentication. The mapping is stateless, so a
+missing record does not contaminate later Truth. Cryptographic transport
+integration, physical-device, reordering/loss-scheduling, and listening gates
 remain prospective.
 
 ## Sanitized fuzzing
