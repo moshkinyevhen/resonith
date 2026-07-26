@@ -1179,3 +1179,37 @@ new oscillator opcode.
     gates passed run 30204865673;
   - no simultaneous-Atom syntax is promoted by implementation alone. The next
     step remains a held-out complete-byte gate with model-ROM accounting.
+
+## R-051 — Held-out cached-Basis simultaneous-source gate
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING / RESEARCH**
+- Decision:
+  - train one fixed mono CIBS-0 development registry model only from source
+    intervals after the declared evaluation crops; never fit registry weights
+    on an evaluated PCM interval;
+  - freeze and hash the model package before ranking overlap candidates;
+  - use the existing bounded matching-pursuit period proposals, but project
+    every proposed raw Basis into the frozen model, materialize it through the
+    normative CIBS-0 rules, then refit gain against that decoded Basis;
+  - compete zero through four simultaneous full-lifetime periodic causes with
+    one final LiftPack-2 Innovation and complete prospective RSC1 bytes;
+  - make the canonical zero-Atom RSL2 stream a mandatory fallback, rather than
+    comparing only against a mandatory one-Atom model;
+  - batch no unimplemented decoder operation other than wide additive mixing;
+    each candidate otherwise uses executable `CONF`, `BCIB`, `ATOM`, and
+    `RSL2` payloads;
+  - report fixed registry bytes separately and show one-, ten-, hundred-, and
+    thousand-stream amortization. Registry weights are neither hidden in the
+    stream result nor charged repeatedly as if Opus/VVC fixed tables were
+    per-file payload;
+  - promote simultaneous periodic mixing only if cached Atoms reduce complete
+    stream bytes by at least 3% on two declared clips and by at least 5% on the
+    arithmetic mean; otherwise retain the zero-Atom RSL2 decoder unchanged.
+- Rationale:
+  - R-038 isolated repeated raw Basis transport as the dominant extra-Atom
+    cost, and R-050 now makes the smallest cached replacement executable;
+  - held-out model training prevents the registry from becoming an uncounted
+    copy of the test audio;
+  - the zero-Atom fallback and a non-trivial promotion margin enforce the
+    project's simplicity rule: a mixer enters Main only for measured net gain.
