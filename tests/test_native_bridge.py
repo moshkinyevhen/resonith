@@ -25,6 +25,10 @@ from maf_p0.lapped_oracle import (  # noqa: E402
     analyze_lapped_source,
     encode_lapped_stream,
 )
+from maf_p0.lapped_streaming import (  # noqa: E402
+    decode_lapped_packet_stream,
+    encode_lapped_packet_stream,
+)
 from maf_p0.model import encode_basis_latent, train_linear_cibs  # noqa: E402
 from maf_p0.native_core import (  # noqa: E402
     NativeCoreError,
@@ -355,6 +359,25 @@ class NativeBridgeTests(unittest.TestCase):
             native_encoded.report["reconstruction_backend"],
             "native C99 Golden Core",
         )
+
+    def test_lapped_packet_pull_session_matches_python(self) -> None:
+        right = np.roll(self.samples, 37)
+        stereo = np.stack((self.samples, right), axis=1)
+        encoded = encode_lapped_packet_stream(
+            stereo,
+            48_000,
+            coefficients_per_frame=48,
+            packet_frames=2048,
+            half_window=256,
+            band_count=16,
+            density_backend="adaptive",
+        )
+        reference = decode_lapped_packet_stream(encoded.payload)
+        native = self.decoder.decode_lapped_packets(encoded.payload)
+
+        self.assertEqual(native.packet_count, 4)
+        self.assertLess(native.workspace_bytes, 1 << 20)
+        np.testing.assert_array_equal(native.samples, reference.samples)
 
 
 if __name__ == "__main__":

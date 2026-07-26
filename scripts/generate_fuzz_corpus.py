@@ -14,6 +14,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
 from maf_p0.lpc_oracle import encode_lpc_liftpack_oracle  # noqa: E402
 from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
+from maf_p0.lapped_streaming import encode_lapped_packet_stream  # noqa: E402
 from maf_p0.main0 import (  # noqa: E402
     Main0State,
     pack_main0_lpc_residual_stream,
@@ -33,10 +34,12 @@ def main() -> None:
     main0_directory = args.output_directory / "main0"
     seek_directory = args.output_directory / "seek"
     lapped_directory = args.output_directory / "lapped"
+    lapped_packet_directory = args.output_directory / "lapped_packet"
     liftpack_directory.mkdir(parents=True, exist_ok=True)
     main0_directory.mkdir(parents=True, exist_ok=True)
     seek_directory.mkdir(parents=True, exist_ok=True)
     lapped_directory.mkdir(parents=True, exist_ok=True)
+    lapped_packet_directory.mkdir(parents=True, exist_ok=True)
 
     structured = np.concatenate(
         (
@@ -125,6 +128,18 @@ def main() -> None:
         (lapped_directory / f"{density}_density.rsc").write_bytes(
             encoded.payload
         )
+        packeted = encode_lapped_packet_stream(
+            lapped_samples,
+            48_000,
+            coefficients_per_frame=8,
+            packet_frames=64,
+            half_window=32,
+            band_count=4,
+            density_backend=density,
+        )
+        (
+            lapped_packet_directory / f"{density}_density.lps"
+        ).write_bytes(packeted.payload)
 
 
 if __name__ == "__main__":

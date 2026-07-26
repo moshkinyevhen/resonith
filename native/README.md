@@ -122,7 +122,7 @@ cmake -S native -B build/fuzz \
   -DRESONITH_BUILD_FUZZERS=ON
 cmake --build build/fuzz \
   --target resonith_liftpack_fuzz resonith_main0_fuzz resonith_seek_fuzz \
-  resonith_lapped_fuzz
+  resonith_lapped_fuzz resonith_lapped_packet_fuzz
 python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
 build/fuzz/resonith_liftpack_fuzz \
   artifacts/fuzz_corpus/liftpack -runs=5000
@@ -132,12 +132,14 @@ build/fuzz/resonith_seek_fuzz \
   artifacts/fuzz_corpus/seek -runs=5000
 build/fuzz/resonith_lapped_fuzz \
   artifacts/fuzz_corpus/lapped -runs=5000
+build/fuzz/resonith_lapped_packet_fuzz \
+  artifacts/fuzz_corpus/lapped_packet -runs=5000
 ```
 
 The harnesses cap host allocations after a successful envelope inspection;
 the Core itself remains allocation-free. CI starts from deterministic valid
 RSL1, RSL2/LPC, zero-Atom, periodic-Atom, source-bound RSI1, and fixed- and
-adaptive-density LPF1 seeds.
+adaptive-density LPF1 and LPS1 seeds.
 Mutations therefore reach container, typed-section, seek, block, entropy,
 model-render, and inverse-DSP paths rather than stopping only at an outer
 checksum.
