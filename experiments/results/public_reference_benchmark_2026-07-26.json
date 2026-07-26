@@ -1,0 +1,125 @@
+{
+  "artifacts": {
+    "mozart": {
+      "opus": {
+        "bytes": 6510191,
+        "sha256": "760b7c1c2986eb7f73d222bfe1c1c3f079e44c950772689f26db259ac3b93d36"
+      },
+      "opus_decoded_pcm": {
+        "sha256": "989c336a861618ea91b2752979e259ac0c785e3669c043f046988a7f803d28da"
+      },
+      "original": {
+        "bytes": 76948396,
+        "sha256": "f9bcc829c8c61e850c8a15d7d25ec600a904b2041ed3bb4d9e13131ea30a5a6f"
+      },
+      "resonith": {
+        "bytes": 6508774,
+        "sha256": "77eb9751603f4a37fae4ef961ab3423accbc0bef576ee2101f4081b3616edf8b"
+      },
+      "resonith_decoded_pcm": {
+        "sha256": "d3f24bd494cea2e254edde2c07e0c9745e88b4226d5a205038494c664e58ec75"
+      }
+    },
+    "speech": {
+      "opus": {
+        "bytes": 17942,
+        "sha256": "cbfdd8da42cb28a90a336bb162adbf72d3d6129b62ecc1e452a6da10220d67e6"
+      },
+      "opus_decoded_pcm": {
+        "sha256": "8125700a4ceab5a34f4259e7168a38a8aac8c8b83bfe1230c2fe2e37e0c72b6a"
+      },
+      "original": {
+        "bytes": 187404,
+        "sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46"
+      },
+      "resonith": {
+        "bytes": 17929,
+        "sha256": "a85b1308a252714298f9ac5155d29c45b7a763275a28eef88fcc38ffd3042e80"
+      },
+      "resonith_decoded_pcm": {
+        "sha256": "eb34cdfb899ce76bf8e20a9d8260c021f6f6ca3d300c16c535eb8b654e5e6ce5"
+      }
+    }
+  },
+  "codec": {
+    "implementation_version": "0.1.0-alpha.1",
+    "specification_version": "0.0.8",
+    "transport": "prospective-LPS5"
+  },
+  "decoder": {
+    "commit": "fb2c360",
+    "sha256": "8abb937ba9329c04142b5a15c569cda3301a8f9aaf6838ab3683587310572848"
+  },
+  "metrics": {
+    "mozart": {
+      "opus": {
+        "harmonic_peak_preservation_fraction": 1.0,
+        "log_mel_rmse": 0.3664083576764046,
+        "log_spectral_distance_db": 7.1013036274677805,
+        "segmental_snr_db": 22.668514923123773,
+        "si_sdr_db": 21.319003541862745,
+        "snr_db": 21.342972829012268,
+        "stft_2048_spectral_convergence": 0.04835603017177416
+      },
+      "resonith": {
+        "harmonic_peak_preservation_fraction": 0.984121537309708,
+        "log_mel_rmse": 2.0280400159503387,
+        "log_spectral_distance_db": 21.509492295235724,
+        "segmental_snr_db": 28.602646778062116,
+        "si_sdr_db": 34.58631778433922,
+        "snr_db": 34.58775321914867,
+        "stft_2048_spectral_convergence": 0.0126235721912553
+      }
+    },
+    "speech": {
+      "opus": {
+        "estoi": 0.9880461884303828,
+        "harmonic_peak_preservation_fraction": 1.0,
+        "log_mel_rmse": 0.6011680709866213,
+        "log_spectral_distance_db": 11.196922123954055,
+        "segmental_snr_db": 12.625698682303828,
+        "si_sdr_db": 8.755288247642131,
+        "snr_db": 9.297436583803522,
+        "stft_512_spectral_convergence": 0.18927212274118627,
+        "stoi": 0.9931723093721826
+      },
+      "resonith": {
+        "estoi": 0.9029693058296405,
+        "harmonic_peak_preservation_fraction": 0.853448275862069,
+        "log_mel_rmse": 3.824907831178985,
+        "log_spectral_distance_db": 30.4922679367686,
+        "segmental_snr_db": 17.646313201670743,
+        "si_sdr_db": 19.570913235477786,
+        "snr_db": 19.618562792604504,
+        "stft_512_spectral_convergence": 0.08211254199855221,
+        "stoi": 0.9498939387322677
+      }
+    }
+  },
+  "opus_anchor": {
+    "complexity": 10,
+    "expected_packet_loss_percent": 0,
+    "frame_milliseconds": 20,
+    "libopus": "1.6.1",
+    "opus_tools": "0.2",
+    "rate_match": "complete Ogg bytes",
+    "vbr": "true"
+  },
+  "schema": "resonith-public-reference-benchmark-1",
+  "sources": {
+    "mozart": {
+      "channels": 2,
+      "duration_seconds": 400.7726666666667,
+      "license": "public domain",
+      "sample_rate": 48000
+    },
+    "speech": {
+      "channels": 1,
+      "duration_seconds": 5.855,
+      "id": "1272-128104-0000",
+      "license": "CC BY 4.0",
+      "sample_rate": 16000
+    }
+  },
+  "status": "measured; perceptual verdict open"
+}

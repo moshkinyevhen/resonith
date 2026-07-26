@@ -29,8 +29,19 @@ version.
 ### Measured
 
 - The pinned LibriSpeech and full-length Mozart comparison against official
-  Opus is the release evidence for this version. The report is published with
-  the versioned release; no broad perceptual-superiority claim is made.
+  Opus is the
+  [release evidence for this version](docs/results/PUBLIC_BENCHMARK_2026-07-26.md).
+- At nearly identical complete file sizes, the current Resonith candidate
+  preserved waveform SNR and spectral convergence better on both references,
+  while Opus preserved speech intelligibility, log-mel/log-spectral detail,
+  and harmonic-peak coverage better. No broad perceptual-superiority claim is
+  made.
+
+### Rejected
+
+- A per-frame transform-coefficient floor increased bytes and degraded all
+  declared speech diagnostics. It was removed instead of becoming a permanent
+  encoder option.
 
 ### Compatibility
 
