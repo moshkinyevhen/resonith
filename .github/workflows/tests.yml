@@ -179,10 +179,10 @@ jobs:
             -DBUILD_TESTING=OFF \
             -DRESONITH_WARNINGS_AS_ERRORS=ON
           cmake --build build/native \
-            --target
-            resonith_core_shared
-            resonith_lapped_device_bench
-            resonith_lapped_finite_bench
+            --target \
+            resonith_core_shared \
+            resonith_lapped_device_bench \
+            resonith_lapped_finite_bench \
             --parallel
       - name: Run native decoder-in-loop tests
         env:

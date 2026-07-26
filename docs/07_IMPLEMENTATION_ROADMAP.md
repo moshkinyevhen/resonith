@@ -23,6 +23,11 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   synchronized offline blind-listening harness, a hidden reference, an explicit
   low-pass anchor, strict result validation, and three real-music trials
   rate-matched to complete Opus bytes within 1.10%.
+- The bounded `LAF1` adaptive integer entropy candidate preserves the selected
+  reconstruction exactly and reduced complete R-084 bytes by 6.47% on piano,
+  5.34% on drums, and 7.67% on Corelli. Its allocation-free C99 path passes
+  Python parity, x64/ARM64 cross-compilation, Android NDK, and sanitized
+  mutation gates; physical timing is in progress before profile promotion.
 - The portable Core now decodes a complete typed mono RSC1 stream through one
   allocation-free C API call.
 - Python encoder RDO is bound to the native whole-stream decoder and rejects
@@ -53,8 +58,9 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   zero Atoms won all three clips because residual savings did not repay the
   `BCIB`, `ATOM`, and directory records. Simultaneous periodic mixing is not
   promoted.
-- The next blocking evidence is real blinded listening and named physical-phone
-  timing. No new lossy syntax is promoted while these gates are open.
+- The next blocking evidence is real blinded listening, named physical-phone
+  timing, and native `LAF1` entropy timing. No new lossy syntax is promoted
+  while these gates are open.
 - New compression tools resume only through declared complete-byte or
   matched-listening gates. Model ROM is always reported separately and
   amortized; it is never treated as free per-stream knowledge.

@@ -1,6 +1,6 @@
 # Resonith-0 Bitstream and Decoding Process
 
-Version: 0.0.6
+Version: 0.0.7
 Status: **NORMATIVE-DRAFT**
 Architecture: **MAF - Memory-oriented Acoustic Field**
 
@@ -427,6 +427,62 @@ playout, a decoder MAY emit the exact prefix ending one half-window before the
 record's logical end. It MUST NOT expose the unresolved suffix as Truth. Any
 concealment of that suffix is output-only and MUST NOT become reference state.
 The normal complete path still requires the immediate successor.
+
+#### 4.1.11 Prospective `LAF1` adaptive integer entropy field
+
+`LAF1` is a research replacement for the entropy representation of an already
+selected adaptive-density lapped field. It does not change scales,
+coefficients, transform synthesis, packet ownership, or reconstructed PCM. It
+resets independently at every field boundary and carries no cross-record
+probability state.
+
+The fixed 43-byte little-endian header contains:
+
+| Offset | Field | Type |
+| ---: | --- | --- |
+| 0 | magic `LAF1` | four bytes |
+| 4 | version, currently one | `u8` |
+| 5 | flags, zero | `u8` |
+| 6 | coefficient-count entropy mode | `u8` |
+| 7 | coefficient-count entropy parameter | `u8` |
+| 8 | reserved, zero | `u8` |
+| 9 | coefficient-gap escape threshold | `u16` |
+| 11 | transform-frame count | `u32` |
+| 15 | channel count | `u16` |
+| 17 | band count | `u16` |
+| 19 | selected coefficient count | `u32` |
+| 23 | scale arithmetic bit count | `u32` |
+| 27 | coefficient-count bit count | `u32` |
+| 31 | gap-category arithmetic bit count | `u32` |
+| 35 | escaped raw-gap bit count | `u32` |
+| 39 | coefficient-value arithmetic bit count | `u32` |
+
+The five zero-padded bit payloads follow in header order. Their ceiling byte
+lengths MUST cover the field exactly and trailing bytes are prohibited.
+`half_window` is inherited from an authenticated transform envelope and MUST
+not be substituted after authentication.
+
+Scale deltas map from \([-31,31]\) to symbols \([0,62]\). Signed coefficient
+values map from \([-128,127]\) to symbols \([0,255]\); zero is prohibited
+because support is sparse. Gap values below the threshold are direct category
+symbols. A category equal to the threshold consumes one raw
+`ceil(log2(half_window))`-bit gap when the threshold is smaller than the
+half-window. The coefficient-count trajectory retains the existing bounded
+packed/Rice representation because adaptive arithmetic increased its measured
+size.
+
+Each arithmetic field starts with frequency one for every symbol. Encoding and
+decoding update the selected symbol by one. When total frequency reaches
+16,384, every frequency becomes `max(1, ceil(frequency / 2))` and the total is
+recomputed. Arithmetic state is unsigned 32-bit with the canonical half,
+quarter, and three-quarter interval renormalization. No probability table,
+semantic context, heap allocation, or floating-point operation is normative.
+
+R-095 measured identical reconstruction and complete-byte reductions of 6.47%
+on piano, 5.34% on drums, and 7.67% on Corelli at the three R-084 operating
+points. These are corpus results, not a general codec claim. `LAF1` remains
+prospective until native resource timing and the existing blinded-listening
+gate pass; Main-0 does not yet require it.
 
 A transport scheduler MUST keep authentication, replay policy, reordering, and
 playout deadlines outside the decoder Core. At each deadline it selects

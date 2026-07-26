@@ -33,6 +33,10 @@ The native Core:
   caller-owned overlap memory, and preflighted int64 arithmetic;
 - supports both fixed LSE1 density and implicit-state LSE2 count trajectories
   through the same transform, entropy primitives, and output path;
+- independently inspects and decodes the prospective `LAF1` adaptive integer
+  entropy fields through `resonith_lapped_finite_inspect()` and
+  `resonith_lapped_finite_decode()`, using caller-owned arrays, fixed 32-bit
+  arithmetic state, bounded count rescaling, and no transmitted model table;
 - validates and exports caller-owned byte/sample block indexes for bounded
   seek planning without decoding PCM or allocating memory;
 - builds and verifies optional source-bound `RSI1` seek sidecars with
@@ -185,6 +189,16 @@ Pass `--serial` when multiple authorized devices are attached. Missing vendor
 sensors remain missing in the report; battery state is not represented as an
 energy measurement.
 
+`resonith_lapped_finite_bench` measures the LAF1 entropy stage separately from
+inverse transform synthesis. It preflights and allocates before timing, verifies
+a repeat-stable decoded-field hash, and reports complete-stream median/tail
+latency and realtime speed:
+
+```sh
+build/native/resonith_lapped_finite_bench \
+  input.laf 512 44100 100 10
+```
+
 ## Sanitized fuzzing
 
 Clang builds the LiftPack, Main-0, seek-sidecar, and lapped-stream parsers and
@@ -197,7 +211,7 @@ cmake -S native -B build/fuzz \
 cmake --build build/fuzz \
   --target resonith_liftpack_fuzz resonith_main0_fuzz resonith_seek_fuzz \
   resonith_lapped_fuzz resonith_lapped_packet_fuzz \
-  resonith_lapped_compact_fuzz
+  resonith_lapped_compact_fuzz resonith_lapped_finite_fuzz
 python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
 build/fuzz/resonith_liftpack_fuzz \
   artifacts/fuzz_corpus/liftpack -runs=5000
@@ -211,12 +225,14 @@ build/fuzz/resonith_lapped_packet_fuzz \
   artifacts/fuzz_corpus/lapped_packet -runs=5000
 build/fuzz/resonith_lapped_compact_fuzz \
   artifacts/fuzz_corpus/lapped_compact -runs=5000
+build/fuzz/resonith_lapped_finite_fuzz \
+  artifacts/fuzz_corpus/lapped_finite -runs=5000
 ```
 
 The harnesses cap host allocations after a successful envelope inspection;
 the Core itself remains allocation-free. CI starts from deterministic valid
 RSL1, RSL2/LPC, zero-Atom, periodic-Atom, source-bound RSI1, fixed- and
-adaptive-density LPF1, LPS1, LPS2, and compact LPS4 seeds.
+adaptive-density LPF1, LPS1, LPS2, compact LPS4, and adaptive LAF1 seeds.
 Mutations therefore reach container, typed-section, seek, block, entropy,
 model-render, and inverse-DSP paths rather than stopping only at an outer
 checksum.

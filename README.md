@@ -56,14 +56,17 @@ The repository contains:
   transport-framed `LPS4` records for bounded-memory, parallel, random-access,
   and loss-contained lapped research, including exact stateless record-pair
   decode under an authenticated sequence context and packet index;
+- a bounded allocation-free native `LAF1` adaptive integer entropy candidate
+  that preserves the selected lapped reconstruction while reducing complete
+  three-second R-084 bytes by 5.34% to 7.67% on all three licensed clips;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 136 pure reference/security/integration tests, thirteen native decoder-in-loop
+- 143 pure reference/security/integration tests, fourteen native decoder-in-loop
   integration tests, ten native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
-  separate sanitized LiftPack/Main-0/RSI1/LPF1 mutation targets.
+  separate sanitized LiftPack/Main-0/RSI1/LPF1/LAF1 mutation targets.
 
 All current MAF-P1/Opus results are deliberately labeled diagnostics, not
 general codec claims. See
