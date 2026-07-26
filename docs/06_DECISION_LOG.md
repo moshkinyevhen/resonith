@@ -1735,7 +1735,7 @@ new oscillator opcode.
 ## R-065 — Sanitized LPF1 hostile-stream gate
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **SANITIZED SMOKE PASS / CONTINUOUS**
 - Decision:
   - fuzz the complete native LPF1 inspect/decode boundary with fixed- and
     adaptive-density valid seeds;
@@ -1751,3 +1751,37 @@ new oscillator opcode.
     entropy, count, position, or arithmetic combinations;
   - LPF1 is the first prospective public path that combines persistent parser
     state, variable symbol counts, bounded entropy, and integer synthesis.
+- Result:
+  - GitHub Actions run 30208736366 compiled the new harness with Clang,
+    AddressSanitizer, UndefinedBehaviorSanitizer, and libFuzzer;
+  - 5,000 bounded mutations completed for LPF1 in addition to the existing
+    LiftPack, Main-0, and seek-sidecar targets;
+  - the complete ten-job repository workflow passed. This is a smoke gate, not
+    a substitute for a continuously growing corpus or long fuzz campaigns.
+
+## R-066 — Reusable immutable encoder analysis
+
+- Date: 2026-07-26
+- Status: **MEASURED DEVELOPMENT PASS / RESEARCH**
+- Decision:
+  - split lapped encoding into immutable transform analysis and exact-byte
+    selection/packing stages;
+  - allow one analysis to serve many bitrate, density, and entropy candidates;
+  - require every reused-analysis candidate to be byte-identical to the
+    original one-shot encoder;
+  - keep the one-shot API as a convenience wrapper, so CLI and applications do
+    not need to manage analysis lifetime.
+- Rationale:
+  - RDO searches a frontier, not one guessed bitrate. Repeating the same
+    O(N-squared) research transform for every budget wastes work without
+    improving a decision;
+  - immutable analysis makes parallel candidate evaluation safe and is the
+    natural boundary for a future C++/CUDA encoder backend.
+- Result:
+  - all six fixed-integer adaptive-density candidates remained exactly
+    byte-identical on all three pinned clips;
+  - on one local Windows/Python development pass, the six-point frontier fell
+    from 6.49-6.99 seconds to 4.21-4.47 seconds, a 1.54x-1.59x speedup;
+  - this single-pass developer timing is directional, not a production encoder
+    throughput claim. Native batched analysis and synthesis remain the next
+    performance step.

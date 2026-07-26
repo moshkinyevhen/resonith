@@ -1,0 +1,41 @@
+{
+  "budgets": [
+    16,
+    24,
+    32,
+    48,
+    64,
+    96
+  ],
+  "clips": {
+    "corelli-sonata-realization": {
+      "direct_frontier_seconds": 6.490483399989898,
+      "exact_stream_parity": true,
+      "shared_analysis_seconds": 0.44496690000232775,
+      "shared_frontier_seconds": 4.208742699993309,
+      "speedup": 1.5421430727994414
+    },
+    "emotional-piano-cc0": {
+      "direct_frontier_seconds": 6.942708399990806,
+      "exact_stream_parity": true,
+      "shared_analysis_seconds": 0.44967699999688193,
+      "shared_frontier_seconds": 4.3642995999980485,
+      "speedup": 1.5907955539976932
+    },
+    "patro-de-bateria": {
+      "direct_frontier_seconds": 6.992444599993178,
+      "exact_stream_parity": true,
+      "shared_analysis_seconds": 0.45696650000172667,
+      "shared_frontier_seconds": 4.473966400008067,
+      "speedup": 1.562918443013021
+    }
+  },
+  "conclusion": "One immutable transform analysis can serve an exact-byte bitrate frontier without changing any emitted stream; the measured research-Python frontier was 1.54x-1.59x faster.",
+  "iterations": 1,
+  "platform": {
+    "machine": "AMD64",
+    "python": "3.12.13",
+    "system": "Windows"
+  },
+  "research_only": true
+}

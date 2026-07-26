@@ -85,6 +85,10 @@ reproducible command and independent decode.
   real-music crops.
 - `results/native_lapped_timing_2026-07-26_summary.json` — the R-063 hosted
   x64 timing result; physical-device energy and thermal gates remain open.
+- `lapped_frontier_timing.py` — R-066 exact-stream comparison and development
+  timing for repeated versus shared immutable transform analysis.
+- `results/lapped_frontier_timing_2026-07-26_summary.json` — the R-066 local
+  six-budget frontier timing; it is not a production throughput claim.
 - `window_transient_gate.py` — R-064 all-long/all-short nearest-byte
   comparison using waveform, multi-resolution spectral, and onset-local
   pre-echo diagnostics before any mixed-window syntax.

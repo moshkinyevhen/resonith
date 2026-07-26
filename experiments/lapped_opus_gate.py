@@ -12,7 +12,10 @@ import time
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
-from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
+from maf_p0.lapped_oracle import (  # noqa: E402
+    analyze_lapped_source,
+    encode_lapped_analysis,
+)
 from maf_p0.opus_anchor import (  # noqa: E402
     resolve_opus_tools,
     run_opus_multichannel_anchor,
@@ -104,17 +107,22 @@ def main() -> None:
             tools=tools,
         )
         opus_seconds = time.perf_counter() - opus_started
+        analysis_started = time.perf_counter()
+        analysis = analyze_lapped_source(
+            samples,
+            sample_rate,
+            half_window=args.half_window,
+            band_count=args.band_count,
+            transform_backend=args.transform_backend,
+        )
+        analysis_seconds = time.perf_counter() - analysis_started
         candidates = []
         for budget in sorted(set(args.coefficient_budgets)):
             started = time.perf_counter()
-            encoded = encode_lapped_stream(
-                samples,
-                sample_rate,
+            encoded = encode_lapped_analysis(
+                analysis,
                 coefficients_per_frame=budget,
-                half_window=args.half_window,
-                band_count=args.band_count,
                 entropy_backend=args.entropy_backend,
-                transform_backend=args.transform_backend,
                 density_backend=args.density_backend,
             )
             candidates.append(
@@ -195,6 +203,7 @@ def main() -> None:
             "selected_max_abs_error": (
                 selected[1].report["max_abs_error"]
             ),
+            "shared_analysis_wall_seconds": analysis_seconds,
             "selected_encode_wall_seconds": selected[2],
             "opus_stream_bytes": opus.report["stream_bytes"],
             "opus_effective_bitrate_kbps": (

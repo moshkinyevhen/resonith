@@ -749,3 +749,27 @@ gate, but it is not a device-energy claim: physical Android/ARM64 thermal,
 battery, concurrency, and hostile-stream worst-case measurements remain open.
 The compact record is
 [`native_lapped_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_timing_2026-07-26_summary.json).
+
+## 31. Reusable encoder analysis
+
+Lapped RDO normally evaluates several complete streams. The fixed transform,
+band scales, quantized grid, and objective coefficient scores are identical
+for every density budget, so R-066 makes them one immutable
+`LappedAnalysis`. Selection, bounded entropy, complete RSC1 packing,
+independent decode, and distortion measurement remain per candidate.
+
+The six-budget fixed-integer adaptive frontier preserved exact payload bytes
+for every candidate on all three pinned clips. A single local research-Python
+pass measured 1.54x-1.59x end-to-end frontier speedup:
+
+| Crop | Repeated analysis | Shared analysis | Speedup |
+| --- | ---: | ---: | ---: |
+| Corelli | 6.49 s | 4.21 s | 1.54x |
+| Piano | 6.94 s | 4.36 s | 1.59x |
+| Drums | 6.99 s | 4.47 s | 1.56x |
+
+This is a development-path measurement, not a production throughput claim.
+Its architectural value is larger than the Python number: immutable analysis
+is a safe unit for parallel candidate selection and a direct handoff boundary
+to a future batched C++/CUDA encoder. The compact record is
+[`lapped_frontier_timing_2026-07-26_summary.json`](../experiments/results/lapped_frontier_timing_2026-07-26_summary.json).

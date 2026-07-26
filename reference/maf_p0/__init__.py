@@ -27,9 +27,12 @@ from .lpc_oracle import (
     run_lpc_liftpack_oracle,
 )
 from .lapped_oracle import (
+    LappedAnalysis,
     LappedDecodeResult,
     LappedEncodeResult,
+    analyze_lapped_source,
     decode_lapped_stream,
+    encode_lapped_analysis,
     encode_lapped_stream,
 )
 from .main0 import (
@@ -92,10 +95,12 @@ __all__ = [
     "LPCBlockInfo",
     "LappedDecodeResult",
     "LappedEncodeResult",
+    "LappedAnalysis",
     "NativeMain0Decoder",
     "NativeMultichannelDecodeResult",
     "NativeMultichannelRequirements",
     "PacketLossSimulationResult",
+    "analyze_lapped_source",
     "decode_bytes",
     "decode_main0_raw_stream",
     "decode_main0_independent_stream",
@@ -119,6 +124,7 @@ __all__ = [
     "decode_lpc_liftpack_oracle",
     "decode_lpc_liftpack_block",
     "decode_lapped_stream",
+    "encode_lapped_analysis",
     "encode_liftpack",
     "encode_lpc_liftpack_oracle",
     "encode_lapped_stream",

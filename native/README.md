@@ -107,8 +107,8 @@ before creating caller-owned arrays.
 
 ## Sanitized fuzzing
 
-Clang builds the LiftPack envelope, block index, entropy parser, and inverse
-DSP directly into one ASan/UBSan/libFuzzer target:
+Clang builds the LiftPack, Main-0, seek-sidecar, and lapped-stream parsers and
+inverse DSP into separate ASan/UBSan/libFuzzer targets:
 
 ```sh
 cmake -S native -B build/fuzz \
@@ -130,7 +130,8 @@ build/fuzz/resonith_lapped_fuzz \
 
 The harnesses cap host allocations after a successful envelope inspection;
 the Core itself remains allocation-free. CI starts from deterministic valid
-RSL1, RSL2/LPC, zero-Atom, periodic-Atom, and source-bound RSI1 seeds.
+RSL1, RSL2/LPC, zero-Atom, periodic-Atom, source-bound RSI1, and fixed- and
+adaptive-density LPF1 seeds.
 Mutations therefore reach container, typed-section, seek, block, entropy,
 model-render, and inverse-DSP paths rather than stopping only at an outer
 checksum.

@@ -11,7 +11,10 @@ import sys
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
-from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
+from maf_p0.lapped_oracle import (  # noqa: E402
+    analyze_lapped_source,
+    encode_lapped_analysis,
+)
 from maf_p0.opus_anchor import (  # noqa: E402
     resolve_opus_tools,
     run_opus_multichannel_anchor,
@@ -39,15 +42,18 @@ def _frontier(
     half_window: int,
     band_count: int,
 ) -> list:
+    analysis = analyze_lapped_source(
+        samples,
+        sample_rate,
+        half_window=half_window,
+        band_count=band_count,
+        transform_backend="fixed",
+    )
     return [
-        encode_lapped_stream(
-            samples,
-            sample_rate,
+        encode_lapped_analysis(
+            analysis,
             coefficients_per_frame=budget,
-            half_window=half_window,
-            band_count=band_count,
             entropy_backend="bounded",
-            transform_backend="fixed",
             density_backend="adaptive",
         )
         for budget in budgets

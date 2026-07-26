@@ -11,7 +11,9 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT / "reference"))
 
 from maf_p0.lapped_oracle import (  # noqa: E402
+    analyze_lapped_source,
     decode_lapped_stream,
+    encode_lapped_analysis,
     encode_lapped_stream,
 )
 
@@ -135,6 +137,41 @@ class LappedOracleTests(unittest.TestCase):
             dense.report["stream_bytes"],
             sparse.report["stream_bytes"],
         )
+
+    def test_reusable_analysis_preserves_exact_streams(self) -> None:
+        source = self._stereo(2048)
+        analysis = analyze_lapped_source(
+            source,
+            48000,
+            half_window=128,
+            band_count=12,
+            transform_backend="fixed",
+        )
+        reused = encode_lapped_analysis(
+            analysis,
+            coefficients_per_frame=32,
+            entropy_backend="bounded",
+            density_backend="adaptive",
+        )
+        direct = encode_lapped_stream(
+            source,
+            48000,
+            coefficients_per_frame=32,
+            half_window=128,
+            band_count=12,
+            entropy_backend="bounded",
+            transform_backend="fixed",
+            density_backend="adaptive",
+        )
+
+        self.assertEqual(reused.payload, direct.payload)
+        np.testing.assert_array_equal(
+            reused.reconstruction,
+            direct.reconstruction,
+        )
+        self.assertFalse(analysis.samples.flags.writeable)
+        self.assertFalse(analysis.quantized_grid.flags.writeable)
+        self.assertFalse(analysis.score_grid.flags.writeable)
 
     def test_corruption_and_bounds_are_rejected(self) -> None:
         source = self._stereo(1024)

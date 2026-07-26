@@ -55,10 +55,10 @@ The repository contains:
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 116 pure reference/security/integration tests, eight native decoder-in-loop
+- 117 pure reference/security/integration tests, eight native decoder-in-loop
   integration tests, ten native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
-  separate sanitized LiftPack/Main-0/RSI1 mutation targets.
+  separate sanitized LiftPack/Main-0/RSI1/LPF1 mutation targets.
 
 All current MAF-P1/Opus results are deliberately labeled diagnostics, not
 general codec claims. See

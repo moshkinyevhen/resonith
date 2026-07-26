@@ -62,6 +62,22 @@ class LappedEncodeResult:
     report: dict
 
 
+@dataclass(frozen=True)
+class LappedAnalysis:
+    """Reusable transform analysis for exact-byte density/RDO searches."""
+
+    sample_rate: int
+    samples: np.ndarray
+    half_window: int
+    band_count: int
+    frame_count: int
+    fixed_transform: bool
+    fixed_table_sha256: str | None
+    scales: np.ndarray
+    quantized_grid: np.ndarray
+    score_grid: np.ndarray
+
+
 @lru_cache(maxsize=8)
 def _mdct_tables(half_window: int) -> tuple[np.ndarray, np.ndarray]:
     """Build immutable perfect-reconstruction sine-window MDCT tables."""
@@ -383,31 +399,27 @@ def decode_lapped_stream(payload: bytes) -> LappedDecodeResult:
     )
 
 
-def encode_lapped_stream(
+def analyze_lapped_source(
     samples: np.ndarray,
     sample_rate: int,
     *,
-    coefficients_per_frame: int,
     half_window: int = 512,
     band_count: int = 24,
-    entropy_backend: str = "bounded",
     transform_backend: str = "fixed",
-    density_backend: str = "fixed",
-) -> LappedEncodeResult:
-    """Encode top-energy band-scaled MDCT coefficients with exact bytes."""
+) -> LappedAnalysis:
+    """Transform and quantize source PCM once for many exact-byte trials."""
 
-    source = np.asarray(samples)
+    source_view = np.asarray(samples)
     if (
-        source.dtype != np.int16
-        or source.ndim != 2
-        or source.shape[0] == 0
-        or not 1 <= source.shape[1] <= MAX_CHANNELS
+        source_view.dtype != np.int16
+        or source_view.ndim != 2
+        or source_view.shape[0] == 0
+        or not 1 <= source_view.shape[1] <= MAX_CHANNELS
     ):
         raise TypeError("lapped input must be frame-major 1-8 channel PCM16")
     if sample_rate <= 0:
         raise ValueError("lapped sample rate must be positive")
-    if not 1 <= coefficients_per_frame <= half_window:
-        raise ValueError("lapped coefficient budget exceeds the window")
+    source = np.array(source_view, dtype=np.int16, copy=True)
     edges = _band_edges(half_window, band_count)
     if transform_backend == "float":
         window, matrix = _mdct_tables(half_window)
@@ -434,10 +446,6 @@ def encode_lapped_stream(
     score_grid = np.empty(
         (source.shape[1], frame_count, half_window),
         dtype=np.float64,
-    )
-    coefficients = np.zeros(
-        (source.shape[1], frame_count, half_window),
-        dtype=np.int8,
     )
     for channel in range(source.shape[1]):
         for frame in range(frame_count):
@@ -482,6 +490,51 @@ def encode_lapped_stream(
             score_grid[channel, frame] = np.square(
                 spectrum.astype(np.float64)
             )
+    source.flags.writeable = False
+    scales.flags.writeable = False
+    quantized_grid.flags.writeable = False
+    score_grid.flags.writeable = False
+    return LappedAnalysis(
+        sample_rate=sample_rate,
+        samples=source,
+        half_window=half_window,
+        band_count=band_count,
+        frame_count=frame_count,
+        fixed_transform=fixed_transform,
+        fixed_table_sha256=table_sha256,
+        scales=scales,
+        quantized_grid=quantized_grid,
+        score_grid=score_grid,
+    )
+
+
+def encode_lapped_analysis(
+    analysis: LappedAnalysis,
+    *,
+    coefficients_per_frame: int,
+    entropy_backend: str = "bounded",
+    density_backend: str = "fixed",
+) -> LappedEncodeResult:
+    """Select, pack, and verify one stream from reusable source analysis."""
+
+    if not isinstance(analysis, LappedAnalysis):
+        raise TypeError("lapped encoder requires LappedAnalysis")
+    source = analysis.samples
+    sample_rate = analysis.sample_rate
+    half_window = analysis.half_window
+    band_count = analysis.band_count
+    frame_count = analysis.frame_count
+    fixed_transform = analysis.fixed_transform
+    table_sha256 = analysis.fixed_table_sha256
+    scales = analysis.scales
+    quantized_grid = analysis.quantized_grid
+    score_grid = analysis.score_grid
+    if not 1 <= coefficients_per_frame <= half_window:
+        raise ValueError("lapped coefficient budget exceeds the window")
+    coefficients = np.zeros(
+        (source.shape[1], frame_count, half_window),
+        dtype=np.int8,
+    )
 
     selected_positions = None
     selected_values_grid = None
@@ -668,3 +721,31 @@ def encode_lapped_stream(
         ),
     }
     return LappedEncodeResult(payload, decoded.samples, report)
+
+
+def encode_lapped_stream(
+    samples: np.ndarray,
+    sample_rate: int,
+    *,
+    coefficients_per_frame: int,
+    half_window: int = 512,
+    band_count: int = 24,
+    entropy_backend: str = "bounded",
+    transform_backend: str = "fixed",
+    density_backend: str = "fixed",
+) -> LappedEncodeResult:
+    """Analyze source PCM, then encode one exact-byte lapped candidate."""
+
+    analysis = analyze_lapped_source(
+        samples,
+        sample_rate,
+        half_window=half_window,
+        band_count=band_count,
+        transform_backend=transform_backend,
+    )
+    return encode_lapped_analysis(
+        analysis,
+        coefficients_per_frame=coefficients_per_frame,
+        entropy_backend=entropy_backend,
+        density_backend=density_backend,
+    )
