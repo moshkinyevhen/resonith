@@ -2707,3 +2707,113 @@ new oscillator opcode.
   - the arithmetic-mean reduction was 4.00%, below the declared 5% threshold,
     and the all-clips condition failed;
   - no temporal-support opcode or normative entropy mode is promoted.
+
+## R-092 — Split magnitude/sign value entropy pre-gate
+
+- Date: 2026-07-26
+- Status: **FAIL / CLOSED BEFORE SYNTAX**
+- Candidate:
+  - encode nonzero coefficient magnitudes with bounded unsigned Rice and carry
+    their signs in a separate one-bit plane.
+- Gate:
+  - require a positive complete-byte result on every R-084 clip before defining
+    a serialized syntax.
+- Result:
+  - full bit accounting predicted reductions of 0.09% on piano, 0.09% on
+    Corelli, and negative 2.27% on drums, including the extra sign bit count;
+  - the existing signed entropy already approaches the useful bound, so no
+    split-sign syntax or decoder branch is added.
+
+## R-093 — Existing-band contextual value entropy
+
+- Date: 2026-07-26
+- Status: **FAIL / CLOSED BEFORE SYNTAX**
+- Candidate:
+  - retain the exact selected coefficients, positions, transform, and 24
+    existing scale bands;
+  - entropy-code coefficient values in band contexts instead of forcing one
+    global value distribution across the spectrum;
+  - use the same bounded packed/Rice primitive per populated band and no new
+    synthesis operation.
+- Complexity ceiling:
+  - at most one entropy kind, parameter, and exact bit count per existing band;
+  - no probability adaptation, tree, classifier, learned table, or
+    cross-record dependency;
+  - decoder routes each already decoded position to its deterministic band.
+- Gate:
+  - exact serialized round-trip, strict framing, and malformed-input rejection;
+  - include every per-band descriptor and byte-padding cost;
+  - complete bytes decrease on all three R-084 clips and the arithmetic-mean
+    reduction is at least 3%;
+  - otherwise close the contextual syntax.
+- Result:
+  - exact bit accounting, including one packed descriptor and one exact bit
+    count per existing band, predicted reductions of 1.08% on piano, 0.62% on
+    Corelli, and negative 0.33% on drums;
+  - the candidate fails both universality and the 3% mean threshold, so no
+    band-context syntax is defined.
+
+## R-094 — Entropy-aware coefficient compiler
+
+- Date: 2026-07-26
+- Status: **FAIL / CLOSED**
+- Candidate:
+  - preserve the selected LSE2 bitstream and normative decoder unchanged;
+  - replace the equal-cost global energy selector with an encoder-only RDO
+    search that estimates each coefficient's value cost, measures the exact
+    serialized candidate, and reinvests saved bytes in useful coefficients;
+  - retain the existing fixed integer transform, scale grid, reconstruction,
+    and complete-byte accounting.
+- Rationale:
+  - current adaptive density assigns coefficients globally by squared transform
+    energy but treats a cheap small value and an expensive large value as if
+    their rate were equal;
+  - a stronger compiler may improve the quality frontier without spending one
+    decoder opcode, state bit, or runtime branch.
+- Gate:
+  - compare against the exact R-084 energy-selected points at no greater
+    complete stream bytes;
+  - reconstruction remains deterministic and decodable by the unchanged
+    decoder;
+  - no clip loses waveform SNR and the arithmetic-mean SNR gain is at least
+    0.5 dB before the selector may enter the encoder;
+  - waveform evidence remains diagnostic and cannot replace blinded listening.
+- Result:
+  - the best measured candidates saved only 47 bytes on piano, 61 bytes on
+    drums, and 121 bytes on Corelli;
+  - their waveform SNR changed by negative 0.0004, negative 0.0009, and
+    negative 0.0016 dB respectively, and the savings were too small to admit
+    another useful coefficient at the tested operating points;
+  - the proxy selector is not promoted; the unchanged energy selector remains
+    the simpler choice.
+
+## R-095 — Finite-state entropy ceiling
+
+- Date: 2026-07-26
+- Status: **PASS / NATIVE PROMOTION APPROVED**
+- Candidate:
+  - measure the empirical order-0 entropy of every existing LSE2 field against
+    its exact bounded Rice/packed bit count;
+  - count a complete, independently decodable model descriptor rather than
+    reporting an unattainable fractional-bit limit;
+  - define an integer finite-state coder only if the conservative serialized
+    ceiling leaves a material universal margin.
+- Gate:
+  - no synthesis, coefficient, scale, or reconstruction change;
+  - model/reset/table/padding costs are included per independent record;
+  - a prospective complete-byte reduction of at least 5% on every R-084 clip
+    is required before implementing a new normative entropy engine;
+  - the eventual decoder, if justified, must use bounded integer state and
+    fixed allocation.
+- Result:
+  - the implemented 32-bit arithmetic state uses deterministic Laplace
+    frequencies, bounded count rescaling, no transmitted probability table,
+    and an RDO-selected raw escape threshold for coefficient gaps;
+  - scales, positions, and values use the adaptive state while the already
+    efficient coefficient-count field retains its bounded packed/Rice path;
+  - serialized encode/decode is exact, deterministic, independently reset, and
+    rejects noncanonical arithmetic representations;
+  - complete-byte reductions at identical reconstruction were 6.47% on piano,
+    5.34% on drums, and 7.67% on Corelli, with a 6.49% arithmetic mean;
+  - the research gate passes and justifies native parity, hostile-input,
+    cross-compiler, and timing work before any Main-profile promotion.

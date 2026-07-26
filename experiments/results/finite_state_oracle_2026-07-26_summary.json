@@ -1,0 +1,33 @@
+{
+  "clip_count": 3,
+  "clips": {
+    "corelli-sonata-realization": {
+      "adaptive_complete_stream_bytes": 38496,
+      "baseline_complete_stream_bytes": 41694,
+      "complete_byte_reduction": 0.07670168369549579,
+      "r084_coefficients_per_frame": 54,
+      "selected_gap_threshold": 64
+    },
+    "emotional-piano-cc0": {
+      "adaptive_complete_stream_bytes": 42764,
+      "baseline_complete_stream_bytes": 45720,
+      "complete_byte_reduction": 0.06465441819772533,
+      "r084_coefficients_per_frame": 68,
+      "selected_gap_threshold": 32
+    },
+    "patro-de-bateria": {
+      "adaptive_complete_stream_bytes": 32988,
+      "baseline_complete_stream_bytes": 34850,
+      "complete_byte_reduction": 0.05342898134863705,
+      "r084_coefficients_per_frame": 44,
+      "selected_gap_threshold": 64
+    }
+  },
+  "conclusion": "The bounded adaptive integer entropy candidate passed the declared 5% per-clip complete-byte gate and is approved for native parity work.",
+  "every_clip_won": true,
+  "gate_passed": true,
+  "identical_reconstruction": true,
+  "maximum_seconds_per_clip": 3.0,
+  "mean_complete_byte_reduction": 0.06492836108061939,
+  "research_only": true
+}
