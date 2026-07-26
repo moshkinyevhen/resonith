@@ -1967,3 +1967,22 @@ new oscillator opcode.
     sanitizer, Python/native, and 5,000-mutation dedicated LPS1 fuzz gates;
   - the session retains only an immutable input view and four scalar cursors.
     Child PCM, transform workspace, and delivered PCM remain caller-owned.
+
+## R-073 — Hosted native `LPS1` resource gate
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - benchmark the release native packet pull path on every pinned music crop;
+  - include open/preflight time, per-packet pull time, complete sequence time,
+    exact Python/native parity, and all caller-owned workspace in the record;
+  - require at least 4x real-time decode, less than 2 MiB bounded workspace,
+    and exact PCM parity on the hosted x64 runner;
+  - preserve packet duration and density policy from R-071 so this measures
+    implementation cost rather than a newly tuned representation.
+- Rationale:
+  - a bounded API is not sufficient evidence that its constants are practical;
+  - packet-local authentication and repeated child inspection may create a
+    hidden throughput cost that monolithic LPF1 timing does not measure;
+  - a reproducible CI artifact is more useful than a development-machine
+    timing anecdote, while physical mobile energy remains a later gate.

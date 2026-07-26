@@ -87,6 +87,8 @@ reproducible command and independent decode.
   timing and exact array parity against the fixed Python oracle.
 - `native_lapped_frontier_timing.py` — R-070 six-budget end-to-end RDO timing
   with native analysis and candidate reconstruction.
+- `native_lapped_packet_timing.py` — R-073 release C++ LPS1 pull timing,
+  exact Python/native parity, and complete caller-owned workspace gate.
 - `results/native_lapped_frontier_timing_2026-07-26_summary.json` — the R-070
   exact native-RDO speedup over the shared-analysis Python path.
 - `results/native_lapped_analysis_timing_2026-07-26_summary.json` — the R-068
