@@ -1392,3 +1392,78 @@ new oscillator opcode.
   - the measured 9.59% to 13.37% byte cost is material but acceptable as an
     explicit Realtime trade-off, while a 4,096-frame loss is too long for a
     credible low-latency profile.
+
+## R-056 — Stereo rate frontier and blinded Opus comparison
+
+- Date: 2026-07-26
+- Status: **MEASURED / BASELINE LOSES / LISTENING PENDING / RESEARCH**
+- Decision:
+  - extend the existing official `opusenc`/`opusdec` anchor from mono to
+    canonical one-through-eight-channel PCM while retaining complete Ogg byte
+    accounting and executable hashes;
+  - evaluate the pinned one-second stereo music crops over explicit Resonith
+    Innovation steps and Opus VBR rates;
+  - report every rate/quality point, then select nearest-complete-byte pairs
+    without interpolating or hiding container overhead;
+  - label waveform SNR and maximum error as diagnostics, not perceptual
+    equivalence, because Opus is optimized for listening rather than exact
+    waveform reconstruction;
+  - create deterministic opaque WAV trials containing source, rate-matched
+    Resonith, and Opus. No listening win may be claimed before scores exist;
+  - preserve source channel order and sample count exactly throughout the
+    benchmark.
+- Rationale:
+  - the project now has executable stereo transport, so mono/downmix anchors
+    are no longer sufficient;
+  - same-rate objective tables reveal gross failures, while blinded listening
+    is required to judge timbre, attacks, stereo stability, and noise;
+  - separating measured files from subjective conclusions prevents a
+    residual-only prototype from appearing competitive merely because scalar
+    quantization retains high sample-domain SNR.
+- Result:
+  - official `opusenc`/`opusdec` stereo operation is reproducible with complete
+    Ogg bytes, normalized stream hashes, exact frame shape, and executable
+    provenance;
+  - at the closest complete bytes to the Opus 96 kbit/s request, Resonith used
+    14,984 versus 15,356 bytes on Corelli, 14,881 versus 15,552 bytes on piano,
+    and 12,430 versus 12,599 bytes on drums;
+  - the corresponding waveform SNR diagnostics were 13.08 versus 21.20 dB,
+    24.78 versus 26.46 dB, and 17.49 versus 21.80 dB respectively. The
+    residual-only Resonith baseline lost this objective sanity check on all
+    three clips;
+  - deterministic three-way blind trials containing source, rate-matched
+    Resonith, and Opus were generated locally. No perceptual conclusion is
+    recorded until listening scores exist;
+  - uniform waveform-domain Innovation quantization is therefore identified as
+    the next compression bottleneck. More Atom syntax will not hide it.
+
+## R-057 — Lapped perceptual Innovation oracle
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING / RESEARCH**
+- Decision:
+  - add an encoder-side lapped transform Innovation candidate for lossy Main,
+    while retaining RSL2 as the exact Lossless and mandatory RDO fallback;
+  - use 50% overlap, perfect-reconstruction analysis/synthesis windows,
+    frequency-band quantization, transmitted bounded scale laws, and sparse
+    signed coefficient entropy;
+  - keep the first oracle floating-point and explicitly non-normative to test
+    the representation quickly. No opcode is assigned until a winning design
+    is converted to fixed integer arithmetic and independently decoded;
+  - count every frame header, band scale, coefficient payload, alignment byte,
+    and outer container byte;
+  - bound the future decoder to one lapped block, one overlap tail, fixed
+    tables, and no neural inference;
+  - add short-window/transient switching only after the long-window candidate
+    wins a complete-byte gate;
+  - compare against both RSL2 and official Opus at nearest complete bytes. A
+    waveform metric is only a sanity gate; blinded listening remains required
+    for promotion.
+- Rationale:
+  - R-056 shows that causal state machinery cannot compensate for inefficient
+    coding of the remaining mixed Innovation;
+  - modern perceptual codecs spend error by frequency and masking, whereas the
+    current scalar waveform step spends the same error budget everywhere;
+  - a single regular lapped kernel plus scale/entropy metadata is compatible
+    with SIMD, GPU, DSP, mobile, and later ASIC implementation without turning
+    the decoder into a collection of subcodecs.

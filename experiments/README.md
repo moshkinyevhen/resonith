@@ -71,6 +71,10 @@ reproducible command and independent decode.
   concealment and exact post-loss Truth recovery checks.
 - `results/packet_loss_2026-07-26_summary.json` — unrestricted and
   512-frame-ceiling containment results plus the measured Realtime byte cost.
+- `stereo_opus_frontier.py` — R-056 complete-byte stereo sweep against official
+  `opusenc/opusdec`, plus deterministic rate-matched blind WAV trials.
+- `results/stereo_opus_frontier_2026-07-26_summary.json` — closest-byte
+  diagnostic pairs and the explicit residual-only baseline loss.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

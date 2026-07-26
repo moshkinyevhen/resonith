@@ -570,3 +570,30 @@ quality was weak on exposed piano even though damage remained bounded. Future
 PLC or FEC must be judged by matched listening and must never become Truth
 reference state. The compact evidence is
 [`packet_loss_2026-07-26_summary.json`](../experiments/results/packet_loss_2026-07-26_summary.json).
+
+## 24. Stereo Opus frontier
+
+The official Opus anchor now preserves stereo frame shape and reports complete
+Ogg bytes plus executable hashes. R-056 swept Resonith scalar Innovation steps
+and Opus VBR rates on all three one-second stereo crops, then generated opaque
+source/Resonith/Opus listening trials.
+
+At the nearest complete bytes to the Opus 96 kbit/s request:
+
+| Crop | Resonith | Opus | Resonith SNR | Opus SNR |
+| --- | ---: | ---: | ---: | ---: |
+| Corelli | 14,984 B | 15,356 B | 13.08 dB | 21.20 dB |
+| Piano | 14,881 B | 15,552 B | 24.78 dB | 26.46 dB |
+| Drums | 12,430 B | 12,599 B | 17.49 dB | 21.80 dB |
+
+Waveform SNR is not perceptual equivalence, but losing all three same-size
+sanity checks is enough to reject the residual-only baseline as competitive.
+No listening result has yet been claimed. The exact next bottleneck is uniform
+waveform quantization: it cannot allocate error by frequency or masking.
+
+R-057 therefore tests one lapped perceptual Innovation path before any more
+source-model syntax. RSL2 remains the mandatory fallback and Lossless path;
+the transform candidate remains encoder research until complete bytes,
+blinded listening, fixed-integer conversion, and independent decode all pass.
+The compact R-056 record is
+[`stereo_opus_frontier_2026-07-26_summary.json`](../experiments/results/stereo_opus_frontier_2026-07-26_summary.json).

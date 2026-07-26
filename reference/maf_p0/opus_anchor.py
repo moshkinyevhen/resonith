@@ -13,7 +13,12 @@ import tempfile
 import numpy as np
 
 from .codec import _quality_report
-from .wav_io import read_pcm16_mono, write_pcm16_mono
+from .wav_io import (
+    read_pcm16_channels,
+    read_pcm16_mono,
+    write_pcm16_channels,
+    write_pcm16_mono,
+)
 
 
 @dataclass(frozen=True)
@@ -217,6 +222,119 @@ def run_opus_anchor(
         "frame_size_ms": float(frame_size_ms),
         "sample_rate": int(sample_rate),
         "sample_count": int(samples.size),
+        "encoder_version": resolved.encoder_version,
+        "decoder_version": resolved.decoder_version,
+        "encoder_sha256": resolved.encoder_sha256,
+        "decoder_sha256": resolved.decoder_sha256,
+    }
+    return OpusAnchorResult(payload, reconstructed, report)
+
+
+def run_opus_multichannel_anchor(
+    samples: np.ndarray,
+    sample_rate: int,
+    *,
+    bitrate_kbps: float,
+    mode: str = "vbr",
+    application: str = "music",
+    frame_size_ms: float = 20.0,
+    tools: OpusTools | None = None,
+    tools_directory: str | Path | None = None,
+) -> OpusAnchorResult:
+    """Encode and decode bounded frame-major PCM16 with official opus-tools."""
+
+    if (
+        samples.dtype != np.int16
+        or samples.ndim != 2
+        or not 1 <= samples.shape[1] <= 8
+    ):
+        raise TypeError("samples must be frame-major PCM16 with 1-8 channels")
+    if samples.shape[0] == 0 or sample_rate <= 0:
+        raise ValueError("invalid multichannel anchor input")
+    if not 6.0 <= bitrate_kbps <= 256.0 * samples.shape[1]:
+        raise ValueError("Opus bitrate exceeds the channel-count bound")
+    mode_flags = {
+        "vbr": "--vbr",
+        "cvbr": "--cvbr",
+        "hard-cbr": "--hard-cbr",
+    }
+    if mode not in mode_flags:
+        raise ValueError("Opus mode must be vbr, cvbr or hard-cbr")
+    if application not in {"music", "speech", "auto"}:
+        raise ValueError("Opus application must be music, speech or auto")
+
+    resolved = tools or resolve_opus_tools(tools_directory)
+    with tempfile.TemporaryDirectory(
+        prefix="resonith-opus-multichannel-anchor-"
+    ) as directory:
+        root = Path(directory)
+        source_path = root / "source.wav"
+        payload_path = root / "anchor.opus"
+        decoded_path = root / "decoded.wav"
+        write_pcm16_channels(source_path, sample_rate, samples)
+        command = [
+            str(resolved.opusenc),
+            "--quiet",
+            "--bitrate",
+            f"{bitrate_kbps:g}",
+            mode_flags[mode],
+            "--framesize",
+            f"{frame_size_ms:g}",
+            "--comp",
+            "10",
+            "--discard-comments",
+            "--padding",
+            "0",
+        ]
+        if application != "auto":
+            command.append(f"--{application}")
+        command.extend((str(source_path), str(payload_path)))
+        _run_checked(command)
+        _run_checked(
+            [
+                str(resolved.opusdec),
+                "--quiet",
+                "--rate",
+                str(sample_rate),
+                str(payload_path),
+                str(decoded_path),
+            ]
+        )
+        payload = payload_path.read_bytes()
+        decoded_rate, reconstructed = read_pcm16_channels(decoded_path)
+    if decoded_rate != sample_rate:
+        raise RuntimeError("Opus decoder changed the requested sample rate")
+    if reconstructed.shape != samples.shape:
+        raise RuntimeError(
+            "Opus multichannel frame shape differs from the source"
+        )
+
+    quality = _quality_report(
+        samples.reshape(-1),
+        reconstructed.reshape(-1),
+    )
+    duration_seconds = samples.shape[0] / sample_rate
+    normalized_hash, page_count = _normalized_ogg_sha256(payload)
+    report = {
+        **quality,
+        "codec": "Opus",
+        "container": "Ogg Opus",
+        "stream_bytes": len(payload),
+        "stream_sha256": normalized_hash,
+        "stream_hash_normalization": (
+            "Ogg stream serial and page CRC fields are zeroed before hashing"
+        ),
+        "ogg_page_count": page_count,
+        "requested_bitrate_kbps": float(bitrate_kbps),
+        "effective_bitrate_kbps": (
+            8.0 * len(payload) / duration_seconds / 1000.0
+        ),
+        "mode": mode,
+        "application": application,
+        "frame_size_ms": float(frame_size_ms),
+        "sample_rate": int(sample_rate),
+        "frame_count": int(samples.shape[0]),
+        "channel_count": int(samples.shape[1]),
         "encoder_version": resolved.encoder_version,
         "decoder_version": resolved.decoder_version,
         "encoder_sha256": resolved.encoder_sha256,

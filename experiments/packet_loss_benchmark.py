@@ -22,7 +22,7 @@ from maf_p0.wav_io import write_pcm16_channels  # noqa: E402
 from real_music_benchmark import fetch_source  # noqa: E402
 
 
-def _read_bounded_pcm16(path: Path) -> tuple[int, np.ndarray, dict]:
+def read_bounded_pcm16(path: Path) -> tuple[int, np.ndarray, dict]:
     """Convert little-endian integer PCM WAV to frame-major PCM16."""
 
     with wave.open(str(path), "rb") as source:
@@ -68,7 +68,7 @@ def _read_bounded_pcm16(path: Path) -> tuple[int, np.ndarray, dict]:
     )
 
 
-def _pcm_sha256(samples: np.ndarray) -> str:
+def pcm_sha256(samples: np.ndarray) -> str:
     return hashlib.sha256(
         samples.astype("<i2", copy=False).tobytes()
     ).hexdigest()
@@ -109,7 +109,7 @@ def main() -> None:
     all_contained = True
     for record in manifest["sources"]:
         source_path = fetch_source(record, args.cache)
-        sample_rate, full_samples, conversion = _read_bounded_pcm16(
+        sample_rate, full_samples, conversion = read_bounded_pcm16(
             source_path
         )
         crop_start = int(round(float(record["start_seconds"]) * sample_rate))
@@ -159,7 +159,7 @@ def main() -> None:
             "sample_rate": sample_rate,
             "frame_count": int(samples.shape[0]),
             "channel_count": int(samples.shape[1]),
-            "pcm16_sha256": _pcm_sha256(samples),
+            "pcm16_sha256": pcm_sha256(samples),
             "stream_bytes": len(encoded.payload),
             "stream_sha256": encoded.report["stream_sha256"],
             "residual_block_size": encoded.report["residual_block_size"],

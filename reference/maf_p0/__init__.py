@@ -55,6 +55,7 @@ from .packet_loss import (
     PacketLossSimulationResult,
     simulate_aligned_packet_loss,
 )
+from .opus_anchor import run_opus_multichannel_anchor
 from .periodic import PhaseTrajectory
 from .residual import ResidualPacket, decode_liftpack, encode_liftpack
 from .segmentation import SegmentationResult, segment_acoustic_states
@@ -125,6 +126,7 @@ __all__ = [
     "run_analytic_oscillator_oracle",
     "run_cached_additive_oracle",
     "run_lpc_liftpack_oracle",
+    "run_opus_multichannel_anchor",
     "write_pcm16_mono",
     "write_pcm16_channels",
 ]
