@@ -339,3 +339,26 @@ Raw report SHA-256:
 
 Canonical compact evidence:
 [`../experiments/results/cross_channel_oracle_2026-07-26_summary.json`](../experiments/results/cross_channel_oracle_2026-07-26_summary.json).
+
+## 15. Two-band stereo gate
+
+R-047 applied one exact temporal Haar split per channel, then selected channel
+lifting independently in the low and high coefficient bands. Like components
+were concatenated into only two unchanged RSL2 streams.
+
+The best research streams were larger than R-045 by 26.20% for Corelli,
+43.73% for piano, and 18.94% for drums. The split destroyed substantially more
+long-range LPC predictability than the band-local channel maps recovered.
+No subband syntax is promoted, and the three simple waveform-domain stereo
+families are closed.
+
+Run:
+[30202375474](https://github.com/moshkinyevhen/resonith/actions/runs/30202375474).
+Raw report SHA-256:
+
+```text
+ec11fc6c9f58041f97d005365582c0af76acd54f3261ff4d7f11f6272150380f
+```
+
+Canonical compact evidence:
+[`../experiments/results/subband_stereo_oracle_2026-07-26_summary.json`](../experiments/results/subband_stereo_oracle_2026-07-26_summary.json).

@@ -1,0 +1,29 @@
+{
+  "actions_run": "https://github.com/moshkinyevhen/resonith/actions/runs/30202375474",
+  "clips": {
+    "corelli-sonata-realization": {
+      "best_high_mode": "independent",
+      "best_low_mode": "right_side",
+      "best_subband_bytes": 26065,
+      "r045_anchor_bytes": 20654,
+      "subband_delta_vs_r045": -0.2619831509634938
+    },
+    "emotional-piano-cc0": {
+      "best_high_mode": "independent",
+      "best_low_mode": "independent",
+      "best_subband_bytes": 35724,
+      "r045_anchor_bytes": 24855,
+      "subband_delta_vs_r045": -0.4372963186481593
+    },
+    "patro-de-bateria": {
+      "best_high_mode": "left_side",
+      "best_low_mode": "left_side",
+      "best_subband_bytes": 30844,
+      "r045_anchor_bytes": 25932,
+      "subband_delta_vs_r045": -0.1894184790991824
+    }
+  },
+  "gate_passed": false,
+  "raw_report_sha256": "ec11fc6c9f58041f97d005365582c0af76acd54f3261ff4d7f11f6272150380f",
+  "status": "two-band reversible stereo lost 0/3; no syntax promoted"
+}

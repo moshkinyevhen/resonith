@@ -493,6 +493,12 @@ LiftPack blocks are independently reconstructible after their explicit stream
 header. The reference encoder competes every transform and entropy mode by
 actual payload size, but encoder search is non-normative.
 
+A decoder or player MAY build an out-of-band block index after validating the
+LiftPack checksum and every block envelope. Such an index does not alter Truth,
+is not required for sequential decode, and MUST identify each block by its
+exact byte interval and output-sample interval. LPC blocks are independently
+decodable because their first `order` entropy values are literal seed samples.
+
 #### 6.6.2 `LiftPack-2`
 
 `LiftPack-2` uses section type and payload magic `RSL2`. Version 1 retains the

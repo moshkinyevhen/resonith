@@ -17,6 +17,19 @@ typedef struct resonith_liftpack_info {
     uint16_t reserved;
 } resonith_liftpack_info;
 
+typedef struct resonith_liftpack_block_info {
+    uint64_t byte_offset;
+    uint64_t byte_size;
+    uint32_t sample_offset;
+    uint32_t bit_count;
+    uint16_t sample_count;
+    uint8_t transform;
+    uint8_t entropy;
+    uint8_t entropy_parameter;
+    uint8_t lpc_order;
+    uint16_t reserved;
+} resonith_liftpack_block_info;
+
 /*
  * Validates a LiftPack-1 or LiftPack-2 stream envelope and CRC before sizes.
  * No allocation, logging, I/O, or global mutable state occurs.
@@ -33,6 +46,19 @@ RESONITH_API resonith_status resonith_liftpack_inspect(
  */
 RESONITH_API size_t resonith_liftpack_required_scratch(
     const resonith_liftpack_info* info
+);
+
+/*
+ * Validates every block envelope and writes its byte/sample index.
+ * Entry capacity must cover the block_count returned by inspect().
+ * See Resonith-0 Section 6.6 and decision R-048.
+ */
+RESONITH_API resonith_status resonith_liftpack_index_blocks(
+    const uint8_t* data,
+    size_t data_size,
+    resonith_liftpack_block_info* entries,
+    size_t entry_capacity,
+    size_t* entries_written
 );
 
 /*

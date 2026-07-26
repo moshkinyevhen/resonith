@@ -311,6 +311,135 @@ resonith_status inverse_lpc(
     return RESONITH_STATUS_OK;
 }
 
+struct ParsedBlock {
+    std::size_t byte_offset = 0;
+    std::size_t byte_size = 0;
+    std::size_t payload_offset = 0;
+    std::size_t payload_bytes = 0;
+    std::size_t coefficient_count = 0;
+    std::uint16_t sample_count = 0;
+    std::uint8_t transform = 0;
+    std::uint8_t entropy = 0;
+    std::uint8_t entropy_parameter = 0;
+    std::uint8_t lpc_order = 0;
+    std::uint32_t bit_count = 0;
+    std::array<std::int16_t, kMaximumLpcOrder> lpc_coefficients{};
+};
+
+resonith_status parse_block(
+    const std::uint8_t* data,
+    std::size_t body_size,
+    bool lpc_stream,
+    std::size_t expected_length,
+    std::size_t& cursor,
+    ParsedBlock& block
+) noexcept {
+    block = ParsedBlock{};
+    block.byte_offset = cursor;
+    if (cursor > body_size || body_size - cursor < kBlockHeaderBytes) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+    block.sample_count = read_u16(data + cursor);
+    block.transform = data[cursor + 2U];
+    block.entropy = data[cursor + 3U];
+    block.entropy_parameter = data[cursor + 4U];
+    block.bit_count = read_u32(data + cursor + 5U);
+    cursor += kBlockHeaderBytes;
+    if (block.sample_count != expected_length) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+
+    block.coefficient_count = block.sample_count;
+    if (block.transform == kTransformLpc) {
+        if (!lpc_stream || cursor > body_size || body_size - cursor < 2U) {
+            return lpc_stream
+                ? RESONITH_STATUS_TRUNCATED
+                : RESONITH_STATUS_UNSUPPORTED_FEATURE;
+        }
+        block.lpc_order = data[cursor];
+        const std::uint8_t precision = data[cursor + 1U];
+        cursor += 2U;
+        if (
+            block.lpc_order == 0U
+            || block.lpc_order > kMaximumLpcOrder
+            || block.lpc_order >= block.sample_count
+            || precision != kLpcPrecision
+        ) {
+            return RESONITH_STATUS_PROFILE_BOUND;
+        }
+        const std::size_t coefficient_bytes =
+            2U * static_cast<std::size_t>(block.lpc_order);
+        if (cursor > body_size || coefficient_bytes > body_size - cursor) {
+            return RESONITH_STATUS_TRUNCATED;
+        }
+        std::int64_t coefficient_sum = 0;
+        for (std::uint8_t tap = 0U; tap < block.lpc_order; ++tap) {
+            const std::int16_t coefficient = read_i16(
+                data + cursor + 2U * static_cast<std::size_t>(tap)
+            );
+            block.lpc_coefficients[tap] = coefficient;
+            coefficient_sum += coefficient >= 0
+                ? coefficient
+                : -static_cast<std::int64_t>(coefficient);
+        }
+        if (coefficient_sum > kMaximumLpcCoefficientSum) {
+            return RESONITH_STATUS_PROFILE_BOUND;
+        }
+        cursor += coefficient_bytes;
+    } else if (block.transform == kTransformHaar) {
+        block.coefficient_count = next_power_of_two(block.sample_count);
+    } else if (
+        block.transform != kTransformIdentity
+        && block.transform != kTransformDelta1
+        && block.transform != kTransformDelta2
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    if (
+        (block.entropy == kEntropyRice
+            && block.entropy_parameter > kMaximumRiceParameter)
+        || (block.entropy == kEntropyPacked
+            && (
+                block.entropy_parameter == 0U
+                || block.entropy_parameter > 64U
+            ))
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    if (
+        block.entropy != kEntropyRice
+        && block.entropy != kEntropyPacked
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    if (
+        block.bit_count
+        > block.coefficient_count * static_cast<std::size_t>(
+            kMaximumBitsPerCoefficient
+        )
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    block.payload_bytes = (
+        static_cast<std::size_t>(block.bit_count) + 7U
+    ) / 8U;
+    if (cursor > body_size || block.payload_bytes > body_size - cursor) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+    block.payload_offset = cursor;
+    BitReader reader(
+        data + block.payload_offset,
+        block.payload_bytes,
+        block.bit_count
+    );
+    if (!reader.padding_is_zero()) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    cursor += block.payload_bytes;
+    block.byte_size = cursor - block.byte_offset;
+    return RESONITH_STATUS_OK;
+}
+
 }  // namespace
 
 extern "C" resonith_status resonith_liftpack_inspect(
@@ -376,6 +505,77 @@ extern "C" std::size_t resonith_liftpack_required_scratch(
     return 2U * next_power_of_two(info->block_size);
 }
 
+extern "C" resonith_status resonith_liftpack_index_blocks(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    resonith_liftpack_block_info* entries,
+    std::size_t entry_capacity,
+    std::size_t* entries_written
+) {
+    if (entries_written == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *entries_written = 0;
+    resonith_liftpack_info info{};
+    const resonith_status inspect_status = resonith_liftpack_inspect(
+        data,
+        data_size,
+        &info
+    );
+    if (inspect_status != RESONITH_STATUS_OK) {
+        return inspect_status;
+    }
+    if (
+        (info.block_count != 0U && entries == nullptr)
+        || entry_capacity < info.block_count
+    ) {
+        return entries == nullptr && info.block_count != 0U
+            ? RESONITH_STATUS_INVALID_ARGUMENT
+            : RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    }
+
+    const std::size_t body_size = data_size - kChecksumBytes;
+    const bool lpc_stream = std::memcmp(data, "RSL2", 4) == 0;
+    std::size_t cursor = kStreamHeaderBytes;
+    std::size_t sample_offset = 0;
+    for (std::uint32_t index = 0; index < info.block_count; ++index) {
+        const std::size_t expected_length = std::min<std::size_t>(
+            info.block_size,
+            info.sample_count - sample_offset
+        );
+        ParsedBlock block{};
+        const resonith_status status = parse_block(
+            data,
+            body_size,
+            lpc_stream,
+            expected_length,
+            cursor,
+            block
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        entries[index] = resonith_liftpack_block_info{
+            static_cast<std::uint64_t>(block.byte_offset),
+            static_cast<std::uint64_t>(block.byte_size),
+            static_cast<std::uint32_t>(sample_offset),
+            block.bit_count,
+            block.sample_count,
+            block.transform,
+            block.entropy,
+            block.entropy_parameter,
+            block.lpc_order,
+            0U,
+        };
+        sample_offset += block.sample_count;
+    }
+    if (sample_offset != info.sample_count || cursor != body_size) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    *entries_written = info.block_count;
+    return RESONITH_STATUS_OK;
+}
+
 extern "C" resonith_status resonith_liftpack_decode(
     const std::uint8_t* data,
     std::size_t data_size,
@@ -419,127 +619,61 @@ extern "C" resonith_status resonith_liftpack_decode(
     std::size_t cursor = kStreamHeaderBytes;
     std::size_t output_offset = 0;
     for (std::uint32_t block = 0; block < info.block_count; ++block) {
-        if (cursor > body_size || body_size - cursor < kBlockHeaderBytes) {
-            return RESONITH_STATUS_TRUNCATED;
-        }
-        const std::uint16_t length = read_u16(data + cursor);
-        const std::uint8_t transform = data[cursor + 2];
-        const std::uint8_t entropy = data[cursor + 3];
-        const std::uint8_t parameter = data[cursor + 4];
-        const std::uint32_t bit_count = read_u32(data + cursor + 5);
-        cursor += kBlockHeaderBytes;
-
         const std::size_t expected_length = std::min<std::size_t>(
             info.block_size,
             info.sample_count - output_offset
         );
-        if (length != expected_length) {
-            return RESONITH_STATUS_MALFORMED;
-        }
-        std::size_t coefficient_count = length;
-        std::uint8_t lpc_order = 0U;
-        std::array<std::int16_t, kMaximumLpcOrder> lpc_coefficients{};
-        if (transform == kTransformLpc) {
-            if (!lpc_stream || cursor > body_size || body_size - cursor < 2U) {
-                return lpc_stream
-                    ? RESONITH_STATUS_TRUNCATED
-                    : RESONITH_STATUS_UNSUPPORTED_FEATURE;
-            }
-            lpc_order = data[cursor];
-            const std::uint8_t precision = data[cursor + 1U];
-            cursor += 2U;
-            if (
-                lpc_order == 0U
-                || lpc_order > kMaximumLpcOrder
-                || lpc_order >= length
-                || precision != kLpcPrecision
-            ) {
-                return RESONITH_STATUS_PROFILE_BOUND;
-            }
-            const std::size_t coefficient_bytes =
-                2U * static_cast<std::size_t>(lpc_order);
-            if (
-                cursor > body_size
-                || coefficient_bytes > body_size - cursor
-            ) {
-                return RESONITH_STATUS_TRUNCATED;
-            }
-            std::int64_t coefficient_sum = 0;
-            for (std::uint8_t tap = 0U; tap < lpc_order; ++tap) {
-                const std::int16_t coefficient = read_i16(
-                    data + cursor + 2U * static_cast<std::size_t>(tap)
-                );
-                lpc_coefficients[tap] = coefficient;
-                coefficient_sum += coefficient >= 0
-                    ? coefficient
-                    : -static_cast<std::int64_t>(coefficient);
-            }
-            if (coefficient_sum > kMaximumLpcCoefficientSum) {
-                return RESONITH_STATUS_PROFILE_BOUND;
-            }
-            cursor += coefficient_bytes;
-        } else if (transform == kTransformHaar) {
-            coefficient_count = next_power_of_two(length);
-        } else if (
-            transform != kTransformIdentity
-            && transform != kTransformDelta1
-            && transform != kTransformDelta2
-        ) {
-            return RESONITH_STATUS_MALFORMED;
-        }
-        if (
-            bit_count
-            > coefficient_count * static_cast<std::size_t>(
-                kMaximumBitsPerCoefficient
-            )
-        ) {
-            return RESONITH_STATUS_PROFILE_BOUND;
-        }
-        const std::size_t payload_bytes = (
-            static_cast<std::size_t>(bit_count) + 7U
-        ) / 8U;
-        if (cursor > body_size || payload_bytes > body_size - cursor) {
-            return RESONITH_STATUS_TRUNCATED;
+        ParsedBlock parsed{};
+        resonith_status status = parse_block(
+            data,
+            body_size,
+            lpc_stream,
+            expected_length,
+            cursor,
+            parsed
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
         }
 
-        BitReader reader(data + cursor, payload_bytes, bit_count);
-        if (!reader.padding_is_zero()) {
-            return RESONITH_STATUS_MALFORMED;
-        }
-        resonith_status status = decode_entropy(
+        BitReader reader(
+            data + parsed.payload_offset,
+            parsed.payload_bytes,
+            parsed.bit_count
+        );
+        status = decode_entropy(
             reader,
-            entropy,
-            parameter,
-            coefficient_count,
+            parsed.entropy,
+            parsed.entropy_parameter,
+            parsed.coefficient_count,
             scratch
         );
         if (status != RESONITH_STATUS_OK) {
             return status;
         }
-        if (reader.position() != bit_count) {
+        if (reader.position() != parsed.bit_count) {
             return RESONITH_STATUS_MALFORMED;
         }
-        status = transform == kTransformLpc
+        status = parsed.transform == kTransformLpc
             ? inverse_lpc(
                 scratch,
-                length,
-                lpc_coefficients,
-                lpc_order,
+                parsed.sample_count,
+                parsed.lpc_coefficients,
+                parsed.lpc_order,
                 output + output_offset
             )
             : inverse_transform(
-                transform,
+                parsed.transform,
                 scratch,
-                coefficient_count,
-                length,
-                scratch + coefficient_count,
+                parsed.coefficient_count,
+                parsed.sample_count,
+                scratch + parsed.coefficient_count,
                 output + output_offset
             );
         if (status != RESONITH_STATUS_OK) {
             return status;
         }
-        output_offset += length;
-        cursor += payload_bytes;
+        output_offset += parsed.sample_count;
     }
     if (output_offset != info.sample_count || cursor != body_size) {
         return RESONITH_STATUS_MALFORMED;

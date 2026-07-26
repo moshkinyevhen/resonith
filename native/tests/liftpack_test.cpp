@@ -179,6 +179,44 @@ int main() {
         )) {
         return 1;
     }
+    std::array<resonith_liftpack_block_info, 3> block_index{};
+    std::size_t indexed_blocks = 0;
+    if (!expect(
+            resonith_liftpack_index_blocks(
+                residual_section.payload,
+                residual_section.payload_size,
+                block_index.data(),
+                block_index.size(),
+                &indexed_blocks
+            ) == RESONITH_STATUS_OK
+                && indexed_blocks == block_index.size()
+                && block_index[0].byte_offset == 15U
+                && block_index[0].sample_offset == 0U
+                && block_index[0].sample_count == 64U
+                && block_index[1].sample_offset == 64U
+                && block_index[2].sample_offset == 128U
+                && block_index[0].byte_offset + block_index[0].byte_size
+                    == block_index[1].byte_offset
+                && block_index[1].byte_offset + block_index[1].byte_size
+                    == block_index[2].byte_offset,
+            "LiftPack-1 canonical block index"
+        )) {
+        return 1;
+    }
+    indexed_blocks = 99U;
+    if (!expect(
+            resonith_liftpack_index_blocks(
+                residual_section.payload,
+                residual_section.payload_size,
+                block_index.data(),
+                block_index.size() - 1U,
+                &indexed_blocks
+            ) == RESONITH_STATUS_OUTPUT_TOO_SMALL
+                && indexed_blocks == 0U,
+            "LiftPack block-index capacity bound"
+        )) {
+        return 1;
+    }
 
     std::array<std::int64_t, 192> output{};
     std::array<std::int64_t, 128> scratch{};
@@ -280,6 +318,27 @@ int main() {
                 && written == lpc_output.size()
                 && lpc_output == kLpcExpected,
             "LiftPack-2 LPC inverse and signed rounding"
+        )) {
+        return 1;
+    }
+    std::array<resonith_liftpack_block_info, 1> lpc_index{};
+    indexed_blocks = 0U;
+    if (!expect(
+            resonith_liftpack_index_blocks(
+                kLpcStream.data(),
+                kLpcStream.size(),
+                lpc_index.data(),
+                lpc_index.size(),
+                &indexed_blocks
+            ) == RESONITH_STATUS_OK
+                && indexed_blocks == 1U
+                && lpc_index[0].sample_count == kLpcExpected.size()
+                && lpc_index[0].transform == 4U
+                && lpc_index[0].lpc_order == 4U
+                && lpc_index[0].byte_offset == 15U
+                && lpc_index[0].byte_offset + lpc_index[0].byte_size
+                    == kLpcStream.size() - 4U,
+            "LiftPack-2 LPC block index"
         )) {
         return 1;
     }

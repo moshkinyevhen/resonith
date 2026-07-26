@@ -24,6 +24,8 @@ The native Core:
   bounded saturating Truth-composition pass;
 - decodes bounded LiftPack-1 and LiftPack-2 residuals, including Main-0 Q12
   LPC with an order-16 ceiling;
+- validates and exports caller-owned byte/sample block indexes for bounded
+  seek planning without decoding PCM or allocating memory;
 - decodes minimal typed `BRAW` Basis payloads into aligned caller-owned
   host-endian memory without generic array metadata;
 - parses fixed `CONF` and state-local periodic `ATOM` payloads, reports exact
@@ -40,6 +42,12 @@ The scratch requirement is reported in `int64_t` elements by
 lifetimes remain owned by the caller. Output and scratch must not overlap.
 The same decoder instance is reentrant and thread-safe because it owns no
 mutable state.
+
+`resonith_liftpack_index_blocks()` validates each block envelope after the
+whole-stream CRC and emits exact byte offsets, sample offsets, transform IDs,
+entropy parameters, and LPC order. LiftPack blocks carry their own LPC seeds,
+so this index is the first allocation-free random-access primitive; a later
+player layer may cache it or serialize independently checked checkpoints.
 
 ## Build and test
 

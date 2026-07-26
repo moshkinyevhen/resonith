@@ -20,6 +20,18 @@ int main(void) {
         0U
     };
     resonith_liftpack_info info = {0U, 0U, 0U, 0U};
+    resonith_liftpack_block_info block_info = {
+        0U,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U,
+        0U
+    };
     resonith_cibs_info cibs_info = {0U, 0U, 0U, 0U};
     resonith_raw_basis_info basis_info = {0U, 0U, 0U, 0U};
     resonith_prepared_phase_trajectory trajectory = {
@@ -85,6 +97,19 @@ int main(void) {
         &info
     );
     if (status != RESONITH_STATUS_INVALID_ARGUMENT) {
+        return 1;
+    }
+    size_t indexed_blocks = 99U;
+    if (
+        resonith_liftpack_index_blocks(
+            NULL,
+            0U,
+            &block_info,
+            1U,
+            &indexed_blocks
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+        || indexed_blocks != 0U
+    ) {
         return 1;
     }
     return resonith_status_string(status) == NULL ? 1 : 0;

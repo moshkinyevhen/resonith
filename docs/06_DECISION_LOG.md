@@ -1014,7 +1014,7 @@ new oscillator opcode.
 ## R-047 — Two-band reversible spatial lifting
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / RESEARCH**
+- Status: **MEASURED 0/3 WON / GATE FAILED / CLOSED**
 - Decision:
   - apply one exact temporal Haar lifting stage to each quantized channel,
     yielding low and high coefficient bands;
@@ -1033,3 +1033,32 @@ new oscillator opcode.
     reuses the existing integer Haar kernel;
   - two residual streams avoid multiplying section-directory and entropy state
     overhead as the number of bands grows.
+- Result:
+  - the best subband candidates were 26.20%, 43.73%, and 18.94% larger than
+    R-045 on Corelli, piano, and drums respectively;
+  - temporal Haar separation destroyed more long-range LPC predictability than
+    band-local channel modes recovered;
+  - whole-stream, gain-delay, and two-band waveform stereo tools are closed;
+    future spatial work must operate on accepted source/Basis representations
+    or pass a new oracle without weakening the RSL2 anchor.
+
+## R-048 — Production streaming hardening before new Main opcodes
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - stop assigning compression syntax after the failed R-044 through R-047
+    gates and harden the winning `CONF` plus `RSL2` Truth path;
+  - add bounded block indexing, checkpoint/random-access contracts, malformed
+    stream fuzz targets, and a callback-oriented player API;
+  - preserve the allocation-free C ABI, caller-owned memory, deterministic
+    output, and exact Python/C++ cross-decoder boundary;
+  - require checkpoint tables to be independently integrity-checked and
+    optional: their absence affects seek cost, never decodability;
+  - resume new normative coding tools only from a declared complete-byte or
+    matched-listening gate.
+- Rationale:
+  - robustness and usable random access are now higher-value than preserving
+    failed research modes in Main;
+  - a small auditable Core is the project's accepted differentiator and is
+    necessary before mobile/player integration or a public standard proposal.
