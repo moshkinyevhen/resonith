@@ -76,6 +76,10 @@ floor-division, Innovation scaling, saturation, and slice independence.
 `native/tests/basis_test.cpp` verifies the first typed acoustic payload and
 cross-endian sample reconstruction.
 
+`native/tests/pipeline_test.cpp` chains typed Basis decode, absolute periodic
+rendering, LiftPack Innovation decode, sparse gain, and saturating Truth
+composition into one cross-language PCM conformance vector.
+
 This is not yet the full Resonith decoder. Typed CIBS/Atom payload parsing,
 transient rendering, and multi-channel synthesis remain subsequent parity
 stages.

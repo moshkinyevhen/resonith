@@ -113,4 +113,13 @@ if(BUILD_TESTING)
     set_target_properties(resonith_basis_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_basis_test)
     add_test(NAME basis_conformance COMMAND resonith_basis_test)
+
+    add_executable(resonith_pipeline_test
+        tests/pipeline_test.cpp
+    )
+    target_compile_features(resonith_pipeline_test PRIVATE cxx_std_20)
+    target_link_libraries(resonith_pipeline_test PRIVATE Resonith::Core)
+    set_target_properties(resonith_pipeline_test PROPERTIES CXX_EXTENSIONS OFF)
+    resonith_enable_warnings(resonith_pipeline_test)
+    add_test(NAME causal_pipeline_conformance COMMAND resonith_pipeline_test)
 endif()
