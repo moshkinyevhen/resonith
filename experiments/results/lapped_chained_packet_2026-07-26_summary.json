@@ -1,0 +1,41 @@
+{
+  "date": "2026-07-26",
+  "github_actions_run": 30211915964,
+  "configuration": {
+    "maximum_seconds": 3.0,
+    "packet_frames": 10752,
+    "packet_interval_milliseconds": 243.8095238095238,
+    "half_window": 512,
+    "packet_count": 13
+  },
+  "gate": {
+    "maximum_single_owner_overhead_fraction": 0.04,
+    "exact_monolithic_reconstruction": true,
+    "exact_first_later_packet": true,
+    "maximum_loss_extension_frames": 512,
+    "passing_clips": 3,
+    "clip_count": 3
+  },
+  "clips": {
+    "corelli-sonata-realization": {
+      "monolithic_stream_bytes": 46265,
+      "independent_transform_overhead_fraction": 0.07530530638711763,
+      "single_owner_packet_bytes": 47645,
+      "single_owner_overhead_fraction": 0.029828163838754973
+    },
+    "emotional-piano-cc0": {
+      "monolithic_stream_bytes": 44583,
+      "independent_transform_overhead_fraction": 0.0774510463629634,
+      "single_owner_packet_bytes": 46220,
+      "single_owner_overhead_fraction": 0.0367180315366844
+    },
+    "patro-de-bateria": {
+      "monolithic_stream_bytes": 36170,
+      "independent_transform_overhead_fraction": 0.07683162842134372,
+      "single_owner_packet_bytes": 37291,
+      "single_owner_overhead_fraction": 0.030992535250207398
+    }
+  },
+  "status": "LPS3 single-owner packet gate passed",
+  "conclusion": "Assigning every selected transform frame to one packet reduced 243.8 ms complete-byte overhead to 2.98%-3.67%. Uninterrupted PCM remains exactly monolithic, the first packet after simulated loss remains exact, and loss extension is bounded to the preceding 512-frame half-window."
+}

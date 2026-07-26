@@ -104,6 +104,8 @@ reproducible command and independent decode.
 - `lapped_chained_packet_gate.py` — R-078 single-owner transform-frame
   packetization, bounded one-half-window loss extension, and exact later
   packet recovery.
+- `results/lapped_chained_packet_2026-07-26_summary.json` — the R-078 exact
+  LPS3 pass with 2.98%-3.67% complete-byte overhead.
 - `results/native_lapped_frontier_timing_2026-07-26_summary.json` — the R-070
   exact native-RDO speedup over the shared-analysis Python path.
 - `results/native_lapped_analysis_timing_2026-07-26_summary.json` — the R-068

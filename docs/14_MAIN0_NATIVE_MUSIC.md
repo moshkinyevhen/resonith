@@ -1008,3 +1008,26 @@ by approximately four times while carrying fewer bytes and shorter logical
 intervals. This remains a hosted-CPU result, not a mobile energy claim. The
 compact record is
 [`native_lapped_transform_packet_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_transform_packet_timing_2026-07-26_summary.json).
+
+## 43. Single-owner boundary result
+
+`LPS3` removes the last duplicated transform state. Each selected frame belongs
+to one packet; packet \(k\)'s final half-window becomes ready when packet
+\(k+1\)'s first frame arrives. This introduces one half-window of lookahead but
+no predictive reference.
+
+| Crop | Independent LPS2 overhead | Single-owner LPS3 overhead |
+| --- | ---: | ---: |
+| Corelli | 7.53% | 2.98% |
+| Piano | 7.75% | 3.67% |
+| Drums | 7.68% | 3.10% |
+
+Uninterrupted PCM remains exactly equal to monolithic LPF1. If one packet is
+absent, the first later packet still decodes exactly; only the missing logical
+interval and the preceding 512-frame half-window may require output-only
+concealment. At 44.1 kHz that extension is 11.61 ms.
+
+The result passes the declared 4% rate gate. The next oracle must jointly sweep
+packet duration and half-window before LPS3 receives a native scheduler. The
+compact record is
+[`lapped_chained_packet_2026-07-26_summary.json`](../experiments/results/lapped_chained_packet_2026-07-26_summary.json).

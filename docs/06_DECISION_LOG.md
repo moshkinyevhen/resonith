@@ -2134,7 +2134,7 @@ new oscillator opcode.
 ## R-078 — Single-owner transform boundaries for Realtime
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / ORACLE IMPLEMENTING**
+- Status: **ORACLE PASS / 2.98%-3.67% OVERHEAD**
 - Decision:
   - test an `LPS3` research packet sequence in which every globally selected
     transform frame belongs to exactly one packet;
@@ -2154,3 +2154,16 @@ new oscillator opcode.
     predictive Truth state;
   - a lost packet cannot contaminate future coefficient or overlap state:
     only output that explicitly depended on the absent boundary is concealed.
+- Result:
+  - the LPS3 oracle assigns every selected transform frame once, reconstructs
+    uninterrupted PCM exactly equal to monolithic adaptive LPF1, and requires
+    one half-window of boundary lookahead;
+  - GitHub Actions run 30211915964 measured 2.98%, 3.67%, and 3.10% complete
+    byte overhead for 243.81 ms packets, passing the 4% gate on every clip;
+  - the first packet after a simulated missing record decoded exactly without
+    the lost packet;
+  - loss extension is bounded to the preceding 512-frame half-window
+    (11.61 ms at 44.1 kHz), whose final output awaited the missing packet's
+    first transform frame;
+  - native scheduling is deferred until a packet-duration/half-window frontier
+    identifies viable Realtime latency and rate points.
