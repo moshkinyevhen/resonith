@@ -197,7 +197,7 @@ void sha256_final(
             context.buffer.begin()
                 + static_cast<std::ptrdiff_t>(context.buffered_bytes),
             context.buffer.end(),
-            0U
+            std::uint8_t{0}
         );
         compress_block(context.buffer.data(), context.state);
         context.buffered_bytes = 0U;
@@ -206,7 +206,7 @@ void sha256_final(
         context.buffer.begin()
             + static_cast<std::ptrdiff_t>(context.buffered_bytes),
         context.buffer.begin() + 56,
-        0U
+        std::uint8_t{0}
     );
     for (unsigned index = 0; index < 8U; ++index) {
         context.buffer[63U - index] = static_cast<std::uint8_t>(
