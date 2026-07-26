@@ -1,309 +1,347 @@
-# Журнал решений Resonith
+# Resonith Solution Log
 
-Этот файл является каноническим источником принятых решений. Более новое
-решение ссылается на заменяемое и помечает его **SUPERSEDED**.
+This file is the canonical source of accepted decisions. Newer
+the solution references the one it is replacing and marks it **SUPERSEDED**.
 
-## R-001 — Рабочее имя самостоятельного аудиокодека
+## R-001 - Working name of a stand-alone audio codec
 
-- Дата: 2026-07-26
-- Статус: **RESEARCH / OPEN**
-- Решение:
-  - ведущий кандидат рабочего имени аудиокодека — **Resonith**;
-  - имя не является финально выбранным до отдельного решения владельца и
+- Date: 2026-07-26
+- Status: **RESEARCH / OPEN**
+- Solution:
+  - the leading candidate for the working name of the audio codec is **Resonith**;
+  - the name is not finally chosen until a separate decision of the owner and
     trademark clearance;
-  - имя папки и документов используется как удобный временный namespace и
-    не означает утверждения бренда;
-  - Resonith не является `QINTRA Audio` и не требует QINTRA;
-  - QINTRA остаётся самостоятельным видеокодеком;
-  - оптимизированная связь двух кодеков описывается отдельным
+  - the name of the folder and documents is used as a convenient temporary namespace and
+    does not constitute a brand endorsement;
+  - Resonith is not `QINTRA Audio` and does not require QINTRA;
+  - QINTRA remains an independent video codec;
+  - optimized communication between two codecs is described separately
     `SceneLith AV Bridge`.
 
-## R-001A — Имя архитектуры
+## R-001A - Architecture name
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED**
-- Решение:
-  - внутренняя архитектура самостоятельного аудиокодека —
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Solution:
+  - internal architecture of a stand-alone audio codec -
     **MAF: Memory-oriented Acoustic Field**;
-  - смена публичного имени кодека не меняет MAF и bitstream design.
+  - changing the public name of the codec does not change the MAF and bitstream design.
 
-## R-002 — Один acoustic ISA вместо набора подкодеков
+## R-002 - One acoustic ISA instead of a set of subcodecs
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED**
-- Решение:
-  - Resonith имеет одну state grammar, один timeline, один entropy layer и
-    малый bounded integer acoustic ISA;
-  - speech, music, noise и ambience не являются взаимоисключающими режимами
-    временного кадра;
-  - coherent, predictive, transient, stochastic, resonant, spatial и
-    objective innovation atoms MAY одновременно действовать в одном
-    time-frequency участке;
-  - профили ограничивают разрешённое подмножество единой syntax, но не
-    являются вложенными независимыми кодеками.
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Solution:
+  - Resonith has one state grammar, one timeline, one entropy layer and
+    small bounded integer acoustic ISA;
+  - speech, music, noise and ambience are not mutually exclusive modes
+    temporary frame;
+  - coherent, predictive, transient, stochastic, resonant, spatial and
+    objective innovation atoms MAY act simultaneously in one
+    time-frequency plot;
+  - profiles limit the allowed subset of a single syntax, but not
+    are nested independent codecs.
 
-## R-003 — Выбор представления через decoder-in-the-loop RDO
+## R-003 - Representation selection via decoder-in-the-loop RDO
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED**
-- Решение:
-  - classifier/router только предлагает top-K кандидатов;
-  - окончательный выбор делает точный RDO по полному битрейту, distortion,
-    decoder compute, state memory, latency, resilience и switching stability;
-  - semantic label инструмента, ноты или речи никогда не является
-    достаточным основанием для нормативной реконструкции;
-  - универсальный Truth Innovation является обязательным fallback.
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Solution:
+  - classifier/router only offers top-K candidates;
+  - the final choice is made by the exact RDO based on the full bitrate, distortion,
+    decoder compute, state memory, latency, resilience and switching stability;
+  - the semantic label of an instrument, note or speech is never
+    sufficient basis for normative reconstruction;
+  - universal Truth Innovation is a mandatory fallback.
 
-## R-004 — Непрерывное состояние вместо coding frames
+## R-004 - Continuous state instead of coding frames
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED**
-- Решение:
-  - параметр атома передаётся при рождении или действительном изменении;
-  - отсутствие события означает продолжение предыдущего закона;
-  - transport packets и внутренние render quanta разрешены, но не являются
-    единицей акустического состояния;
-  - phase, envelope и trajectory задаются от абсолютного sample/time origin;
-  - любое переключение обязано быть phase-/energy-continuous либо закрываться
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Solution:
+  - the atom parameter is transmitted at birth or actual change;
+  - the absence of an event means the continuation of the previous law;
+  - transport packets and internal render quanta are allowed, but are not
+    unit of acoustic state;
+  - phase, envelope and trajectory are set from absolute sample/time origin;- any switching must be phase-/energy-continuous or closed
     objective innovation.
 
-## R-005 — Timbre Basis, excitation и room response оплачиваются один раз
+## R-005 — Timbre Basis, excitation and room response are paid once
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED / NORMATIVE-DRAFT**
-- Решение:
-  - повторяющийся тембр хранится как immutable `TIMBRE_BASIS`;
-  - periodic/coherent atoms ссылаются на basis и передают phase, pitch,
-    amplitude и малые coefficient trajectories;
-  - excitation MAY быть отделён от resonator, чтобы один excitation law
-    возбуждал несколько мод и источников;
-  - room/resonator basis MAY переиспользоваться многими emitters;
-  - все basis payloads, adapters и dictionary references учитываются в
-    полном битрейте;
-  - скрытая внешняя модель не требуется для standalone decode.
+- Date: 2026-07-26
+- Status: **ACCEPTED / NORMATIVE-DRAFT**
+- Solution:
+  - repeating timbre is stored as immutable `TIMBRE_BASIS`;
+  - periodic/coherent atoms refer to basis and transmit phase, pitch,
+    amplitude and small coefficient trajectories;
+  - excitation MAY be separated from the resonator to make one excitation law
+    excited several modes and sources;
+  - room/resonator basis MAY be reused by many emitters;
+  - all basis payloads, adapters and dictionary references are taken into account in
+    full bitrate;
+  - hidden external model is not required for standalone decode.
 
-## R-006 — Детерминированные stochastic fields
+## R-006 — Deterministic stochastic fields
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED / NORMATIVE-DRAFT**
-- Решение:
-  - stochastic atom использует counter-based PRNG, абсолютный sample index,
-    seed и bounded integer spectral/resonant shaping;
-  - recursive PRNG state не должен быть обязательным для random access;
-  - stochastic reconstruction в Truth Core детерминирована;
-  - её несовпадение с исходником закрывается Truth Innovation;
-  - Optional Perceptual Detail никогда не становится reference.
+- Date: 2026-07-26
+- Status: **ACCEPTED / NORMATIVE-DRAFT**
+- Solution:
+  - stochastic atom uses counter-based PRNG, absolute sample index,
+    seed and bounded integer spectral/resonant shaping;
+  - recursive PRNG state should not be mandatory for random access;
+  - stochastic reconstruction in Truth Core is deterministic;
+  - its discrepancy with the source code is closed by Truth Innovation;
+  - Optional Perceptual Detail never becomes reference.
 
-## R-007 — Профили единого стандарта
+## R-007 – Profiles of a single standard
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED / NORMATIVE-DRAFT**
-- Профили:
+- Date: 2026-07-26
+- Status: **ACCEPTED / NORMATIVE-DRAFT**
+- Profiles:
   - `Realtime`: speech/general low delay, packet-loss constraints;
   - `Main`: general mono/stereo/multichannel audio;
   - `Immersive`: emitters, room and spatial rendering;
-  - `Perceptual`: discardable learned/generative detail, не reference;
-  - `Lossless`: exact PCM reconstruction тем же Core плюс exact innovation.
+  - `Perceptual`: discardable learned/generative detail, not reference;
+  - `Lossless`: exact PCM reconstruction with the same Core plus exact innovation.
 
-## R-008 — Численные цели не являются результатом
+## R-008 - Numerical goals are not results
 
-- Дата: 2026-07-26
-- Статус: **TARGET / HYPOTHESIS**
-- Решение:
-  - любой compression claim отчётен отдельно против Opus, xHE-AAC/USAC,
-    EVS/IVAS и lossless anchor там, где они применимы;
-  - matched-quality определяется MUSHRA/ABX с hidden anchors;
-  - broad classical target зрелого поколения: 25–45% меньший bitrate
-    относительно сильнейшего применимого anchor при равном субъективном
-    качестве;
-  - революционная планка: не менее 35% на broad music/classical corpus при
-    малом software decoder и без систематических phase/timbre artifacts;
-  - эти числа являются гипотезами до воспроизводимого эксперимента.
+- Date: 2026-07-26
+- Status: **TARGET / HYPOTHESIS**
+- Solution:
+  - any compression claim is reported separately against Opus, xHE-AAC/USAC,
+    EVS/IVAS and lossless anchor where applicable;
+  - matched-quality is determined by MUSHRA/ABX with hidden anchors;
+  - broad classical target mature generation: 25–45% lower bitrate
+    relative to the strongest applicable anchor with equal subjective
+    quality;
+  - revolutionary level: no less than 35% for broad music/classical corpus with
+    with a small software decoder and without systematic phase or timbre
+    artifacts;
+  - these numbers are hypotheses pending a reproducible experiment.
 
-## R-009 — Повторяющиеся acoustic programs
+## R-009 – Repetitive acoustic programs
 
-- Дата: 2026-07-26
-- Статус: **RESEARCH**
-- Решение:
-  - repeated motif, accompaniment pattern или emitter program MAY быть
-    content-addressed macro, создающим обычные Core atoms с time/pitch/gain
+- Date: 2026-07-26
+- Status: **RESEARCH**
+- Solution:
+  - a repeated motif, accompaniment pattern, or emitter program MAY be a
+    content-addressed macro that creates regular Core atoms with time, pitch,
+    and gain
     transform;
-  - Main-0 не получает отдельный музыкальный язык, score VM или
+  - Main-0 does not receive a separate music language, score VM or
     Turing-complete scripting;
-  - механизм принимается в Main только при net gain не менее 5% на broad
-    music после учёта dictionary и seek overhead.
+  - the mechanism is accepted into Main only with net gain of at least 5% on broad
+    music after taking into account dictionary and seek overhead.
 
-## R-010 — Первый путь разработки
+## R-010 - First development path
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED**
-- Решение:
-  - разработка начинается с standalone Resonith, не с AV Bridge;
-  - первый oracle сравнивает универсальный lifting residual с
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Solution:
+  - development starts with standalone Resonith, not with AV Bridge;
+  - the first oracle compares the universal lifting residual with
     `TIMBRE_BASIS + PHASE_TRACK + residual`;
-  - затем добавляются transient и stochastic candidates;
-  - spatial/room и Perceptual profile не блокируют первый codec loop;
-  - каждое расширение обязано пройти отдельный ablation и kill-gate.
+  - then transient and stochastic candidates are added;
+  - spatial/room and Perceptual profile do not block the first codec loop;
+  - each extension must undergo a separate ablation and kill-gate.
 
-## R-011 — Shared Control Basis
+## R-011 - Shared Control Basis
 
-- Дата: 2026-07-26
-- Статус: **NORMATIVE-DRAFT / HYPOTHESIS**
-- Решение:
-  - общая modulation trajectory MAY храниться один раз как immutable
+- Date: 2026-07-26
+- Status: **NORMATIVE-DRAFT / HYPOTHESIS**
+- Solution:
+  - a general modulation trajectory MAY be stored once as an immutable
     `CONTROL_BASIS`;
-  - несколько atoms MAY ссылаться на неё с bounded scale/offset/time mapping;
-  - механизм покрывает общие tempo/rubato, vibrato, dynamics, pitch bend,
-    emitter trajectory и room change без semantic labels;
-  - `CONTROL_BASIS` использует те же fixed-point parameter-law operations и не
-    добавляет новый DSP opcode;
-  - механизм остаётся optional, если full-RDO не окупает reference metadata.
+  - several atoms MAY refer to it with bounded scale/offset/time mapping;
+  - the mechanism covers general tempo/rubato, vibrato, dynamics, pitch bend,
+    emitter trajectory and room change without semantic labels;
+  - `CONTROL_BASIS` uses the same fixed-point parameter-law operations and
+    adds no DSP opcode;
+  - the mechanism remains optional if full-RDO does not pay for the reference metadata.
 
-## R-012 — Статус трёх оставшихся направлений
+## R-012 — Status of the three remaining directions
 
-- Дата: 2026-07-26
-- Статус: **RESEARCH / HYPOTHESIS**
-- Решение:
-  - cached learned Basis synthesis рассматривается как optional способ кодирования
-    `BASIS_SET`, а не per-sample neural renderer; inclusion gate — не менее 5%
-    broad net bitrate reduction либо не менее 12% на заранее заявленном
-    существенном классе при bounded startup;
-  - motif macro MAY только детерминированно разворачивать уже существующие
-    atoms; отдельная musical VM запрещена; inclusion gate остаётся не менее 5%
-    на broad music после seek/checkpoint overhead;
-  - generative detail допускается только в `Perceptual` profile, не меняет
-    Truth state и не участвует в objective/lossless claims;
-  - ориентировочные выигрыши этих направлений нельзя складывать: они
-    перекрываются и конкурируют в одном полном RDO;
-  - таблицы в `08_RESEARCH_DIRECTIONS_AND_CODEC_TARGETS.md` являются
-    архитектурными прогнозами, не измеренными результатами.
+- Date: 2026-07-26
+- Status: **RESEARCH / HYPOTHESIS**
+- Solution:
+  - cached learned Basis synthesis is considered as an optional coding method
+    `BASIS_SET`, not per-sample neural renderer; inclusion gate - at least 5%
+    broad net bitrate reduction or at least 12% on the pre-declared
+    essential class with bounded startup;
+  - a motif macro MAY only deploy existing Atoms deterministically; a separate
+    musical VM is prohibited; the inclusion gate remains at least 5%
+    on broad music after seek/checkpoint overhead;
+  - generative detail is allowed only in the `Perceptual` profile, does not change
+    Truth state and does not participate in objective/lossless claims;
+  - the estimated gains of these directions cannot be added up: they
+    overlap and compete in one complete RDO;
+  - tables in `08_RESEARCH_DIRECTIONS_AND_CODEC_TARGETS.md` are
+    architectural predictions not measured by results.
 
-## R-013 — Контракт сравнения с лучшими audio anchors
+## R-013 – Comparison contract with the best audio anchors
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED / TARGET**
-- Решение:
-  - speech/realtime сравнивается отдельно с Opus, EVS и LC3plus;
-  - general/music streaming сравнивается отдельно с Opus и xHE-AAC/USAC;
-  - immersive сравнивается отдельно с IVAS и применимым MPEG-H/object anchor;
-  - lossless сравнивается с FLAC и применимым современным lossless anchor;
-  - frontier neural papers отчётны отдельной research table и не называются
-    production anchors до независимого воспроизведения;
-  - равенство качества определяется MUSHRA/ABX при одинаковых latency,
-    resilience, channel, random-access и complexity constraints;
-  - отрицательные и worst-decile результаты публикуются наряду со средним.
+- Date: 2026-07-26
+- Status: **ACCEPTED / TARGET**
+- Solution:
+  - speech/realtime is compared separately with Opus, EVS and LC3plus;
+  - general/music streaming is compared separately with Opus and xHE-AAC/USAC;- immersive is compared separately with IVAS and the applicable MPEG-H/object anchor;
+  - lossless is compared with FLAC and applicable modern lossless anchor;
+  - frontier neural papers are reported in a separate research table and are not named
+    production anchors before independent playback;
+  - equal quality is determined by MUSHRA/ABX with the same latency,
+    resilience, channel, random-access and complexity constraints;
+  - negative and worst-decile results are published along with the average.
 
-## R-014 — Cached Integer Basis Synthesis входит в Main-0
+## R-014 - Cached Integer Basis Synthesis included in Main-0
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED / NORMATIVE-DRAFT**
-- Решение владельца:
-  - cached learned Basis synthesis реализуется с первой версии, а не
-    откладывается как research extension;
-  - нормативное имя механизма —
+- Date: 2026-07-26
+- Status: **ACCEPTED / NORMATIVE-DRAFT**
+- Owner's decision:
+  - cached learned Basis synthesis is implemented from the first version, and not
+    deferred as research extension;
+  - normative name of the mechanism -
     **CIBS: Cached Integer Basis Synthesis**;
-  - `BASIS_SET` MUST поддерживать `CIBS_LATENT` наряду с objective raw/lifting
+  - `BASIS_SET` MUST support `CIBS_LATENT` along with objective raw/lifting
     fallback;
-  - fixed versioned integer synthesis graph запускается только при создании
-    Basis и выдаёт immutable cached `TIMBRE/FILTER/CONTROL_BASIS`;
-  - arbitrary graph, floating-point dependency, external mandatory model и
-    per-sample neural inference запрещены;
-  - optional adapter и objective basis correction входят в bitstream и полный
+  - fixed versioned integer synthesis graph runs only when created
+    Basis and produces immutable cached `TIMBRE/FILTER/CONTROL_BASIS`;
+  - arbitrary graph, floating-point dependency, external mandatory model and
+    per-sample neural inference is prohibited;
+  - optional adapter and objective basis correction are included in bitstream and full
     bitrate;
-  - synthesized Basis MUST иметь normative hash и bit-exact output;
-  - Main profile MUST реализовать базовый `CIBS-0`; Realtime profile MAY
-    ограничить создание новых bases startup/checkpoint intervals;
-  - R-012 переводится в **SUPERSEDED** только в части research-статуса CIBS;
-    motif macros и Generative Detail сохраняют прежние статусы.
+  - synthesized Basis MUST have normative hash and bit-exact output;
+  - Main profile MUST implement the basic `CIBS-0`; Realtime profile MAY
+    limit the creation of new bases startup/checkpoint intervals;
+  - R-012 is transferred to **SUPERSEDED** only in terms of CIBS research status;
+    motif macros and Generative Detail retain their previous statuses.
 
 ## R-015 — CIBS-first implementation order
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED**
-- Решение:
-  - первый periodic oracle сразу сравнивает три пути:
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Solution:
+  - the first periodic oracle immediately compares three paths:
     `LIFTING_ONLY`, `RAW_BASIS + residual`,
     `CIBS_LATENT + correction + residual`;
-  - reference integer synthesis kernel создаётся до training pipeline;
-  - training/export ненормативны, decoder kernel и model package проходят
-    отдельные bit-exact tests;
-  - первый CIBS model MAY быть слабым: architecture correctness отделяется от
-    последующего качества обучения.
+  - reference integer synthesis kernel is created before the training pipeline;
+  - training/export are non-standard, decoder kernel and model package pass
+    separate bit-exact tests;
+  - the first CIBS model MAY be weak: architecture correctness is separated from
+    subsequent quality of education.
 
-## R-016 — MAF-P0 end-to-end prototype
+## R-016 – MAF-P0 end-to-end prototype
 
-- Дата: 2026-07-26
-- Статус: **IMPLEMENTED / EXPERIMENTAL RESULT**
-- Реализовано:
+- Date: 2026-07-26
+- Status: **IMPLEMENTED / EXPERIMENTAL RESULT**
+- Implemented:
   - mono PCM16 WAV I/O;
-  - encoder-side period detection и periodic Basis extraction;
-  - Q32 phase renderer и Q15 block amplitude law;
-  - `RAW_BASIS` и `CIBS_LATENT + correction`;
+  - encoder-side period detection and periodic Basis extraction;
+  - Q32 phase renderer and Q15 block amplitude law;
+  - `RAW_BASIS` and `CIBS_LATENT + correction`;
   - quantized/exact objective residual;
   - self-checking compressed container;
-  - independent decoder, CLI и corruption tests.
-- Первый synthetic harmonic benchmark, 10 s / 48 kHz:
-  - raw-Basis lossless: 55,728 bytes против 960,000 bytes PCM;
-  - CIBS lossless: 55,971 bytes, то есть на одном Basis пока хуже raw на
+  - independent decoder, CLI and corruption tests.
+- First synthetic harmonic benchmark, 10 s / 48 kHz:- raw-Basis lossless: 55,728 bytes versus 960,000 bytes PCM;
+  - CIBS lossless: 55,971 bytes, that is, on Basis alone it’s still worse than raw on
     243 bytes;
   - CIBS lossy `basis_q=8`, `residual_q=16`: 11,333 bytes, SNR 66.13 dB,
     maximum absolute error 8;
-  - на bank из 128 unseen harmonic bases CIBS exact correction проиграла raw
-    Basis 4.15%, а CIBS q8 correction выиграла 30.02%;
-  - experimental model package: 3,654 bytes, отчётен отдельно.
-- Ограничение:
-  - это synthetic favourable class и сравнение с PCM/raw Basis, не с
+  - on bank of 128 unseen harmonic bases CIBS exact correction lost raw
+    Basis 4.15%, and CIBS q8 correction won 30.02%;
+  - experimental model package: 3,654 bytes, reported separately.
+- Limitation:
+  - this is a synthetic favorite class and comparison with PCM/raw Basis, not with
     Opus/xHE-AAC;
-  - zlib является временным entropy baseline;
-  - цифры не являются codec claim.
+  - zlib is a temporary entropy baseline;
+  - the numbers are not a codec claim.
 
-## R-017 — Имя Resonith утверждено окончательно
+## R-017 — Resonith name is finally approved
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED**
-- Решение владельца:
-  - окончательное продуктовое имя самостоятельного аудиокодека —
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Owner's decision:
+  - final product name of the stand-alone audio codec -
     **Resonith**;
-  - R-001 в части открытого статуса имени становится **SUPERSEDED**;
-  - архитектура сохраняет имя
-    **MAF — Memory-oriented Acoustic Field**;
-  - рекомендуемое имя публичного GitHub repository — `resonith`;
-  - trademark/FTO clearance остаётся отдельной юридической задачей и не
-    отменяет внутренний выбор имени.
+  - R-001 in terms of the open name status becomes **SUPERSEDED**;
+  - architecture retains name
+    **MAF—Memory-oriented Acoustic Field**;
+  - the recommended name for the public GitHub repository is `resonith`;
+  - trademark/FTO clearance remains a separate legal task and is not
+    cancels internal name selection.
 
-## R-018 — Имя связанного видеокодека изменено на SceneLith
+## R-018 - Linked video codec name changed to SceneLith
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED**
-- Решение владельца:
-  - standalone video codec окончательно называется **SceneLith Video**;
-  - бывшее имя QINTRA выведено из актуального брендинга;
-  - Resonith остаётся полностью самостоятельным аудиокодеком;
-  - специализированная совместная оптимизация по-прежнему определяется
-    отдельной спецификацией SceneLith AV Bridge.
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Owner's decision:
+  - standalone video codec is finally called **SceneLith Video**;
+  - the former QINTRA name has been removed from the current branding;
+  - Resonith remains a completely independent audio codec;
+  - specialized joint optimization is still defined
+    separate SceneLith AV Bridge specification.
 
-## R-019 — Публичный GitHub и безопасная автосинхронизация
+## R-019 - Public GitHub and secure auto-sync
 
-- Дата: 2026-07-26
-- Статус: **ACCEPTED**
-- Решение:
-  - рекомендуемое имя отдельного public repository — `resonith`;
-  - каждый явно созданный local commit автоматически отправляется в `origin`
-    repo-local hook-ом;
-  - hook никогда сам не выполняет `git add` и не создаёт commit;
-  - перед первым public push обязательны tests, secret/PII scan и проверка
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Solution:
+  - the recommended name for a separate public repository is `resonith`;
+  - every explicitly created local commit is automatically sent to `origin`
+    repo-local hook;
+  - hook itself never executes `git add` and does not create a commit;
+  - tests, secret/PII scan and verification are required before the first public push
     tracked files;
-  - CI запускает reference tests на каждом push и pull request.
+  - CI runs reference tests on every push and pull request.
 
-## R-020 — Публичный repository Resonith создан
+## R-020 — Public repository Resonith created
 
-- Дата: 2026-07-26
-- Статус: **IMPLEMENTED**
-- Результат:
+- Date: 2026-07-26
+- Status: **IMPLEMENTED**
+- Result:
   - public repository:
     `https://github.com/moshkinyevhen/resonith`;
   - default branch: `main`;
   - initial public commit: `68073e5`;
-  - CI запускает девять reference tests;
-  - repo-local `post-commit` auto-push включён и подлежит проверке этим
-    последующим commit.
+  - CI runs nine reference tests;
+  - repo-local `post-commit` auto-push is enabled and subject to verification by this
+    subsequent commit.
+
+## R-021 — English is the sole public repository language
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTED**
+- Decision:
+  - all public specifications, documentation, code comments, commit messages,
+    issue and pull-request templates, and GitHub metadata use English;
+  - conversation with the project owner may use another language, but the
+    repository is the international canonical record;
+  - historical material in another language remains outside the public
+    repository or receives a complete English record;
+  - the existing public working tree is migrated to English without rewriting
+    published Git history.
+
+## R-022 — Native Golden Core and cross-platform runtime
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / ENGINEERING DECISION**
+- Decision:
+  - Resonith uses a restricted, dependency-free C++20 Golden Core behind a
+    stable versioned C ABI;
+  - Python/PyTorch remain the research encoder, RDO, CIBS training, and corpus
+    environment;
+  - optional C++/CUDA kernels accelerate Studio/Foundry encoding but are never
+    a format dependency;
+  - Rust owns untrusted package/network parsing, streaming, scheduling,
+    capability negotiation, and player services, and later supplies an
+    independent decoder;
+  - the mandatory scalar Core and exactly equivalent x86, ARM, WASM, and
+    vendor-DSP paths target Windows, Linux, macOS, iOS, Android, browsers,
+    embedded systems, and future ASICs;
+  - no allocation, I/O, logging, blocking lock, or lazy model loading is
+    permitted in the audio render callback;
+  - cross-compiler conformance hashes, sanitizers, fuzzing, static analysis,
+    reproducible builds, ABI tests, and real-time deadline tests are release
+    gates.
+- Canonical engineering document:
+  `11_IMPLEMENTATION_LANGUAGE.md`.

@@ -1,32 +1,32 @@
-# Оставшиеся направления и прогноз против audio anchors
+# Remaining directions and forecast against audio anchors
 
-Дата: 2026-07-26  
-Статус всех процентов: **HYPOTHESIS / TARGET**, не измеренный результат.
+Date: 2026-07-26
+Status of all percentages: **HYPOTHESIS / TARGET**, unmeasured result.
 
-## 1. Как читать проценты
+## 1. How to read percentages
 
 \[
 Saving=\frac{R_{\mathrm{anchor}}-R_{\mathrm{MAF}}}
 {R_{\mathrm{anchor}}}.
 \]
 
-Сравнение допустимо только при:
+Comparison is only valid if:
 
-- одинаковом исходнике и channel layout;
+- the same source code and channel layout;
 - matched MUSHRA/ABX quality;
-- одинаковой algorithmic latency;
-- одинаковых packet-loss, random-access и checkpoint constraints;
-- полном учёте basis, model, macro, index, FEC и startup bits;
-- отдельном результате против каждого anchor.
+- same algorithmic latency;
+- identical packet-loss, random-access and checkpoint constraints;
+- full accounting of basis, model, macro, index, FEC and startup bits;
+- a separate result against each anchor.
 
-Диапазоны ниже — paper forecast архитектуры. Они нужны для выбора
-экспериментов и не являются заявлением о достигнутом качестве.
+The ranges below are paper forecast architectures. They are needed for selection
+experiments and do not constitute a statement of achieved quality.
 
-## 2. Cached learned Basis synthesis — **ACCEPTED как CIBS**
+## 2. Cached learned Basis synthesis - **ACCEPTED as CIBS**
 
-### Механизм
+### Mechanism
 
-Вместо прямой передачи всех samples `TIMBRE_BASIS` encoder передаёт:
+Instead of directly transmitting all samples, `TIMBRE_BASIS` encoder transmits:
 
 ```text
 quantized latent
@@ -34,46 +34,46 @@ quantized latent
 + exact/quantized basis correction
 ```
 
-Один fixed versioned integer synthesizer запускается только на `BASIS_SET`,
-строит immutable basis и кэширует её. Hot sample loop остаётся table lookup,
-filter и mix.
+One fixed versioned integer synthesizer runs only on `BASIS_SET`,
+builds an immutable basis and caches it. Hot sample loop remains table lookup,
+filter and mix.
 
-### Потенциальный выигрыш
+### Potential gains
 
-| Сценарий | Дополнительная экономия поверх MAF Core |
+| Script | Additional savings on top of MAF Core |
 |---|---:|
 | Broad general audio | 2–8% |
-| Длинный solo/chamber, устойчивый источник | 8–18% |
-| Повторяющиеся тембры/electronic stems | 5–15% |
-| Короткие clips | 0–3% |
-| Шум, applause, dense stochastic mix | 0–2%; возможен проигрыш |
+| Long solo/chamber, sustainable source | 8–18% |
+| Repeating timbres/electronic stems | 5–15% |
+| Short clips | 0–3% |
+| Noise, applause, dense stochastic mix | 0–2%; possible loss |
 
-Это не экономия всего waveform. Механизм сжимает только долю потока,
-занятую Basis. Когда basis уже хорошо амортизирована на длинном track, эффект
-на total bitrate быстро уменьшается.
+This is not saving the entire waveform. The mechanism compresses only a fraction of the flow,
+occupied Basis. When the basis is already well cushioned on a long track, the effect
+the total bitrate decreases quickly.
 
-### Недостатки
+### Disadvantages
 
-- фиксированный synthesis model стареет вместе со стандартом;
-- требуется bit-exact integer inference и conformance на всех устройствах;
-- startup latency, RAM и silicon area;
-- out-of-distribution тембр возвращает большую basis correction;
-- weights и adapters обязательно входят в bitrate/IP analysis;
-- новый model version дробит decoder ecosystem.
+- fixed synthesis model ages along with the standard;
+- bit-exact integer inference and conformance are required on all devices;
+- startup latency, RAM and silicon area;
+- out-of-distribution timbre returns a large basis correction;
+- weights and adapters are necessarily included in bitrate/IP analysis;
+- the new model version splits the decoder ecosystem.
 
-### Решение
+### Solution
 
-Решением R-014 механизм включён в Main-0 под именем
-**CIBS — Cached Integer Basis Synthesis**. Он является coding mode для
-`BASIS_SET`, а не neural rendering каждого sample. Процентные gates теперь
-определяют не наличие syntax, а принятие конкретной CIBS model версии.
+By decision R-014 the mechanism is included in Main-0 under the name
+**CIBS - Cached Integer Basis Synthesis**. It is coding mode for
+`BASIS_SET`, and not neural rendering of each sample. Interest gates now
+determine not the presence of syntax, but the adoption of a specific CIBS model version.
 
 ## 3. Motif macros / Acoustic Programs
 
-### Механизм
+### Mechanism
 
-Macro хранит не готовый waveform, а recipe повторного создания уже
-существующих atoms:
+Macro does not store the finished waveform, but the recipe for re-creating it already
+existing atoms:
 
 ```text
 PROGRAM_INSTANCE(
@@ -86,135 +86,132 @@ PROGRAM_INSTANCE(
 )
 ```
 
-Ostinato, drum pattern, accompaniment, chorus или game cue передаются один
-раз. Decoder либо parser детерминированно разворачивает macro в обычные
-`ATOM_SET/END`; новых DSP-операций не появляется.
+Ostinato, drum pattern, accompaniment, chorus or game cue are transmitted one
+times. Decoder or parser deterministically expands macro into regular
+`ATOM_SET/END`; no new DSP operations appear.
 
-### Потенциальный выигрыш
+### Potential gains
 
-| Сценарий | Дополнительная экономия поверх MAF Core |
-|---|---:|
-| Broad music | 1–5% |
-| Классика с повторяющимися motifs | 2–8% |
+| Script | Additional savings on top of MAF Core |
+|---|---:|| Broad music | 1–5% |
+| Classics with repeating motifs | 2–8% |
 | Pop/electronic/loop-based | 5–20% |
-| Game stems, library cues, почти symbolic production | 15–35% |
-| Речь, ambience, crowd/noise | около 0% |
+| Game stems, library cues, almost symbolic production | 15–35% |
+| Speech, ambience, crowd/noise | about 0% |
 
-MAF уже переиспользует timbre и Control Basis, поэтому macro экономит только
-оставшиеся group events, coefficients и repeated innovation patterns. Проценты
-нельзя прибавлять к выигрышу Basis synthesis.
+MAF already reuses timbre and Control Basis, so macro only saves
+the remaining group events, coefficients and repeated innovation patterns. Interest
+Basis-synthesis gains cannot be added independently.
 
-### Недостатки
+### Disadvantages
 
-- живое исполнение почти никогда не повторяется sample-exact;
-- microtiming, articulation и mix variation требуют overrides/Innovation;
-- macro усложняет seek, editing, packet recovery и dependency graph;
-- неограниченный recipe language превращается в musical VM;
-- ошибки program lifetime способны повредить длинный интервал;
-- на broad audio служебные IDs могут стоить больше сэкономленных events.
+- live performance is almost never repeated sample-exact;
+- microtiming, articulation and mix variation require overrides/Innovation;
+- macro complicates seeking, editing, packet recovery and dependency graph;
+- unlimited recipe language turns into musical VM;
+- program lifetime errors can damage a long interval;
+- on broad audio, service IDs may cost more than saved events.
 
-### Решение
+### Solution
 
-Не запрещать, но держать вне Main-0. Допустим только bounded declarative macro,
-который разворачивается в существующие atoms. Никаких циклов, ветвлений и
-исполняемого score language.
+Do not prohibit, but keep outside Main-0. Only bounded declarative macro is allowed,
+which expands into existing atoms. No loops, branches or
+executable score language.
 
 ## 4. Generative Detail
 
-### Механизм
+### Mechanism
 
-Низкобитрейтная conditioning track управляет neural vocoder/generator,
-восстанавливающим:
+Low bitrate conditioning track controls neural vocoder/generator,
+restorative:
 
-- breath/noise и ambience;
+- breath/noise and ambience;
 - high-frequency texture;
 - reverb microdetail;
 - speech excitation;
-- часть музыкального timbre.
+- part of the musical timbre.
 
-### Потенциальный выигрыш
+### Potential gains
 
-| Сценарий | Дополнительная perceptual-экономия |
+| Script | Additional perceptual savings |
 |---|---:|
-| Speech при экстремально низком bitrate | 40–80% |
+| Speech at extremely low bitrate | 40–80% |
 | Ambience/noise/foley | 30–70% |
 | General music | 20–45% |
-| Dense music с важной timbre identity | 10–35% |
-| Objective/lossless reconstruction | 0% допустимого выигрыша |
+| Dense music with important timbre identity | 10–35% |
+| Objective/lossless reconstruction | 0% gain allowance |
 
-Здесь `matched quality` означает субъективную похожесть/полезность, а не ту же
-waveform truth. Современные neural papers показывают, что очень низкие rates
-возможны, но используют иные модели, corpora и quality contracts; их нельзя
-непосредственно считать победой над transparent waveform codecs.
+Here `matched quality` means subjective similarity/usefulness, not same
+waveform truth. Modern neural papers show very low rates
+possible, but use different models, corpora and quality contracts; they are not allowed
+directly considered a victory over transparent waveform codecs.
 
-### Недостатки
+### Disadvantages
 
-- возможны hallucination и изменение голоса/инструмента;
-- неизвестный язык, жанр, тембр или шум могут разрушить качество;
-- тяжёлый decoder, model storage, energy и startup;
-- model licensing, обновление и долговременная декодируемость;
-- generative output не может быть lossless или objective reference;
-- MUSHRA может скрыть редкие, но критические semantic errors.
+- hallucination and voice/instrument changes are possible;
+- unknown language, genre, timbre or noise can destroy the quality;
+- heavy decoder, model storage, energy and startup;
+- model licensing, updating and long-term decodability;
+- generative output cannot be lossless or objective reference;
+- MUSHRA can hide rare but critical semantic errors.
 
-### Решение
+### Solution
 
-Generative Detail полезен и будет исследоваться, но только как discardable
-`Perceptual` layer. Он никогда не меняет Core state и никогда не используется
-в headline Truth-compression percentages.
+Generative Detail is useful and will be explored, but only as discardable
+`Perceptual` layer. It never changes Core state and is never used
+in headline Truth-compression percentages.
 
-## 5. Полный прогноз MAF против лучших стандартизованных anchors
+## 5. Full MAF forecast vs. best standardized anchorsPercentages include accepted MAF Core. Cached synthesis and motifs are taken into account
+only on appropriate lines and are not summed separately.
 
-Проценты включают принятый MAF Core. Cached synthesis и motifs учитываются
-только в подходящих строках и не суммируются отдельно.
-
-| Сценарий | Основной сильный anchor | Против Opus | Против сильнейшего указанного standard anchor |
+| Script | Basic strong anchor | Against Opus | Against the strongest specified standard anchor |
 |---|---|---:|---:|
-| Realtime speech, mono | Opus / EVS | 15–35% | 5–20% против EVS |
-| Clean speech/podcast, offline | Opus / xHE-AAC / EVS | 25–50% | 10–30% против лучшего xHE-AAC/EVS |
-| General mixed stereo | Opus / xHE-AAC | 20–35% | 10–25% против xHE-AAC |
-| Dense pop/rock | Opus / xHE-AAC | 15–30% | 5–20% против xHE-AAC |
-| Solo/chamber classical | Opus / xHE-AAC | 35–55% | 20–40% против xHE-AAC |
-| Orchestra/choir/reverberant classical | Opus / xHE-AAC | 25–45% | 15–30% против xHE-AAC |
-| Loop-based electronic/game stems | Opus / xHE-AAC | 35–60% | 20–45% против xHE-AAC |
-| Objective ambience/rain/crowd | Opus / xHE-AAC | 0–20% | от −5% до +10% против xHE-AAC |
-| Immersive persistent emitters/room | Opus multistream / IVAS / MPEG-H | 20–40% | 5–20% против IVAS/MPEG-H |
-| Lossless PCM | FLAC | неприменимо | 0–15% против FLAC |
+| Realtime speech, mono | Opus/EVS | 15–35% | 5–20% vs EVS |
+| Clean speech/podcast, offline | Opus/xHE-AAC/EVS | 25–50% | 10–30% vs. best xHE-AAC/EVS |
+| General mixed stereo | Opus/xHE-AAC | 20–35% | 10–25% vs. xHE-AAC |
+| Dense pop/rock | Opus/xHE-AAC | 15–30% | 5–20% vs. xHE-AAC |
+| Solo/chamber classical | Opus/xHE-AAC | 35–55% | 20–40% vs. xHE-AAC |
+| Orchestra/choir/reverberant classical | Opus/xHE-AAC | 25–45% | 15–30% vs. xHE-AAC |
+| Loop-based electronic/game stems | Opus/xHE-AAC | 35–60% | 20–45% vs. xHE-AAC |
+| objective ambience/rain/crowd | Opus/xHE-AAC | 0–20% | −5% to +10% vs. xHE-AAC |
+| Immersive persistent emitters/room | Opus multistream / IVAS / MPEG-H | 20–40% | 5–20% vs IVAS/MPEG-H |
+| Lossless PCM | FLAC | not applicable | 0-15% vs FLAC |
 
-Минус в строке ambience означает, что MAF MAY потребовать больше битов. Это
-важный hostile class, который нельзя прятать средним результатом.
+A minus in the ambience line means that MAF MAY will require more bits. This
+an important hostile class that cannot be hidden by the average result.
 
-## 6. Frontier neural codecs — отдельная лига
+## 6. Frontier neural codecs - a separate league
 
-В 2025–2026 появились research codecs с очень низкими заявленными rates:
+In 2025–2026, research codecs appeared with very low declared rates:
 
-- FocalCodec сообщает speech tokens 0.16–0.65 kbit/s;
-- LDCodec сообщает преимущество 6 kbit/s над Opus 12 kbit/s в тестах авторов;
-- TQCodec исследует high-fidelity music 32–128 kbit/s;
-- другие universal neural codecs оптимизируются также для generation/token
-  usefulness, а не только waveform transparency.
+- FocalCodec reports speech tokens 0.16–0.65 kbit/s;
+- LDCodec reports an advantage of 6 kbit/s over Opus 12 kbit/s in the authors' tests;
+- TQCodec explores high-fidelity music 32–128 kbit/s;
+- other universal neural codecs are also optimized for generation/token
+  usefulness, not just waveform transparency.
 
-Прямой процент MAF против них сейчас был бы выдумкой: отличаются corpora,
-latency, model size, packet loss, stereo, metrics и definition of quality.
+A direct MAF percentage against them would now be fiction: corpora are different,
+latency, model size, packet loss, stereo, metrics and definition of quality.
 
-Правильные цели:
+Correct goals:
 
-- **TARGET:** MAF Core превосходит стандартизованные anchors при существенно
-  меньшем decoder и лучшей долговременной state semantics;
-- **TARGET:** против frontier neural codec достигается comparable MUSHRA при
-  меньшем model/state/energy либо более высокой objective fidelity;
-- ultra-low generative режим сравнивается только как отдельный Perceptual
+- **TARGET:** MAF Core outperforms standardized anchors by significantly
+  smaller decoder and better long-term state semantics;
+- **TARGET:** against frontier neural codec a comparable MUSHRA is achieved with
+  lower model/state/energy or higher objective fidelity;
+- ultra-low generative mode is compared only as a separate Perceptual
   profile.
 
-## 7. Мой приоритет
+## 7. My priority
 
-1. Реализовать `TIMBRE_BASIS` oracle и CIBS integer kernel одновременно.
-2. Сравнить `LIFTING_ONLY`, `RAW_BASIS` и `CIBS_LATENT` полными bitstreams.
-3. Измерить долю total bitrate, реально занятую Basis: если она занимает 5%
-   потока, даже идеальное её сжатие не даст революции.
-4. Добавить motif macro после появления стабильных multi-atom tracks.
-5. Generative layer разрабатывать параллельно, но никогда не смешивать с
+1. Implement `TIMBRE_BASIS` oracle and CIBS integer kernel simultaneously.
+2. Compare `LIFTING_ONLY`, `RAW_BASIS` and `CIBS_LATENT` with full bitstreams.
+3. Measure the share of total bitrate occupied by Basis payloads. If they use
+   only 5% of the stream, even ideal Basis compression cannot be revolutionary.
+4. Add a motif macro after stable multi-atom tracks appear.
+5. Develop the generative layer in parallel, but never mix it with
    Truth benchmarks.
 
-Это сохраняет максимальный потенциальный выигрыш. Решение R-014 принимает
-малый bounded CIBS kernel заранее; эксперимент выбирает конкретную model и
-доказывает её реальную ценность.
+This preserves the maximum potential gain. Decision R-014 includes the small
+bounded CIBS kernel in advance; the experiment selects a specific model and
+measures its actual value.

@@ -1,30 +1,30 @@
-# CIBS — Cached Integer Basis Synthesis
+# CIBS - Cached Integer Basis Synthesis
 
-Дата: 2026-07-26  
-Статус semantic contract: **ACCEPTED**  
+Date: 2026-07-26
+Semantic contract status: **ACCEPTED**
 Exact graph/weights/precisions: **NORMATIVE-DRAFT**
 
-## 1. Назначение
+## 1. Purpose
 
-CIBS уменьшает стоимость immutable acoustic Basis. Encoder передаёт
-quantized latent и optional small adapter; fixed integer graph один раз
-синтезирует Basis, после чего обычный MAF renderer многократно её использует.
+CIBS reduces the cost of immutable acoustic Basis. Encoder transmits
+quantized latent and optional small adapter; fixed integer graph once
+synthesizes Basis, after which a regular MAF renderer reuses it.
 
 \[
 B^\star =
 \operatorname{Clip}_{16}\left(
 \operatorname{Synth}_{m}^{int}(z,A)
-+LIFT^{-1}(q_c)
++ LIFT^{-1}(q_c)
 \right).
 \]
 
-CIBS сжимает representation, а не генерирует output audio. Objective
-correction \(q_c\) и universal waveform Innovation остаются обязательными
+CIBS compresses the representation rather than generating output audio. Objective
+correction \(q_c\) and universal waveform Innovation remain mandatory
 fallbacks.
 
 ## 2. `CIBS_LATENT` payload
 
-Логические fields:
+Logical fields:
 
 ```text
 synth_model_id
@@ -40,12 +40,12 @@ correction_payload
 expected_basis_hash
 ```
 
-Все payload bits учитываются в bitrate. `expected_basis_hash` вычисляется
-после correction и до commit в Basis Bank.
+All payload bits are counted in the bitrate. `expected_basis_hash` is calculated
+after correction and before commit in Basis Bank.
 
 ### 2.1 CIBS-0 Basis hash
 
-Первый исполнимый contract использует SHA-256 над:
+The first executable contract uses SHA-256 over:
 
 ```text
 u8 model_id_utf8_length
@@ -55,28 +55,28 @@ model_id_utf8
 int16le basis_samples[channel-major]
 ```
 
-`model_id` не превышает 255 UTF-8 bytes. Hash не заменяет transport integrity;
-он доказывает, что normative materialization дала ожидаемый Basis.
+`model_id` does not exceed 255 UTF-8 bytes. Hash does not replace transport integrity;
+it proves that normative materialization gave the expected Basis.
 
 ## 3. Normative decoding
 
-1. Проверить model ID, target shape и level limits.
-2. Entropy-decode latent, adapter и correction в staging.
-3. Выполнить fixed integer `Synth_model_id`.
-4. Применить normative inverse-lifting correction.
-5. Saturate в target Basis precision.
-6. Вычислить normative Basis hash.
-7. При совпадении hash атомарно commit-ить immutable Basis.
-8. При несовпадении не менять state и ждать objective recovery/reset.
+1. Check model ID, target shape and level limits.
+2. Entropy-decode latent, adapter and correction in staging.
+3. Execute fixed integer `Synth_model_id`.
+4. Apply normative inverse-lifting correction.
+5. Saturate in target Basis precision.
+6. Calculate normative Basis hash.
+7. If the hash matches, atomically commit immutable Basis.
+8. If there is a discrepancy, do not change the state and wait for objective recovery/reset.
 
-Atoms не имеют доступа к latent, intermediate activations или adapter после
-commit. Они видят только готовый Basis.
+Atoms do not have access to latent, intermediate activations or adapter after
+commit. They only see the finished Basis.
 
 ## 4. Integer graph envelope
 
-Разрешены только:
+Only allowed:
 
-- int8/int16 constants и latents;
+- int8/int16 constants and latents;
 - profile-defined int32/int64 accumulators;
 - fixed matrix/1D convolution;
 - dyadic upsample;
@@ -87,19 +87,19 @@ commit. Они видят только готовый Basis.
 - bounded low-rank adapter;
 - inverse integer lifting correction.
 
-Запрещены:
+Prohibited:
 
-- произвольный graph из bitstream;
+- arbitrary graph from bitstream;
 - floating point;
 - dynamic loop/recursion;
-- attention с data-dependent unbounded memory;
+- attention with data-dependent unbounded memory;
 - external/downloaded model;
 - device-specific approximate math;
 - per-sample CIBS execution.
 
 ## 5. Versioning
 
-`synth_model_id` однозначно определяет:
+`synth_model_id` uniquely defines:
 
 - graph topology;
 - normative weights/biases;
@@ -107,28 +107,26 @@ commit. Они видят только готовый Basis.
 - quantization scales;
 - rounding/saturation;
 - output Basis schema;
-- maximum operations и scratch memory.
+- maximum operations and scratch memory.
 
-Main-0 decoder MUST поддерживать `CIBS-0`. Новая модель требует новой
-capability/version entry; bitstream не может незаметно заменить weights.
+Main-0 decoder MUST support `CIBS-0`. A new model requires a new one
+capability/version entry; bitstream cannot silently replace weights.
 
 ## 6. Adapter
 
-Adapter MAY задавать только profile-bounded low-rank delta:
+Adapter MAY set only profile-bounded low-rank delta:
 
 \[
 W'=W+UV^\top.
-\]
+\]Rank, matrices, scale and target layers are limited by level. Adapter:
 
-Rank, matrices, scale и target layers ограничены level. Adapter:
+- included in bitrate;
+- valid only during one `BASIS_SET`;
+- does not change the global model;
+- destroyed after materialization Basis;
+- cannot change graph topology.
 
-- входит в bitrate;
-- действует только во время одного `BASIS_SET`;
-- не меняет глобальную model;
-- уничтожается после materialization Basis;
-- не может изменить graph topology.
-
-## 7. Correction и exactness
+## 7. Correction and exactness
 
 `correction_mode`:
 
@@ -136,21 +134,21 @@ Rank, matrices, scale и target layers ограничены level. Adapter:
 - `LOSSY_LIFTING`;
 - `EXACT_LIFTING`.
 
-`EXACT_LIFTING` MUST позволять bit-exact target Basis. Даже exact Basis не
-обеспечивает lossless waveform без обычной waveform Innovation.
+`EXACT_LIFTING` MUST allow bit-exact target Basis. Even exact Basis is not
+provides lossless waveform without conventional waveform Innovation.
 
-RDO выбирает CIBS только если:
+RDO selects CIBS only if:
 
 \[
 R_z+R_A+R_c+R_{events}
 <
 R_{\mathrm{raw/lifted\ basis}}
-+\Delta R_{\mathrm{waveform\ residual}}.
++ \Delta R_{\mathrm{waveform\ residual}}.
 \]
 
 ## 8. Resource envelope
 
-Каждый level задаёт:
+Each level specifies:
 
 - maximum models;
 - model ROM bytes;
@@ -163,53 +161,53 @@ R_{\mathrm{raw/lifted\ basis}}
 - CIBS creations/time interval;
 - startup/checkpoint CIBS budget.
 
-Первый experimental target, не нормативный final:
+The first experimental target, not normative final:
 
-| Параметр | **TARGET** |
+| Parameter | **TARGET** |
 |---|---:|
-| Model ROM | не более 256 KiB |
+| Model ROM | no more than 256 KiB |
 | Latent | 32–128 int8 elements |
 | Output | 1–8 basis channels, 256–2048 int16 samples/channel |
-| Graph depth | не более 4 synthesis stages |
-| Kernel width | не более 7 |
+| Graph depth | no more than 4 synthesis stages |
+| Kernel width | no more than 7 |
 | Compute | 0.25–2 M integer MAC/Basis |
-| Adapter | rank не более 4 |
+| adapter | rank no more than 4 |
 
 ## 9. Random access
 
-Checkpoint MUST либо:
+Checkpoint MUST either:
 
-- повторить self-contained CIBS payload и materialize Basis; либо
-- содержать objective materialized Basis payload.
+- repeat self-contained CIBS payload and materialize Basis; or
+- contain objective materialized Basis payload.
 
-Reference decoder не обязан сохранять CIBS activations между checkpoints.
-Realtime profile MAY запрещать CIBS creation между разрешёнными setup
+The Reference decoder is not required to save CIBS activations between checkpoints.
+Realtime profile MAY prohibit CIBS creation between allowed setup
 boundaries.
 
-## 10. Training и export
+## 10. Training and export
 
-Training pipeline ненормативен и MAY использовать float, GPUs, large teachers
-и arbitrary losses. Export обязан:
+Training pipeline is non-standard and MAY use float, GPUs, large teachers
+and arbitrary losses. Export is obliged:
 
 1. quantize graph;
-2. выполнить range analysis;
-3. подтвердить integer kernel;
-4. сгенерировать model hash;
-5. пройти cross-platform bit-exact vectors;
-6. измерить full bit cost с corrections.
+2. perform range analysis;
+3. confirm integer kernel;
+4. generate model hash;
+5. go through cross-platform bit-exact vectors;
+6. Measure full bit cost with corrections.
 
-Качество training можно улучшать без изменения bitstream только пока
-normative `CIBS-0` weights не заморожены. После freeze новые weights получают
-новый model ID.
+The quality of training can be improved without changing the bitstream only for now
+normative `CIBS-0` weights are not frozen. After freeze new weights are obtained
+new model ID.
 
-## 11. Kill conditions конкретной модели
+## 11. Kill conditions of a specific model
 
-Syntax CIBS остаётся, но конкретная model версия отклоняется, если:
+Syntax CIBS remains, but a specific model version is rejected if:
 
-- broad net gain меньше 5%;
-- заранее заявленный specialised gain меньше 12%;
-- correction систематически возвращает более 70% raw Basis bits;
-- CIBS повышает waveform residual сильнее, чем экономит Basis;
-- model не даёт bit-exact output;
-- startup/ROM/scratch превышают level;
-- OOD worst decile существенно хуже raw/lifting Basis.
+- broad net gain less than 5%;
+- pre-declared specialized gain is less than 12%;
+- correction systematically returns more than 70% of raw Basis bits;
+- CIBS increases waveform residual more than Basis saves;
+- model does not provide bit-exact output;
+- startup/ROM/scratch exceed level;
+- OOD worst decile is significantly worse than raw/lifting Basis.

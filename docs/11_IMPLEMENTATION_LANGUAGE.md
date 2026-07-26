@@ -1,0 +1,248 @@
+# Implementation Language and Runtime Architecture
+
+Status: **ENGINEERING DECISION**
+Date: 2026-07-26
+
+## 1. Decision
+
+Resonith uses a deliberately split implementation stack:
+
+1. **Portable C++20** for the bit-exact Golden Core, reference decoder,
+   real-time renderer, entropy layer, state machine, and production DSP.
+2. **A stable C ABI** around the decoder and conformance surface.
+3. **Python 3.12+** for research encoders, oracle search, corpus tooling,
+   visualization, training, and experiment orchestration.
+4. **PyTorch** for non-normative teacher models and CIBS training/export.
+5. **CUDA C++** for optional Foundry/Studio encoder kernels. CUDA is never a
+   conformance dependency.
+6. **Rust** for untrusted package parsing, streaming/network orchestration,
+   capability negotiation, player runtime services, and an independent
+   decoder once the native P0 semantics stabilize.
+
+This is not a compromise between two equivalent choices. Python and C++ solve
+different parts of the codec.
+
+## 2. Why the current Python prototype is correct
+
+MAF-P0 is an experimental oracle. Python minimizes the cost of changing:
+
+- basis extraction;
+- period and pitch search;
+- RDO candidate generation;
+- CIBS training/export;
+- benchmark accounting;
+- plots and corpus analysis.
+
+Rewriting these components in C++ before the representation is stable would
+slow research without improving the bitstream.
+
+Python must not, however, become the only definition of decoding behavior.
+Interpreter overhead, the GIL, dependency weight, mobile/embedded deployment,
+real-time scheduling, SIMD control, and reproducible integer semantics make a
+Python-only production decoder the wrong foundation for a hardware-targeted
+standard.
+
+## 3. Why the Golden Core is C++20 rather than Python
+
+The normative path needs:
+
+- exact-width integer arithmetic;
+- explicit saturation, rounding, and overflow rules;
+- bounded memory with no allocation on the audio thread;
+- deterministic event ordering;
+- portable SIMD and straightforward C/C++ compiler support;
+- Android, iOS, desktop, browser/WASM, DSP, and embedded integration;
+- direct reuse of kernels in CUDA and hardware-model code;
+- sanitizers, fuzzers, coverage, and conformance-vector tooling.
+
+C++20 adds stronger types, RAII, `constexpr` tables, templates for checked
+fixed-point arithmetic, and safer ownership than a large C codebase while
+retaining the deployment ecosystem required by codec and chip vendors.
+
+The public boundary remains C-compatible so that browsers, operating systems,
+game engines, FFmpeg-like frameworks, Rust, Swift, Java/Kotlin, and hardware
+test benches do not depend on a C++ ABI.
+
+## 4. Why not pure C or pure Rust
+
+### Pure C
+
+C remains an excellent portability baseline, and major deployed codecs prove
+it. For Resonith, however, persistent atom state, immutable Basis objects,
+multiple bounded payload schemas, checked fixed-point types, and CUDA sharing
+make a carefully restricted C++20 core more maintainable.
+
+A small C99 conformance decoder MAY be added later, but maintaining it before
+the syntax stabilizes would duplicate effort.
+
+### Pure Rust
+
+Rust is attractive for parser safety and an independent decoder. It is not the
+first implementation because the audio/DSP, codec-standardization, CUDA,
+embedded, and vendor-integration ecosystems still center on C/C++ interfaces.
+Starting with Rust would not remove the need for a C ABI or C++/CUDA kernels.
+
+Rust becomes valuable immediately around the C ABI as the safe host for
+untrusted files and networks. The fully independent Rust decoder follows once
+bitstream semantics are stable enough to avoid implementing two moving
+targets.
+
+## 5. Normative C++ restrictions
+
+The Truth Core MUST follow a stricter subset than general application C++:
+
+- no undefined signed overflow;
+- no implementation-dependent right shift in normative arithmetic;
+- no `-ffast-math` or equivalent in Truth code;
+- no floating-point normative state;
+- no exceptions, RTTI, blocking locks, I/O, or heap allocation in the
+  sample-render loop;
+- no unordered iteration affecting output;
+- all shifts, division, rounding, clipping, and saturation defined by helper
+  primitives with exhaustive boundary tests;
+- explicit upper bounds for every container, loop, recursion depth, and
+  payload;
+- little-endian bitstream reads implemented independently of host endianness;
+- sanitizers and fuzzing in CI;
+- identical conformance hashes across MSVC, Clang, GCC, x86-64, ARM64, and
+  WASM.
+
+The specification, not C++ source code, remains normative. The Golden Core is
+the executable reference used to expose ambiguity.
+
+## 6. Repository layout target
+
+```text
+spec/                   language-independent bitstream and decoder semantics
+reference/cpp/          portable C++20 Golden Core
+include/resonith/       stable public C API
+bindings/python/        thin bindings to the exact C++ Core
+research/python/        oracle encoder, RDO, training, and experiments
+kernels/cuda/           optional non-normative encoder acceleration
+tests/conformance/      golden vectors and cross-compiler hashes
+tests/fuzz/             parser/state-machine fuzz targets
+```
+
+Python experiments MUST call the C++ decoder through the binding for final
+decoder-in-the-loop RDO. A separate Python renderer MAY remain only as an
+independent oracle and must never silently define the bitstream.
+
+## 7. Migration order
+
+1. Keep MAF-P0 Python operational as the research oracle.
+2. Freeze the smallest P0 container and arithmetic subset needed for parity.
+3. Implement C++20 container parsing, CIBS materialization, phase rendering,
+   block-gain law, residual reconstruction, and WAV-independent sample API.
+4. Generate shared golden vectors and require byte/sample equality.
+5. Bind the C++ Core into Python.
+6. Move only measured encoder bottlenecks to C++/SIMD/CUDA.
+7. Add a Rust independent decoder after Main-0 semantics stabilize.
+
+The first C++ parity target is deliberately small. It must not trigger a
+rewrite of the research encoder.
+
+## 8. Player and cross-platform runtime
+
+The codec library and the player are separate layers:
+
+```text
+native UI / service integration
+        |
+Rust player runtime and secure stream/package parser
+        |
+stable versioned C ABI
+        |
+C++20 Resonith Golden Core
+        |
+platform audio and compute adapters
+```
+
+The Core MUST NOT depend on a window system, audio API, filesystem, network
+stack, UI toolkit, Python runtime, GPU API, or operating system.
+
+Platform adapters target:
+
+| Platform | Audio/output | Compute and presentation |
+|---|---|---|
+| Windows | WASAPI | D3D12, Vulkan |
+| macOS/iOS | CoreAudio / AudioUnit | Metal |
+| Android | AAudio / Oboe adapter | Vulkan |
+| Linux | PipeWire/ALSA adapters | Vulkan |
+| Browser | AudioWorklet | WASM SIMD, WebGPU |
+| Embedded/DSP | callback/ring-buffer C ABI | scalar, vendor SIMD, DMA |
+
+The desktop and mobile UI may use native UI, Qt/QML, or Flutter, but the
+choice is non-normative and lives above the Rust/C ABI boundary. No UI
+framework may enter the decoder dependency graph.
+
+For SceneLith/Resonith synchronized playback, the player runtime may share the
+master timeline and entity metadata through SceneLith AV Bridge. Each codec
+still exposes an independently usable library.
+
+## 9. Real-time and portability contract
+
+The render callback MUST:
+
+- perform no heap allocation, file/network I/O, logging, blocking lock, or
+  lazy model loading;
+- consume prevalidated immutable state through bounded queues;
+- use fixed maximum scratch memory supplied by the host;
+- expose exact worst-case work and state limits for every profile/level;
+- support planar and interleaved integer/float host output without changing
+  normative internal samples;
+- tolerate arbitrary host callback sizes without changing decoded output;
+- support zero-copy input slices and output spans where alignment permits.
+
+The portable scalar path is mandatory. SIMD is an exactly equivalent
+acceleration layer with runtime dispatch:
+
+- x86-64 SSE4.1/AVX2 and optional AVX-512;
+- ARM64 NEON and optional SVE2;
+- WASM SIMD128;
+- vendor DSP intrinsics behind isolated adapters.
+
+No architecture-specific path may define different rounding or clipping.
+
+## 10. Modern engineering quality gates
+
+Every public change to the native Core must pass:
+
+1. MSVC, Clang, and GCC builds.
+2. Windows x86-64, Linux x86-64/ARM64, macOS ARM64, Android ARM64, iOS ARM64,
+   and WASM compile checks.
+3. Bit-exact cross-compiler conformance hashes.
+4. ASan, UBSan, TSan where applicable, and MSVC runtime checks.
+5. libFuzzer/AFL++ parser and state-machine fuzzing.
+6. Property tests for arithmetic, random access, checkpoint recovery, and
+   block-size independence.
+7. Static analysis with clang-tidy and CodeQL.
+8. Reproducible release builds, dependency lockfiles, SBOM, and signed
+   artifacts.
+9. ABI compatibility tests and semantic versioning.
+10. Real-time tests that detect allocation, lock contention, deadline misses,
+    denormals, and priority inversion.
+
+The project should use CMake Presets as the portable native build contract,
+with Ninja in CI. Package managers may assist development, but the Core keeps
+zero mandatory third-party runtime dependencies.
+
+## 11. Evidence from current codecs
+
+- The Opus reference implementation is portable C and supports C89/C99,
+  including a fixed-point build:
+  <https://github.com/xiph/opus>.
+- 3GPP publishes the EVS fixed-point reference as ANSI C in TS 26.442:
+  <https://portal.3gpp.org/desktopmodules/Specifications/SpecificationDetails.aspx?specificationId=1464>.
+- Google liblc3 uses a C codec implementation validated against a Python
+  implementation and specification intermediate values:
+  <https://github.com/google/liblc3>.
+- Fraunhofer FDK AAC is distributed as a native C/C++-style library:
+  <https://github.com/mstorsjo/fdk-aac>.
+- Meta EnCodec is a Python/PyTorch research implementation and explicitly
+  limits official platform support, illustrating why neural research code is
+  not by itself a universal embedded decoder:
+  <https://github.com/facebookresearch/encodec>.
+
+The pattern is consistent: Python dominates model research; portable native
+code dominates deployed deterministic codec cores. Resonith should exploit
+both instead of forcing one language to serve incompatible roles.

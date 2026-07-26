@@ -1,31 +1,32 @@
 # Resonith-0 Bitstream and Decoding Process
 
-Версия: 0.0.2  
-Статус: **NORMATIVE-DRAFT**  
-Архитектура: **MAF — Memory-oriented Acoustic Field**
+Version: 0.0.2
+Status: **NORMATIVE-DRAFT**
+Architecture: **MAF - Memory-oriented Acoustic Field**
 
-Этот документ фиксирует semantic spine. Binary packing, entropy tables,
-fixed-point precisions и profile limits будут заморожены после oracle и
+This document defines the semantic spine. Binary packing, entropy tables,
+fixed-point precisions and profile limits will be frozen after oracle and
 conformance experiments.
 
-## 1. Normative language
+## 1. Conformance language
 
-`MUST`, `MUST NOT`, `SHOULD`, `MAY` имеют нормативный смысл.
+The key words MUST, MUST NOT, SHOULD, SHOULD NOT, and MAY are to be
+interpreted as described by RFC 2119 and RFC 8174.
 
 ## 2. Scope
 
-Resonith-0 определяет самостоятельный детерминированный audio bitstream и
-bounded integer decoding process.
+Resonith-0 defines a self-contained deterministic audio bitstream and a
+resource-bounded integer decoding process.
 
 Resonith-0:
 
-- MUST декодироваться без видеопотока;
-- MUST иметь universal objective Innovation fallback;
-- MUST поддерживать CIBS-0 cached integer Basis synthesis;
-- MUST поддерживать смешение разных basis families в одно время;
-- MUST NOT требовать semantic classifier или per-sample neural inference;
-- MUST отделять Truth Core от Optional Perceptual Detail;
-- MUST позволять Lossless profile восстановить exact PCM.
+- MUST be decodable without a video stream;
+- MUST have a universal objective Innovation fallback;
+- MUST support CIBS-0 cached integer Basis synthesis;
+- MUST support simultaneous mixing of different Basis families;
+- MUST NOT require a semantic classifier or per-sample neural inference;
+- MUST separate Truth Core from Optional Perceptual Detail;
+- MUST allow the Lossless profile to reconstruct exact PCM.
 
 ## 3. Canonical signal
 
@@ -35,30 +36,30 @@ Mix\left(
 \sum_{i\in Active(n)}
 RenderAtom_i(n)
 \right)
-+Innovation[n].
++ Innovation[n].
 \]
 
-Optional Perceptual Detail применяется только после формирования Core output
-и не входит в \(\hat x[n]\) для objective/lossless conformance.
+Optional Perceptual Detail is applied only after the Core output is generated
+and is not included in \(\hat x[n]\) for objective/lossless conformance.
 
 ## 4. Timeline
 
-1. Stream MUST задавать rational sample timebase и output sample rate.
-2. Event time MUST быть exact integer sample index в stream timebase.
-3. Atom parameter law MUST иметь absolute origin.
-4. Decoder MUST NOT выводить atom через recursive reference к предыдущему
+1. A stream MUST define a rational sample timebase and output sample rate.
+2. An event timestamp MUST be an exact integer sample index in that timebase.
+3. Every Atom parameter law MUST have an absolute origin.
+4. A decoder MUST NOT render an Atom by recursively referencing the previous
    output block.
-5. Transport packet boundary MUST NOT неявно завершать atom.
-6. Render block size является implementation choice и MUST NOT менять output.
+5. Transport packet boundary MUST NOT terminate atom implicitly.
+6. Render block size is an implementation choice and MUST NOT change the output.
 
 ## 5. State records
 
 ### 5.1 `STREAM_CONFIG`
 
-Определяет:
+Defines:
 
 - profile/level;
-- sample rate и channel/output layout;
+- sample rate and channel/output layout;
 - fixed-point precision identifiers;
 - entropy configuration;
 - resource limits;
@@ -66,51 +67,51 @@ Optional Perceptual Detail применяется только после фор
 
 ### 5.2 `STATE_RESET(t)`
 
-Атомарно очищает atom namespace, Basis Bank и dependent filter state.
+Atomically clears the Atom namespace, Basis Bank, and dependent filter state.
 
 ### 5.3 `BASIS_SET(t, basis_id, family, payload)`
 
-Создаёт immutable basis. Повторный `basis_id` до reset запрещён.
-`family` MAY быть waveform/timbre basis, filter/resonator basis или
+Creates an immutable Basis. Reusing a `basis_id` before reset is prohibited.
+`family` MAY identify a waveform/timbre Basis, filter/resonator Basis, or
 `CONTROL_BASIS`.
 
-`payload_mode` MUST быть:
+`payload_mode` MUST be:
 
 - `RAW_INT`;
 - `LIFTED_INT`;
 - `CIBS_LATENT`.
 
-Main-0 decoder MUST реализовать все три mode. CIBS payload MUST содержать
+A Main-0 decoder MUST implement all three modes. A CIBS payload MUST contain
 `synth_model_id`, target schema, quantized latent, optional bounded adapter,
-optional objective correction и expected Basis hash.
+optional objective correction and expected Basis hash.
 
 ### 5.4 `ATOM_SET(t, atom_id, changed_fields, payload)`
 
-Создаёт atom либо атомарно изменяет перечисленные fields. Неуказанные fields
-сохраняют прежнее значение.
+Creates an atom or atomically modifies the listed fields. Unspecified fields
+retain the same value.
 
 ### 5.5 `ATOM_END(t, atom_id)`
 
-Завершает atom точно перед sample `t`.
+Terminates an Atom immediately before sample `t`.
 
 ### 5.6 `INNOVATION(t, duration, payload)`
 
-Добавляет bounded objective residual. `EXACT_REPLACE` MUST позволять полностью
-определить любой интервал независимо от model atoms.
+Adds a bounded objective residual. `EXACT_REPLACE` MUST be able to define any
+interval completely, independently of model Atoms.
 
 ### 5.7 `CHECKPOINT(t)`
 
-Содержит self-contained Core state или `STATE_RESET` плюс достаточный payload
-для bounded random access.
+Contains a self-contained Core state, or a `STATE_RESET` followed by enough
+payload to provide bounded random access.
 
 ### 5.8 `PERCEPTUAL(t, duration, payload)`
 
-Является discardable enhancement и MUST NOT менять Core state.
+Defines a discardable enhancement and MUST NOT change Core state.
 
-## 6. Basis families
+## 6. Basic families
 
-Один Main decoder использует общий operator ISA. Families не имеют отдельные
-entropy coders или clocks.
+A Main decoder uses one common operator ISA. Basis families do not have separate
+entropy coders or clocks.
 
 ### 6.0 CIBS Basis materialization
 
@@ -118,22 +119,22 @@ entropy coders или clocks.
 B =
 Clip_{basis}\left(
 Synth^{int}_{model}(z,adapter)
-+LIFT^{-1}(q_{correction})
++ LIFT^{-1}(q_{correction})
 \right).
 \]
 
 Decoder MUST:
 
-1. проверить model/schema/resource limits;
-2. выполнить fixed versioned integer graph в staging;
-3. применить correction;
-4. вычислить normative Basis hash;
-5. commit-ить immutable Basis только при совпадении hash.
+1. check model/schema/resource limits;
+2. execute fixed versioned integer graph in staging;
+3. apply correction;
+4. calculate the normative Basis hash;
+5. commit immutable Basis only if the hash matches.
 
-CIBS MUST выполняться только на `BASIS_SET` или materialization checkpoint.
-Per-sample CIBS inference запрещён.
+CIBS MUST be executed only at `BASIS_SET` or materialization checkpoint.
+Per-sample CIBS inference is prohibited.
 
-CIBS-0 Basis hash MUST быть SHA-256 от canonical byte sequence:
+The CIBS-0 Basis hash MUST be SHA-256 over this canonical byte sequence:
 
 ```text
 u8 model_id_utf8_length
@@ -143,7 +144,7 @@ model_id_utf8
 int16le basis_samples[channel-major]
 ```
 
-`model_id` MUST занимать 1–255 UTF-8 bytes.
+`model_id` MUST occupy 1–255 UTF-8 bytes.
 
 ### 6.1 `PERIODIC`
 
@@ -151,187 +152,188 @@ int16le basis_samples[channel-major]
 y[n]=A[n]\sum_k a_k[n]B_k(\phi[n]).
 \]
 
-- `B_k` MUST быть immutable bounded integer periodic tables;
-- phase law MUST быть absolute fixed-point;
-- interpolation и wrapping MUST иметь canonical rounding;
-- atom update MUST сохранять phase continuity либо включать objective
+- `B_k` MUST be immutable bounded integer periodic tables;
+- phase law MUST be absolute fixed-point;
+- interpolation and wrapping MUST have canonical rounding;
+- an Atom update MUST preserve phase continuity or provide an objective
   correction/crossfade.
 
 ### 6.2 `PREDICTIVE`
 
-Использует bounded excitation и short stable integer FIR/IIR sections.
-Разрешённые coefficients MUST принадлежать profile-defined stability domain.
+Uses bounded excitation and short, stable integer FIR/IIR sections.
+Allowed coefficients MUST belong to the profile-defined stability domain.
 
 ### 6.3 `STOCHASTIC`
 
-Использует counter-based normative PRNG:
+Uses a normative counter-based PRNG:
 
 \[
 u[n]=PRNG(stream\_key,atom\_id,seed,n).
 \]
 
-Shaping MUST быть bounded integer operation. Random access к `n` MUST NOT
-требовать генерации samples до `n`.
+Shaping MUST use bounded integer operations. Random access to `n` MUST NOT
+require generation of samples up to `n`.
 
 ### 6.4 `RESONANT`
 
-Использует bounded bank stable resonators или short convolution basis.
-Unbounded convolution и неопределённый recursive state запрещены.
+Uses a bounded bank of stable resonators or a short convolution Basis.
+Unbounded convolution and undefined recursive state are prohibited.
 
 ### 6.5 `TRANSIENT`
 
-Использует onset-relative bounded envelope и/или short inverse integer
-lifting basis. Long-window pre-echo MUST иметь отдельный conformance test.
+Uses an onset-relative bounded envelope and/or a short inverse-integer-lifting
+Basis. Long-window pre-echo MUST have a separate conformance test.
 
 ### 6.6 `INNOVATION`
 
-Использует inverse integer lifting, sparse coefficients и exact replacement.
-Это universal fallback, а не отдельный content classifier.
+Uses inverse integer lifting, sparse coefficients and exact replacement.
+This is a universal fallback, not a separate content classifier.
 
 ### 6.7 `SPATIAL`
 
-Задаёт source routing, gain/delay law и bounded integer mix matrix.
-Immersive renderer MAY быть profile-specific, но base Core output MUST
-оставаться самостоятельно определённым.
+Defines source routing, gain/delay laws, and a bounded integer mix matrix.
+Immersive renderer MAY be profile-specific, but base Core output MUST
+remain self-determined.
 
 ## 7. Operator ISA
 
-Main Core MAY использовать только:
+Main Core MAY use only:
 
 - integer add/subtract/multiply/accumulate;
 - canonical shift/round/saturate;
-- bounded table lookup/interpolation;
-- short FIR/IIR/resonator;
+- bounded table lookup and interpolation;
+- short FIR/IIR/resonator sections;
 - counter-based PRNG;
 - inverse integer lifting;
 - coefficient-law evaluation;
 - gain/delay/matrix mix;
 - entropy decode.
 
-CIBS update-time kernel дополнительно MAY использовать fixed integer
-matrix/1D convolution, dyadic upsample, short FIR, piecewise-linear activation
-и bounded low-rank adapter. Graph topology и weights определяются
-`synth_model_id`, а не bitstream.
+A CIBS materialization kernel MAY additionally use fixed-integer matrix or 1D
+convolution, dyadic upsampling, short FIR, piecewise-linear activation, and a
+bounded low-rank adapter. `synth_model_id` selects the normative graph topology
+and weights; the bitstream does not define an arbitrary graph.
 
-Bitstream MUST NOT содержать executable code, arbitrary neural graph,
-replacement weights или unbounded loop.
+A bitstream MUST NOT contain executable code, an arbitrary neural graph,
+replacement model weights, or an unbounded loop.
 
 ## 8. Canonical composition
 
-1. Events с одним timestamp применяются в coded order после полной проверки.
-2. Basis/atom update сначала строится в staging и затем commit-ится атомарно.
-3. Active atoms группируются по profile-defined dependency level.
-4. Независимые atoms MAY вычисляться параллельно.
-5. Accumulation использует profile-defined wide integer accumulator.
-6. Saturation/clip выполняется только в определённых mix boundaries.
-7. Result MUST быть независим от implementation block size и thread order.
+1. Events with one timestamp are applied in coded order after full verification.
+2. Basis/atom update is first built in staging and then committed atomically.
+3. Active atoms are grouped by profile-defined dependency level.
+4. Independent atoms MAY be calculated in parallel.
+5. Accumulation uses profile-defined wide integer accumulator.
+6. Saturation and clipping occur only at profile-defined mix boundaries.
+7. Result MUST be independent of implementation block size and thread order.
 
 ## 9. Parameter tracks
 
-Main-0 MUST поддерживать bounded piecewise:
+Main-0 MUST support bounded piecewise:
 
 - constant;
 - linear;
 - quadratic.
 
-Profile определяет maximum duration, knot count, coefficient range и
-derivative. Track оценивается от absolute event origin.
+The profile defines maximum duration, knot count, coefficient range, and
+derivative. A track is evaluated from its absolute event origin.
 
-Atom MAY ссылаться на immutable `CONTROL_BASIS`:
+Atom MAY reference immutable `CONTROL_BASIS`:
 
 \[
 \theta_i(t)=s_iQ_r(\tau_i(t))+o_i.
 \]
 
-Scale, offset и time mapping MUST быть bounded fixed-point. Reference MUST NOT
-создавать cyclic dependency. Shared control evaluation использует те же
-parameter-law operators и не является отдельным decoder mode.
+Scale, offset and time mapping MUST be bounded fixed-point. Reference MUST NOT
+create cyclic dependency. Shared control evaluation uses the same
+parameter-law operators and is not a separate decoder mode.
 
 ## 10. Profiles
 
 ### 10.1 `Realtime`
 
-Ограничивает lookahead, atom lifetime dependencies, checkpoint interval и
-decoder complexity для low-delay speech/general audio.
+Limits lookahead, atom lifetime dependencies, checkpoint interval and
+decoder complexity for low-delay speech/general audio.
 
 ### 10.2 `Main`
 
-Поддерживает general mono, stereo и profile-defined multichannel output,
-включая все Core families и normative `CIBS-0`.
+Supports general mono, stereo and profile-defined multichannel output,
+including all Core families and normative `CIBS-0`.
 
 ### 10.3 `Immersive`
 
-Добавляет emitters, listener pose, room/resonant state и profile-defined
+Adds emitters, listener pose, room/resonant state and profile-defined
 spatial renderer.
 
 ### 10.4 `Perceptual`
 
-Добавляет discardable learned/generative detail. Никакой Perceptual output
-не является Core reference.
+Adds discardable learned or generative detail. Perceptual output is never a
+Core reference.
 
 ### 10.5 `Lossless`
 
-Использует Core predictions, но Innovation MUST обеспечить sample-exact PCM
-при declared input format.
+Uses Core predictions, but Innovation MUST provide sample-exact PCM
+when declared input format.
 
-Профили являются ограничениями одной syntax, а не независимыми подкодеками.
+Profiles are constraints of a single syntax, rather than independent subcodecs.
 
 ## 11. Resource limits
 
-Каждый level MUST задавать:
+Each level MUST define:
 
 - maximum active atoms;
 - maximum basis bytes;
-- maximum table taps и interpolation samples;
+- maximum table taps and interpolation samples;
 - maximum filter/resonator order;
 - maximum MAC/sample/channel;
-- maximum mix sources и channels;
-- maximum parameter knots/time;
+- maximum mix sources and channels;
+- maximum parameter knots per unit of time;
 - maximum checkpoint distance;
 - maximum entropy payload;
 - maximum state bytes;
 - maximum CIBS model ROM, latent, adapter, output elements, MAC/Basis,
-  scratch bytes и creations/time;
-- accumulator widths и overflow rules.
+  scratch bytes and creations/time;
+- accumulator widths and overflow rules.
 
-При превышении encoder MUST использовать более простой representation или
-`INNOVATION`; decoder MUST отвергнуть non-conforming stream детерминированно.
+If a candidate representation exceeds a limit, the encoder MUST use a simpler
+representation or `INNOVATION`. A decoder MUST reject a non-conforming stream
+deterministically.
 
 ## 12. Truth and Perceptual isolation
 
-1. Только Core records MAY менять reference state.
-2. `PERCEPTUAL` MUST NOT влиять на future atom, entropy context, checksum или
+1. Only Core records MAY change the reference state.
+2. `PERCEPTUAL` MUST NOT influence future atom, entropy context, checksum or
    checkpoint.
-3. Concealment MUST NOT становиться Truth reference.
-4. Lossless conformance MUST игнорировать Perceptual records.
-5. Semantic labels MAY присутствовать как non-normative metadata, но MUST NOT
-   менять Core output.
+3. Concealment MUST NOT become a Truth reference.
+4. Lossless conformance MUST ignore Perceptual records.
+5. Semantic labels MAY appear as non-normative metadata but MUST NOT change
+   Core output.
 
 ## 13. Random access and loss
 
-1. Random-access point MUST начинаться с validated `CHECKPOINT` или
+1. Random-access point MUST start with validated `CHECKPOINT` or
    `STATE_RESET`.
-2. Stochastic samples MUST быть counter-addressable.
-3. CIBS checkpoint MUST содержать self-contained latent+adapter+correction
-   либо materialized objective Basis.
+2. Stochastic samples MUST be counter-addressable.
+3. CIBS checkpoint MUST contain self-contained latent+adapter+correction
+   or materialized objective Basis.
 4. CIBS Basis hash failure MUST NOT commit partial state.
 5. Corrupt state event MUST NOT commit partial changes.
-6. После integrity failure dependent state MUST считаться invalid до
-   следующего checkpoint.
-7. Realtime level MUST ограничивать maximum error propagation.
-8. Concealment output MUST быть помечен и не использоваться как reference.
+6. After integrity failure dependent state MUST be considered invalid until
+   next checkpoint.
+7. Realtime level MUST limit maximum error propagation.
+8. Concealment output MUST be marked and not used as a reference.
 
 ## 14. Encoder requirements
 
-Encoder не нормативен, но conforming bitstream:
+An encoder is non-normative, but every conforming bitstream:
 
-- MAY быть создан Live, Studio или Foundry encoder-ом;
-- не содержит обязательный classifier decision;
-- учитывает все basis/event/checkpoint bits;
-- MUST иметь Core fallback для любого input;
-- MUST соблюдать resource level независимо от качества encoder-а.
+- MAY be created by a Live, Studio, or Foundry encoder;
+- MUST NOT require a classifier decision for decoding;
+- MUST account for all Basis, event, and checkpoint bits;
+- MUST provide a Core fallback for every input;
+- MUST comply with the declared resource level regardless of encoder quality.
 
-Рекомендуемый final selector:
+Recommended final selector:
 
 \[
 J=R+\lambda D+\mu C+\nu M+\rho L+\kappa P+\eta S.
@@ -341,22 +343,22 @@ J=R+\lambda D+\mu C+\nu M+\rho L+\kappa P+\eta S.
 
 Decoder MUST:
 
-- проверить все sizes/IDs/ranges до allocation и commit;
-- проверять filter stability domain;
-- предотвращать integer overflow;
-- ограничивать entropy operations;
-- не выполнять код из bitstream;
-- иметь deterministic error path;
-- не позволять atom ссылаться на undefined/expired basis.
+- validate all sizes, IDs, and ranges before allocation or commit;
+- validate the filter-stability domain;
+- prevent integer overflow;
+- bound entropy operations;
+- never execute code from the bitstream;
+- follow a deterministic error path;
+- reject any Atom that references an undefined or expired Basis.
 
 ## 16. Open items
 
 - binary packing;
 - entropy contexts/tables;
 - exact PRNG construction;
-- exact CIBS-0 graph, weights, quantizers, Basis hash и model package;
+- exact CIBS-0 graph, weights, quantizers, Basis hash and model package;
 - lifting kernels;
-- sample formats и channel layouts;
+- sample formats and channel layouts;
 - fixed-point precisions;
 - stability domains;
 - exact profile/level limits;
@@ -365,5 +367,5 @@ Decoder MUST:
 - reference encoder/decoder;
 - container mappings.
 
-Ни один open item не меняет принятый semantic spine без новой записи в
+No open item changes the accepted semantic spine without a new entry in
 `docs/06_DECISION_LOG.md`.

@@ -1,46 +1,46 @@
-# MAF — Memory-oriented Acoustic Field
+# MAF - Memory-oriented Acoustic Field
 
-Статус: архитектурное ядро — **ACCEPTED**; конкретные precisions и tables —
+Status: architectural core - **ACCEPTED**; specific precisions and tables -
 **NORMATIVE-DRAFT**.
 
-## 1. Парадокс
+## 1. Paradox
 
-Звуковая волна физически должна продолжаться, но параметры устойчивого
-колебания незачем передавать снова каждые 10–20 ms. Resonith отделяет:
+The sound wave must physically continue, but the parameters of the stable
+There is no need to transmit the oscillations again every 10–20 ms. Resonith separates:
 
-1. долгоживущую акустическую причину;
-2. редкое изменение её закона;
-3. объективную innovation, которую модель не объяснила;
-4. необязательную perceptual detail, не являющуюся истиной.
+1. long-lived acoustic cause;
+2. a rare change in its law;
+3. objective innovation, which the model did not explain;
+4. optional perceptual detail that is not true.
 
 \[
 Audio(t)=
 RenderAcoustic(Emitters_t,Trajectories_t,RoomState_t)
-+TruthInnovation_t
-+OptionalPerceptualDetail_t.
++ TruthInnovation_t
++ OptionalPerceptualDetail_t.
 \]
 
-Transport остаётся пакетным, а DAC выдаёт samples, но neither packet nor
-sample block является единицей долгоживущего codec state.
+Transport remains packet, and DAC issues samples, but neither packet nor
+sample block is a unit of long-lived codec state.
 
-## 2. Не классификация куска, а superposition
+## 2. Not a classification of a piece, but a superposition
 
-Один и тот же интервал MAY одновременно содержать:
+The same interval MAY simultaneously contain:
 
-- `PERIODIC`: нота, voiced speech, двигатель;
-- `PREDICTIVE`: excitation и короткая vocal/formant model;
-- `TRANSIENT`: удар, щелчок, атака;
-- `STOCHASTIC`: дыхание, дождь, тарелка, bow noise;
-- `RESONANT`: струна, корпус, помещение, reverb tail;
-- `SPATIAL`: emitter/listener law и mixer;
-- `INNOVATION`: всё, что выгоднее передать объективным residual.
+- `PERIODIC`: note, voiced speech, engine;
+- `PREDICTIVE`: excitation and short vocal/formant model;
+- `TRANSIENT`: blow, click, attack;
+- `STOCHASTIC`: breathing, rain, plate, bow noise;
+- `RESONANT`: string, body, room, reverb tail;
+- `SPATIAL`: emitter/listener law and mixer;
+- `INNOVATION`: everything that is more profitable to convey to objective residual.
 
-Это не семь подкодеков. Это параметры малого общего ISA, которые смешиваются
-sample-accurately и используют один timeline, state grammar и entropy layer.
+These are not seven subcodecs. These are the small common ISA parameters that are mixed
+sample-accurately and use one timeline, state grammar and entropy layer.
 
-## 3. Универсальная запись атома
+## 3. Universal notation of the atom
 
-Логическая запись:
+Logical entry:
 
 ```text
 Atom {
@@ -57,7 +57,7 @@ Atom {
 }
 ```
 
-State меняют только:
+State is changed only:
 
 ```text
 RESET(time)
@@ -65,65 +65,63 @@ SET(time, atom_id, changed_fields, payload)
 END(time, atom_id)
 ```
 
-`END` является канонической краткой формой `SET(alive=0)`. Отсутствие `SET`
-означает сохранение прежнего закона. Render query читает state и не изменяет
-его.
+`END` is the canonical short form of `SET(alive=0)`. The absence of `SET`
+preserves the previous law. A render query reads state without mutating it.
 
-## 4. Coherent field и Timbre Basis
+## 4. Coherent field and Timbre Basis
 
-Передавать тысячи независимых синусоид невыгодно. Основной coherent atom
-использует кэшируемый периодический basis:
+It is unprofitable to transmit thousands of independent sinusoids. Basic coherent atom
+uses a cached periodic basis:
 
 \[
 C_i(t)=A_i(t)\sum_{k=0}^{K_i-1}
 a_{ik}(t)B_{ik}(\phi_i(t)).
 \]
 
-Где:
+Where:
 
 - \(B_{ik}\) — immutable integer wavetable/timbre basis;
 - \(\phi_i(t)\) — absolute fixed-point phase law;
-- \(A_i(t)\) и \(a_{ik}(t)\) — bounded continuous coefficient tracks.
+- \(A_i(t)\) and \(a_{ik}(t)\) - bounded continuous coefficient tracks.
 
-Один `TIMBRE_BASIS` MAY использоваться всеми нотами партии, одним
-инструментом, голосовыми сегментами или повторными появлениями источника.
-Изменение pitch не требует повторной передачи waveform. Если basis перестал
-объяснять исполнение, encoder обновляет coefficients или выбирает Innovation.
+One `TIMBRE_BASIS` MAY be used by all notes of the part, one
+instrument, voice segments, or repeated appearances of the source.
+Changing pitch does not require retransmitting the waveform. If basis stopped
+explain execution, encoder updates coefficients or selects Innovation.
 
-Нормативный decoder не знает, что basis принадлежит скрипке. Это знание
-используется только encoder-компилятором.
+The normative decoder does not know that the basis belongs to the violin. This is knowledge
+used only by the encoder compiler.
 
-## 5. CIBS — Cached Integer Basis Synthesis
+## 5. CIBS - Cached Integer Basis Synthesis
 
-**ACCEPTED:** `TIMBRE_BASIS`, `FILTER_BASIS` и `CONTROL_BASIS` MAY
-передаваться не только raw/lifting coefficients, но и как:
+**ACCEPTED:** `TIMBRE_BASIS`, `FILTER_BASIS` and `CONTROL_BASIS` MAY
+transmitted not only raw/lifting coefficients, but also as:
 
 \[
 B=\operatorname{CIBS}_{m}(z,\Delta_m)
-+LIFT^{-1}(q_{\mathrm{basis\ correction}}).
++ LIFT^{-1}(q_{\mathrm{basis\ correction}}).
 \]
 
-Где:
+Where:
 
 - \(m\) — profile-defined versioned integer model;
-- \(z\) — quantized latent;
-- \(\Delta_m\) — optional bounded low-rank adapter;
-- correction — objective integer поправка к synthesized Basis.
+- \(z\) — quantized latent;- \(\Delta_m\) — optional bounded low-rank adapter;
+- correction — objective integer correction to the synthesized Basis.
 
-Synthesizer запускается только на `BASIS_SET`. После проверки hash результат
-становится immutable и sample loop видит обычный cached Basis. Таким образом
-learned compression уменьшает Basis payload, но не превращает audio renderer
-в neural decoder.
+Synthesizer runs only on `BASIS_SET`. After checking the hash result
+becomes immutable and the sample loop sees the usual cached Basis. Thus
+learned compression reduces Basis payload, but does not transform audio renderer
+in neural decoder.
 
-Main запрещает:
+Main prohibits:
 
-- arbitrary graph из bitstream;
-- device floating-point behaviour;
-- внешнюю модель, необходимую для decode;
-- изменение weights после profile publication;
-- CIBS inference на каждом output sample.
+- arbitrary graph from bitstream;
+- device floating-point behavior;
+- external model required for decode;
+- change weights after profile publication;
+- CIBS inference on each output sample.
 
-Полная семантика:
+Full semantics:
 [09_CIBS_NORMATIVE_DESIGN.md](09_CIBS_NORMATIVE_DESIGN.md).
 
 ## 6. Excitation–resonator factorization
@@ -132,39 +130,39 @@ Main запрещает:
 R_i(t)=\sum_m H_{im}(z;\rho_{im}(t))\,e_i(t),
 \]
 
-где \(e_i\) — excitation, а \(H_{im}\) — малые stable integer
+where \(e_i\) is excitation, and \(H_{im}\) are small stable integers
 FIR/IIR/resonator sections.
 
-Один excitation MAY возбуждать несколько resonant modes. Один room basis MAY
-обрабатывать несколько emitters. Это позволяет оплачивать долгоживущую
-структуру один раз, а затем передавать редкие parameter events.
+One excitation MAY excite several resonant modes. One room basis MAY
+handle multiple emitters. This allows you to pay for long-lived
+structure once, and then pass rare parameter events.
 
-Каждый IIR section обязан иметь нормативное доказательство bounded stability
-для разрешённого диапазона coefficients.
+Each IIR section must have normative evidence of bounded stability
+for the allowed range of coefficients.
 
 ## 7. Shared Control Basis
 
-Множество акустических atoms часто подчиняется одному изменению:
+Many acoustic atoms often obey a single change:
 
-- tempo/rubato нескольких нот;
-- vibrato или pitch bend группы partials;
-- crescendo/dynamics ансамбля;
-- движение emitter;
-- изменение room/microphone law.
+- tempo/rubato of several notes;
+- vibrato or pitch bend of the partials group;
+- crescendo/dynamics of the ensemble;
+- emitter movement;
+- change room/microphone law.
 
-Повторять одинаковые knots в каждом atom не нужно. Immutable
-`CONTROL_BASIS` задаёт scalar/vector parameter law один раз; atoms ссылаются на
-неё с bounded scale, offset и time mapping:
+There is no need to repeat the same knots in each atom. Immutable
+`CONTROL_BASIS` sets scalar/vector parameter law once; atoms refer to
+it with bounded scale, offset and time mapping:
 
 \[
 \theta_i(t)=s_i\,Q_r(\tau_i(t))+o_i.
 \]
 
-Decoder не обязан знать, что \(Q_r\) означает tempo или vibrato. Он вычисляет
-обычную fixed-point law. Semantic score помогает encoder-у обнаружить reuse,
-но не становится Truth.
+The decoder is not required to know that \(Q_r\) means tempo or vibrato. He calculates
+regular fixed-point law. Semantic score helps the encoder detect reuse,
+but does not become Truth.
 
-## 8. Stochastic field без скрытой случайности
+## 8. Stochastic field without hidden randomness
 
 \[
 N_i[n]=F_{\mathrm{int}}\left(
@@ -172,110 +170,107 @@ PRNG(seed_i,n),\Sigma_i(n)
 \right).
 \]
 
-- PRNG является counter-based: sample \(n\) вычисляется независимо;
-- seed, spectral envelope и filter law входят в bitstream;
-- результат bit-exact;
-- random access не требует проигрывать всю предыдущую историю;
-- objective mismatch передаётся Innovation.
+- PRNG is counter-based: sample \(n\) is calculated independently;
+- seed, spectral envelope and filter law are included in bitstream;
+- result bit-exact;
+- random access does not require playing the entire previous history;
+- objective mismatch is transferred to Innovation.
 
-Stochastic atom не означает «похожий шум равен исходному». В lossy profile
-такой predictor допустим только после RDO; в Lossless exact residual
-восстанавливает исходный PCM.
+Stochastic atom does not mean "similar noise is equal to original noise". In lossy profile
+such a predictor is only allowed after RDO; in Lossless exact residual
+restores the original PCM.
 
-## 9. Transient и Innovation
+## 9. Transient and Innovation
 
-Transient не должен размазываться длинным окном и создавать pre-echo.
-Core использует короткие integer lifting bases с независимым onset:
+Transient should not be smeared by a long window and create a pre-echo.
+Core uses short integer lifting bases with independent onset:
 
 \[
 T_i + E = LIFT^{-1}(q_{\mathrm{sparse}}).
 \]
 
-`TRANSIENT` имеет параметризованный onset/decay, когда это выгодно.
-`INNOVATION` является универсальным bounded fallback и MAY быть:
-
-- короткой sparse lifting correction;
+`TRANSIENT` has parameterized onset/decay when beneficial.
+`INNOVATION` is a universal bounded fallback and MAY be:- short sparse lifting correction;
 - band-limited correction;
 - full-band exact replacement.
 
-Lossy Innovation детерминирована, но квантована. Lossless Innovation обязана
-восстановить exact input PCM.
+Lossy Innovation is deterministic but quantized. Lossless Innovation is obliged
+restore exact input PCM.
 
-## 10. Минимальный normative DSP ISA
+## 10. Minimum normative DSP ISA
 
-Main decoder строится из следующих операций:
+Main decoder is built from the following operations:
 
-1. periodic table lookup/interpolation с absolute phase;
+1. periodic table lookup/interpolation with absolute phase;
 2. short integer FIR/IIR/resonator;
 3. counter-based integer PRNG;
 4. inverse integer lifting;
 5. coefficient-track evaluation;
 6. gain, mix, spatial matrix, add, saturate/clip;
-7. единый entropy decoder.
+7. single entropy decoder.
 
-CIBS добавляет отдельный update-time kernel из fixed integer
-matrix/filter/upsample/nonlinearity operations. Он не входит в per-sample hot
-loop и имеет отдельный MAC/Basis limit.
+CIBS adds a separate update-time kernel from fixed integer
+matrix/filter/upsample/nonlinearity operations. It is not included in per-sample hot
+loop and has a separate MAC/Basis limit.
 
-Никакой atom не исполняет произвольный код. Никакой neural graph не обязателен
-в Truth Core. Параллельность определяется dependency levels, а не порядком
-случайного dynamic graph.
+No atom executes arbitrary code. No neural graph is required
+in Truth Core. Concurrency is determined by dependency levels, not order
+random dynamic graph.
 
-## 11. Непрерывные laws
+## 11. Continuous laws
 
-Phase, amplitude, pitch, filter coefficients и spatial trajectory задаются
-piecewise constant/linear/quadratic laws с absolute start time.
+Phase, amplitude, pitch, filter coefficients and spatial trajectory are specified
+piecewise constant/linear/quadratic laws with absolute start time.
 
-Обязательные инварианты:
+Mandatory invariants:
 
 - phase continuity;
-- ограниченный derivative jump либо crossfade/Innovation;
+- limited derivative jump or crossfade/Innovation;
 - canonical fixed-point rounding;
-- clip только в нормативных mix boundaries;
+- clip only within normative mix boundaries;
 - bounded atom overlap;
-- отсутствие recursive dependence на предыдущий output block.
+- lack of recursive dependence on the previous output block.
 
-Разные atoms обновляются с разной частотой. Устойчивая нота может жить тысячи
-render quanta; transient — несколько samples; ambience law — секунды.
+Different atoms are updated at different frequencies. A lasting note can live for thousands
+render quanta; transient — several samples; ambient law - seconds.
 
-## 12. Truth и Perceptual
+## 12. Truth and Perceptual
 
-`Truth Core` включает deterministic atoms и Innovation и является единственным
-источником будущего state/reference.
+`Truth Core` includes deterministic atoms and Innovation and is the only
+source of future state/reference.
 
-`Optional Perceptual Detail` MAY синтезировать незаметную микротекстуру или
-верхний спектр, но:
+`Optional Perceptual Detail` MAY synthesize imperceptible microtexture or
+upper spectrum, but:
 
-- MUST быть discardable;
-- MUST NOT менять Core state;
-- MUST NOT быть predictor/reference;
-- MUST иметь capability signaling;
-- MUST NOT использоваться в objective/lossless claims.
+- MUST be discardable;
+- MUST NOT change Core state;
+- MUST NOT be a predictor/reference;
+- MUST have signaling capability;
+- MUST NOT be used in objective/lossless claims.
 
-## 13. Где находится преимущество
+## 13. Where is the advantage?
 
-Революция возможна только если один persistent atom одновременно убирает:
+A revolution is only possible if one persistent atom simultaneously removes:
 
-- повторную передачу тембра;
-- повторную оценку pitch/phase на каждом frame;
-- несовместимые переключения speech/music codec;
-- длинный reverb waveform;
+- retransmission of timbre;
+- re-evaluation of pitch/phase on each frame;
+- incompatible speech/music codec switching;
+- long reverb waveform;
 - repeated excitation/resonance structure;
-- повторную передачу общей modulation trajectory.
+- retransmission of the general modulation trajectory.
 
-Если metadata и residual почти равны обычному transform codec, MAF не имеет
-преимущества. Поэтому каждый basis family является RDO-кандидатом, а не
-обязательным режимом.
+If metadata and residual are almost equal to normal transform codec, MAF has no
+benefits. Therefore, each basis family is an RDO candidate, and not
+mandatory regime.
 
-## 14. Что сознательно не входит в Main-0
+## 14. What is deliberately not included in Main-0
 
-- обязательное score/MIDI representation;
-- названия инструментов как декодирующая истина;
-- unrestricted/per-sample neural decoder; fixed update-time CIBS разрешён;
+- mandatory score/MIDI representation;
+- names of instruments as decoding truth;- unrestricted/per-sample neural decoder; fixed update-time CIBS enabled;
 - Turing-complete acoustic program;
-- внешняя cloud dictionary, без которой stream недекодируем;
-- неограниченная convolution;
-- неограниченное число atoms на sample.
+- external cloud dictionary, without which the stream is not decodable;
+- unlimited convolution;
+- unlimited number of atoms per sample.
 
-Repeated motif programs и shared package dictionaries остаются **RESEARCH** и
-обязаны компилироваться в тот же ISA. CIBS принят решением R-014.
+Repeated motif programs and shared package dictionaries remain **RESEARCH** and
+must be compiled into the same ISA. CIBS adopted decision R-014.

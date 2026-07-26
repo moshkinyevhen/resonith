@@ -1,70 +1,70 @@
-# Encoder-компилятор Resonith
+# Encoder compiler Resonith
 
-Статус: pipeline — **ACCEPTED**; численные параметры — **TARGET**.
+Status: pipeline - **ACCEPTED**; numerical parameters - **TARGET**.
 
-## 1. Encoder понимает музыку, decoder исполняет физику
+## 1. Encoder understands music, decoder performs physics
 
-Encoder MAY использовать:
+Encoder MAY to use:
 
 - pitch/onset/tempo/score transcription;
-- source separation и emitter tracking;
-- instrument, speaker и room recognition;
+- source separation and emitter tracking;
+- instrument, speaker and room recognition;
 - long-context music/audio foundation model;
 - global motif retrieval;
 - differentiable analysis-by-synthesis;
 - exhaustive beam/graph search.
 
-Результат анализа не передаётся как обязательная семантика. Encoder
-компилирует гипотезы в `TIMBRE_BASIS`, atoms, parameter tracks и Innovation и
-проверяет их тем же bit-exact decoder, который получит слушатель.
+The result of the analysis is not transmitted as mandatory semantics. Encoder
+compiles hypotheses into `TIMBRE_BASIS`, atoms, parameter tracks and Innovation and
+checks them with the same bit-exact decoder that the listener will receive.
 
-## 2. Не classifier switch, а соревнование кандидатов
+## 2. Not a classifier switch, but a competition of candidates
 
-Router предлагает top-K представлений для каждого source/time-frequency
-region. Кандидаты MAY перекрываться и складываться. Итоговая функция:
+Router offers top-K views for each source/time-frequency
+region. Candidates MAY overlap and stack. Final function:
 
 \[
 \begin{aligned}
 J={}&R_{\mathrm{total}}
-+\lambda D_{\mathrm{truth}}
-+\alpha D_{\mathrm{perceptual}}\\
++ \lambda D_{\mathrm{truth}}
++ \alpha D_{\mathrm{perceptual}}\\
 &+\mu C_{\mathrm{decode}}
-+\nu M_{\mathrm{state}}
-+\rho L_{\mathrm{latency}}
-+\kappa P_{\mathrm{loss}}
-+\eta S_{\mathrm{switch}}.
++ \nu M_{\mathrm{state}}
++ \rho L_{\mathrm{latency}}
++ \kappa P_{\mathrm{loss}}
++ \eta S_{\mathrm{switch}}.
 \end{aligned}
 \]
 
-`R_total` включает basis, adapters, events, indexes, checkpoints, entropy
-headers и FEC. Proxy разрешён только для shortlist; финальный RDO считает
-фактический bitstream.
+`R_total` includes basis, adapters, events, indexes, checkpoints, entropy
+headers and FEC. Proxy is allowed only for shortlist; final RDO counts
+actual bitstream.
 
-Неправильная семантическая гипотеза безопасна: если «скрипичный» basis не
-окупился, exact RDO выбирает lifting residual.
+An incorrect semantic hypothesis is safe: if the “violin” basis is not
+paid off, exact RDO chooses lifting residual.
 
 ## 3. Analysis-by-synthesis pipeline
 
-1. Нормализовать channel layout и sample timeline без потери исходника.
-2. Найти onsets, periodic tracks, residual noise и long decay.
-3. Построить source hypotheses, не требуя идеальной separation.
-4. Найти reusable timbre/excitation/room bases.
-5. Для каждого Basis сравнить raw/lifting и CIBS latent+correction.
-6. Предложить atom tracks с absolute phase.
-7. Предложить transient и stochastic predictors.
-8. Синтезировать кандидата bit-exact Core decoder-ом.
-9. Закодировать остаток Innovation.
-10. Выполнить full RDO и temporal dynamic programming.
-11. Расставить checkpoints и packet-loss boundaries.
+1. Normalize channel layout and sample timeline without losing the source.
+2. Find onsets, periodic tracks, residual noise and long decay.
+3. Construct source hypotheses without requiring perfect separation.
+4. Find reusable timbre/excitation/room bases.
+5. For each Basis, compare raw/lifting and CIBS latent+correction.
+6. Offer atom tracks with absolute phase.
+7. Offer transient and stochastic predictors.
+8. Synthesize the candidate bit-exact Core decoder.
+9. Code the remainder Innovation.
+10. Perform full RDO and temporal dynamic programming.
+11. Place checkpoints and packet-loss boundaries.
 
-Ошибка source separation не является ошибкой decoder: она просто повышает
-Innovation и может сделать decomposition невыгодным.
+A source separation error is not a decoder error: it simply raises
+Innovation and can make decomposition unprofitable.
 
-## 4. Профили encoder-а
+## 4. Encoder profiles
 
 ### Live
 
-- causal или малый lookahead;
+- causal or small lookahead;
 - bounded top-K;
 - Realtime profile;
 - low-delay lifting fallback;
@@ -72,34 +72,32 @@ Innovation и может сделать decomposition невыгодным.
 
 ### Studio
 
-- полный трек/произведение;
+- full track/product;
 - bidirectional analysis;
 - global timbre and motif dictionary;
-- точная phase tracking через паузы и re-entry;
-- beam search по sections.
+- accurate phase tracking through pauses and re-entry;
+- beam search by sections.
 
 ### Foundry
 
-- многочасовой/многосуточный budget;
+- multi-hour/multi-day budget;
 - ensemble neural teachers;
-- глобальная source/score/room hypothesis;
-- Pareto search и distillation в Consumer/Studio router;
-- тот же bitstream и decoder.
+- global source/score/room hypothesis;
+- Pareto search and distillation in Consumer/Studio router;
+- the same bitstream and decoder.
 
-## 5. Consumer practicality
+## 5. Consumer practicality**TARGET:** the first encoder must be run on a regular PC without the required
+clouds. The main working set is tiled by source hypotheses, frequency bands
+and temporary sections; long-term bases are unloaded into RAM.
 
-**TARGET:** первый encoder должен запускаться на обычном PC без обязательного
-облака. Основной рабочий набор тайлится по source hypotheses, frequency bands
-и временным sections; долговременные bases выгружаются в RAM.
+Audio is significantly lighter in size than video. GPU is useful for neural analysis
+and batched RDO, but the Core prototype must have a CPU path. Productivity
+will be measured separately for Live, Studio and Foundry; before implementation numerical
+speeds are not declared as a fact.
 
-Аудио существенно легче видео по размерности. GPU полезен для neural analysis
-и batched RDO, но Core prototype обязан иметь CPU path. Производительность
-будет измеряться отдельно для Live, Studio и Foundry; до реализации численные
-скорости не объявляются фактом.
+## 6. How to avoid architectural jerks
 
-## 6. Как не получить дёргания архитектуры
-
-Замораживается semantic spine:
+The semantic spine is frozen:
 
 ```text
 continuous timeline
@@ -112,25 +110,25 @@ objective Innovation fallback
 optional non-reference Perceptual Detail
 ```
 
-Новые encoder-модели, quantizers и basis synthesizers разрешены только если
-они компилируются в этот spine. Новый opcode добавляется лишь после:
+New encoder models, quantizers and basis synthesizers are only allowed if
+they are compiled into this spine. A new opcode is added only after:
 
 1. oracle ablation;
-2. net gain после полного overhead;
+2. net gain after full overhead;
 3. decoder complexity audit;
 4. conformance and corruption analysis;
-5. доказательства, что существующий ISA не выражает механизм разумно.
+5. evidence that the existing ISA does not express the mechanism intelligently.
 
 ## 7. Teacher–student moat
 
-Foundry сохраняет не только победителя, но и Pareto-set:
+Foundry saves not only the winner, but also the Pareto-set:
 
 - rejected basis families;
-- atom lifetime и update decisions;
-- битовую стоимость basis/reuse/innovation;
+- atom lifetime and update decisions;
+- bit value basis/reuse/innovation;
 - phase/pitch tracking alternatives;
 - packet and checkpoint decisions;
-- uncertainty и причины fallback.
+- uncertainty and reasons for fallback.
 
-Компактный router учится предлагать top-K. Exact RDO сохраняет последнее
-слово. Преимущество переносится в encoder/data, не в закрытый decoder.
+The compact router learns to offer top-K. Exact RDO retains the latest
+word. The benefit is transferred to encoder/data, not to the private decoder.

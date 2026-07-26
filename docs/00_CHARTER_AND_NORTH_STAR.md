@@ -1,101 +1,100 @@
-# Устав и North Star Resonith
+# Charter and North Star Resonith
 
-Статус: основные принципы — **ACCEPTED**; численные цели — **TARGET**.
+Status: basic principles - **ACCEPTED**; numerical targets - **TARGET**.
 
-## 1. Миссия
+## 1. Mission
 
-Resonith должен стандартизовать не очередную последовательность
-психоакустически квантованных waveform frames, а ограниченный компиляторный
-контракт для непрерывного акустического поля.
+Resonith should standardize more than just another sequence
+psychoacoustically quantized waveform frames, and limited compiler
+contract for a continuous acoustic field.
 
-Encoder ищет компактные причины сигнала:
+Encoder looks for compact signal causes:
 
-- устойчивые periodic/quasi-periodic компоненты;
-- изменяющийся тембр;
-- excitation и resonant response;
+- stable periodic/quasi-periodic components;
+- changing timbre;
+- excitation and resonant response;
 - stochastic texture;
 - transients;
-- emitters, spatial trajectories и room response;
-- объективную innovation, не объяснённую моделью.
+- emitters, spatial trajectories and room response;
+- objective innovation, not explained by the model.
 
-Decoder не обязан понимать слова «скрипка», «нота» или «симфония». Он обязан
-bit-exact исполнить физические integer-параметры.
+Decoder is not required to understand the words "violin", "note" or "symphony". He must
+bit-exact execute physical integer parameters.
 
-## 2. Каноническая формула
+## 2. Canonical formula
 
 \[
 Audio(t)=
 RenderAcoustic(Emitters_t,Trajectories_t,RoomState_t)
-+TruthInnovation_t
-+OptionalPerceptualDetail_t.
++ TruthInnovation_t
++ OptionalPerceptualDetail_t.
 \]
 
-Для source \(e\):
+For source \(e\):
 
 \[
 s_e(t)=C_e(t)+N_e(t)+T_e(t)+E_e(t),
 \]
 
-где:
+where:
 
 - \(C_e\) — coherent low-rank periodic field;
 - \(N_e\) — deterministic stochastic field;
 - \(T_e\) — sparse transient field;
 - \(E_e\) — objective exact/quantized innovation.
 
-## 3. Главный принцип
+## 3. Main principle
 
-Resonith передаёт не «тип куска: speech/music/noise», а одновременно выбирает
-лучшее представление для каждого source/time-frequency atom.
+Resonith does not transmit “piece type: speech/music/noise”, but at the same time selects
+best representation for each source/time-frequency atom.
 
-В одном интервале могут сосуществовать:
+In one interval the following can coexist:
 
-- голосовой predictive/coherent atom;
-- атака барабана как transient;
-- тарелка как stochastic field;
-- reverb как room/resonant field;
-- Truth Innovation для оставшейся ошибки.
+- voice predictive/coherent atom;
+- drum attack as transient;
+- plate as stochastic field;
+- reverb as room/resonant field;
+- Truth Innovation for the remaining error.
 
-Router предлагает кандидатов. Окончательный выбор делает полный RDO:
+Router offers candidates. The final choice is made by the full RDO:
 
 \[
 J=\sum_i R_i+\lambda D(x,\hat x)+\mu C_{\mathrm{decode}}.
 \]
 
-## 4. Что означает «понимать музыку»
+## 4. What does it mean to “understand music”
 
 Encoder MAY:
 
-- транскрибировать score;
-- выделять stems и emitters;
-- узнавать инструменты и исполнителей;
-- отслеживать pitch, onset, articulation, tempo и motifs;
-- оценивать room impulse response;
-- строить per-instrument timbre manifold;
-- использовать foundation models и offline global optimization.
+- transcribe score;
+- highlight stems and emitters;
+- recognize instruments and performers;
+- track pitch, onset, articulation, tempo and motifs;
+- evaluate room impulse response;
+- build per-instrument timbre manifold;
+- use foundation models and offline global optimization.
 
-Но semantic label MUST NOT заменять objective evidence. Нота `A4` не
-определяет тембр, фазу, микродинамику, bow noise, room или интерпретацию.
-Любая semantic reconstruction проверяется exact decoder-in-the-loop RDO, а
-ошибка кодируется Truth Innovation.
+But semantic label MUST NOT replace objective evidence. The note `A4` is not
+defines timbre, phase, microdynamics, bow noise, room or interpretation.
+Any semantic reconstruction is checked by exact decoder-in-the-loop RDO, and
+the error is coded by Truth Innovation.
 
-## 5. Отдельность продуктов
+## 5. Separateness of products
 
-- Resonith — самостоятельный аудиокодек.
-- SceneLith — самостоятельный видеокодек.
-- SceneLith AV Bridge — отдельный binding, который MAY объединять timeline,
-  entity mapping, trajectories и room/geometry hints.
+- Resonith is a standalone audio codec.
+- SceneLith is a standalone video codec.
+- SceneLith AV Bridge is a separate binding that MAY combine timeline,
+  entity mapping, trajectories and room/geometry hints.
 
-Ни один standalone bitstream не требует другой modality.
+No standalone bitstream requires a different modality.
 
 ## 6. North Star
 
 **TARGET:**
 
-- materially beat Opus, xHE-AAC/USAC и EVS отдельно в применимых режимах;
-- perceptually transparent classical stereo при существенно меньшем bitrate;
-- exact PCM lossless path;
-- live latency не выше 20 ms для Realtime profile;
-- Main decoder с bounded update-time CIBS, но без per-sample neural inference;
-- один bounded atom grammar вместо набора независимых подкодеков;
-- software decode на обычном mobile CPU/DSP.
+- materially beat Opus, xHE-AAC/USAC and EVS separately in applicable modes;
+- perceptually transparent classical stereo with a significantly lower bitrate;
+- exact PCM lossless path;- live latency no higher than 20 ms for Realtime profile;
+- Main decoder with bounded update-time CIBS, but without per-sample neural inference;
+- one bounded atom grammar instead of a set of independent subcodecs;
+- software decode on a regular mobile CPU/DSP.

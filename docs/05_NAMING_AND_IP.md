@@ -1,78 +1,78 @@
-# Название, prior art и IP
+# Title, prior art and IP
 
-Статус имени: **ACCEPTED** решением R-017; юридическая чистота —
+Name status: **ACCEPTED** by decision R-017; legal purity -
 **OPEN / UNVERIFIED**.
 
-## 1. Утверждённое имя
+## 1. Approved name
 
 **Resonith**
 
-Смысл:
+Meaning:
 
-- `resonance` — физика звука, тембр и помещение;
-- `lith` — устойчивое состояние/память и связь с экосистемой SceneLith;
-- короткое международное произношение;
-- не смешивается со SceneLith Video.
+- `resonance` - sound physics, timbre and room;
+- `lith` - steady state/memory and connection to the SceneLith ecosystem;
+- short international pronunciation;
+- does not mix with SceneLith Video.
 
-Внутреннее имя архитектуры:
+Internal architecture name:
 
-**MAF — Memory-oriented Acoustic Field**.
+**MAF - Memory-oriented Acoustic Field**.
 
-Формула позиционирования:
+Positioning formula:
 
 > **Resonith — encode acoustic causes, not repeated waveform blocks.**
 
-Владелец проекта окончательно выбрал имя 2026-07-26. Trademark clearance
-остаётся обязательной внешней проверкой, но не меняет статус внутреннего
-продуктового решения.
+The project owner finally chose the name 07/26/2026. Trademark clearance
+remains a mandatory external audit, but does not change the status of internal
+product solution.
 
-## 2. Почему не SceneLith Audio
+## 2. Why not SceneLith Audio
 
-Владелец проекта принял три отдельных объекта:
+The project owner accepted three separate objects:
 
-1. SceneLith — video bitstream family;
-2. Resonith — standalone audio codec;
-3. SceneLith AV Bridge — специализированная оптимизированная связка.
+1. SceneLith - video bitstream family;
+2. Resonith - standalone audio codec;
+3. SceneLith AV Bridge - a specialized optimized bundle.
 
-Отдельное имя снижает ложную обязательную зависимость audio от video,
-упрощает внедрение в calls, music, games и broadcasting и позволяет вести
-раздельные conformance/benchmark tracks.
+A separate name reduces the false mandatory dependency of audio on video,
+simplifies implementation in calls, music, games and broadcasting and allows
+separate conformance/benchmark tracks.
 
-## 3. Предварительная проверка
+## 3. Pre-check
 
-Обычный web-search 2026-07-26 не обнаружил очевидного широко известного
-аудиокодека с точным именем `Resonith`. Это не является trademark clearance.
+Regular web-search 2026-07-26 did not find an obvious well-known
+audio codec with the exact name `Resonith`. This is not trademark clearance.
 
-До публичного запуска необходимо отдельно проверить:
+Before public launch, you need to check separately:
 
 - WIPO Global Brand Database;
 - EUIPO eSearch;
 - USPTO Trademark Search;
-- домены и package registries;
-- фонетически сходные названия;
-- применимые классы software, codecs, media и hardware.
+- domains and package registries;
+- phonetically similar names;
+- applicable software, codecs, media and hardware classes.
 
 ## 4. Prior art policy
 
-Нельзя патентовать или рекламировать как новое само по себе:
+The following cannot be patented or advertised as new in itself:
 
 - sinusoidal modeling;
 - source/object audio;
 - speech/music mode switching;
 - deterministic-plus-stochastic modeling;
-- LPC, MDCT/lifting, seeded noise или convolution;
+- LPC, MDCT/lifting, seeded noise or convolution;
 - score-informed coding.
 
-Кандидат на отличимость — конкретная комбинация:
+A candidate for distinctiveness is a specific combination:
 
 - persistent continuous-time atom state;
 - reusable immutable timbre/excitation/room bases;
-- per-atom competition в одном small integer ISA;
+- per-atom competition in one small integer ISA;
 - absolute phase laws;
 - counter-addressable stochastic fields;
 - objective Innovation contract;
 - strict non-reference Perceptual Detail;
-- compiler asymmetry и bounded decoder.
+- compiler asymmetry and bounded decoder.
 
-Patentability и freedom-to-operate требуют отдельного профессионального
-поиска; этот документ не является юридическим заключением.
+Patentability and freedom-to-operate require a separate professional
+search; This document is not a legal opinion.

@@ -1,81 +1,80 @@
-# Классическая музыка: модель и цели
+# Classical music: model and goals
 
-Статус всех чисел в этом документе: **HYPOTHESIS / TARGET**, не результат.
+The status of all numbers in this document is **HYPOTHESIS / TARGET**, not a result.
 
-## 1. Почему классика одновременно удобна и трудна
+## 1. Why the classics are both convenient and difficult
 
-Потенциал MAF:
+MAF Potential:
 
-- устойчивые pitches и harmonic relations;
-- повторное использование тембра инструмента;
-- score/motif structure;
-- длинные resonances и room response;
-- offline доступ ко всему произведению.
+- stable pitches and harmonic relations;
+- reuse of instrument timbre;
+- score/motive structure;
+- long resonances and room response;
+- offline access to the entire work.
 
-Трудности:
+Difficulties:
 
-- dense polyphony и crossing partials;
-- vibrato, portamento, microdynamics и expressive timing;
+- dense polyphony and crossing partials;
+- vibrato, portamento, microdynamics and expressive timing;
 - changing bow/breath/noise excitation;
-- атаки без точного повторения;
-- длинный reverberant mix;
-- microphone noise и audience;
-- тембр зависит от ноты, громкости и артикуляции.
+- attacks without exact repetition;
+- long reverberant mix;
+- microphone noise and audience;
+- timbre depends on the note, volume and articulation.
 
-Поэтому «передать ноты вместо waveform» недостаточно. Score помогает encoder-у
-найти basis и trajectories, но точность исполнения обеспечивает Innovation.
+Therefore, “passing notes instead of waveform” is not enough. Score helps the encoder
+find the basis and trajectories, but the precision of execution is ensured by Innovation.
 
-## 2. Рабочие bitrate-гипотезы
+## 2. Working bitrate hypotheses
 
-При matched MUSHRA quality относительно сильнейшего применимого
+When matched MUSHRA quality relative to the strongest applicable
 Opus/xHE-AAC/USAC anchor:
 
-| Материал | Зрелый Resonith: гипотеза экономии | Кандидат stereo rate |
+| Material | Mature Resonith: saving hypothesis | Candidate stereo rate |
 |---|---:|---:|
-| Solo / чистый sustain | 35–60% | 40–72 kbit/s |
+| Solo/pure sustain | 35–60% | 40–72 kbit/s |
 | Chamber music | 30–50% | 48–80 kbit/s |
-| Orchestra, хороший hall | 20–40% | 72–112 kbit/s |
+| Orchestra, good hall | 20–40% | 72–112 kbit/s |
 | Dense choir/percussion/noisy live | 10–30% | 80–128 kbit/s |
 | Broad classical corpus | 25–45% | content-adaptive |
 
-Первый работающий prototype, который даёт 10–20% на ограниченном classical
-corpus, считается хорошим исследовательским началом. Более 50% на broad
-transparent classical — stretch, а не обещание.
+The first working prototype, which gives 10–20% on a limited classical
+corpus is considered a good research start. More than 50% on broad
+transparent classical - stretch, not a promise.
 
-Экстремальный Perceptual profile MAY достигать 24–48 kbit/s stereo и большой
-экономии, но он не смешивается с claims об objective transparency.
+Extreme Perceptual profile MAY reach 24–48 kbit/s stereo and large
+savings, but it does not mix with claims about objective transparency.
 
 ## 3. Lossless
 
-В Lossless exact Innovation обязана вернуть исходный PCM. Для mastered
-classical записи microphone/room/noise и микроскопическая непредсказуемость
-доминируют в residual.
+In Lossless exact Innovation is obliged to return the original PCM. For mastered
+classical microphone/room/noise recordings and microscopic unpredictability
+dominate in residual.
 
-**HYPOTHESIS:** выигрыш 0–15% против сильного FLAC-подобного anchor реалистичен;
-более крупный broad lossless gain маловероятен без нового результата в
-универсальном entropy modeling.
+**HYPOTHESIS:** 0-15% gain against a strong FLAC-like anchor is realistic;
+larger broad lossless gain is unlikely without a new result in
+universal entropy modeling.
 
-## 4. Обязательный benchmark contract
+## 4. Mandatory benchmark contract
 
-Claims принимаются только если:
+Claims are accepted only if:
 
-- anchors настроены экспертами и включают полный overhead;
-- сравнение проводится отдельно с Opus и xHE-AAC/USAC;
-- используются ITU-R BS.1534 MUSHRA, hidden reference и low anchors;
-- слушатели не знают codec;
-- corpus включает solo, chamber, orchestra, choir, percussion, organ,
+- anchors are configured by experts and include full overhead;
+- comparison is carried out separately with Opus and xHE-AAC/USAC;
+- ITU-R BS.1534 MUSHRA, hidden reference and low anchors are used;
+- listeners do not know codec;
+- corpus includes solo, chamber, orchestra, choir, percussion, organ,
   historical/noisy recordings;
-- учитываются startup, seek, checkpoint и dictionary bits;
-- reported confidence intervals и correction for multiple comparisons;
-- отдельно проверяются pre-echo, warble, pitch/phase, stereo image, reverb и
+- startup, seek, checkpoint and dictionary bits are taken into account;
+- reported confidence intervals and correction for multiple comparisons;- pre-echo, warble, pitch/phase, stereo image, reverb and
   timbre identity;
-- objective metrics являются вторичными к listening tests.
+- objective metrics are secondary to listening tests.
 
-## 5. Революционная планка
+## 5. Revolutionary bar
 
-- менее 15% broad gain: интересный инструмент, но не новый стандарт;
-- 15–30%: сильный конкурент;
-- не менее 35% broad music/classical при equal MUSHRA и малом decoder:
-  революционный результат;
-- более 50% broad transparent: исторический stretch, требующий независимого
-  воспроизведения.
+- less than 15% broad gain: an interesting tool, but not a new standard;
+- 15–30%: strong competitor;
+- at least 35% broad music/classical with equal MUSHRA and small decoder:
+  revolutionary result;
+- more than 50% broad transparent: historical stretch, requiring independent
+  playback
