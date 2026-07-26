@@ -152,6 +152,13 @@ When `--packet-frames` is omitted, the encoder selects a transform-aligned
 record duration near 256 ms. The public `.resonith` extension is stable; the
 embedded LPS5 research transport remains prospective.
 
+The native build also provides a bounded streaming decoder that writes PCM16
+WAV without allocating the complete reconstruction:
+
+```sh
+resonith_decode input.resonith output.wav
+```
+
 The first physical Windows x64 callback gate has passed 26,100 observations
 with zero deadline misses, 9.81x–12.33x realtime decode, and 29.5–37.8 KB
 caller workspace. This is desktop feasibility only; Android thermal and energy

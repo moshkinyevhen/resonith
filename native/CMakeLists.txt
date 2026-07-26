@@ -87,6 +87,14 @@ if(MSVC)
 endif()
 
 if(RESONITH_BUILD_TOOLS)
+    add_executable(resonith_decode
+        tools/decode.cpp
+    )
+    target_compile_features(resonith_decode PRIVATE cxx_std_20)
+    target_link_libraries(resonith_decode PRIVATE Resonith::Core)
+    set_target_properties(resonith_decode PROPERTIES CXX_EXTENSIONS OFF)
+    resonith_enable_warnings(resonith_decode)
+
     add_executable(resonith_lapped_device_bench
         tools/lapped_device_bench.cpp
     )

@@ -78,6 +78,12 @@ jobs:
           name: resonith-device-bench-windows-x64
           path: build/native/Release/resonith_lapped_device_bench.exe
           if-no-files-found: error
+      - name: Publish Windows x64 native decoder
+        uses: actions/upload-artifact@v7
+        with:
+          name: resonith-decode-windows-x64
+          path: build/native/Release/resonith_decode.exe
+          if-no-files-found: error
       - name: Publish Windows x64 adaptive entropy benchmark
         uses: actions/upload-artifact@v7
         with:
@@ -181,12 +187,14 @@ jobs:
           cmake --build build/native \
             --target \
             resonith_core_shared \
+            resonith_decode \
             resonith_lapped_device_bench \
             resonith_lapped_finite_bench \
             --parallel
       - name: Run native decoder-in-loop tests
         env:
           RESONITH_NATIVE_CORE: ${{ github.workspace }}/build/native/libresonith_core_shared.so
+          RESONITH_NATIVE_DECODE: ${{ github.workspace }}/build/native/resonith_decode
           RESONITH_NATIVE_DEVICE_BENCH: ${{ github.workspace }}/build/native/resonith_lapped_device_bench
         run: >
           python -m unittest discover
