@@ -11,6 +11,12 @@ version.
 
 ### Research
 
+- Closed R-103 after its active-band coefficient selector failed the speech
+  fast gate. The negative machine report is published; no bitstream, decoder,
+  or default-encoder behavior changed.
+
+### Research
+
 - Predictive and voiced Basis candidates for speech are the next measured
   encoder experiment. No improvement is claimed yet.
 

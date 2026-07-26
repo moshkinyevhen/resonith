@@ -3030,3 +3030,53 @@ new oscillator opcode.
     bytes, SHA-256, source, license, codec settings, and actual decoder output;
   - Orkela release QA MUST open the short speech and piano streams and exercise
     responsive background decode and playback on the complete Mozart stream.
+
+## R-103 — Active-band perceptual selection oracle
+
+- Date: 2026-07-27
+- Status: **RESEARCH — CLOSED / FAST GATE FAILED**
+- Hypothesis:
+  - the current global squared-energy ranking can spend nearly every sparse
+    coefficient on dominant components while omitting quieter but structurally
+    audible bands;
+  - reserve at most one already-quantized nonzero coefficient for each active
+    lapped band whose peak lies within 40 dB of the frame peak, then spend the
+    remaining unchanged global budget by the existing energy ranking;
+  - compete the new selection with the unchanged energy selector by complete
+    encoded bytes and actual decoder output.
+- Constraints:
+  - this is encoder-only RDO: it adds no syntax, model, decoder operation,
+    memory, or normative floating-point behavior;
+  - the emitted coefficient positions and values remain ordinary LPS4/LPS5
+    Truth data and decode through the existing native Core;
+  - the baseline selector remains the complete fallback, and a losing
+    candidate is removed rather than hidden behind a classifier;
+  - R-100 remains closed: this experiment may not reintroduce a blind minimum
+    coefficient count per frame.
+- Fast gate:
+  - rerun the pinned LibriSpeech and Emotional piano references against the
+    preceding selector and complete-byte-matched Opus;
+  - at matched complete bytes, speech STOI and ESTOI must both improve, while
+    SNR may not regress by more than 0.5 dB;
+  - piano log-mel error may not regress by more than 3% and SNR may not regress
+    by more than 0.5 dB.
+- Promotion gate:
+  - only a fast-gate pass proceeds to the complete Mozart reference, native
+    decoder parity, public listening triplets, changelog, and versioned
+    release evidence;
+  - objective diagnostics remain insufficient for a perceptual-superiority
+    claim without controlled blinded listening.
+- Result:
+  - the speech energy baseline produced 17,744 complete LPF1 bytes, 19.619 dB
+    SNR, 0.94989 STOI, 0.90297 ESTOI, and 3.8249 log-mel RMSE;
+  - the nearest active-band candidate produced 18,012 bytes, 16.973 dB SNR,
+    0.94815 STOI, 0.91217 ESTOI, and 2.3883 log-mel RMSE;
+  - it therefore improved ESTOI and log-mel detail but missed the byte target
+    by 1.51%, lost 2.65 dB SNR, and reduced STOI, failing the declared speech
+    gate;
+  - on Emotional piano, the same 68-coefficient point added nine bytes,
+    changed SNR by less than 0.001 dB, and improved log-mel RMSE by 0.066%;
+  - the overall candidate is not promoted, the complete Mozart run is skipped
+    as required, and the production/default energy selector remains
+    unchanged. The explicit research backend is retained only to reproduce
+    this closed negative result.

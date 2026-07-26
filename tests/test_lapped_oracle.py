@@ -11,6 +11,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT / "reference"))
 
 from maf_p0.lapped_oracle import (  # noqa: E402
+    _active_band_representatives,
     analyze_lapped_source,
     decode_lapped_stream,
     encode_lapped_analysis,
@@ -173,6 +174,38 @@ class LappedOracleTests(unittest.TestCase):
         self.assertFalse(analysis.quantized_grid.flags.writeable)
         self.assertFalse(analysis.score_grid.flags.writeable)
 
+    def test_active_band_selector_reserves_only_audible_nonzero_bands(
+        self,
+    ) -> None:
+        scores = np.zeros(16, dtype=np.float64)
+        quantized = np.zeros(16, dtype=np.int16)
+        scores[[1, 5, 9]] = (1.0e8, 1.0e5, 1.0e3)
+        quantized[[1, 5, 9]] = (100, 20, 3)
+
+        selected = _active_band_representatives(
+            scores,
+            quantized,
+            (0, 4, 8, 12, 16),
+        )
+
+        np.testing.assert_array_equal(selected, np.asarray([1, 5]))
+
+    def test_active_band_encoder_uses_the_unchanged_decoder(self) -> None:
+        source = self._stereo(2048)
+        encoded = encode_lapped_stream(
+            source,
+            48000,
+            coefficients_per_frame=24,
+            half_window=128,
+            band_count=12,
+            density_backend="adaptive",
+            selection_backend="active-band",
+        )
+        decoded = decode_lapped_stream(encoded.payload)
+
+        np.testing.assert_array_equal(decoded.samples, encoded.reconstruction)
+        self.assertEqual(encoded.report["selection_backend"], "active-band")
+
     def test_corruption_and_bounds_are_rejected(self) -> None:
         source = self._stereo(1024)
         encoded = encode_lapped_stream(
@@ -193,6 +226,15 @@ class LappedOracleTests(unittest.TestCase):
                 coefficients_per_frame=129,
                 half_window=128,
                 band_count=12,
+            )
+        with self.assertRaisesRegex(ValueError, "selection backend"):
+            encode_lapped_stream(
+                source,
+                48000,
+                coefficients_per_frame=16,
+                half_window=128,
+                band_count=12,
+                selection_backend="unknown",
             )
 
 

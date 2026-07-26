@@ -141,6 +141,61 @@ def _band_edges(half_window: int, band_count: int) -> tuple[int, ...]:
     return tuple(edges)
 
 
+def _active_band_representatives(
+    scores: np.ndarray,
+    quantized: np.ndarray,
+    edges: tuple[int, ...],
+) -> np.ndarray:
+    """Return one nonzero peak from every band within 40 dB of the frame peak."""
+
+    frame_peak = float(np.max(scores, initial=0.0))
+    if frame_peak <= 0.0:
+        return np.empty(0, dtype=np.int64)
+    minimum_active_energy = frame_peak * 1.0e-4
+    representatives = []
+    for start, end in zip(edges[:-1], edges[1:], strict=True):
+        band_nonzero = np.flatnonzero(quantized[start:end])
+        if band_nonzero.size == 0:
+            continue
+        band_positions = band_nonzero + start
+        local = int(
+            band_positions[
+                np.argmax(scores[band_positions])
+            ]
+        )
+        if float(scores[local]) >= minimum_active_energy:
+            representatives.append(local)
+    return np.asarray(representatives, dtype=np.int64)
+
+
+def _fixed_band_preserving_selection(
+    scores: np.ndarray,
+    quantized: np.ndarray,
+    count: int,
+    edges: tuple[int, ...],
+) -> np.ndarray:
+    """Reserve active-band peaks, then fill the unchanged fixed budget."""
+
+    representatives = _active_band_representatives(
+        scores,
+        quantized,
+        edges,
+    )
+    if representatives.size > count:
+        representatives = representatives[
+            np.argpartition(scores[representatives], -count)[-count:]
+        ]
+    selected_mask = np.zeros(scores.size, dtype=np.bool_)
+    selected_mask[representatives] = True
+    remaining = count - int(representatives.size)
+    if remaining > 0:
+        fill_scores = scores.copy()
+        fill_scores[selected_mask] = -np.inf
+        fill = np.argpartition(fill_scores, -remaining)[-remaining:]
+        selected_mask[fill] = True
+    return np.flatnonzero(selected_mask)
+
+
 def _decompress_exact(compressed: bytes, expected_bytes: int) -> bytes:
     """Bound decompression before accepting any research coefficient grid."""
 
@@ -545,6 +600,7 @@ def encode_lapped_analysis(
     coefficients_per_frame: int,
     entropy_backend: str = "bounded",
     density_backend: str = "fixed",
+    selection_backend: str = "energy",
     native_decoder=None,
 ) -> LappedEncodeResult:
     """Select, pack, and verify one stream from reusable source analysis."""
@@ -561,8 +617,11 @@ def encode_lapped_analysis(
     scales = analysis.scales
     quantized_grid = analysis.quantized_grid
     score_grid = analysis.score_grid
+    edges = _band_edges(half_window, band_count)
     if not 1 <= coefficients_per_frame <= half_window:
         raise ValueError("lapped coefficient budget exceeds the window")
+    if selection_backend not in {"energy", "active-band"}:
+        raise ValueError("unknown lapped selection backend")
     coefficients = np.zeros(
         (source.shape[1], frame_count, half_window),
         dtype=np.int8,
@@ -584,12 +643,20 @@ def encode_lapped_analysis(
         )
         for channel in range(source.shape[1]):
             for frame in range(frame_count):
-                selected = np.sort(
-                    np.argpartition(
+                if selection_backend == "energy":
+                    selected = np.sort(
+                        np.argpartition(
+                            score_grid[channel, frame],
+                            -coefficients_per_frame,
+                        )[-coefficients_per_frame:]
+                    )
+                else:
+                    selected = _fixed_band_preserving_selection(
                         score_grid[channel, frame],
-                        -coefficients_per_frame,
-                    )[-coefficients_per_frame:]
-                )
+                        quantized_grid[channel, frame],
+                        coefficients_per_frame,
+                        edges,
+                    )
                 selected_values = quantized_grid[
                     channel,
                     frame,
@@ -611,15 +678,56 @@ def encode_lapped_analysis(
         flat_quantized = quantized_grid.reshape(-1)
         valid_indices = np.flatnonzero(flat_quantized)
         selected_total = min(total_budget, int(valid_indices.size))
-        if selected_total == valid_indices.size:
-            selected_global = valid_indices
-        else:
-            valid_scores = score_grid.reshape(-1)[valid_indices]
-            selected_global = valid_indices[
-                np.argpartition(valid_scores, -selected_total)[
-                    -selected_total:
+        if selection_backend == "energy":
+            if selected_total == valid_indices.size:
+                selected_global = valid_indices
+            else:
+                valid_scores = score_grid.reshape(-1)[valid_indices]
+                selected_global = valid_indices[
+                    np.argpartition(valid_scores, -selected_total)[
+                        -selected_total:
+                    ]
                 ]
-            ]
+        else:
+            mandatory_mask = np.zeros(
+                quantized_grid.shape,
+                dtype=np.bool_,
+            )
+            for channel in range(source.shape[1]):
+                for frame in range(frame_count):
+                    representatives = _active_band_representatives(
+                        score_grid[channel, frame],
+                        quantized_grid[channel, frame],
+                        edges,
+                    )
+                    mandatory_mask[channel, frame, representatives] = True
+            flat_scores = score_grid.reshape(-1)
+            mandatory_indices = np.flatnonzero(mandatory_mask.reshape(-1))
+            if mandatory_indices.size > selected_total:
+                mandatory_indices = mandatory_indices[
+                    np.argpartition(
+                        flat_scores[mandatory_indices],
+                        -selected_total,
+                    )[-selected_total:]
+                ]
+            selected_mask = np.zeros(flat_quantized.size, dtype=np.bool_)
+            selected_mask[mandatory_indices] = True
+            remaining = selected_total - int(mandatory_indices.size)
+            if remaining > 0:
+                candidates = np.flatnonzero(
+                    (flat_quantized != 0) & ~selected_mask
+                )
+                if candidates.size <= remaining:
+                    selected_mask[candidates] = True
+                else:
+                    fill = candidates[
+                        np.argpartition(
+                            flat_scores[candidates],
+                            -remaining,
+                        )[-remaining:]
+                    ]
+                    selected_mask[fill] = True
+            selected_global = np.flatnonzero(selected_mask)
         selected_mask = np.zeros(flat_quantized.size, dtype=np.bool_)
         selected_mask[selected_global] = True
         selected_mask = selected_mask.reshape(quantized_grid.shape)
@@ -745,6 +853,7 @@ def encode_lapped_analysis(
         "analysis_backend": analysis.analysis_backend,
         "reconstruction_backend": reconstruction_backend,
         "density_backend": density_backend,
+        "selection_backend": selection_backend,
         "stream_bytes": len(payload),
         "stream_sha256": hashlib.sha256(payload).hexdigest(),
         "sample_rate": sample_rate,
@@ -929,6 +1038,7 @@ def encode_lapped_stream(
     entropy_backend: str = "bounded",
     transform_backend: str = "fixed",
     density_backend: str = "fixed",
+    selection_backend: str = "energy",
     native_analyzer=None,
     native_decoder=None,
 ) -> LappedEncodeResult:
@@ -947,5 +1057,6 @@ def encode_lapped_stream(
         coefficients_per_frame=coefficients_per_frame,
         entropy_backend=entropy_backend,
         density_backend=density_backend,
+        selection_backend=selection_backend,
         native_decoder=native_decoder,
     )

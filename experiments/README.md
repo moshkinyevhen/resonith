@@ -77,6 +77,10 @@ reproducible command and independent decode.
   diagnostic pairs and the explicit residual-only baseline loss.
 - `lapped_opus_gate.py` — R-057 band-adaptive lapped sparse-grid sweep,
   nearest-byte Opus sanity gate, and deterministic blind listening trials.
+- `active_band_selection_gate.py` — R-103 closed encoder-only attempt to
+  preserve quiet active bands before global energy allocation.
+- `results/active_band_selection_2026-07-27.json` — the R-103 negative
+  speech/piano fast-gate report; the complete Mozart run was correctly skipped.
 - `results/lapped_density_2026-07-26_summary.json` — R-061 closest-byte
   fixed/variable-density comparison showing implicit acoustic-state
   localization without a separate classifier.

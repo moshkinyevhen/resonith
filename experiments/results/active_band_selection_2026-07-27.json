@@ -1,0 +1,254 @@
+{
+  "bitstream_change": false,
+  "clips": {
+    "emotional-piano": {
+      "active_band": {
+        "byte_delta_fraction": 7.387888787646624e-05,
+        "bytes": 121830,
+        "coefficients_per_frame": 68,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.0545667967845365,
+            "log_spectral_distance_db": 10.168609704051505,
+            "magnitude_cosine_similarity": 0.9999793865291036,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.8200675010504512,
+                "spectral_convergence": 0.005925367779234395
+              },
+              "512": {
+                "log_magnitude_mae": 0.9650156371052241,
+                "spectral_convergence": 0.005954117816283418
+              },
+              "8192": {
+                "log_magnitude_mae": 0.7279361740850951,
+                "spectral_convergence": 0.006036864661320932
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.033966064453125,
+            "rms_error": 0.0012891035998662396,
+            "segmental_snr_db": 34.9999954782497,
+            "si_sdr_db": 40.432640844331324,
+            "snr_db": 40.43301110924325
+          }
+        },
+        "sha256": "a68464a59687a9f8892241cb9c6ce1ee2a0c119604f0c92358b9e10c9e41a2f7",
+        "snr_delta_db": 2.1990206946043145e-05
+      },
+      "analysis_wall_seconds": 3.227297899997211,
+      "complete_experiment_wall_seconds": 101.40421829999832,
+      "energy": {
+        "bytes": 121821,
+        "coefficients_per_frame": 68,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.0552638979172286,
+            "log_spectral_distance_db": 10.169455412258152,
+            "magnitude_cosine_similarity": 0.9999793873976301,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.8201750562151277,
+                "spectral_convergence": 0.005925123600739782
+              },
+              "512": {
+                "log_magnitude_mae": 0.965278909506146,
+                "spectral_convergence": 0.005954212940370769
+              },
+              "8192": {
+                "log_magnitude_mae": 0.7279579432912883,
+                "spectral_convergence": 0.006036408986668963
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.033966064453125,
+            "rms_error": 0.001289106863514755,
+            "segmental_snr_db": 34.9999954782497,
+            "si_sdr_db": 40.432618856147506,
+            "snr_db": 40.43298911903631
+          }
+        },
+        "sha256": "5d09bc82b6c1d470b43e4a20df60d6d1bb36443019a46808c7849924b92c5060"
+      },
+      "fast_gate_passed": true,
+      "opus": {
+        "bytes": 117091,
+        "decoded_sha256": "6637cc39613ad046dba9fc3e58322e349f9cd16b4dec779554c53f41b89bb47b",
+        "decoder_version": "opus-tools 0.2 / libopus 1.3 (fast-gate informational decode)",
+        "metrics": {
+          "alignment_lag_samples": 0,
+          "spectral": {
+            "log_mel_rmse": 0.44333508539362443,
+            "log_spectral_distance_db": 9.585647892519354,
+            "magnitude_cosine_similarity": 0.9996186049439034,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.7940527615836398,
+                "spectral_convergence": 0.027813513675537683
+              },
+              "512": {
+                "log_magnitude_mae": 0.7784182149276617,
+                "spectral_convergence": 0.03081128554898694
+              },
+              "8192": {
+                "log_magnitude_mae": 0.7385908696130743,
+                "spectral_convergence": 0.027698198361534927
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.05615234375,
+            "rms_error": 0.0067861886377667,
+            "segmental_snr_db": 26.212453783694638,
+            "si_sdr_db": 26.001785901322997,
+            "snr_db": 26.006248979122454
+          }
+        },
+        "sha256": "1a6889a2f671cd4901e8081c171c22b28ca34f67c13bf6beab48157174fd2d10"
+      },
+      "source": {
+        "bytes": 1411244,
+        "channels": 2,
+        "frames": 352800,
+        "path": "01-original.wav",
+        "sample_rate": 44100,
+        "sha256": "37d28f15c8b3ecb13c2c161049c39d5de18f0c1b7e5f4a832684dd8059afdab5"
+      }
+    },
+    "speech": {
+      "active_band": {
+        "byte_delta_fraction": 0.01510369702434633,
+        "bytes": 18012,
+        "coefficients_per_frame": 56,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.3882858435783585,
+            "log_spectral_distance_db": 26.551077312512678,
+            "magnitude_cosine_similarity": 0.9753161747849981,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 2.1995701536391685,
+                "spectral_convergence": 0.10970787229004836
+              },
+              "256": {
+                "log_magnitude_mae": 1.8535345333792261,
+                "spectral_convergence": 0.10866040239829554
+              },
+              "512": {
+                "log_magnitude_mae": 2.1590286291119156,
+                "spectral_convergence": 0.10997252528635475
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9121673433588492,
+            "stoi": 0.9481489973672008
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.105438232421875,
+            "rms_error": 0.008775724960183367,
+            "segmental_snr_db": 15.284119473130046,
+            "si_sdr_db": 16.88543903930216,
+            "snr_db": 16.973495309350238
+          }
+        },
+        "sha256": "1e6b2bb84c795026f3b4fb452522a7756e233f20580700890a41641733ea11e4",
+        "snr_delta_db": -2.645067483254266
+      },
+      "analysis_wall_seconds": 0.5184702999977162,
+      "complete_experiment_wall_seconds": 14.15186790000007,
+      "energy": {
+        "bytes": 17744,
+        "coefficients_per_frame": 64,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 3.824907831178985,
+            "log_spectral_distance_db": 30.4922679367686,
+            "magnitude_cosine_similarity": 0.9836168006223431,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 2.747713194240054,
+                "spectral_convergence": 0.0813625391283082
+              },
+              "256": {
+                "log_magnitude_mae": 2.935948831848762,
+                "spectral_convergence": 0.08202576143087768
+              },
+              "512": {
+                "log_magnitude_mae": 2.9223490931611327,
+                "spectral_convergence": 0.08211254199855221
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9029693058296405,
+            "stoi": 0.9498939387322677
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.07763671875,
+            "rms_error": 0.006471867680555471,
+            "segmental_snr_db": 17.646313201670743,
+            "si_sdr_db": 19.570913235477786,
+            "snr_db": 19.618562792604504
+          }
+        },
+        "sha256": "7494ff8b425c0dacbb2bfb579e7f106abd0fe0b2de7730835fe9e7abe5a6b18c"
+      },
+      "fast_gate_passed": false,
+      "opus": {
+        "bytes": 17942,
+        "decoded_sha256": "8125700a4ceab5a34f4259e7168a38a8aac8c8b83bfe1230c2fe2e37e0c72b6a",
+        "decoder_version": "opus-tools 0.2 / libopus 1.6.1",
+        "metrics": {
+          "alignment_lag_samples": 0,
+          "spectral": {
+            "log_mel_rmse": 0.6011680709866213,
+            "log_spectral_distance_db": 11.196922123954055,
+            "magnitude_cosine_similarity": 0.9735693750921546,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 0.6829298187302947,
+                "spectral_convergence": 0.18836846108465527
+              },
+              "256": {
+                "log_magnitude_mae": 0.6798483111021106,
+                "spectral_convergence": 0.1907094170946533
+              },
+              "512": {
+                "log_magnitude_mae": 0.6834620321838313,
+                "spectral_convergence": 0.18927212274118627
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9880461884303828,
+            "stoi": 0.9931723093721826
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.34344482421875,
+            "rms_error": 0.021236646592585128,
+            "segmental_snr_db": 12.625698682303828,
+            "si_sdr_db": 8.755288247642131,
+            "snr_db": 9.297436583803522
+          }
+        },
+        "sha256": "cbfdd8da42cb28a90a336bb162adbf72d3d6129b62ecc1e452a6da10220d67e6"
+      },
+      "source": {
+        "bytes": 187404,
+        "channels": 1,
+        "frames": 93680,
+        "path": "speech-original.wav",
+        "sample_rate": 16000,
+        "sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46"
+      }
+    }
+  },
+  "decision": "R-103",
+  "decoder_change": false,
+  "fast_gate_passed": false,
+  "schema": "resonith-active-band-selection-gate-1",
+  "status": "fast gate failed; do not run complete Mozart"
+}
