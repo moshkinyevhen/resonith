@@ -29,6 +29,10 @@ Status: **IMPLEMENTED / EXPERIMENTAL**
   Python parity, x64/ARM64 cross-compilation, Android NDK, and sanitized
   mutation gates. On the physical Xeon host its complete-field entropy stage
   ran at 259x–357x realtime median with 81.8–119.1 KB caller workspace.
+- Independently reset compact LAF1 records passed the R-097 transport gate at
+  12,288 frames: prospective LPS5 saved 5.32% on piano, 3.43% on drums, and
+  5.95% on Corelli against complete LPS4 bytes with identical reconstruction.
+  The 34.8 ms point did not pass, so LPS4 remains the Realtime fallback.
 - The portable Core now decodes a complete typed mono RSC1 stream through one
   allocation-free C API call.
 - Python encoder RDO is bound to the native whole-stream decoder and rejects

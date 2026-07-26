@@ -1,0 +1,32 @@
+{
+  "clip_count": 3,
+  "clips": {
+    "corelli-sonata-realization": {
+      "34.8_ms": 0.0254,
+      "69.7_ms": 0.0396,
+      "139.3_ms": 0.0503,
+      "278.6_ms": 0.05946662249461654,
+      "557.3_ms": 0.0674
+    },
+    "emotional-piano-cc0": {
+      "34.8_ms": 0.0288,
+      "69.7_ms": 0.0412,
+      "139.3_ms": 0.0484,
+      "278.6_ms": 0.05319972475485979,
+      "557.3_ms": 0.0578
+    },
+    "patro-de-bateria": {
+      "34.8_ms": 0.0066,
+      "69.7_ms": 0.0178,
+      "139.3_ms": 0.0273,
+      "278.6_ms": 0.03428913464827277,
+      "557.3_ms": 0.041
+    }
+  },
+  "gate": "At least 3% complete-record reduction on every clip at no more than 278.6 ms.",
+  "gate_passed": true,
+  "mean_selected_complete_byte_reduction": 0.048985160632583034,
+  "research_only": true,
+  "selected_packet_frames": 12288,
+  "selected_packet_milliseconds_at_44100_hz": 278.63945578231295
+}

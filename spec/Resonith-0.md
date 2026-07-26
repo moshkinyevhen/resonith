@@ -485,6 +485,41 @@ cross-platform, hostile-input, and desktop resource gates have passed. `LAF1`
 remains prospective until the existing blinded-listening gate passes; Main-0
 does not yet require it.
 
+#### 4.1.12 Prospective `LPS5` independently reset adaptive sequence
+
+`LPS5` retains LPS4's authenticated 60-byte sequence context, transform
+ownership, immediate lookahead, exact-prefix salvage rule, CRC-protected
+records, and transport authentication requirement. It changes only each
+record's entropy representation from compact LSE2 to independently reset
+compact LAF1.
+
+Each record starts with this 28-byte little-endian descriptor:
+
+| Field | Type |
+| --- | --- |
+| coefficient-count entropy mode and parameter | `u8`, `u8` |
+| coefficient-gap escape threshold | `u16` |
+| selected coefficient count | `u32` |
+| scale, count, gap-category, raw-gap, and value bit counts | five `u32` |
+
+The five payloads and little-endian CRC-32 follow exactly as in clauses 4.1.10
+and 4.1.11. Magic, version, flags, reserved byte, transform-frame count,
+channels, and band count are omitted because the authenticated sequence context
+and packet index determine them. Expansion to canonical LAF1 MUST reproduce
+those inherited fields; substitution is prohibited.
+
+All adaptive models reset at the start of every record. A missing or corrupted
+record therefore cannot alter the entropy state of a later record. Non-final
+record \(k\) still requires the first transform frame owned by record \(k+1\)
+before its final half-window is Truth-complete.
+
+The selected Streaming/Main point uses 12,288 nominal PCM frames per record,
+or 278.64 ms at 44.1 kHz. R-097 measured complete LPS5 reductions against LPS4
+of 5.32% on piano, 3.43% on drums, and 5.95% on Corelli with identical
+reconstruction. At the 1,536-frame Realtime point, the reductions were only
+2.88%, 0.66%, and 2.54%; therefore LPS4 remains the low-latency fallback.
+These are research-corpus results, not a general codec claim.
+
 A transport scheduler MUST keep authentication, replay policy, reordering, and
 playout deadlines outside the decoder Core. At each deadline it selects
 complete record-pair decode, exact prefix decode plus output-only suffix

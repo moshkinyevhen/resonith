@@ -13,8 +13,11 @@ sys.path.insert(0, str(REPOSITORY_ROOT / "reference"))
 from maf_p0.finite_state_oracle import (  # noqa: E402
     _decode_adaptive,
     _encode_adaptive,
+    compact_finite_state_lapped,
+    compact_finite_state_lapped_size,
     decode_finite_state_lapped,
     encode_finite_state_lapped,
+    expand_compact_finite_state_lapped,
 )
 
 
@@ -94,6 +97,35 @@ class FiniteStateOracleTests(unittest.TestCase):
         np.testing.assert_array_equal(decoded.counts, counts)
         np.testing.assert_array_equal(decoded.positions, positions)
         np.testing.assert_array_equal(decoded.values, values)
+
+    def test_compact_transport_restores_exact_laf1(self) -> None:
+        scales, counts, positions, values = self._fields()
+        payload = encode_finite_state_lapped(
+            scales,
+            counts,
+            positions,
+            values,
+            half_window=64,
+        )
+        compact = compact_finite_state_lapped(payload)
+        restored = expand_compact_finite_state_lapped(
+            compact,
+            frame_count=3,
+            channels=2,
+            band_count=3,
+        )
+
+        self.assertEqual(restored, payload)
+        self.assertEqual(compact_finite_state_lapped_size(compact), len(compact))
+        with self.assertRaises(ValueError):
+            compact_finite_state_lapped_size(compact[:-1])
+        with self.assertRaises(ValueError):
+            expand_compact_finite_state_lapped(
+                compact + b"\0",
+                frame_count=3,
+                channels=2,
+                band_count=3,
+            )
 
     def test_corrupt_header_truncation_and_trailing_bytes_are_rejected(
         self,

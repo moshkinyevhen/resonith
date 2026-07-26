@@ -2850,3 +2850,43 @@ new oscillator opcode.
   - native resource and portability gates pass. LAF1 may enter a prospective
     lapped transport, but Main promotion still waits for the shared blinded
     listening gate.
+
+## R-097 — Independent-record adaptive entropy reset gate
+
+- Date: 2026-07-26
+- Status: **PASS / 278.6 MS STREAMING POINT**
+- Candidate:
+  - replace each compact LPS4 LSE2 record with an independently reset compact
+    LAF1 field while retaining the same authenticated sequence context,
+    single transform ownership, immediate lookahead, CRC, and concealment
+    boundary;
+  - remove LAF1 magic, version, flags, reserved, frame count, channels, and
+    band count from each record because the authenticated envelope and packet
+    index determine them exactly.
+- Risk:
+  - the monolithic LAF1 gain may depend on hundreds of transform frames of
+    adaptation; resetting the probability model every 34.8 ms could erase the
+    measured compression advantage;
+  - carrying adaptive state across packets would violate the project's loss
+    containment and random-access rules.
+- Gate:
+  - measure complete record bytes at 34.8, 69.7, 139.3, 278.6, and 557.3 ms
+    nominal packet durations on every R-084 clip;
+  - include the compact descriptor, arithmetic finish bits, byte padding, CRC,
+    sequence context, final partial record, and per-record model reset;
+  - do not define LPS5 syntax unless one latency point saves at least 3% on
+    every clip while keeping packet duration at or below 278.6 ms;
+  - if the gate fails, investigate a fixed normative prior without introducing
+    cross-record state.
+- Result:
+  - at 34.8 ms, compact LAF1 saved 2.88% on piano, 0.66% on drums, and 2.54%
+    on Corelli, so it does not replace low-latency LPS4;
+  - at 69.7 ms the reductions were 4.12%, 1.78%, and 3.96%; at 139.3 ms they
+    were 4.84%, 2.73%, and 5.03%;
+  - the 278.6 ms point passed every condition with complete-transport
+    reductions of 5.32% on piano, 3.43% on drums, and 5.95% on Corelli;
+  - the 557.3 ms diagnostic reached 5.78%, 4.10%, and 6.74% but is not selected
+    because it doubles the loss/seek interval for a modest additional gain;
+  - LPS5 is approved as a prospective Streaming/Main transport with a 278.6 ms
+    nominal record. LPS4 remains the Realtime fallback, and a fixed-prior
+    experiment may target shorter records without cross-record state.

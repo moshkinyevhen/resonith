@@ -23,6 +23,7 @@ from .sparse_entropy import (
 MAGIC = b"LAF1"
 VERSION = 1
 HEADER = struct.Struct("<4s5BHIHH6I")
+COMPACT_HEADER = struct.Struct("<BBH6I")
 _TOP = (1 << 32) - 1
 _HALF = 1 << 31
 _QUARTER = 1 << 30
@@ -40,6 +41,123 @@ class FiniteStateSparseFields:
     positions: np.ndarray
     values: np.ndarray
     gap_threshold: int
+
+
+def compact_finite_state_lapped(payload: bytes) -> bytes:
+    """Remove LAF1 fields inherited from an authenticated packet envelope."""
+
+    if (
+        not isinstance(payload, bytes)
+        or len(payload) < HEADER.size
+        or len(payload) > MAX_PAYLOAD_BYTES
+    ):
+        raise ValueError("invalid LAF1 payload for compact transport")
+    fields = HEADER.unpack_from(payload)
+    (
+        magic,
+        version,
+        flags,
+        count_entropy,
+        count_parameter,
+        reserved,
+        gap_threshold,
+        _frame_count,
+        _channels,
+        _band_count,
+        coefficient_count,
+        scale_bits,
+        count_bits,
+        gap_bits,
+        raw_gap_bits,
+        value_bits,
+    ) = fields
+    if magic != MAGIC or version != VERSION or flags != 0 or reserved != 0:
+        raise ValueError("unsupported LAF1 compact source")
+    compact = (
+        COMPACT_HEADER.pack(
+            count_entropy,
+            count_parameter,
+            gap_threshold,
+            coefficient_count,
+            scale_bits,
+            count_bits,
+            gap_bits,
+            raw_gap_bits,
+            value_bits,
+        )
+        + payload[HEADER.size :]
+    )
+    if compact_finite_state_lapped_size(compact) != len(compact):
+        raise ValueError("LAF1 entropy fields are not exactly framed")
+    return compact
+
+
+def compact_finite_state_lapped_size(payload: bytes) -> int:
+    """Return one compact LAF1 record length from local entropy bit counts."""
+
+    if not isinstance(payload, bytes) or len(payload) < COMPACT_HEADER.size:
+        raise ValueError("truncated compact LAF1 descriptor")
+    fields = COMPACT_HEADER.unpack_from(payload)
+    bit_counts = fields[-5:]
+    payload_bytes = sum((int(bits) + 7) // 8 for bits in bit_counts)
+    total = COMPACT_HEADER.size + payload_bytes
+    if total > MAX_PAYLOAD_BYTES or total > len(payload):
+        raise ValueError("truncated compact LAF1 fields")
+    return total
+
+
+def expand_compact_finite_state_lapped(
+    payload: bytes,
+    *,
+    frame_count: int,
+    channels: int,
+    band_count: int,
+) -> bytes:
+    """Restore one canonical LAF1 header from authenticated inherited shape."""
+
+    size = compact_finite_state_lapped_size(payload)
+    if size != len(payload):
+        raise ValueError("trailing compact LAF1 bytes")
+    (
+        count_entropy,
+        count_parameter,
+        gap_threshold,
+        coefficient_count,
+        scale_bits,
+        count_bits,
+        gap_bits,
+        raw_gap_bits,
+        value_bits,
+    ) = COMPACT_HEADER.unpack_from(payload)
+    if (
+        frame_count <= 0
+        or channels <= 0
+        or channels > 0xFFFF
+        or band_count <= 0
+        or band_count > 0xFFFF
+    ):
+        raise ValueError("compact LAF1 inherited shape is invalid")
+    return (
+        HEADER.pack(
+            MAGIC,
+            VERSION,
+            0,
+            count_entropy,
+            count_parameter,
+            0,
+            gap_threshold,
+            frame_count,
+            channels,
+            band_count,
+            coefficient_count,
+            scale_bits,
+            count_bits,
+            gap_bits,
+            raw_gap_bits,
+            value_bits,
+        )
+        + payload[COMPACT_HEADER.size :]
+    )
 
 
 class _AdaptiveModel:

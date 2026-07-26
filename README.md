@@ -59,11 +59,14 @@ The repository contains:
 - a bounded allocation-free native `LAF1` adaptive integer entropy candidate
   that preserves the selected lapped reconstruction while reducing complete
   three-second R-084 bytes by 5.34% to 7.67% on all three licensed clips;
+- prospective `LPS5` independently reset adaptive records, which preserve LPS4
+  loss containment and reduce complete 278.6 ms transport bytes by 3.43% to
+  5.95% on the three R-084 clips;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 143 pure reference/security/integration tests, fourteen native decoder-in-loop
+- 147 pure reference/security/integration tests, fourteen native decoder-in-loop
   integration tests, ten native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1/LPF1/LAF1 mutation targets.

@@ -18,6 +18,7 @@ from maf_p0.lapped_streaming import (  # noqa: E402
     encode_lapped_packet_stream,
     encode_lapped_chained_packet_stream,
     encode_lapped_compact_packet_stream,
+    encode_lapped_finite_packet_stream,
     encode_lapped_transform_packet_stream,
     index_lapped_packet_stream,
 )
@@ -243,6 +244,44 @@ class LappedStreamingTests(unittest.TestCase):
         corrupted[-1] ^= 1
         with self.assertRaises(ValueError):
             decode_lapped_packet_stream(bytes(corrupted))
+
+    def test_finite_state_packets_reset_and_match_compact_truth(self) -> None:
+        source = self._stereo(4096)
+        compact = encode_lapped_compact_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+        )
+        finite = encode_lapped_finite_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+        )
+        info = index_lapped_packet_stream(finite.payload)
+
+        self.assertTrue(info.chained_boundary)
+        self.assertTrue(info.compact_transport)
+        self.assertEqual(finite.report["format_profile"], "prospective-LPS5")
+        np.testing.assert_array_equal(
+            finite.reconstruction,
+            compact.reconstruction,
+        )
+        np.testing.assert_array_equal(
+            decode_lapped_chained_packet_view(info, 2),
+            finite.reconstruction[2048:3072],
+        )
+        corrupted = bytearray(finite.payload)
+        corrupted[-1] ^= 1
+        with self.assertRaises(ValueError):
+            decode_lapped_packet_stream(bytes(corrupted))
+        with self.assertRaises(ValueError):
+            decode_lapped_packet_stream(finite.payload + b"\0")
 
 
 if __name__ == "__main__":

@@ -10,6 +10,14 @@ import zlib
 import numpy as np
 
 from .codec import _quality_report
+from .finite_state_oracle import (
+    MAGIC as FINITE_STATE_MAGIC,
+    compact_finite_state_lapped,
+    compact_finite_state_lapped_size,
+    decode_finite_state_lapped,
+    encode_finite_state_lapped,
+    expand_compact_finite_state_lapped,
+)
 from .lapped_oracle import (
     MAX_BANDS,
     MAX_CHANNELS,
@@ -33,6 +41,7 @@ MAGIC = b"LPS1"
 TRANSFORM_MAGIC = b"LPS2"
 CHAINED_MAGIC = b"LPS3"
 COMPACT_MAGIC = b"LPS4"
+FINITE_COMPACT_MAGIC = b"LPS5"
 VERSION = 1
 HEADER = struct.Struct("<4sBBHIIHHII")
 PACKET_HEADER = struct.Struct("<III")
@@ -177,6 +186,7 @@ def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
             TRANSFORM_MAGIC,
             CHAINED_MAGIC,
             COMPACT_MAGIC,
+            FINITE_COMPACT_MAGIC,
         )
         or version != VERSION
         or flags != 0
@@ -194,33 +204,44 @@ def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
     cursor = HEADER.size + DIGEST_BYTES
     expected_start = 0
     packets: list[LappedPacketView] = []
-    if magic == COMPACT_MAGIC:
+    if magic in (COMPACT_MAGIC, FINITE_COMPACT_MAGIC):
         for packet_index in range(packet_count):
             logical_start = packet_index * packet_frames
             logical_count = min(
                 packet_frames,
                 total_frames - logical_start,
             )
-            record_size = compact_variable_sparse_lapped_size(
-                payload[cursor:]
+            record_size = (
+                compact_variable_sparse_lapped_size(payload[cursor:])
+                if magic == COMPACT_MAGIC
+                else compact_finite_state_lapped_size(payload[cursor:])
             )
             record_end = cursor + record_size
             if len(payload) - record_end < 4:
-                raise ValueError("truncated LPS4 packet CRC")
+                raise ValueError("truncated compact lapped packet CRC")
             record = payload[cursor:record_end]
             declared_crc = struct.unpack_from("<I", payload, record_end)[0]
             if zlib.crc32(record) & 0xFFFF_FFFF != declared_crc:
-                raise ValueError("LPS4 packet CRC mismatch")
+                raise ValueError("compact lapped packet CRC mismatch")
             final_packet = packet_index + 1 == packet_count
             owned_frames = (
                 logical_count // half_window
                 + (1 if final_packet else 0)
             )
-            child_payload = expand_compact_variable_sparse_lapped(
-                record,
-                frame_count=owned_frames,
-                channels=channels,
-                band_count=band_count,
+            child_payload = (
+                expand_compact_variable_sparse_lapped(
+                    record,
+                    frame_count=owned_frames,
+                    channels=channels,
+                    band_count=band_count,
+                )
+                if magic == COMPACT_MAGIC
+                else expand_compact_finite_state_lapped(
+                    record,
+                    frame_count=owned_frames,
+                    channels=channels,
+                    band_count=band_count,
+                )
             )
             packets.append(
                 LappedPacketView(
@@ -280,8 +301,8 @@ def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
         band_count,
         packet_frames,
         magic == TRANSFORM_MAGIC,
-        magic in (CHAINED_MAGIC, COMPACT_MAGIC),
-        magic == COMPACT_MAGIC,
+        magic in (CHAINED_MAGIC, COMPACT_MAGIC, FINITE_COMPACT_MAGIC),
+        magic in (COMPACT_MAGIC, FINITE_COMPACT_MAGIC),
         tuple(packets),
     )
 
@@ -354,13 +375,28 @@ def _decode_selected_packet_fields(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Decode one direct LSE2 packet into bounded selected fields."""
 
-    fields = decode_variable_sparse_lapped(
-        packet.child_payload,
-        half_window=info.half_window,
-        expected_channels=info.channels,
-        expected_frames=expected_frames,
-        expected_bands=info.band_count,
-    )
+    if packet.child_payload.startswith(FINITE_STATE_MAGIC):
+        fields = decode_finite_state_lapped(
+            packet.child_payload,
+            half_window=info.half_window,
+            expected_channels=info.channels,
+            expected_frames=expected_frames,
+            expected_bands=info.band_count,
+        )
+        counts = fields.counts
+        positions = fields.positions
+        values = fields.values
+    else:
+        fields = decode_variable_sparse_lapped(
+            packet.child_payload,
+            half_window=info.half_window,
+            expected_channels=info.channels,
+            expected_frames=expected_frames,
+            expected_bands=info.band_count,
+        )
+        counts = fields.counts
+        positions = fields.positions
+        values = fields.values
     coefficient_grid = np.zeros(
         (info.channels, expected_frames, info.half_window),
         dtype=np.int8,
@@ -368,15 +404,15 @@ def _decode_selected_packet_fields(
     cursor = 0
     for channel in range(info.channels):
         for frame in range(expected_frames):
-            count = int(fields.counts[channel, frame])
+            count = int(counts[channel, frame])
             end = cursor + count
             coefficient_grid[
                 channel,
                 frame,
-                fields.positions[cursor:end],
-            ] = fields.values[cursor:end]
+                positions[cursor:end],
+            ] = values[cursor:end]
             cursor = end
-    if cursor != fields.positions.size:
+    if cursor != positions.size:
         raise ValueError("lapped packet coefficient coverage mismatch")
     return fields.scales, coefficient_grid
 
@@ -928,6 +964,154 @@ def encode_lapped_compact_packet_stream(
         "band_count": band_count,
         "coefficients_per_frame": coefficients_per_frame,
         "density_backend": "adaptive-global",
+        "packet_frames": packet_frames,
+        "packet_count": packet_count,
+        "packet_record_bytes": record_bytes,
+        "duplicated_boundary_transform_frames": 0,
+        "lookahead_frames": half_window,
+        "maximum_loss_extension_frames": half_window,
+        "monolithic_stream_bytes": len(monolithic.payload),
+        "packet_byte_overhead_fraction": (
+            len(payload) / len(monolithic.payload) - 1.0
+        ),
+        "exact_monolithic_reconstruction": True,
+        **_quality_report(
+            source.reshape(-1),
+            decoded.samples.reshape(-1),
+        ),
+    }
+    return LappedPacketEncodeResult(
+        payload,
+        decoded.samples,
+        report,
+    )
+
+
+def encode_lapped_finite_packet_stream(
+    samples: np.ndarray,
+    sample_rate: int,
+    *,
+    coefficients_per_frame: int,
+    packet_frames: int,
+    half_window: int = 512,
+    band_count: int = 24,
+    native_core=None,
+) -> LappedPacketEncodeResult:
+    """Packetize single-owner fields with independently reset LAF1 entropy."""
+
+    source_view = np.asarray(samples)
+    if (
+        source_view.dtype != np.int16
+        or source_view.ndim != 2
+        or source_view.shape[0] == 0
+    ):
+        raise TypeError("LPS5 input must be frame-major PCM16")
+    source = np.array(source_view, dtype=np.int16, copy=True)
+    packet_count = (
+        source.shape[0] + packet_frames - 1
+    ) // packet_frames
+    _validate_header(
+        source.shape[1],
+        sample_rate,
+        source.shape[0],
+        half_window,
+        band_count,
+        packet_frames,
+        packet_count,
+    )
+    analysis = analyze_lapped_source(
+        source,
+        sample_rate,
+        half_window=half_window,
+        band_count=band_count,
+        transform_backend="fixed",
+        native_analyzer=native_core,
+    )
+    monolithic = encode_lapped_analysis(
+        analysis,
+        coefficients_per_frame=coefficients_per_frame,
+        entropy_backend="bounded",
+        density_backend="adaptive",
+        native_decoder=native_core,
+    )
+    header = HEADER.pack(
+        FINITE_COMPACT_MAGIC,
+        VERSION,
+        0,
+        source.shape[1],
+        sample_rate,
+        source.shape[0],
+        half_window,
+        band_count,
+        packet_frames,
+        packet_count,
+    )
+    body = bytearray(header + hashlib.sha256(header).digest())
+    record_bytes = []
+    logical_starts = list(range(0, source.shape[0], packet_frames))
+    for packet_index, logical_start in enumerate(logical_starts):
+        logical_count = min(
+            packet_frames,
+            source.shape[0] - logical_start,
+        )
+        final_packet = packet_index + 1 == packet_count
+        first_transform = logical_start // half_window
+        owned_frames = (
+            logical_count // half_window
+            + (1 if final_packet else 0)
+        )
+        transform_end = first_transform + owned_frames
+        scales = monolithic.selected_scales[
+            :, first_transform:transform_end
+        ]
+        coefficients = monolithic.selected_coefficients[
+            :, first_transform:transform_end
+        ]
+        counts = np.count_nonzero(coefficients, axis=2).astype(np.uint16)
+        position_parts: list[np.ndarray] = []
+        value_parts: list[np.ndarray] = []
+        for channel in range(coefficients.shape[0]):
+            for frame in range(coefficients.shape[1]):
+                positions = np.flatnonzero(
+                    coefficients[channel, frame]
+                ).astype(np.uint16)
+                position_parts.append(positions)
+                value_parts.append(
+                    coefficients[channel, frame, positions].astype(np.int8)
+                )
+        full_laf1 = encode_finite_state_lapped(
+            scales,
+            counts,
+            np.concatenate(position_parts),
+            np.concatenate(value_parts),
+            half_window=half_window,
+        )
+        record = compact_finite_state_lapped(full_laf1)
+        body += record
+        body += struct.pack("<I", zlib.crc32(record) & 0xFFFF_FFFF)
+        record_bytes.append(len(record) + 4)
+
+    payload = bytes(body)
+    decoded = decode_lapped_packet_stream(payload)
+    if not np.array_equal(decoded.samples, monolithic.reconstruction):
+        raise RuntimeError("LPS5 packet reconstruction differs from LPF1")
+    report = {
+        "status": "adaptive integer transport-framed research stream",
+        "format_profile": "prospective-LPS5",
+        "integrity": (
+            "SHA-256 sequence header plus CRC-32 packet records; "
+            "cryptographic packet authentication is a transport requirement"
+        ),
+        "stream_bytes": len(payload),
+        "stream_sha256": hashlib.sha256(payload).hexdigest(),
+        "sample_rate": sample_rate,
+        "frame_count": int(source.shape[0]),
+        "channel_count": int(source.shape[1]),
+        "half_window": half_window,
+        "band_count": band_count,
+        "coefficients_per_frame": coefficients_per_frame,
+        "density_backend": "adaptive-global",
+        "entropy_backend": "bounded adaptive integer; reset per record",
         "packet_frames": packet_frames,
         "packet_count": packet_count,
         "packet_record_bytes": record_bytes,
