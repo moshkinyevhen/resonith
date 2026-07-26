@@ -253,9 +253,59 @@ int main() {
             return 1;
         }
     }
+    resonith_liftpack_cursor cursor{};
+    if (!expect(
+            resonith_liftpack_cursor_open(
+                residual_section.payload,
+                residual_section.payload_size,
+                &cursor
+            ) == RESONITH_STATUS_OK,
+            "open forward LiftPack cursor"
+        )) {
+        return 1;
+    }
     std::array<std::int64_t, 64> block_output{};
     std::uint32_t block_sample_offset = 99U;
     std::size_t block_samples_written = 99U;
+    for (std::uint32_t block = 0U; block < 3U; ++block) {
+        if (!expect(
+                resonith_liftpack_cursor_decode_next(
+                    &cursor,
+                    block_output.data(),
+                    block_output.size(),
+                    scratch.data(),
+                    scratch.size(),
+                    &block_sample_offset,
+                    &block_samples_written
+                ) == RESONITH_STATUS_OK
+                    && block_sample_offset == block * 64U
+                    && block_samples_written == block_output.size()
+                    && std::equal(
+                        block_output.begin(),
+                        block_output.end(),
+                        output.begin() + block_sample_offset
+                    ),
+                "linear cursor block equals whole decode"
+            )) {
+            return 1;
+        }
+    }
+    if (!expect(
+            resonith_liftpack_cursor_decode_next(
+                &cursor,
+                block_output.data(),
+                block_output.size(),
+                scratch.data(),
+                scratch.size(),
+                &block_sample_offset,
+                &block_samples_written
+            ) == RESONITH_STATUS_NOT_FOUND
+                && block_sample_offset == 0U
+                && block_samples_written == 0U,
+            "forward cursor canonical end"
+        )) {
+        return 1;
+    }
     if (!expect(
             resonith_liftpack_decode_block(
                 residual_section.payload,

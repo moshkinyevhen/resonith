@@ -67,6 +67,42 @@ extern "C" int LLVMFuzzerTestOneInput(
         __builtin_trap();
     }
     if (decode_status == RESONITH_STATUS_OK && info.block_count != 0U) {
+        resonith_liftpack_cursor cursor{};
+        if (
+            resonith_liftpack_cursor_open(data, size, &cursor)
+            != RESONITH_STATUS_OK
+        ) {
+            __builtin_trap();
+        }
+        std::vector<std::int64_t> cursor_output(info.block_size);
+        for (std::uint32_t block_id = 0U; block_id < info.block_count;
+             ++block_id) {
+            std::uint32_t cursor_offset = 0U;
+            std::size_t cursor_samples = 0U;
+            if (
+                resonith_liftpack_cursor_decode_next(
+                    &cursor,
+                    cursor_output.data(),
+                    cursor_output.size(),
+                    scratch.data(),
+                    scratch.size(),
+                    &cursor_offset,
+                    &cursor_samples
+                ) != RESONITH_STATUS_OK
+                || cursor_offset != index[block_id].sample_offset
+                || cursor_samples != index[block_id].sample_count
+            ) {
+                __builtin_trap();
+            }
+            for (std::size_t local = 0U; local < cursor_samples; ++local) {
+                if (
+                    cursor_output[local]
+                    != output[cursor_offset + local]
+                ) {
+                    __builtin_trap();
+                }
+            }
+        }
         const std::uint32_t block_id = info.block_count - 1U;
         std::vector<std::int64_t> block_output(info.block_size);
         std::uint32_t sample_offset = 0U;

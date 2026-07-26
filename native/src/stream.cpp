@@ -895,3 +895,95 @@ extern "C" resonith_status resonith_main0_player_decode_block(
     *samples_written = decoded_count;
     return RESONITH_STATUS_OK;
 }
+
+extern "C" resonith_status resonith_main0_player_stream(
+    const resonith_main0_player_view* view,
+    std::int64_t* innovation_q,
+    std::size_t innovation_capacity,
+    std::int64_t* liftpack_scratch,
+    std::size_t liftpack_scratch_capacity,
+    std::int16_t* output,
+    std::size_t output_capacity,
+    resonith_pcm16_callback callback,
+    void* user,
+    std::size_t* samples_emitted
+) {
+    if (samples_emitted == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *samples_emitted = 0U;
+    if (
+        view == nullptr
+        || innovation_q == nullptr
+        || liftpack_scratch == nullptr
+        || output == nullptr
+        || callback == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    if (
+        view->innovation_data == nullptr
+        || view->innovation_size == 0U
+        || view->innovation_step == 0U
+        || view->innovation_step > kMaximumInnovationStep
+        || view->output_channels != 1U
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    if (view->atom_count != 0U) {
+        return RESONITH_STATUS_UNSUPPORTED_FEATURE;
+    }
+
+    resonith_liftpack_cursor cursor{};
+    resonith_status status = resonith_liftpack_cursor_open(
+        view->innovation_data,
+        view->innovation_size,
+        &cursor
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    if (
+        cursor.info.sample_count != view->sample_count
+        || cursor.info.block_count != view->block_count
+        || cursor.info.block_size != view->block_size
+        || resonith_liftpack_required_scratch(&cursor.info)
+            != view->liftpack_scratch_elements
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+
+    while (cursor.next_block < cursor.info.block_count) {
+        std::uint32_t block_offset = 0U;
+        std::size_t block_samples = 0U;
+        status = resonith_liftpack_cursor_decode_next(
+            &cursor,
+            innovation_q,
+            innovation_capacity,
+            liftpack_scratch,
+            liftpack_scratch_capacity,
+            &block_offset,
+            &block_samples
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        if (output_capacity < block_samples) {
+            return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+        }
+        for (std::size_t sample = 0U; sample < block_samples; ++sample) {
+            output[sample] = scale_innovation(
+                innovation_q[sample],
+                view->innovation_step
+            );
+        }
+        status = callback(user, block_offset, output, block_samples);
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        *samples_emitted += block_samples;
+    }
+    return *samples_emitted == view->sample_count
+        ? RESONITH_STATUS_OK
+        : RESONITH_STATUS_MALFORMED;
+}

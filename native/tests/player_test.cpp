@@ -45,6 +45,38 @@ bool expect(bool condition, const char* message) {
     return condition;
 }
 
+struct CallbackState {
+    std::array<std::int16_t, 32> samples{};
+    std::size_t cursor = 0U;
+    std::uint32_t calls = 0U;
+};
+
+resonith_status collect_pcm(
+    void* user,
+    std::uint32_t sample_offset,
+    const std::int16_t* samples,
+    std::size_t sample_count
+) {
+    auto* state = static_cast<CallbackState*>(user);
+    if (
+        state == nullptr
+        || samples == nullptr
+        || sample_offset != state->cursor
+        || state->cursor > state->samples.size()
+        || sample_count > state->samples.size() - state->cursor
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    std::copy(
+        samples,
+        samples + sample_count,
+        state->samples.begin() + static_cast<std::ptrdiff_t>(state->cursor)
+    );
+    state->cursor += sample_count;
+    ++state->calls;
+    return RESONITH_STATUS_OK;
+}
+
 }  // namespace
 
 int main() {
@@ -89,6 +121,34 @@ int main() {
                 && samples_written == output.size()
                 && output == kSecondBlockPcm,
             "seek and decode exact second block"
+        )) {
+        return 1;
+    }
+
+    CallbackState callback_state{};
+    std::size_t samples_emitted = 99U;
+    if (!expect(
+            resonith_main0_player_stream(
+                &player,
+                innovation.data(),
+                innovation.size(),
+                scratch.data(),
+                scratch.size(),
+                output.data(),
+                output.size(),
+                collect_pcm,
+                &callback_state,
+                &samples_emitted
+            ) == RESONITH_STATUS_OK
+                && samples_emitted == callback_state.samples.size()
+                && callback_state.cursor == callback_state.samples.size()
+                && callback_state.calls == 2U
+                && std::equal(
+                    callback_state.samples.begin() + 16,
+                    callback_state.samples.end(),
+                    kSecondBlockPcm.begin()
+                ),
+            "linear callback player emits exact blocks"
         )) {
         return 1;
     }

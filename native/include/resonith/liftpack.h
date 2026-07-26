@@ -31,6 +31,23 @@ typedef struct resonith_liftpack_block_info {
 } resonith_liftpack_block_info;
 
 /*
+ * Mutable caller-owned cursor for one forward LiftPack pass.
+ *
+ * The cursor borrows immutable encoded bytes. A failed decode does not advance
+ * it, allowing the application to decide whether to retry, conceal, or stop.
+ */
+typedef struct resonith_liftpack_cursor {
+    const uint8_t* data;
+    size_t data_size;
+    size_t byte_offset;
+    uint32_t sample_offset;
+    uint32_t next_block;
+    resonith_liftpack_info info;
+    uint8_t lpc_stream;
+    uint8_t reserved[7];
+} resonith_liftpack_cursor;
+
+/*
  * Validates a LiftPack-1 or LiftPack-2 stream envelope and CRC before sizes.
  * No allocation, logging, I/O, or global mutable state occurs.
  */
@@ -59,6 +76,30 @@ RESONITH_API resonith_status resonith_liftpack_index_blocks(
     resonith_liftpack_block_info* entries,
     size_t entry_capacity,
     size_t* entries_written
+);
+
+/*
+ * Verifies the stream envelope and initializes a single-pass block cursor.
+ * On failure, `cursor` is zeroed.
+ */
+RESONITH_API resonith_status resonith_liftpack_cursor_open(
+    const uint8_t* data,
+    size_t data_size,
+    resonith_liftpack_cursor* cursor
+);
+
+/*
+ * Parses and decodes exactly the next block in linear time.
+ * Returns NOT_FOUND after the canonical final block.
+ */
+RESONITH_API resonith_status resonith_liftpack_cursor_decode_next(
+    resonith_liftpack_cursor* cursor,
+    int64_t* output,
+    size_t output_capacity,
+    int64_t* scratch,
+    size_t scratch_count,
+    uint32_t* sample_offset,
+    size_t* samples_written
 );
 
 /*

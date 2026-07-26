@@ -29,6 +29,37 @@ T* optional_data(std::vector<T>& values) noexcept {
     return values.empty() ? nullptr : values.data();
 }
 
+struct CallbackOracle {
+    const std::vector<std::int16_t>* expected;
+    std::size_t cursor;
+};
+
+resonith_status compare_callback(
+    void* user,
+    std::uint32_t sample_offset,
+    const std::int16_t* samples,
+    std::size_t sample_count
+) {
+    auto* oracle = static_cast<CallbackOracle*>(user);
+    if (
+        oracle == nullptr
+        || oracle->expected == nullptr
+        || samples == nullptr
+        || sample_offset != oracle->cursor
+        || oracle->cursor > oracle->expected->size()
+        || sample_count > oracle->expected->size() - oracle->cursor
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    for (std::size_t index = 0U; index < sample_count; ++index) {
+        if (samples[index] != (*oracle->expected)[oracle->cursor + index]) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+    }
+    oracle->cursor += sample_count;
+    return RESONITH_STATUS_OK;
+}
+
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(
@@ -143,6 +174,26 @@ extern "C" int LLVMFuzzerTestOneInput(
             if (block_output[index] != output[sample_offset + index]) {
                 __builtin_trap();
             }
+        }
+        CallbackOracle oracle = {&output, 0U};
+        std::size_t samples_emitted = 0U;
+        if (
+            resonith_main0_player_stream(
+                &player,
+                block_innovation.data(),
+                block_innovation.size(),
+                scratch.data(),
+                scratch.size(),
+                block_output.data(),
+                block_output.size(),
+                compare_callback,
+                &oracle,
+                &samples_emitted
+            ) != RESONITH_STATUS_OK
+            || samples_emitted != output.size()
+            || oracle.cursor != output.size()
+        ) {
+            __builtin_trap();
         }
     }
     return 0;

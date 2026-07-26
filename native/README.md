@@ -57,6 +57,9 @@ index or serialize independently checked checkpoints.
 Truth path as bounded PCM16 callback-sized work without retaining decoder
 state. The view borrows immutable stream bytes; applications decide whether
 to keep an in-memory block index or a separately authenticated seek table.
+For continuous playback, `resonith_main0_player_stream()` advances one
+caller-owned LiftPack cursor and emits canonical blocks through a C callback.
+Its cost is linear in stream bytes and its live workspace is one block.
 
 ## Build and test
 

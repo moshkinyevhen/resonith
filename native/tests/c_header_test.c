@@ -32,6 +32,7 @@ int main(void) {
         0U,
         0U
     };
+    resonith_liftpack_cursor cursor = {0};
     resonith_cibs_info cibs_info = {0U, 0U, 0U, 0U};
     resonith_raw_basis_info basis_info = {0U, 0U, 0U, 0U};
     resonith_prepared_phase_trajectory trajectory = {
@@ -145,6 +146,25 @@ int main(void) {
         return 1;
     }
     if (
+        resonith_liftpack_cursor_open(NULL, 0U, &cursor)
+            != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_liftpack_cursor_decode_next(
+            &cursor,
+            NULL,
+            0U,
+            NULL,
+            0U,
+            &block_sample_offset,
+            &block_samples_written
+        ) != RESONITH_STATUS_MALFORMED
+    ) {
+        return 1;
+    }
+    if (
         resonith_main0_player_open(NULL, 0U, &player)
             != RESONITH_STATUS_INVALID_ARGUMENT
     ) {
@@ -161,6 +181,22 @@ int main(void) {
             NULL,
             0U,
             &block_sample_offset,
+            &block_samples_written
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_main0_player_stream(
+            &player,
+            NULL,
+            0U,
+            NULL,
+            0U,
+            NULL,
+            0U,
+            NULL,
+            NULL,
             &block_samples_written
         ) != RESONITH_STATUS_INVALID_ARGUMENT
     ) {

@@ -90,6 +90,17 @@ typedef struct resonith_main0_player_view {
     uint16_t reserved;
 } resonith_main0_player_view;
 
+/*
+ * Real-time sink invoked with one canonical PCM block.
+ * Returning a non-OK status stops delivery and propagates that status.
+ */
+typedef resonith_status (*resonith_pcm16_callback)(
+    void* user,
+    uint32_t sample_offset,
+    const int16_t* samples,
+    size_t sample_count
+);
+
 /* Parses the fixed 16-byte CONF schema-1 payload. */
 RESONITH_API resonith_status resonith_stream_config_parse(
     const uint8_t* data,
@@ -171,6 +182,25 @@ RESONITH_API resonith_status resonith_main0_player_decode_block(
     size_t output_capacity,
     uint32_t* sample_offset,
     size_t* samples_written
+);
+
+/*
+ * Linearly decodes every zero-Atom Truth block and emits it through `callback`.
+ *
+ * Work memory is bounded by one residual block. `samples_emitted` advances
+ * only after the callback accepts a complete block.
+ */
+RESONITH_API resonith_status resonith_main0_player_stream(
+    const resonith_main0_player_view* view,
+    int64_t* innovation_q,
+    size_t innovation_capacity,
+    int64_t* liftpack_scratch,
+    size_t liftpack_scratch_capacity,
+    int16_t* output,
+    size_t output_capacity,
+    resonith_pcm16_callback callback,
+    void* user,
+    size_t* samples_emitted
 );
 
 #ifdef __cplusplus
