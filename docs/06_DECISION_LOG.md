@@ -1877,7 +1877,7 @@ new oscillator opcode.
 ## R-070 — Native candidate reconstruction in encoder RDO
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **EXACT PARITY PASS / 3.60X-5.17X FRONTIER SPEEDUP**
 - Decision:
   - allow exact-byte candidate packing to request reconstruction from the
     independent native Golden Decoder;
@@ -1892,3 +1892,13 @@ new oscillator opcode.
     repeated for every RDO candidate;
   - using the production decoder inside RDO accelerates search and strengthens
     acceptance: distortion is measured from the implementation users run.
+- Result:
+  - all six candidate payloads and reconstructed PCM arrays matched the Python
+    path exactly on all three clips;
+  - GitHub Actions run 30209590542 reduced a six-budget one-second stereo
+    frontier from 2.21-2.74 seconds to 0.53-0.61 seconds;
+  - end-to-end frontier speedup was 3.60x on drums, 4.48x on Corelli, and 5.17x
+    on piano;
+  - the ordinary CPU path can now evaluate six exact candidates faster than
+    real time on the hosted x64 runner. GPU work is reserved for deeper RDO,
+    source analysis, and teacher search rather than basic encoding viability.

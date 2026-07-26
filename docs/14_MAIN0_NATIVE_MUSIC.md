@@ -836,3 +836,24 @@ not forward analysis, dominates the current six-budget Python frontier. RDO
 should invoke the already exact native decoder before CPU intrinsics or CUDA
 are justified. The compact record is
 [`native_lapped_analysis_hoisted_2026-07-26_summary.json`](../experiments/results/native_lapped_analysis_hoisted_2026-07-26_summary.json).
+
+## 35. Production-decoder RDO result
+
+R-070 uses the exact native Golden Decoder to reconstruct each packed
+candidate before distortion measurement. The six-budget frontier still keeps
+selection and bounded entropy in Python, but native forward analysis and
+reconstruction now surround that policy layer.
+
+| Crop | Python frontier | Native-backed frontier | Speedup |
+| --- | ---: | ---: | ---: |
+| Corelli | 2.68 s | 0.60 s | 4.48x |
+| Piano | 2.74 s | 0.53 s | 5.17x |
+| Drums | 2.21 s | 0.61 s | 3.60x |
+
+Every candidate stream and every reconstructed PCM sample matched exactly.
+Thus a normal hosted x64 CPU evaluates six complete candidates in less than
+one second per second of stereo. This does not make Studio/Foundry search
+free; it establishes that consumer encoding is already viable without a GPU,
+while CUDA can be spent on broader candidate generation and teacher analysis.
+The compact record is
+[`native_lapped_frontier_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_frontier_timing_2026-07-26_summary.json).

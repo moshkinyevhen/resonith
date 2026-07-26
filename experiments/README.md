@@ -87,6 +87,8 @@ reproducible command and independent decode.
   timing and exact array parity against the fixed Python oracle.
 - `native_lapped_frontier_timing.py` — R-070 six-budget end-to-end RDO timing
   with native analysis and candidate reconstruction.
+- `results/native_lapped_frontier_timing_2026-07-26_summary.json` — the R-070
+  exact native-RDO speedup over the shared-analysis Python path.
 - `results/native_lapped_analysis_timing_2026-07-26_summary.json` — the R-068
   exact-but-slower scalar baseline that directs kernel optimization.
 - `results/native_lapped_analysis_hoisted_2026-07-26_summary.json` — the R-069

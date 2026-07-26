@@ -1,0 +1,38 @@
+{
+  "budgets": [
+    16,
+    24,
+    32,
+    48,
+    64,
+    96
+  ],
+  "clips": {
+    "corelli-sonata-realization": {
+      "exact_stream_and_pcm_parity": true,
+      "native_frontier_seconds": 0.5976993310000012,
+      "python_frontier_seconds": 2.680407907000003,
+      "speedup": 4.484542257250741
+    },
+    "emotional-piano-cc0": {
+      "exact_stream_and_pcm_parity": true,
+      "native_frontier_seconds": 0.530752120999999,
+      "python_frontier_seconds": 2.742525798999999,
+      "speedup": 5.167244162553247
+    },
+    "patro-de-bateria": {
+      "exact_stream_and_pcm_parity": true,
+      "native_frontier_seconds": 0.6138098349999979,
+      "python_frontier_seconds": 2.2079044769999996,
+      "speedup": 3.5970496904794746
+    }
+  },
+  "conclusion": "Native analysis plus production-decoder reconstruction made the exact six-budget frontier 3.60x-5.17x faster while preserving every candidate byte and PCM sample.",
+  "github_actions_run": 30209590542,
+  "iterations": 1,
+  "platform": {
+    "machine": "X64",
+    "operating_system": "GitHub-hosted Linux"
+  },
+  "research_only": true
+}
