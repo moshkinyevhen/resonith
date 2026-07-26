@@ -1,0 +1,30 @@
+{
+  "clip_count": 3,
+  "clips": {
+    "corelli-sonata-realization": {
+      "baseline_complete_stream_bytes": 41694,
+      "complete_byte_reduction": 0.0692665611358948,
+      "r084_coefficients_per_frame": 54,
+      "temporal_complete_stream_bytes": 38806
+    },
+    "emotional-piano-cc0": {
+      "baseline_complete_stream_bytes": 45720,
+      "complete_byte_reduction": 0.05625546806649173,
+      "r084_coefficients_per_frame": 68,
+      "temporal_complete_stream_bytes": 43148
+    },
+    "patro-de-bateria": {
+      "baseline_complete_stream_bytes": 34850,
+      "complete_byte_reduction": -0.005566714490674363,
+      "r084_coefficients_per_frame": 44,
+      "temporal_complete_stream_bytes": 35044
+    }
+  },
+  "conclusion": "The temporal support-state syntax failed the declared all-clips and 5% mean complete-byte gates and is not promoted.",
+  "every_clip_won": false,
+  "gate_passed": false,
+  "identical_reconstruction": true,
+  "maximum_seconds_per_clip": 3.0,
+  "mean_complete_byte_reduction": 0.039985104903904056,
+  "research_only": true
+}

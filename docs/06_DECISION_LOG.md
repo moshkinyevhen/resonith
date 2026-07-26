@@ -2663,3 +2663,47 @@ new oscillator opcode.
     unresolved output, and leaves the later final record exactly decodable;
   - 136 reference/security/integration tests pass locally and in GitHub Actions
     run 30215591344.
+
+## R-091 — Temporal support-state entropy oracle
+
+- Date: 2026-07-26
+- Status: **FAIL / CLOSED**
+- Candidate:
+  - replace repeated per-transform sparse positions with one bounded support
+    state per channel;
+  - encode the first support against the empty state and later supports as
+    sorted XOR toggle events;
+  - derive each frame's coefficient count from the resulting support while
+    keeping coefficient values as independent Truth;
+  - reset the support at every independently decodable record boundary.
+- Rationale:
+  - the selected R-084 frontier already delta-codes scale and coefficient-count
+    fields, but repays every active coefficient position in every transform
+    frame;
+  - measured adjacent-frame support retention is 84% on piano, 73% on Corelli,
+    and 56% on drums at the exact three-second R-084 operating points;
+  - temporal value deltas are larger than absolute-value codes on all three
+    clips, so this experiment deliberately does not add an amplitude
+    predictor.
+- Complexity ceiling:
+  - one `half_window`-bit support field per channel;
+  - integer XOR/toggle, sorted bounded Rice positions, and the existing
+    scale/value entropy primitives only;
+  - no classifier, learned model, cross-record dependency, search state, or
+    new synthesis operation.
+- Gate:
+  - serialized encode/decode round-trips the selected scale and coefficient
+    grids exactly and rejects malformed/trailing input;
+  - all bit counts, mode metadata, reset cost, padding, and complete stream
+    bytes are included;
+  - the candidate must reduce complete bytes on every licensed R-084 clip and
+    reduce the arithmetic mean by at least 5% at identical reconstruction;
+  - failure closes the temporal-support syntax rather than adding more modes.
+- Result:
+  - serialized `LST1` round-trips the selected scale and coefficient grids
+    exactly with strict bounds, reset state, and exact framing;
+  - complete-byte reductions were 6.93% on Corelli, 5.63% on piano, and
+    negative 0.56% on drums at identical reconstruction;
+  - the arithmetic-mean reduction was 4.00%, below the declared 5% threshold,
+    and the all-clips condition failed;
+  - no temporal-support opcode or normative entropy mode is promoted.
