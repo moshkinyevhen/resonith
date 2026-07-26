@@ -3011,3 +3011,22 @@ new oscillator opcode.
     increment;
   - a change without versioned before/after evidence remains an experiment and
     MUST NOT be described as a released improvement.
+
+## R-102 — Three-set listening and regression corpus
+
+- Date: 2026-07-26
+- Status: **ACCEPTED**
+- Decision:
+  - the permanent minimum listening corpus consists of LibriSpeech
+    `1272-128104-0000`, the eight-second public Emotional piano reference, and
+    the complete 400.773-second Mozart *Die Zauberflöte* overture;
+  - each set MUST preserve an adjacent numbered triplet: canonical PCM16 WAV,
+    native `.resonith`, and current official `.opus`;
+  - fast inner-loop experiments MAY use speech plus Emotional piano first, but
+    a material milestone, version, performance claim, or release does not pass
+    until the complete Mozart reference and all three listening triplets are
+    regenerated or verified;
+  - the manifest MUST record duration, channel layout, sample rate, complete
+    bytes, SHA-256, source, license, codec settings, and actual decoder output;
+  - Orkela release QA MUST open the short speech and piano streams and exercise
+    responsive background decode and playback on the complete Mozart stream.
