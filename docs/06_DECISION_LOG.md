@@ -2621,3 +2621,33 @@ new oscillator opcode.
   - run 30215434818 passed every cross-platform and hostile-input gate, with the
     fuzzer comparing the exact prefix against complete decode for each accepted
     non-final record.
+
+## R-090 — Bounded authenticated-record playout scheduler
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING**
+- Decision:
+  - keep reordering, replay rejection, deadlines, and concealment policy outside
+    the normative decoder in a bounded host-side state machine;
+  - at each logical deadline choose exactly one action: complete record-pair
+    decode, exact prefix salvage plus suffix concealment, or full-interval
+    concealment;
+  - retain a record that served as lookahead so it can become the next current
+    record without retransmission or copying;
+  - reject unauthenticated, duplicate, late, out-of-range, and beyond-window
+    records before they enter the buffer;
+  - advance timeline state independently of decoder Truth state. Concealed
+    output is never inserted as a record or reference.
+- Rationale:
+  - network order and deadline policy vary by QUIC/SRTP/application and do not
+    belong in the integer acoustic Core;
+  - one explicit three-action state machine makes the loss consequences
+    auditable and prevents accidental propagation of PLC state;
+  - bounded future acceptance prevents adversarial packet indices from turning
+    reordering into unbounded memory.
+- Gate:
+  - in-order, reversed arrival, missing current, missing lookahead, late
+    recovery, final packet, replay, authentication, and window bounds pass;
+  - a lost middle record preserves the previous exact prefix and allows the
+    next valid final record to decode exactly;
+  - no scheduler action mutates record payloads or creates decoder reference.
