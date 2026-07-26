@@ -661,7 +661,7 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
 ## R-034 — Native decoder-in-loop is an encoder acceptance gate
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / NORMATIVE-DRAFT**
+- Status: **IMPLEMENTED / CROSS-COMPILER VERIFIED / NORMATIVE-DRAFT**
 - Decision:
   - build a shared-library form of the exact same Golden Core sources and C
     ABI used by native conformance tests;
@@ -683,3 +683,28 @@ the solution references the one it is replacing and marks it **SUPERSEDED**.
     drift;
   - explicit loading and resource ceilings keep experiment provenance and
     hostile-input behavior auditable.
+
+## R-035 — Licensed typed-stream evidence and blinded listening artifacts
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / EXPERIMENTAL**
+- Decision:
+  - run the executable typed Main-0 encoder only through the R-034 native
+    decoder gate on the existing pinned and licensed real-music corpus;
+  - report complete RSC1 bytes, measured encode/decode time, waveform quality,
+    selected candidate, workspace, hashes, and exact tool provenance;
+  - compare with complete Ogg Opus anchors while clearly retaining the current
+    warning that bitrate and waveform SNR are not perceptually matched;
+  - write source, Resonith, and anchor PCM16 WAV files outside Git so a human
+    can listen to exactly the samples measured by the report;
+  - create a deterministic blinded trial manifest and opaque file names from
+    those WAVs while keeping the answer key separate;
+  - begin with bounded one-second crops for the first native typed-stream
+    diagnostic, then expand duration only after profiling removes Python
+    encoder bottlenecks.
+- Rationale:
+  - conformance without listening can preserve the wrong sound perfectly;
+  - a bounded first run gives rapid, reproducible architectural feedback
+    without presenting a tiny corpus or waveform metric as a codec victory;
+  - separation of the blinded manifest and key makes informal listening useful
+    now and leaves a clean path to a later MUSHRA front end.

@@ -34,6 +34,11 @@ reproducible command and independent decode.
 - `real_music_benchmark.py` — deterministic PCM downmix, LiftPack/zlib,
   fixed/adaptive/full-RDO, and Opus ablation.
 - `results/maf_p2_real_music_2026-07-26.json` — raw real-music phase report.
+- `main0_native_music_benchmark.py` — typed RSC1 periodic RDO accepted only by
+  the shared Golden Core, licensed one-second music crops, Opus anchors, timing,
+  workspace accounting, and decoded WAV output.
+- `listening_set.py` — deterministic opaque WAV labels plus a separate answer
+  key for immediate informal blind listening.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

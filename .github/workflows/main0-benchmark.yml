@@ -1,0 +1,41 @@
+name: Main-0 Licensed Music Benchmark
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install benchmark dependencies
+        run: |
+          python -m pip install numpy
+          sudo apt-get update
+          sudo apt-get install -y opus-tools
+      - name: Build shared Golden Core
+        run: |
+          cmake -S native -B build/native \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=OFF \
+            -DRESONITH_WARNINGS_AS_ERRORS=ON
+          cmake --build build/native --target resonith_core_shared --parallel
+      - name: Run licensed native typed-stream benchmark
+        env:
+          RESONITH_NATIVE_CORE: ${{ github.workspace }}/build/native/libresonith_core_shared.so
+        run: >
+          python experiments/main0_native_music_benchmark.py
+          --opus-tools /usr/bin
+          --maximum-seconds 1
+      - uses: actions/upload-artifact@v6
+        with:
+          name: main0-native-music-${{ github.sha }}
+          path: artifacts/main0_native_music
+          if-no-files-found: error

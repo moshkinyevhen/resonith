@@ -195,6 +195,14 @@ conformance library and runs this RDO path.
 This closes a major validity gap in the earlier `MAF0` experiments: encoder
 search can no longer optimize behavior accepted only by the Python oracle.
 
+The next reproducible experiment is
+[`../experiments/main0_native_music_benchmark.py`](../experiments/main0_native_music_benchmark.py).
+It runs bounded one-second crops from the pinned licensed corpus, records
+native workspace and wall time, emits complete Opus anchors, and writes the
+exact decoded WAVs measured by the report. A deterministic helper copies those
+files under opaque labels with a separate answer key. This is an experimental
+listening set, not yet a MUSHRA result.
+
 ## 10. Next gates
 
 1. ~~Port LiftPack-1 and whole typed-stream decode to the portable C++20
