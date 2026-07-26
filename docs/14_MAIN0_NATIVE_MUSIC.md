@@ -1078,3 +1078,31 @@ CRC-32 detects accidental corruption but is not adversarial authentication.
 
 The compact result is
 [`lapped_realtime_frontier_lps4_2026-07-26_summary.json`](../experiments/results/lapped_realtime_frontier_lps4_2026-07-26_summary.json).
+
+## 46. Native compact LPS4 result
+
+The separate allocation-explicit C99 LPS4 API now preflights the complete
+sequence, reports maximum current and one-record-lookahead resources, and pulls
+one logical interval transactionally. Current and lookahead entropy fields live
+in separate caller-owned workspaces; the unchanged integer synthesis kernel
+renders their shared transform boundary without duplicating it in the stream.
+
+The frozen vector, long stereo integration stream, every cross-platform build,
+and the sanitized parser/entropy/synthesis mutation target pass. A corrupt
+lookahead writes no PCM and does not advance the session.
+
+The hosted real-music gate used the R-080 H512 point:
+
+| Crop | Median complete decode | Complete workspace | Exact Python/native |
+|---|---:|---:|---:|
+| Corelli | 12.83x real-time | 29,810 bytes | yes |
+| Piano | 14.39x real-time | 30,218 bytes | yes |
+| Drums | 16.39x real-time | 37,976 bytes | yes |
+
+Each 3-second crop contained 87 records of 1536 frames, or 34.83 ms at
+44.1 kHz. Timing includes sequence preflight, CRC and entropy validation,
+caller-array creation, two-record decode, synthesis, interleave, and NumPy
+copy. It is hosted Linux x64 evidence, not mobile energy or thermal evidence.
+
+The compact record is
+[`native_lapped_compact_packet_timing_2026-07-26_summary.json`](../experiments/results/native_lapped_compact_packet_timing_2026-07-26_summary.json).

@@ -125,9 +125,12 @@ persistent transform state.
 `resonith_lapped_compact_open()` separately preflights prospective `LPS4`
 single-owner records. It verifies the sequence SHA-256, derived record lengths,
 every CRC-32, canonical padding, inherited shape, and maximum current plus
-one-record-lookahead resources without allocation. Native LPS4 PCM pulls remain
-prospective until the two-workspace boundary renderer passes cross-decoder and
-loss-scheduling gates.
+one-record-lookahead resources without allocation.
+`resonith_lapped_compact_decode_next()` then decodes both caller-owned field
+workspaces and renders the shared transform boundary transactionally. Frozen,
+long-stream cross-decoder, hosted resource, and sanitized mutation gates pass;
+authenticated transport, physical-device, loss-scheduling, and listening gates
+remain prospective.
 
 ## Sanitized fuzzing
 

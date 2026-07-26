@@ -2300,7 +2300,7 @@ new oscillator opcode.
 ## R-082 — Hosted native LPS4 resource and parity gate
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING**
+- Status: **HOSTED PASS / 12.83x-16.39x / 29.8-38.0 KB**
 - Decision:
   - decode 3-second pinned real-music crops through the complete native LPS4
     pull API with H512 and the R-080 approximately 40 ms record point;
@@ -2318,3 +2318,15 @@ new oscillator opcode.
     music;
   - the two-workspace design is accepted only if its explicit lookahead memory
     remains small and throughput retains substantial realtime margin.
+- Result:
+  - GitHub Actions run 30213445729 decoded 3-second H512 LPS4 crops as 87
+    records of 1536 frames each and passed every declared limit;
+  - complete median hosted speed was 12.83x, 14.39x, and 16.39x real-time for
+    Corelli, piano, and drums respectively;
+  - complete caller-owned workspace was 29,810, 30,218, and 37,976 bytes;
+  - every native output equaled the Python LPS4 output bit-for-bit;
+  - timing includes full sequence preflight, per-record CRC and entropy
+    validation, two field workspaces, overlap synthesis, output arrays,
+    interleave, allocation, and NumPy copy;
+  - physical-device energy, thermal behavior, authenticated transport I/O, and
+    listening remain open.

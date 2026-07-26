@@ -94,6 +94,8 @@ reproducible command and independent decode.
   hosted x64 pass; physical-device energy and transport I/O remain open.
 - `results/native_lapped_transform_packet_timing_2026-07-26_summary.json` —
   the R-077 LPS2 16.74x-21.33x real-time and 191-195 KB hosted x64 pass.
+- `results/native_lapped_compact_packet_timing_2026-07-26_summary.json` — the
+  R-082 LPS4 12.83x-16.39x real-time and 29.8-38.0 KB hosted x64 pass.
 - `lapped_packet_loss_gate.py` — R-074 authenticated-packet absence,
   deterministic output-only concealment, and exact later-Truth recovery on
   pinned real music.

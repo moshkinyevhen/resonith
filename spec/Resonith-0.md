@@ -411,8 +411,10 @@ authentication from its transport, such as an authenticated SRTP or QUIC
 mapping. A CRC-valid packet from an unauthenticated adversary MUST NOT be
 treated as trusted media.
 
-LPS4 is not mandatory until native parsing, transport mapping, hostile-input,
-loss scheduling, and listening gates pass.
+LPS4 remains prospective after passing native parsing, exact pull,
+cross-platform, and hostile-input gates. Authenticated transport mapping,
+physical-device resource measurements, loss scheduling, and listening still
+MUST pass before LPS4 becomes mandatory.
 
 ## 5. State records
 
