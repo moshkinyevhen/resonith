@@ -1127,3 +1127,36 @@ new oscillator opcode.
     Clang, MSVC, and the native bridge passed in run 30203602697;
   - a dedicated ASan/UBSan/libFuzzer target passed 5,000 bounded canonical-XOR
     and raw-sidecar mutations in run 30203691322.
+
+## R-050 — Typed cached CIBS Basis before reopening source overlap
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / IMPLEMENTING / NORMATIVE-DRAFT**
+- Decision:
+  - define critical `BCIB` schema 1 as a compact cached-Basis payload carrying
+    a registered CIBS model ID, bounded int8 latent, declared mono Basis shape,
+    and expected materialized-Basis SHA-256;
+  - keep schema 1 latent-only: adapters and objective Basis corrections require
+    later schemas and their own complete-byte evidence;
+  - place `BCIB` and `BRAW` in one consecutive Basis instance namespace, with
+    exactly one representation for each referenced instance ID;
+  - resolve models through immutable caller-owned registry descriptors rather
+    than global state or stream-carried weights;
+  - inspect exact materialization scratch before decode, stage synthesis in
+    caller-owned memory, verify the expected Basis hash, and commit no samples
+    on failure;
+  - add explicit registry-aware inspect, whole-decode, player-open, and
+    complete-callback entry points while preserving the existing BRAW ABI;
+  - require Python/native sample equality and full cross-platform/fuzz gates
+    before a `BCIB` stream may enter encoder RDO;
+  - only after this transport is executable, rerun simultaneous-source
+    complete-byte experiments with cached Basis reuse and the zero-Atom RSL2
+    winner as mandatory fallback.
+- Rationale:
+  - R-038 rejected extra simultaneous raw Atoms mainly because each paid for
+    another transmitted 520-byte Basis and directory record;
+  - CIBS already has accepted deterministic integer synthesis and native
+    conformance kernels, but without typed RSC1 integration it cannot remove
+    that measured overhead in the production decoder path;
+  - latent-only schema 1 is the smallest falsifiable bridge from cached learned
+    synthesis to source overlap and adds no per-sample neural execution.

@@ -1,6 +1,6 @@
 # Resonith-0 Bitstream and Decoding Process
 
-Version: 0.0.5
+Version: 0.0.6
 Status: **NORMATIVE-DRAFT**
 Architecture: **MAF - Memory-oriented Acoustic Field**
 
@@ -106,7 +106,36 @@ Channels are in \([1,8]\), total elements do not exceed 16,384, and trailing
 bytes are prohibited. Implementations decode to aligned host-endian Basis
 memory before state commit.
 
-#### 4.1.2 Stream configuration section (`CONF`, schema 1)
+#### 4.1.2 Cached CIBS Basis section (`BCIB`, schema 1)
+
+The fixed 48-byte header contains:
+
+| Field | Type | Constraint |
+|---|---|---|
+| `model_id_bytes` | `u8` | 1 through 255 |
+| `flags` | `u8` | zero |
+| `latent_elements` | `u16` | 1 through 128 |
+| `channels` | `u16` | one in Main-0 |
+| `reserved` | `u16` | zero |
+| `samples_per_channel` | `u32` | 2 through 2,048 |
+| `reserved2` | `u32` | zero |
+| `expected_basis_sha256` | 32 bytes | CIBS-0 canonical Basis hash |
+
+The header is followed by exactly `model_id_bytes` UTF-8 bytes and then
+`latent_elements` signed int8 values. Trailing bytes are prohibited.
+
+The decoder application supplies an immutable model registry. Exactly one
+registered model MUST have a byte-identical model ID. Its latent size, output
+channel count, and output length MUST equal the payload declarations. Duplicate
+registry IDs, a missing model, or any shape mismatch MUST reject the stream.
+
+Schema 1 has no adapter or objective Basis correction. The decoder runs the
+registered CIBS-0 graph once when materializing the immutable Basis, computes
+the hash defined in section 6.0, and commits the Basis only when it equals
+`expected_basis_sha256`. CIBS staging memory is caller-owned, bounded, and
+reported during stream inspection.
+
+#### 4.1.3 Stream configuration section (`CONF`, schema 1)
 
 The payload is exactly 16 bytes:
 
@@ -122,13 +151,13 @@ The payload is exactly 16 bytes:
 Main-0 subset has profile zero, level zero, exactly one output channel, and one
 critical `CONF` record with instance ID and start tick zero.
 
-#### 4.1.3 Periodic Atom section (`ATOM`, schema 1)
+#### 4.1.4 Periodic Atom section (`ATOM`, schema 1)
 
 The fixed 24-byte header contains:
 
 | Field | Type | Meaning |
 |---|---|---|
-| `basis_instance_id` | `u32` | referenced `BRAW` instance |
+| `basis_instance_id` | `u32` | referenced Basis instance |
 | `duration_samples` | `u32` | Atom lifetime |
 | `phase_origin_q32` | `u32` | absolute phase at local sample zero |
 | `phase_knot_count` | `u32` | number of endpoint knots |
@@ -147,19 +176,21 @@ strictly, and remain below `duration_samples`; there MUST be between one and
 \([-131072,131071]\).
 
 The RSC1 record start tick is the Atom lifetime origin. Trajectory and gain
-positions remain local to that origin. The referenced `BRAW` MUST be mono and
-contain at least two samples. A referenced Basis record start tick MUST be no
-later than the Atom start tick.
+positions remain local to that origin. The referenced `BRAW` or `BCIB` MUST be
+mono and contain at least two samples. A referenced Basis record start tick
+MUST be no later than the Atom start tick.
 
-#### 4.1.4 First executable Main-0 stream
+#### 4.1.5 First executable Main-0 stream
 
 A profile-zero, level-zero stream contains exactly one critical instance-zero
 `CONF`, exactly one critical instance-zero Innovation section (`RSL1` or
 `RSL2`), and either no model records or one or more critical `ATOM` plus one or
-more critical `BRAW` records. Both Innovation section types in one stream are
-prohibited.
-`ATOM` and `BRAW` MUST be both absent or both present. When present, their
-instance IDs each form a consecutive zero-based sequence.
+more critical Basis records (`BRAW` and/or `BCIB`). Both Innovation section
+types in one stream are prohibited.
+`ATOM` and Basis records MUST be both absent or both present. When present,
+Atom instance IDs form one consecutive zero-based sequence. `BRAW` and `BCIB`
+share a second consecutive zero-based instance namespace; exactly one of the
+two representations MUST exist for every Basis instance ID.
 
 When Atoms are present, they are ordered by instance ID. The first MUST start
 at tick zero, every subsequent Atom MUST start exactly where the previous Atom
@@ -187,7 +218,9 @@ lifetimes before rendering. It MUST be able to inspect the stream first,
 report the maximum per-Atom Basis, phase, gain, and render workspace plus the
 stream-wide Innovation workspace, and then reuse those buffers without hidden
 allocation. The zero-Atom form reports zero for every model workspace and
-requires only Innovation, LiftPack scratch, and output storage.
+requires only Innovation, LiftPack scratch, and output storage. The CIBS form
+additionally reports the maximum CIBS-0 staging requirement across referenced
+`BCIB` records.
 
 ## 5. State records
 
