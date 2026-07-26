@@ -238,4 +238,24 @@ entropy coder or an open-ended predictor.
 
 Canonical compact evidence:
 [`../experiments/results/lpc_liftpack_oracle_2026-07-26_summary.json`](../experiments/results/lpc_liftpack_oracle_2026-07-26_summary.json).
-Native cross-compiler verification remains a separate publication gate.
+
+R-043 then passed the independent Python/native bridge, the standalone LPC
+rounding vector, and all native conformance targets on GCC, Clang, and MSVC:
+[run 30201013628](https://github.com/moshkinyevhen/resonith/actions/runs/30201013628).
+The full licensed production-decoder benchmark independently selected RSL2 on
+all three clips:
+[run 30201094754](https://github.com/moshkinyevhen/resonith/actions/runs/30201094754).
+Its raw report SHA-256 is:
+
+```text
+4ca6a8f93743ea7725d5ba152f837f79c75af69a18324c599c7b8ab6c1edcb8e
+```
+
+The selected complete rates were 81.86 kbit/s for Corelli, 95.62 kbit/s for
+piano, and 101.94 kbit/s for drums. Native whole-stream decode remained about
+1.35–1.60 ms per one-second clip on the GitHub runner. This verifies the
+implementation and earlier byte result; it remains a mono q64 waveform
+diagnostic, not a matched-MUSHRA comparison with Opus.
+
+Canonical compact native evidence:
+[`../experiments/results/main0_lpc_native_2026-07-26_summary.json`](../experiments/results/main0_lpc_native_2026-07-26_summary.json).

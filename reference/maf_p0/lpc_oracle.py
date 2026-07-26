@@ -18,6 +18,7 @@ from .residual import (
     MAX_ABSOLUTE_INPUT,
     TRANSFORM_HAAR,
     TRANSFORM_NAMES,
+    _choose_entropy,
     _decode_entropy,
     _encode_entropy,
     _forward_transform,
@@ -93,18 +94,95 @@ def _fit_lpc_coefficients(
 
 def _forward_lpc(block: np.ndarray, coefficients_q: np.ndarray) -> np.ndarray:
     order = int(coefficients_q.size)
-    output = block.astype(np.int64, copy=True)
+    source = block.astype(np.int64, copy=False)
+    output = source.copy()
     coefficients = coefficients_q.astype(np.int64)
-    for index in range(order, block.size):
-        past = block[index - order : index][::-1].astype(np.int64)
-        prediction = _round_shift(
-            int(coefficients @ past),
-            LPC_PRECISION,
-        )
-        output[index] = int(block[index]) - prediction
+    windows = np.lib.stride_tricks.sliding_window_view(source, order)[:-1]
+    accumulators = windows[:, ::-1] @ coefficients
+    magnitudes = (
+        np.abs(accumulators) + (1 << (LPC_PRECISION - 1))
+    ) >> LPC_PRECISION
+    predictions = np.where(accumulators < 0, -magnitudes, magnitudes)
+    output[order:] = source[order:] - predictions
     if output.size and int(np.max(np.abs(output))) > MAX_ABSOLUTE_COEFFICIENT:
         raise ValueError("LPC coefficient exceeds the residual bound")
     return output
+
+
+def _candidate_record(
+    coefficients: np.ndarray,
+    *,
+    transform: int,
+    transform_name: str,
+    order: int,
+    coefficients_q: np.ndarray | None,
+) -> tuple[int, int, str, int, np.ndarray, np.ndarray | None, dict]:
+    entropy, parameter, bit_count = _choose_entropy(coefficients)
+    metadata_bytes = LPC_HEADER.size + 2 * order if coefficients_q is not None else 0
+    encoded_bytes = BLOCK_HEADER.size + metadata_bytes + (bit_count + 7) // 8
+    report = {
+        "transform": transform_name,
+        "order": order,
+        "entropy": "rice" if entropy == ENTROPY_RICE else "packed",
+    }
+    return (
+        encoded_bytes,
+        bit_count,
+        transform_name,
+        order,
+        coefficients,
+        coefficients_q,
+        {
+            **report,
+            "transform_id": transform,
+            "entropy_id": entropy,
+            "entropy_parameter": parameter,
+        },
+    )
+
+
+def _measure_block(
+    block: np.ndarray,
+    lpc_orders: tuple[int, ...],
+) -> tuple[int, dict]:
+    candidate = _select_block_candidate(block, lpc_orders)
+    return candidate[0], {
+        key: candidate[6][key]
+        for key in ("transform", "order", "entropy")
+    }
+
+
+def _select_block_candidate(
+    block: np.ndarray,
+    lpc_orders: tuple[int, ...],
+) -> tuple[int, int, str, int, np.ndarray, np.ndarray | None, dict]:
+    candidates = [
+        _candidate_record(
+            _forward_transform(block, transform),
+            transform=transform,
+            transform_name=transform_name,
+            order=0,
+            coefficients_q=None,
+        )
+        for transform, transform_name in TRANSFORM_NAMES.items()
+    ]
+    for order in lpc_orders:
+        coefficients_q = _fit_lpc_coefficients(block, order)
+        if coefficients_q is None:
+            continue
+        candidates.append(
+            _candidate_record(
+                _forward_lpc(block, coefficients_q),
+                transform=TRANSFORM_LPC,
+                transform_name="lpc",
+                order=order,
+                coefficients_q=coefficients_q,
+            )
+        )
+    return min(
+        candidates,
+        key=lambda item: (item[0], item[1], item[2], item[3]),
+    )
 
 
 def _inverse_lpc(
@@ -133,77 +211,44 @@ def _encode_block(
     block: np.ndarray,
     lpc_orders: tuple[int, ...],
 ) -> tuple[bytes, dict]:
-    candidates: list[tuple[int, int, bytes, dict]] = []
-    for transform, transform_name in TRANSFORM_NAMES.items():
-        coefficients = _forward_transform(block, transform)
-        entropy, parameter, payload, bit_count = _encode_entropy(coefficients)
-        encoded = (
-            BLOCK_HEADER.pack(
-                int(block.size),
-                transform,
-                entropy,
-                parameter,
-                bit_count,
-            )
-            + payload
-        )
-        candidates.append(
-            (
-                len(encoded),
-                bit_count,
-                encoded,
-                {
-                    "transform": transform_name,
-                    "order": 0,
-                    "entropy": (
-                        "rice" if entropy == ENTROPY_RICE else "packed"
-                    ),
-                },
-            )
-        )
-
-    for order in lpc_orders:
-        coefficients_q = _fit_lpc_coefficients(block, order)
-        if coefficients_q is None:
-            continue
-        residual = _forward_lpc(block, coefficients_q)
-        entropy, parameter, payload, bit_count = _encode_entropy(residual)
-        encoded = (
-            BLOCK_HEADER.pack(
-                int(block.size),
-                TRANSFORM_LPC,
-                entropy,
-                parameter,
-                bit_count,
-            )
-            + LPC_HEADER.pack(order, LPC_PRECISION)
-            + coefficients_q.astype("<i2", copy=False).tobytes()
-            + payload
-        )
-        candidates.append(
-            (
-                len(encoded),
-                bit_count,
-                encoded,
-                {
-                    "transform": "lpc",
-                    "order": order,
-                    "entropy": (
-                        "rice" if entropy == ENTROPY_RICE else "packed"
-                    ),
-                },
-            )
-        )
-    _, _, encoded, report = min(
-        candidates,
-        key=lambda item: (
-            item[0],
-            item[1],
-            item[3]["transform"],
-            item[3]["order"],
-        ),
+    (
+        measured_bytes,
+        measured_bits,
+        _,
+        order,
+        coefficients,
+        coefficients_q,
+        details,
+    ) = _select_block_candidate(block, lpc_orders)
+    entropy, parameter, payload, bit_count = _encode_entropy(coefficients)
+    if (
+        entropy != details["entropy_id"]
+        or parameter != details["entropy_parameter"]
+        or bit_count != measured_bits
+    ):
+        raise RuntimeError("LPC block measurement and serialization disagree")
+    metadata = (
+        LPC_HEADER.pack(order, LPC_PRECISION)
+        + coefficients_q.astype("<i2", copy=False).tobytes()
+        if coefficients_q is not None
+        else b""
     )
-    return encoded, report
+    encoded = (
+        BLOCK_HEADER.pack(
+            int(block.size),
+            details["transform_id"],
+            entropy,
+            parameter,
+            bit_count,
+        )
+        + metadata
+        + payload
+    )
+    if len(encoded) != measured_bytes:
+        raise RuntimeError("LPC block byte measurement is not exact")
+    return encoded, {
+        key: details[key] for key in ("transform", "order", "entropy")
+    }
 
 
 def encode_lpc_liftpack_oracle(

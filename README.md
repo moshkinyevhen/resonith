@@ -36,7 +36,8 @@ The repository contains:
 - MAF-P1 immutable multi-Basis Bank with validated lifetimes and reuse;
 - absolute continuous Q32 pitch/phase trajectories with random access;
 - bounded reversible integer-lifting transient events;
-- RAW and CIBS Basis banks plus the bounded `LiftPack-1` objective residual;
+- RAW and CIBS Basis banks plus bounded `LiftPack-1`/`LiftPack-2` objective
+  residuals with exact block-local integer LPC;
 - the compact deterministic `RSC1` typed section-container candidate;
 - a dependency-free C++20 whole-RSC1 Golden Core behind a stable C99 ABI;
 - an explicit shared-Core Python bridge that gates typed-stream RDO on the
@@ -45,7 +46,7 @@ The repository contains:
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
-- 76 pure reference/security/integration tests, five native decoder-in-loop
+- 79 pure reference/security/integration tests, five native decoder-in-loop
   integration tests, and seven native conformance targets built with GCC,
   Clang, and MSVC.
 

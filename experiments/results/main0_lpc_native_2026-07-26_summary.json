@@ -1,0 +1,43 @@
+{
+  "actions_run": "https://github.com/moshkinyevhen/resonith/actions/runs/30201094754",
+  "clips": {
+    "corelli-sonata-realization": {
+      "bitrate_kbps": 81.864,
+      "candidate_count": 60,
+      "encode_wall_seconds": 39.66294026099999,
+      "native_decode_wall_seconds": 0.001348517999986143,
+      "native_workspace_bytes": 703144,
+      "residual_block_size": 16384,
+      "residual_codec": "rsl2",
+      "selected_candidate": "residual-only-rsl2-lift-16384",
+      "stream_bytes": 10233,
+      "stream_sha256": "9bc7708827804845a6179779f03149171435f9141a64f866c0ad59e9c738fd5b"
+    },
+    "emotional-piano-cc0": {
+      "bitrate_kbps": 95.624,
+      "candidate_count": 60,
+      "encode_wall_seconds": 43.700356672000005,
+      "native_decode_wall_seconds": 0.0015025960000087935,
+      "native_workspace_bytes": 965288,
+      "residual_block_size": 32768,
+      "residual_codec": "rsl2",
+      "selected_candidate": "residual-only-rsl2-lift-32768",
+      "stream_bytes": 11953,
+      "stream_sha256": "9b85a8583e66901e30a42d7ac9c5aa3f1e8367a772f3f7854393a1dbe6afc85e"
+    },
+    "patro-de-bateria": {
+      "bitrate_kbps": 101.944,
+      "candidate_count": 60,
+      "encode_wall_seconds": 41.398024057,
+      "native_decode_wall_seconds": 0.0015951480000069296,
+      "native_workspace_bytes": 506536,
+      "residual_block_size": 4096,
+      "residual_codec": "rsl2",
+      "selected_candidate": "residual-only-rsl2-lift-4096",
+      "stream_bytes": 12743,
+      "stream_sha256": "17a9cb23e7bd2d658bf26c02e40784a4cd8e4b142666296df21d50d6ca79eb28"
+    }
+  },
+  "raw_report_sha256": "4ca6a8f93743ea7725d5ba152f837f79c75af69a18324c599c7b8ab6c1edcb8e",
+  "status": "LiftPack-2 selected and native-decoder verified on every clip"
+}

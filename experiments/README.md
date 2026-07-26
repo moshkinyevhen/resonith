@@ -48,6 +48,9 @@ reproducible command and independent decode.
 - `lpc_liftpack_oracle_benchmark.py` — R-042 exact block-local integer LPC
   with transmitted coefficient cost, independent prospective decode, and the
   R-041 block-size-RDO `RSL1` stream as the complete-byte anchor.
+- `variable_block_oracle_benchmark.py` — R-044 exact-byte dynamic programming
+  over variable residual lifetimes, with all fixed `RSL2` block sizes retained
+  as mandatory fallbacks and no normative syntax assigned before its gate.
 
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never

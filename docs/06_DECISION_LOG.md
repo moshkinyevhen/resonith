@@ -899,7 +899,7 @@ new oscillator opcode.
 ## R-043 — LiftPack-2 exact LPC block syntax
 
 - Date: 2026-07-26
-- Status: **ACCEPTED / IMPLEMENTING / NORMATIVE-DRAFT**
+- Status: **IMPLEMENTED / CROSS-COMPILER VERIFIED / NORMATIVE-DRAFT**
 - Decision:
   - define critical section `RSL2` with payload magic `RSL2`, retaining the
     bounded LiftPack stream and block headers;
@@ -923,3 +923,28 @@ new oscillator opcode.
     validating a small bounded decoder kernel;
   - a separate section/version preserves rejection by older Main-0 decoders
     instead of silently extending `RSL1` semantics.
+
+## R-044 — Transient localization through variable residual lifetimes
+
+- Date: 2026-07-26
+- Status: **ACCEPTED / RESEARCH**
+- Decision:
+  - test attack and acoustic-state localization first as exact byte-RDO over
+    variable LiftPack-2 block lifetimes, not as a separate transient codec;
+  - use the already decoded block length as the only prospective per-boundary
+    syntax and retain the same transforms, LPC kernel, entropy paths, checksum,
+    and objective Innovation;
+  - let encoder-only dynamic programming place boundaries from complete
+    encoded block bytes; no onset classifier output enters the bitstream;
+  - include every fixed-block RSL2 stream as a fallback and reject variable
+    partitioning unless it reduces complete bytes by at least 3% on average
+    across the declared licensed corpus and wins on at least two clips;
+  - use a research-only magic and section type until the gate passes; assign no
+    normative version or opcode in advance.
+- Rationale:
+  - the earlier separate exact-replacement transient payload lost its gate,
+    while LiftPack already expresses short lifting and predictive blocks;
+  - variable lifetimes can isolate attacks and state changes without another
+    renderer, entropy coder, overlap rule, or sample-domain mixing path;
+  - exact byte dynamic programming directly implements the simplicity rule:
+    a boundary exists only when its saved residual bytes pay for its header.

@@ -252,7 +252,9 @@ def _decode_rice(reader: _BitReader, count: int, parameter: int) -> np.ndarray:
     return output
 
 
-def _encode_entropy(values: np.ndarray) -> tuple[int, int, bytes, int]:
+def _choose_entropy(values: np.ndarray) -> tuple[int, int, int]:
+    """Return the exact winning entropy mode without materializing its bits."""
+
     unsigned = np.where(
         values >= 0,
         values * 2,
@@ -268,13 +270,28 @@ def _encode_entropy(values: np.ndarray) -> tuple[int, int, bytes, int]:
     )
     rice_bits = _rice_bit_count(unsigned, best_parameter)
     if rice_bits <= packed_bits:
-        payload, bit_count = _encode_rice(unsigned, best_parameter)
-        return ENTROPY_RICE, best_parameter, payload, bit_count
+        return ENTROPY_RICE, best_parameter, rice_bits
+    return ENTROPY_PACKED, packed_width, int(packed_bits)
 
+
+def _encode_entropy(values: np.ndarray) -> tuple[int, int, bytes, int]:
+    mode, parameter, expected_bit_count = _choose_entropy(values)
+    unsigned = np.where(
+        values >= 0,
+        values * 2,
+        -values * 2 - 1,
+    ).astype(np.uint64)
+    if mode == ENTROPY_RICE:
+        payload, bit_count = _encode_rice(unsigned, parameter)
+        if bit_count != expected_bit_count:
+            raise RuntimeError("Rice measurement and serialization disagree")
+        return mode, parameter, payload, bit_count
     writer = _BitWriter()
     for item in unsigned:
-        writer.write_bits(int(item), packed_width)
-    return ENTROPY_PACKED, packed_width, writer.finish(), writer.bit_count
+        writer.write_bits(int(item), parameter)
+    if writer.bit_count != expected_bit_count:
+        raise RuntimeError("packed measurement and serialization disagree")
+    return mode, parameter, writer.finish(), writer.bit_count
 
 
 def _decode_entropy(
