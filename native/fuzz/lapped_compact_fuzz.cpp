@@ -11,6 +11,7 @@ constexpr std::size_t kMaximumElements = 1U << 20U;
 constexpr std::uint32_t kMaximumPackets = 64U;
 constexpr std::size_t kSequenceHeaderBytes = 60U;
 constexpr std::size_t kCompactDescriptorBytes = 27U;
+constexpr std::size_t kFiniteCompactDescriptorBytes = 28U;
 constexpr std::size_t kRecordCrcBytes = 4U;
 
 std::uint32_t read_u32(const std::uint8_t* data) noexcept {
@@ -20,11 +21,22 @@ std::uint32_t read_u32(const std::uint8_t* data) noexcept {
         | (static_cast<std::uint32_t>(data[3]) << 24U);
 }
 
-std::size_t compact_record_size(const std::uint8_t* data) noexcept {
-    std::size_t size = kCompactDescriptorBytes + kRecordCrcBytes;
-    for (std::size_t field = 0U; field < 4U; ++field) {
+std::size_t compact_record_size(
+    const std::uint8_t* data,
+    bool finite_transport
+) noexcept {
+    const std::size_t descriptor_bytes =
+        finite_transport
+            ? kFiniteCompactDescriptorBytes
+            : kCompactDescriptorBytes;
+    const std::size_t bit_count_offset = finite_transport ? 8U : 11U;
+    const std::size_t field_count = finite_transport ? 5U : 4U;
+    std::size_t size = descriptor_bytes + kRecordCrcBytes;
+    for (std::size_t field = 0U; field < field_count; ++field) {
         size += (
-            static_cast<std::size_t>(read_u32(data + 11U + 4U * field))
+            static_cast<std::size_t>(
+                read_u32(data + bit_count_offset + 4U * field)
+            )
             + 7U
         ) / 8U;
     }
@@ -189,6 +201,11 @@ extern "C" int LLVMFuzzerTestOneInput(
     std::vector<std::size_t> record_sizes;
     record_offsets.reserve(requirements.packet_count);
     record_sizes.reserve(requirements.packet_count);
+    const bool finite_transport = data[3U] == '5';
+    const std::size_t descriptor_bytes =
+        finite_transport
+            ? kFiniteCompactDescriptorBytes
+            : kCompactDescriptorBytes;
     std::size_t record_offset = kSequenceHeaderBytes;
     for (
         std::uint32_t packet = 0U;
@@ -198,12 +215,12 @@ extern "C" int LLVMFuzzerTestOneInput(
         if (
             record_offset > size
             || size - record_offset
-                < kCompactDescriptorBytes + kRecordCrcBytes
+                < descriptor_bytes + kRecordCrcBytes
         ) {
             __builtin_trap();
         }
         const std::size_t record_size =
-            compact_record_size(data + record_offset);
+            compact_record_size(data + record_offset, finite_transport);
         if (record_size > size - record_offset) {
             __builtin_trap();
         }
