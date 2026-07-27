@@ -4210,3 +4210,28 @@ new oscillator opcode.
   - commit `9f4fc74` passed Clang, MSVC, AppleClang, Android NDK, sanitizer
     fuzzing, Android, and iOS gates but exposed one GCC-only narrowing warning
     in the MAF filter-history reverse index.
+
+## R-127 — Signed quotient/remainder for normative Q15 rounding
+
+- Status: **NORMATIVE-DRAFT**
+- Date: 2026-07-27
+- Decision:
+  - signed fixed-point rounding SHALL derive the truncated quotient and signed
+    remainder from the positive power-of-two denominator, then move the
+    quotient one unit away from zero when the remainder reaches half;
+  - normative code SHALL NOT obtain the rounding magnitude by negating a
+    signed input and converting it to unsigned;
+  - this rule is exact ties-away-from-zero, handles positive and negative
+    values symmetrically, and avoids architecture-dependent lowering of the
+    former magnitude helper.
+- Trigger:
+  - Windows ARM64 MSVC decoded the negative half of a bounded transient as
+    positive saturation while x64 MSVC, Clang, GCC, AppleClang, Android NDK,
+    and the remaining MAF operations passed;
+  - the ARM64 conformance vector reported status `OK`, the exact expected
+    operation budget, positive samples `1000, 2000`, but negative samples
+    `-1000, -500` as `32767, 32767`.
+- Gate:
+  - preserve all existing x64 conformance vectors;
+  - require the same positive and negative transient vector on Windows ARM64,
+    Android ARM64, Linux ARM64, and desktop compilers.

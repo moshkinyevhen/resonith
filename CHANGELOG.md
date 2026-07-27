@@ -11,6 +11,10 @@ version.
 
 ### Research
 
+- Replaced magnitude-based Q15 rounding with the R-127 signed
+  quotient/remainder rule after Windows ARM64 exposed positive saturation for
+  negative transient samples. The rule retains exact ties-away-from-zero and
+  the existing desktop vectors while making the sign path explicit.
 - Added the R-126 strict GCC 16.1 C++23 compatibility gate and fixed one
   GCC-only narrowing diagnostic in bounded MAF filter-history traversal
   without changing fixed-point or PCM behavior.

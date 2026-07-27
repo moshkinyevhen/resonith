@@ -1234,6 +1234,13 @@ changing their integer result. A conforming Truth decoder MUST NOT substitute
 floating-point, generative, or implementation-dependent output for a declared
 integer operation.
 
+For a signed fixed-point value \(v\) and positive power-of-two denominator
+\(d\), `RoundAway(v/d)` SHALL compute the signed quotient truncated toward
+zero and its signed remainder. It SHALL increment the quotient when
+`remainder >= d/2` and decrement it when `remainder <= -d/2`. This signed
+quotient/remainder rule is normative for positive and negative MAF operation
+inputs.
+
 A stream contains data and operation parameters only. It MUST NOT contain
 native code, general bytecode, loops, recursion, shaders, scripts, dynamic
 library references, network locations, or an unbounded graph. CIBS model

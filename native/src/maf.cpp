@@ -35,14 +35,16 @@ bool valid_gain(std::int32_t gain_q15) noexcept {
 }
 
 std::int64_t round_shift_q15(std::int64_t value) noexcept {
-    const bool negative = value < 0;
-    const std::uint64_t magnitude = negative
-        ? static_cast<std::uint64_t>(-(value + 1)) + 1U
-        : static_cast<std::uint64_t>(value);
-    const std::uint64_t rounded = (magnitude + 16384U) >> 15U;
-    return negative
-        ? -static_cast<std::int64_t>(rounded)
-        : static_cast<std::int64_t>(rounded);
+    constexpr std::int64_t kDenominator = 1LL << 15U;
+    constexpr std::int64_t kHalf = kDenominator / 2;
+    std::int64_t quotient = value / kDenominator;
+    const std::int64_t remainder = value % kDenominator;
+    if (remainder >= kHalf) {
+        ++quotient;
+    } else if (remainder <= -kHalf) {
+        --quotient;
+    }
+    return quotient;
 }
 
 std::int16_t saturate_int16(std::int64_t value) noexcept {
