@@ -134,10 +134,30 @@ jobs:
       - name: Build
         run: cmake --build build/native --config Release --parallel
       - name: Test
-        run: >
-          ctest --test-dir build/native
-          --build-config Release
-          --output-on-failure
+        shell: pwsh
+        run: |
+          $report = Join-Path $env:GITHUB_WORKSPACE "build/native/ctest-windows-arm64.xml"
+          ctest --test-dir build/native `
+            --build-config Release `
+            --output-on-failure `
+            --output-junit $report
+          $status = $LASTEXITCODE
+          if ($status -ne 0 -and (Test-Path -LiteralPath $report)) {
+            [xml]$document = Get-Content -LiteralPath $report -Raw
+            $cases = @($document.testsuite.testcase)
+            $cases += @($document.testsuites.testsuite.testcase)
+            foreach ($case in $cases) {
+              if ($null -ne $case.failure) {
+                $detail = [string]$case.failure.InnerText
+                $detail = ($detail -replace "[\r\n]+", " ").Trim()
+                if ($detail.Length -gt 512) {
+                  $detail = $detail.Substring(0, 512)
+                }
+                Write-Output "::error title=Windows ARM64 CTest $($case.name)::$detail"
+              }
+            }
+          }
+          exit $status
 
   native-android-arm64:
     name: Native / Android ARM64 / NDK
