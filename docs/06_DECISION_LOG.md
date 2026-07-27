@@ -4170,3 +4170,25 @@ new oscillator opcode.
     `.resonith` syntax or decoder dependencies;
   - the arbiter SHOULD consume a local feature summary or the least revealing
     bounded audio proxy that satisfies the selected provider capability.
+
+## R-125 — Gemini-first Foundry arbitration
+
+- Status: **ACCEPTED**
+- Date: 2026-07-27
+- Decision:
+  - Gemini is the active default AI semantic arbiter and global audio analyst
+    during the current research phase;
+  - OpenAI remains a user-selectable, disabled-by-default alternative. The
+    presence of stored OpenAI credentials MUST NOT cause an OpenAI request;
+  - `Auto` MAY choose a provider only when the user explicitly enables
+    automatic provider selection. It is not the initial mode;
+  - ElevenLabs and Azure retain their R-124 specialist roles and receive only
+    tasks and bounded regions assigned by the Gemini routing plan and admitted
+    by the deterministic local policy gate;
+  - free-tier availability is an operational preference, not an encoder or
+    codec invariant. Quota exhaustion, provider failure, or network absence
+    falls back to local analysis without changing decodability.
+- Supersedes:
+  - R-124 only where it named OpenAI as the initial default;
+  - R-123 only where its ordering implied that Gemini was not a first-class
+    initial provider.

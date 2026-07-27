@@ -160,10 +160,12 @@ The initial provider roles are:
 | ElevenLabs | Speech regions, speaker identity and lifetime, word/phoneme timing, voiced/unvoiced proposals, and optional voice-isolation masks |
 | Azure | Long-form and domain speech, custom vocabulary, diarization, speaker roles, segmentation, and enterprise metadata |
 
-`OpenAI`, `Gemini`, and `Auto` are the global-analyst choices. `OpenAI` is the
-initial default. `Auto` selects by declared capability and policy; it MUST NOT
-send the same audio to both merely to compare answers. ElevenLabs and Azure
-remain independently enabled specialists.
+`Gemini`, `OpenAI`, and `Auto` are the global-analyst choices. `Gemini` is the
+active research default. OpenAI remains disabled until explicitly selected,
+even when credentials exist. `Auto` selects by declared capability and policy
+only after the user enables automatic selection; it MUST NOT send the same
+audio to both merely to compare answers. ElevenLabs and Azure remain
+independently enabled specialists.
 
 Every adapter starts disabled until credentials and per-provider data
 permission exist. Credentials remain in the operating-system credential store.

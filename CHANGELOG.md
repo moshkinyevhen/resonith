@@ -11,8 +11,9 @@ version.
 
 ### Research
 
-- Added R-124 optional AI semantic arbitration. OpenAI, Gemini, or automatic
-  capability selection can provide the global analyst and arbiter; ElevenLabs
+- Added R-124/R-125 optional AI semantic arbitration. Gemini is the active
+  research default; OpenAI or automatic capability selection remain explicit
+  alternatives. ElevenLabs
   receives speech/speaker/timing/isolation tasks and Azure receives long-form,
   domain, diarization, role, and enterprise-metadata tasks. A deterministic
   local policy gate minimizes uploads and exact local MAF RDO remains the only
