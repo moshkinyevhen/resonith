@@ -39,6 +39,12 @@ reproducible command and independent decode.
   DSP audit across the complete R-118 union.
 - `results/gemini_semantic_arbiter_r118_2026-07-27.json` — first complete live
   R-128/R-129 semantic change-ledger and original-PCM alignment evidence.
+- `gemini_byte_pattern_gate.py` — R-152 A/B test that gives Gemini only
+  hexadecimal PCM16LE block text and verifies every proposed phase/gain law
+  against the exact native Foundry lattice.
+- `openai_byte_pattern_gate.py` — R-153 identical PCM16LE-hex gate for
+  `gpt-5.6-sol` with Responses API `reasoning.effort=max` and
+  `reasoning.mode=pro`.
 - `prepare_extended_audio_corpus.py` — verified acquisition and deterministic
   lossless-FLAC-to-PCM16 preparation for the R-111 matrix.
 - `results/extended_audio_corpus_prepared_2026-07-27.json` — exact hashes and
@@ -186,3 +192,16 @@ reproducible command and independent decode.
 The Opus runner counts the complete Ogg file and records executable version
 and SHA-256. A missing external tool is reported explicitly; it is never
 silently replaced by a simulation.
+
+## R-149/R-150 complete search
+
+- `cross_channel_orbit_gate.py` and `motif_orbit_gate.py` default to explicit
+  `foundry` search and require the native CUDA Foundry library plus the NVRTC
+  library directory. `fast` is an opt-in labelled diagnostic only.
+- `native/tests/foundry_cuda_test.cpp` enumerates uneven candidate tiles and
+  requires exact CPU/GPU parity plus recall of known phase, polarity, gain,
+  and linear-state transformations.
+- `tests/test_hierarchical_grammar.py` verifies that direct large spans remain
+  visible beside micro-atoms, repeated state increments can form compounds,
+  existing Basis entries are reused, local greedy traps are rejected, and
+  Truth remains the complete fallback.

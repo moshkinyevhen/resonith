@@ -4698,3 +4698,577 @@ new oscillator opcode.
   3. bounded pitch/time laws;
   4. overlapping and multichannel instances;
   5. canonical learned Basis proposals only after deterministic gates.
+
+## R-140 — Multiscale spectral micro-Basis tiling
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Clarification:
+  - dictionary identity is not a note, phoneme, letter, instrument, or long
+    motif. A reusable Basis MAY be any objective waveform/time-frequency
+    fragment whose shape recurs anywhere in the recording;
+  - a short stable portion inside one crescendo note may be reused inside a
+    different note, voice segment, instrument, ambience, or effect. Semantic
+    source identity is neither required nor trusted.
+- Representation:
+  - the encoder searches a bounded multiscale lattice of arbitrary fragments,
+    initially exact PCM16 and reversible integer-transform tiles, then
+    canonical gain/alignment/phase/pitch/time variants;
+  - synthesis is a bounded overlap-add sum of immutable Basis instances with
+    exact sample timing, complex phase or equivalent objective alignment,
+    gain/trajectory, band support, and objective Truth correction;
+  - magnitude-spectrum equality alone is a proposer because different phase
+    can produce a different waveform. Exact PCM, reversible complex
+    coefficients, or decoder-output plus Truth defines objective equality.
+- Granularity rule:
+  - the encoder SHALL compete short atoms, medium fragments, long motifs, and
+    independent Truth under one complete cost. It MUST NOT split every signal
+    into the smallest detectable repeat;
+  - an atom is retained only when its one-time Basis bytes plus all placement,
+    overlap, transform, checkpoint, and correction bytes are cheaper at the
+    declared quality than coding the covered cells independently;
+  - placement commands themselves SHALL use persistent entropy contexts and
+    delta-coded sample times so very short reuse is not defeated by fixed
+    record overhead.
+- Architecture:
+  - a file-local global dictionary is mandatory for standalone decode. Optional
+    package or application dictionaries are enhancement research and cannot be
+    required;
+  - Foundry MAY use matching pursuit, vector quantization, learned
+    dictionaries, robust fingerprints, or AI to propose atoms. The normative
+    decoder only performs fixed integer Basis placement, overlap-add, and
+    Truth composition;
+  - R-139 exact one-shot `BASIS_INSTANCE` is the first executable subset. Band
+    support, overlap windows, transformed instances, and compact batched
+    placement syntax follow only with measured incremental gain over optimized
+    Truth.
+
+## R-141 — Basis equivalence classes under bounded transforms
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Model:
+  - near-repeated fragments SHALL be representable as
+    `Instance_j = T(theta_j, Basis_k) + TruthCorrection_j`;
+  - one immutable Basis therefore represents an equivalence class, or orbit,
+    of objectively related waveform/time-frequency fragments rather than only
+    bit-identical copies;
+  - a magnitude-spectrum match is a proposal. The normative instance is the
+    output of exact bounded integer transform `T`, and objective equality is
+    established only after correction and native decode.
+- Initial fixed transform set:
+  - crop and exact sample alignment;
+  - signed gain, polarity, and piecewise envelope;
+  - absolute phase rotation or equivalent complex alignment;
+  - profile-bounded pitch resampling and time stretch;
+  - bounded spectral tilt/formant envelope;
+  - reverse and finite loop flags;
+  - short stable resonator or room-response reference.
+- Constraints:
+  - transformations compose only in a canonical declared order and use fixed
+    integer rounding. Arbitrary formulas, bytecode, graphs, shaders, floating
+    point, and per-sample neural inference are prohibited;
+  - each profile bounds transform count, knots, interpolation ratio, filter
+    order, overlap, operations, and correction dependency;
+  - the encoder pays Basis, every transform parameter, placement, checkpoint,
+    and correction. It retains the transformed instance only when complete
+    RDO beats optimized Truth at the declared quality;
+  - lossless remains exact because a lossless Truth correction encodes every
+    integer difference between the source and the normative transformed
+    Basis. Almost/lossless profiles may quantize only under their declared
+    distortion and listening gates.
+- Implementation order:
+  - R-139 exact `BASIS_INSTANCE` already carries crop and signed gain fields;
+  - add phase/alignment and bounded pitch/time only after exact dictionary
+    reuse wins its real and synthetic gates;
+  - add envelope and stable spectral transforms only after the simpler orbit
+    cannot explain a measured residual.
+
+## R-142 — Exact/gain Basis-orbit implementation gate
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Decision:
+  - implement `BASIS_INSTANCE` as the first executable equivalence-class
+    operation: one immutable mono PCM16 Basis, an exact sample-time placement,
+    a bounded crop, and a signed Q1.15 gain;
+  - render instances additively into an emitter before the active mix lifetime.
+    Decoder output plus a separately coded Truth correction is the only
+    reconstruction authority;
+  - count every Basis byte, record prefix, instance parameter, mix record,
+    Truth byte, checksum, operation, and persistent-memory element. A waveform
+    or fingerprint match alone is not a compression result.
+- First gate:
+  - prove native C++23/Python parser parity, callback-partition invariance,
+    hostile-input rejection, and exact source reconstruction after lossless
+    correction;
+  - compare an optimized independent Truth stream with complete
+    `MFT1 + lossless Truth` bytes on transformed-loop synthesis and on pinned
+    speech, music, deterministic, transient, and stochastic references;
+  - publish forced-orbit results separately from RDO-selected results. A
+    synthetic win establishes implementation correctness, not a general codec
+    claim.
+- Promotion:
+  - phase/alignment and bounded pitch/time receive a new record only if
+    exact/gain reuse reduces complete bytes on at least one real structured
+    class without increasing objective distortion;
+  - the complete R-118 union and current Opus anchor remain mandatory before a
+    version, default, or broad quality/compression claim.
+
+## R-143 — Multiscale minimum-description acoustic law
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Principle:
+  - every region competes under the common causal description
+    `X_j = T(theta_j, Basis_k) + S(phi_j, seed_j) + Truth_j`;
+  - `T` is a bounded deterministic transform of reusable objective structure,
+    `S` is a bounded counter-addressed stochastic law, and `Truth` is the exact
+    or quality-declared difference. Any term may be absent;
+  - the search is multiscale. A useful law may live for a few samples, one
+    oscillation, an attack, a phrase, a room tail, or the complete stream.
+- Noise:
+  - rain, wind, surf, breath, applause, and analogous material are not assumed
+    to repeat exact PCM. Reusable event shapes and resonances compete with
+    spectral density, modulation, inter-channel correlation, event-rate, and
+    seed laws;
+  - the natural realization is preserved only by Truth. A seeded stochastic
+    synthesis without correction is perceptual detail, not objective
+    reconstruction.
+- Minimum-description rule:
+  - the existence of a mathematical mapping is insufficient. A representation
+    wins only when its complete canonical bytes and bounded decode cost are
+    lower than every admitted alternative at the declared quality;
+  - arbitrary programs are excluded because a per-region program can merely
+    hide the original signal. The decoder exposes only the fixed integer MAF
+    ISA and bounded parameter trajectories;
+  - optimized independent Truth is the universal fallback, so a failed law
+    cannot worsen the selected stream.
+
+## R-144 — Latent acoustic tomography from changing mixtures
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Observation:
+  - a finished mono or stereo mix is not treated as an indivisible waveform.
+    Repeated sources observed under different gains, positions, filters,
+    overlaps, and surrounding sources provide multiple equations from which
+    reusable latent components may be inferred;
+  - the encoder MAY factor an observed channel as
+    `Y_c(t) = sum_i H_ci(t) T_i(theta_it, Basis_i) + Truth_c(t)`.
+    `H`, `T`, and every Basis are objective decoder operations; semantic source
+    names are unnecessary.
+- Compression rule:
+  - physical source identity is not required. If two inseparable real sources
+    are cheaper as one composite Basis, the composite is canonical for that
+    stream;
+  - if an inferred separation is wrong, complete native synthesis increases
+    Truth or total bytes and RDO rejects it. No separated stem is trusted
+    without the decoded-sum test;
+  - temporal overlap therefore serves both as masking that defeats direct
+    hashes and as additional evidence for encoder-side factorization.
+- Complexity boundary:
+  - blind source separation, non-negative/sparse factorization, neural
+    separation, cross-occurrence subtraction, and multi-view matching are
+    encoder-side proposers only;
+  - the decoder remains the same bounded integer emitter sum, Basis transform,
+    stochastic field, and Truth composition ISA. No separator model is carried
+    as executable code;
+  - non-identifiable mixtures fall back to a composite Basis or independent
+    Truth. Identifiability is never a conformance assumption.
+- Gate:
+  - first validate exact/gain reuse on direct observations under R-142;
+  - then compare joint latent factorization against direct-mixture Basis reuse
+    and optimized Truth on stereo music, orchestra, speech-plus-noise, and
+    synthetic mixtures with known ground-truth sources;
+  - count model or separator ROM, encoder time, MFT1 bytes, all instance/mix
+    parameters, and Truth bytes separately.
+
+## R-145 — Semantic-free partial-spectrum sequence dictionary
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Decision:
+  - normative reuse SHALL be discovered from objective waveform or
+    time-frequency coefficient sequences, not from labels such as speech,
+    phoneme, instrument, note, rain, or ambience;
+  - one Basis MAY cover only a bounded band or coefficient support. Matching
+    content in one band may be reused even while unrelated simultaneous
+    content occupies other bands;
+  - semantic and source-separation models MAY propose search regions but their
+    labels never enter reconstruction and are not required by the encoder.
+- Exact model:
+  - a coefficient region is represented as
+    `C_region = T(theta, DictionaryBasis) + TruthCorrection`;
+  - exact/lossless profiles use a reversible integer analysis/synthesis pair
+    and exact integer correction. Magnitude-only equality is insufficient:
+    coefficient sign, phase-equivalent alignment, overlap state, and rounding
+    are part of the objective region;
+  - transformed equality is admitted only through a fixed bounded integer ISA.
+    Arbitrary programs or formulas remain prohibited.
+- RDO:
+  - the encoder searches time scale, band support, Basis, alignment, signed
+    gain, and later bounded affine phase/pitch/time laws;
+  - it pays analysis mode, band/support signaling, dictionary bytes,
+    placement/transform bytes, overlap/checkpoint state, and correction;
+  - every coefficient cell has exactly one owner: a transformed Basis,
+    stochastic law, source-filter law, transient law, or independent Truth.
+    Double payment across representations is prohibited.
+- First executable evidence:
+  - retain R-142 whole-waveform gain reuse as a control;
+  - add a reversible integer multiband oracle that performs semantic-free
+    matching and lossless correction independently per band;
+  - test a synthetic mixture where only one latent band repeats, then pinned
+    speech, tonal music, transient, stochastic, and dense-mix material;
+  - no normative opcode is promoted before the partial-band candidate beats
+    optimized independent Truth by complete bytes on real evidence and passes
+    native resource and R-118 gates.
+
+## R-146 — Phase-complete Basis matching and circular alignment
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Requirement:
+  - magnitude or power spectra are phase-invariant proposal keys only. They
+    SHALL NOT establish waveform equality or objective reconstruction;
+  - Foundry SHALL search complex cross-spectrum or equivalent exact waveform
+    correlation for bounded alignment, polarity, and per-band phase relations;
+  - a global integer sample shift represents the corresponding linear spectral
+    phase ramp. Signed gain represents exact polarity and the 180-degree
+    counterphase case. Other phase laws require separately bounded records.
+- First executable transform:
+  - schema-1 `BASIS_INSTANCE.flags & 1` is `CIRCULAR`;
+  - with `CIRCULAR=0`, `source_offset + sample_count` SHALL remain inside the
+    Basis as before;
+  - with `CIRCULAR=1`, `source_offset` is an exact phase/alignment origin,
+    `sample_count` SHALL NOT exceed the Basis length, and sample `n` reads
+    `Basis[(source_offset + n) mod BasisLength]`;
+  - no other flag is valid. Signed Q1.15 gain is applied after indexing.
+- Search:
+  - a phase-invariant spectral fingerprint MAY create a broad candidate bucket;
+  - encoder-side FFT cross-correlation or an exact equivalent SHALL choose
+    bounded top alignment/polarity candidates, followed by fixed-point
+    decoder-in-loop gain fitting and complete correction RDO;
+  - partial-spectrum analysis performs the same search independently for each
+    objectively owned band. It does not require source or sound recognition.
+- Gate:
+  - native and independent tests SHALL cover arbitrary circular alignment,
+    negative-gain counterphase, callback partitioning, invalid flags, exact
+    correction, and corruption;
+  - evidence SHALL publish the incremental byte effect over R-142/R-145
+    gain-only matching. A phase match that increases complete bytes is rejected.
+
+## R-147 — Global cross-channel Basis and transfer trajectories
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Model:
+  - dictionary search SHALL span `channel x band x time`. A Basis discovered in
+    one input or output channel MAY be placed into any declared emitter and
+    routed to any output channel;
+  - channel identity is placement/routing metadata, not part of Basis identity.
+    Exact timing, phase/alignment, polarity, gain/envelope, and optional bounded
+    transfer filtering describe the channel-specific observation;
+  - every output channel retains its own objective Truth correction.
+- Initial envelope transform:
+  - schema-1 `BASIS_INSTANCE.flags & 2` is `LINEAR_GAIN`;
+  - the existing gain field is the gain at the first instance sample. The final
+    schema-1 `i32`, previously required to be zero, becomes `end_gain_q15`;
+  - when `LINEAR_GAIN=0`, `end_gain_q15` SHALL be zero and the start gain is
+    constant. When set, the decoder interpolates a canonical signed Q1.15 gain
+    trajectory including both endpoints;
+  - `CIRCULAR | LINEAR_GAIN` MAY be composed in that canonical order:
+    circular/cropped Basis indexing, gain interpolation, then saturating
+    emitter addition.
+- Later transfer laws:
+  - piecewise gain knots, fractional delay, short stable per-band transfer
+    filters, and immutable envelope references are admitted only through
+    separate complete-byte gates;
+  - arbitrary per-channel formulas, unconstrained convolution, and executable
+    graphs remain prohibited.
+- RDO and evidence:
+  - Foundry compares a shared cross-channel Basis against independent channel
+    Truth, reversible mid/side or other admitted channel lifting, direct mixed
+    Basis reuse, and no-reuse fallback;
+  - synthetic tests SHALL cover delayed, counterphase, attenuated, fading, and
+    reverberant channel copies. Real gates SHALL preserve native stereo or
+    multichannel PCM rather than downmixing;
+  - a shared Basis is counted once, while every placement, routing matrix,
+    envelope, transfer filter, correction, and operation is counted in full.
+
+## R-148 — Local learned pattern miner as a non-normative proposer
+
+- Status: **HYPOTHESIS — OWNER-REQUESTED EVALUATION**
+- Date: 2026-07-27
+- Motivation:
+  - the first fixed Haar/time-lattice matcher found too few real-speech
+    candidates. This is evidence against that matcher, not evidence that speech
+    lacks persistent speaker, excitation, formant, or micro-pattern structure;
+  - exhaustive search over every duration, band, channel, phase, pitch/time
+    law, filter, and overlap is combinatorial. A learned proposer may reduce
+    that search without changing the decoder or Truth.
+- Proposed pipeline:
+  1. a local audio representation model reads original-rate, original-channel
+     PCM and emits multiscale label-free embeddings;
+  2. GPU approximate-nearest-neighbor search proposes related regions across
+     `time x band x channel`;
+  3. deterministic DSP fits exact alignment/phase, signed gain/envelope,
+     pitch/time law, and bounded transfer filters;
+  4. native decoder-in-loop RDO prices Basis, transforms, correction, memory,
+     and operations against every admitted fallback.
+- Speech:
+  - the proposer runs jointly with the causal speaker-local excitation/filter
+    model. Persistent vocal-tract/timbre state, pitch/phase trajectories, and
+    residual micro-Basis reuse are complementary representations;
+  - recognized text, phoneme names, speaker names, and semantic labels are not
+    required and never become normative reconstruction state.
+- Provider policy:
+  - the primary precise proposer is local and operates on original PCM. Cloud
+    providers may propose coarse states or boundaries only under the existing
+    privacy and policy gate;
+  - no AI confidence establishes equality. Exact fixed-point synthesis and
+    Truth correction remain the authority, and encoding remains possible with
+    no model.
+- Gate:
+  - compare deterministic spectral hashing, local learned embeddings, and their
+    union under the same downstream fitter and complete-byte RDO;
+  - report model identity/ROM, GPU time, candidate recall on synthetic known
+    transforms, real selected bytes, fallback rate, and held-out generalization.
+
+## R-149 — Complete Foundry search over the declared transform language
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Scope:
+  - completeness is defined over an explicit finite MAF hypothesis language,
+    not over the infinite set of arbitrary mathematical programs;
+  - every Foundry run SHALL publish its searched duration lattice, time cells,
+    frequency cells, channels, Basis candidates, representation families,
+    transform parameter bounds, composition depth, and resource limits;
+  - a claim of exhaustive search is valid only inside those published bounds.
+- Foundry completeness:
+  - Foundry SHALL evaluate every discrete candidate in the declared search
+    space. Fingerprints, embeddings, approximate-nearest-neighbour indices,
+    classifiers, and cloud models MAY order work but SHALL NOT remove a
+    candidate from a conformance or evidence run;
+  - analytically solvable continuous parameters MAY be fitted directly.
+    Fixed-point neighbours required by the normative decoder SHALL then be
+    evaluated explicitly;
+  - every accepted representation SHALL be compared by complete-byte,
+    decoder-in-loop RDO against independent Truth and all admitted fallbacks.
+- GPU execution:
+  - the primary Foundry backend SHOULD evaluate correlation, phase/alignment,
+    gain/envelope fits, transform candidates, synthesis, and correction costs
+    in deterministic GPU batches;
+  - limited device memory changes tile or batch size only. It SHALL NOT change
+    candidate membership or the selected result;
+  - a portable CPU reference SHALL verify GPU results. Evidence requires exact
+    candidate-count parity and selected-candidate parity, with declared
+    numeric tolerances only for non-normative ranking scores.
+- Profiles:
+  - `Foundry` uses the complete declared search and is required for published
+    compression claims;
+  - `Fast` and `Live` MAY prune or use top-K proposal, but their artifacts and
+    reports SHALL be labelled and SHALL NOT be presented as Foundry evidence;
+  - normative bitstreams and decoder safety are identical for all encoder
+    profiles.
+- AI boundary:
+  - AI MAY schedule tiles, estimate an efficient execution order, or propose a
+    new transform family for a later explicitly bounded experiment;
+  - AI SHALL NOT be the sole reason a declared Foundry candidate is skipped.
+- Gate:
+  - synthetic known-transform recall SHALL be 100% for candidates inside the
+    declared lattice;
+  - CPU and GPU SHALL agree on candidate counts, fitted fixed-point parameters,
+    accepted candidates, decoded PCM, and complete byte totals;
+  - reports SHALL include runtime, peak host/device memory, tile dimensions,
+    search-space cardinality, and proof that out-of-memory fallback preserves
+    the same candidate set.
+
+## R-150 — Hierarchical Basis grammar and low-cost law composition
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Principle:
+  - minimum-scale matches are not the final representation. Foundry SHALL test
+    whether adjacent or overlapping accepted atoms form a cheaper longer-lived
+    Basis, CompoundBasis, motif, source state, or transform trajectory;
+  - analysis SHALL run independently on every declared scale from the original
+    signal. Selecting or discovering a micro-atom SHALL NOT claim its samples,
+    suppress an overlapping span, or prevent direct discovery of a longer
+    pattern;
+  - a compound MAY contain raw immutable samples, existing Basis references,
+    transformed instances, or previously admitted compounds. Dictionary
+    entries therefore form a bounded acyclic grammar rather than a flat table;
+  - the same merge process is repeated across declared scales and grammar
+    depths, so a useful larger structure may itself become part of a still
+    larger structure.
+- Transform-law composition:
+  - Foundry SHALL test whether per-instance increments can be replaced by one
+    low-cost state law: constant or piecewise gain, phase/frequency increment,
+    bounded pitch/time mapping, envelope/filter trajectory, cross-channel
+    transfer, repetition, crop, or another explicitly admitted MAF operation;
+  - equivalent existing Basis/CompoundBasis entries SHALL be considered for
+    unification before a new dictionary payload is created;
+  - arbitrary executable formulas and cyclic dictionary dependencies remain
+    prohibited.
+- Selection:
+  - the objective is complete bytes plus declared decode resources and exact
+    Truth cost. A merge is accepted only when the complete independently
+    decodable stream is cheaper than all unmerged alternatives at the same
+    distortion;
+  - Foundry SHALL use an exhaustive bounded chart/dynamic-programming search
+    over the declared atom sequence, merge spans, transform families, and
+    grammar depth. A greedy first-match merge is not sufficient evidence;
+  - the chart receives direct large-span candidates, bottom-up compounds,
+    overlapping micro-atoms, persistent physical states, and Truth at the same
+    decision stage. Only the global complete cost assigns ownership;
+  - admissible lower bounds MAY avoid materializing a candidate only when they
+    mathematically prove it cannot beat the current complete cost. Such a
+    proof preserves search completeness and SHALL be reported.
+- GPU execution:
+  - pair/span scoring, transform composition, correction-energy evaluation,
+    and chart cells SHOULD be evaluated in deterministic GPU tiles;
+  - VRAM pressure changes tile residency only. Host spill and recomputation
+    preserve the same chart and selected grammar.
+- Gate:
+  - synthetic tests SHALL cover two micro-atoms combining into a larger exact
+    motif, repeated transformed compounds, unification with an existing Basis,
+    a misleading locally cheap merge rejected by the global optimum, and a
+    no-merge fallback;
+  - evidence SHALL publish atom, span, transform, and grammar candidate counts,
+    selected hierarchy, complete bytes at every level, exact decoded PCM, and
+    CPU/GPU parity for a bounded corpus.
+
+## R-151 — STEP M-151: Complete Pattern Field
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Purpose:
+  - this step converts the accepted motif-orbit discussion into one auditable
+    implementation program. A research oracle, isolated opcode, synthetic
+    example, or candidate-count claim does not complete a mechanism;
+  - "complete" or "exhaustive" always means every candidate in a published
+    finite hypothesis language. Resonith SHALL NOT claim to search the
+    unbounded set of all mathematical descriptions of an arbitrary signal.
+- Pattern-search contract:
+  - Foundry SHALL analyze every declared time origin, duration, frequency cell,
+    channel, phase/alignment, transform tuple, representation family, and
+    grammar depth from the original signal;
+  - exact content matches and content-defined boundaries complement the
+    declared multiscale lattice. They do not replace it;
+  - discoveries at one scale SHALL NOT claim samples, prune overlapping
+    candidates, or suppress independent discovery at another scale;
+  - deterministic hashes, learned embeddings, and cloud analysis MAY order
+    work. They SHALL NOT remove candidates from a complete Foundry run;
+  - GPU memory changes deterministic tile residency only. CPU and GPU
+    candidate membership and fixed-point results SHALL agree.
+- Required transform language:
+  - exact placement, crop, integer alignment, circular phase, polarity,
+    constant and piecewise gain/envelope;
+  - bounded pitch resampling, bounded time mapping, fractional phase,
+    spectral/formant envelope, reverse, loop, and short stable
+    resonator/transfer filtering;
+  - cross-band and cross-channel placement with delay, phase, decay/envelope,
+    and admitted transfer laws;
+  - transform parameters and compositions are bounded integer records. An
+    arbitrary executable program is never a Basis transform.
+- Required representation competition:
+  - exact and transformed Basis, CompoundBasis, source-filter, stochastic
+    field, transient, channel lifting/transfer, and independent Truth enter one
+    global quality-constrained RDO;
+  - repeated transform increments SHALL compete with a persistent state law;
+  - adjacent and overlapping atoms SHALL compete with direct large-span
+    candidates and bounded hierarchical merges;
+  - dictionary activation, every instance and parameter, entropy state,
+    correction, checkpoints, memory, and decode operations are priced in full;
+  - lossless selection requires exact PCM. Lossy selection requires the
+    declared quality floor and SHALL reject a smaller but materially degraded
+    candidate. Independent Truth is always available.
+- Required evidence:
+  - synthetic tests prove recall for every admitted transform, cross-channel
+    law, scale, overlap, hierarchy, and deliberately misleading greedy case;
+  - real diagnostics publish raw PCM bytes, complete stream bytes, prediction
+    quality, corrected quality, fallback bytes, candidate counts, runtime,
+    peak host/device memory, and CPU/GPU parity;
+  - a material milestone runs the complete R-118 union: the three full
+    references and all sixteen R-111 classes. Each item compares audio decoded
+    from the original, Resonith, and current official Opus artifacts;
+  - reports include complete bytes plus applicable SNR, log-mel, STOI/ESTOI,
+    transient/pre-echo, spatial/channel, runtime, and resource metrics. Quality
+    and rate are evaluated together; byte count alone cannot admit a mode.
+- Completion gate for each checklist item:
+  1. bounded syntax and deterministic C++23 decoder behavior;
+  2. native C++23 encoder/search implementation, with CUDA for parallel heavy
+     kernels and a portable CPU reference;
+  3. exact Truth correction and independent fallback;
+  4. conformance, corruption, resource, CPU/GPU parity, and portability tests;
+  5. Orkela backend playback of the emitted stream;
+  6. full R-118 original/Resonith/Opus evidence with listening artifacts;
+  7. matching version, changelog, hashes, and public repository evidence.
+- Immediate order:
+  - first integrate the multiscale complete search, global chart, and exact
+    fallback so subsequent transform families share one honest judge;
+  - then complete the transform, partial-spectrum, stochastic, source-filter,
+    transient, mixture, cross-channel, learned-proposer, and persistent-law
+    rows without weakening the search contract;
+  - update Orkela and rerun the full evidence gate before any promotion claim.
+
+## R-152 — Gemini byte-pattern proposer A/B gate
+
+- Status: **HYPOTHESIS — OWNER-REQUESTED IMMEDIATE TEST**
+- Date: 2026-07-27
+- Question:
+  - can Gemini 3.6 Flash discover reusable transformations more effectively
+    from a canonical PCM16 byte/number sequence than the current deterministic
+    encoder proposer?
+- Fair comparison:
+  - Gemini receives no audio MIME, transcript, source label, or musical
+    description. It receives numbered fixed-length PCM16 blocks encoded as
+    deterministic numeric or hexadecimal text and the exact finite transform
+    language;
+  - the native Foundry evaluates the identical blocks and every ordered
+    pair/circular-phase/constant-or-linear-Q1.15-gain candidate;
+  - Gemini returns structured candidate indices and parameters. The local
+    fixed-point evaluator verifies every proposed candidate and rejects
+    invented, out-of-range, or numerically incorrect results;
+  - evidence reports exact-match precision, eligible-candidate recall, best
+    per-target recall, valid-parameter rate, request bytes/tokens, latency, and
+    native CPU/GPU time.
+- Integration rule:
+  - a positive result may add Gemini output to the proposer union or use it to
+    schedule GPU tiles;
+  - Gemini output SHALL NOT establish equality, replace decoder-in-loop RDO,
+    remove a candidate from Foundry, or become necessary for encoding;
+  - credentials remain outside the repository and uploaded test material is
+    limited to owner-authorized evidence inputs.
+
+## R-153 — GPT-5.6 Sol maximum-compute byte-pattern A/B gate
+
+- Status: **BLOCKED BY PROVIDER MODEL ACCESS — TEST REMAINS READY**
+- Date: 2026-07-27
+- Configuration:
+  - use the OpenAI Responses API model `gpt-5.6-sol`;
+  - use the highest documented single-response quality configuration:
+    `reasoning.effort=max` and `reasoning.mode=pro`;
+  - the Codex product label `Ultra` is not recorded as an API reasoning-effort
+    value. The evidence SHALL name the actual API configuration rather than
+    relabel it.
+- Fairness:
+  - send the same PCM16LE hexadecimal cases, finite transform language,
+    structured output schema, thresholds, and local CUDA verifier used by
+    R-152;
+  - compare eligible-relation precision/recall, best-target recall, exact Q15
+    parameter rate, latency, and token usage against Gemini 3.6 Flash and
+    native Foundry;
+  - provider output remains an untrusted proposer and cannot prune Foundry.
+- Execution result on 2026-07-27:
+  - the configured OpenAI project returned HTTP `403 model_not_found` before
+    inference because it does not have access to `gpt-5.6-sol`;
+  - no Sol output, latency, token usage, precision, or recall value therefore
+    exists. This access failure SHALL NOT be represented as a model loss;
+  - the identical request builder, schema, cases, and local CUDA verifier are
+    retained. The gate SHALL be rerun without code or prompt changes when the
+    selected API project gains access;
+  - available realtime models are not substituted because that would compare
+    a different model class and invalidate the A/B.

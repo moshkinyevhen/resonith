@@ -1374,15 +1374,39 @@ Records are ordered by type and use consecutive identifiers from zero:
    zero, canonical emitter identifiers, then an output-major signed Q1.15
    matrix. Schema 1 lists every declared emitter in canonical order.
 6. `BASIS`: identifier, unsigned PCM16 sample count, then the immutable mono
-   periodic PCM16 table. Basis identifiers are consecutive from zero. The
-   Basis count is the total record count minus all five explicit header
-   counts, is bounded by Main, and is reported by inspection.
+   PCM16 table. Basis identifiers are consecutive from zero.
+7. `BASIS_INSTANCE`: identifier, emitter, resolved Basis identifier, bounded
+   flags, absolute output start, signed Q1.15 start gain, unsigned Basis sample
+   offset, unsigned output sample count, and signed Q1.15 end gain. Schema 1
+   copies exactly one Basis sample per output sample; pitch/time interpolation
+   is not implied.
+
+Basis and Basis Instance counts are obtained by scanning their canonical
+record types. Their sum plus all five explicit header counts SHALL equal the
+total record count. Main bounds Basis records to 256, Basis samples to 16,384
+per record, and Basis Instance records to 4,096. With `CIRCULAR=0`, a Basis
+Instance crop SHALL lie completely inside its resolved Basis. With
+`CIRCULAR=1`, source offset SHALL be below the Basis length, sample count
+SHALL NOT exceed that length, and indexing wraps modulo the Basis length. Its
+half-open output support SHALL lie completely inside the stream.
 
 Source-filter lifetimes on one emitter SHALL NOT overlap. A directly rendered
 stochastic emitter and a source-filter emitter SHALL NOT share an emitter in
 schema 1. A referenced stochastic lifetime SHALL cover its complete consumer
 lifetime. Mix lifetimes SHALL be contiguous and cover the complete stream.
-Transient support SHALL lie within the complete stream.
+Transient and Basis Instance support SHALL lie within the complete stream.
+Basis Instances add to their declared emitter in consecutive identifier order
+after transient synthesis and before the active output mix. Addition uses
+saturating PCM16 arithmetic. The signed instance gain uses the same canonical
+Q1.15 quotient/remainder rounding as every other MAF gain. Flag bit zero is
+`CIRCULAR`; flag bit one is `LINEAR_GAIN`; all other bits are invalid.
+
+When `LINEAR_GAIN=0`, end gain SHALL be zero and start gain applies to the
+complete instance. When set, sample zero uses start gain, the final sample uses
+end gain, and intermediate gains use exact signed rational interpolation with
+ties away from zero. A linear-gain instance SHALL contain at least two
+samples. Canonical composition order is source indexing, gain interpolation,
+Q1.15 multiplication, saturating emitter addition, then active output mix.
 
 Inspection SHALL verify the checksum, exact total size, canonical order,
 identifier uniqueness, every reference and lifetime, filter stability,
@@ -1427,8 +1451,33 @@ Each motif instance SHALL declare:
 - a profile-bounded resampling or pitch/time law.
 
 The first executable level SHALL support exact one-shot placement at unity
-time scale before optional transformed placement. Later levels MAY add
-bounded interpolation, overlap, and multichannel matrices, but MUST declare
+time scale, bounded crop, and signed gain before optional transformed
+placement. Its canonical schema-1 payload is:
+
+```text
+u16 instance_id
+u16 emitter_id
+u16 basis_id
+u16 flags: bit 0 CIRCULAR, bit 1 LINEAR_GAIN, bit 2 REVERSE
+u32 output_start
+i32 start_gain_q15
+u16 basis_sample_offset
+u16 output_sample_count
+i32 end_gain_q15
+```
+
+The decoder SHALL resolve the Basis during inspection, preflight the complete
+instance operation cost before an output transaction, and render without
+allocation or hash search. Callback partitioning SHALL NOT change the output.
+
+Schema 1 circular indexing supplies exact integer-sample phase/alignment and
+signed gain supplies polarity/counterphase. Linear gain supplies one bounded
+fade or damping trajectory. `REVERSE` reads decreasing Basis indices;
+non-circular reverse requires `basis_sample_offset` to name the first (highest)
+valid source index, while circular reverse wraps modulo the Basis length.
+Later levels MAY add fractional phase/alignment,
+pitch/time laws, piecewise envelopes, overlap windows, and short transfer
+filters, but MUST use a new explicitly versioned record and MUST declare
 maximum Basis samples, instances, simultaneous overlap, operations per output
 frame, correction bytes, and random-access dependency span.
 
@@ -1437,6 +1486,47 @@ near-duplicate search are encoder operations and are non-normative. The
 decoder receives no hash search or semantic label. An encoder SHALL account
 for the complete dictionary, instance, checkpoint, and objective correction
 cost and SHALL retain optimized independent Truth as a complete candidate.
+
+### 14.7 Prospective Complete Pattern Field encoder contract
+
+An official evidence-grade Foundry encoder SHALL publish one finite hypothesis
+language for every run. The declaration SHALL enumerate analyzed time origins,
+duration scales, frequency cells, channels, Basis candidates, representation
+families, transform parameter bounds, composition depth, and resource limits.
+The term `complete` or `exhaustive` is valid only when every candidate in that
+declaration is evaluated.
+
+Analysis SHALL begin independently from original PCM at every declared scale.
+A discovery, selection, or provisional ownership at one scale SHALL NOT remove
+an overlapping, nested, cross-band, cross-channel, or direct longer candidate
+at another scale. Exact content-defined matching SHALL complement rather than
+replace the regular declared lattice.
+
+Hashes, fingerprints, learned embeddings, classifiers, and external semantic
+analysis MAY order evaluation. They SHALL NOT remove candidates from an
+evidence-grade Foundry run. GPU tiling, host spill, and recomputation MAY
+change residency or order but SHALL NOT change candidate membership or the
+selected fixed-point result. An official portable CPU reference SHALL verify
+candidate counts and selected results for bounded gates.
+
+The global selector SHALL jointly price immutable Basis activation,
+placements, transform parameters, persistent state laws, routing, entropy
+state, checkpoints, deterministic correction, memory, and decoder operations.
+It SHALL compare exact and transformed Basis, CompoundBasis, source-filter,
+stochastic, transient, cross-channel, and independent Truth candidates. Local
+greedy ownership is not sufficient.
+
+For Lossless, only exact reconstructed PCM is eligible. For a lossy profile, a
+candidate SHALL first satisfy every declared waveform, spectral,
+intelligibility, transient, and channel/spatial quality floor; rate comparison
+occurs only among eligible candidates. Independent Truth SHALL remain
+available for every span and channel.
+
+Each transform promoted into a decoder record SHALL have a bounded integer
+syntax, deterministic composition order, operation and memory limits,
+corruption tests, independent-model conformance, exact correction path, and
+random-access rule. An arbitrary executable formula, neural program, shader,
+or unbounded transform graph SHALL NOT be a Basis transform.
 
 ## 15. Security
 

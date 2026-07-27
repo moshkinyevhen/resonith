@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "best_target_recall": 1.0,
+      "block_count": 6,
+      "block_samples": 16,
+      "case_id": "synthetic-known-laws",
+      "eligible_relation_precision": 0.6666666666666666,
+      "eligible_relation_recall": 0.3333333333333333,
+      "exact_parameter_rate_on_eligible": 0.0,
+      "gemini_eligible_relation_count": 8,
+      "gemini_exact_parameter_count": 0,
+      "gemini_proposal_count": 12,
+      "gemini_valid_index_count": 12,
+      "input_sha256": "99625d2ee92ef7418ab76c46f5e6b54d69636a4060b1b5e77a2717360c0daca9",
+      "maximum_normalized_error": 0.0,
+      "native_eligible_candidate_count": 24,
+      "native_foundry_seconds": 0.2559336999838706,
+      "native_target_count": 5
+    },
+    {
+      "best_target_recall": 0.0,
+      "block_count": 12,
+      "block_samples": 64,
+      "case_id": "ebu-speech-bytes",
+      "eligible_relation_precision": 0.25,
+      "eligible_relation_recall": 0.01744186046511628,
+      "exact_parameter_rate_on_eligible": 0.0,
+      "gemini_eligible_relation_count": 3,
+      "gemini_exact_parameter_count": 0,
+      "gemini_proposal_count": 12,
+      "gemini_valid_index_count": 12,
+      "input_sha256": "3d92951c7d9e448ad625e1b02d4321217d71b31c02da592b7382ddbc5390738c",
+      "maximum_normalized_error": 0.05,
+      "native_eligible_candidate_count": 172,
+      "native_foundry_seconds": 0.2130131000012625,
+      "native_target_count": 12
+    }
+  ],
+  "gemini_seconds": 129.34203209998668,
+  "model": "models/gemini-3.6-flash",
+  "provider_input": "hexadecimal PCM16LE text; no audio MIME",
+  "request_bytes": 6114,
+  "schema": "resonith-r152-gemini-byte-pattern-gate-1",
+  "status": "measured proposer evidence; not a codec claim",
+  "usage": {
+    "total_cached_tokens": 0,
+    "total_input_tokens": 3533,
+    "total_output_tokens": 2119,
+    "total_thought_tokens": 30211,
+    "total_tokens": 35863,
+    "total_tool_use_tokens": 0
+  }
+}

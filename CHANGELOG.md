@@ -11,6 +11,43 @@ version.
 
 ### Research
 
+- Added STEP M-151 Complete Pattern Field: the C++23/CUDA Foundry now searches
+  every member of a declared finite multiscale/time/channel lattice, including
+  forward/reverse circular Basis traversal and signed constant/linear Q1.15
+  gain, with exact CPU/GPU parity. A bounded global chart prices shared Basis
+  activation, placements, exact correction, actual MFT1 bytes, and independent
+  Truth fallback. Orkela `0.3.0-alpha.3` directly executes the emitted MFT1
+  subset on Windows and Android. This is constructive architecture evidence;
+  full R-118 and standardized composite-Truth transport remain pending.
+- Measured Gemini 3.6 Flash as an untrusted proposer on PCM16LE hexadecimal
+  sequences. It recalled coarse synthetic targets but only 1.744% of eligible
+  real-speech relations and no exact Q1.15 parameters, so it cannot prune the
+  deterministic Foundry. The frozen identical GPT-5.6 Sol `max`/`pro` gate
+  reached the OpenAI API but the configured project lacks model access; no Sol
+  quality result or winner is claimed.
+- Added R-149/R-150 evidence-grade Foundry foundations: an optional native
+  CUDA/NVRTC 13.3 C++23 backend exhaustively evaluates every declared
+  block-pair, circular-phase, and signed constant/linear Q1.15 gain candidate
+  in deterministic VRAM tiles with exact CPU parity. Removed the former
+  seed/probe search budgets from motif discovery. Added a scale-parallel,
+  non-greedy hierarchical grammar oracle that lets direct large spans,
+  transformed state-increment compounds, existing Basis entries, micro-atoms,
+  and Truth compete in one exact bounded minimum-description chart. These are
+  architecture and synthetic-conformance results, not real-audio or Opus
+  compression claims. The exact parity, 26.50% favorable synthetic saving,
+  and mandatory Truth fallback on the first exhaustive real-speech diagnostic
+  are published in
+  [the complete GPU Foundry report](docs/results/COMPLETE_GPU_FOUNDRY_2026-07-27.md).
+- Implemented R-142/R-145/R-146/R-147 immutable motif orbits: native MFT1
+  Basis Instances, circular phase/counterphase alignment, exact linear gain
+  trajectories, semantic-free reversible partial-spectrum dictionaries, and
+  global cross-channel Basis placement. Constructive lossless diagnostics
+  reduced a partial-band mixture by 42.06% versus independent Truth and a
+  phase/envelope stereo transfer signal by 76.51% versus the best reversible
+  stereo Truth mode. The first real speech and six whole-waveform controls
+  retained exact Truth, so no real-audio, Opus, R-118, or default-codec claim
+  is made. See
+  [the motif-orbit evidence](docs/results/PARTIAL_SPECTRUM_ORBIT_2026-07-27.md).
 - Added R-131/R-134 exact-sample semantic-boundary candidate sets and immutable
   periodic Basis lifetimes. A deliberately favorable EBU SQAM sustained-tone
   fast diagnostic reduced complete bytes by 75.15% against direct Resonith

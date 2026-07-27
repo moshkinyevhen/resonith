@@ -220,6 +220,167 @@ std::vector<std::uint8_t> build_stream() {
     return stream;
 }
 
+std::vector<std::uint8_t> build_basis_instance_stream() {
+    std::vector<std::uint8_t> payload;
+
+    std::vector<std::uint8_t> mix;
+    append_u16(mix, 0U);
+    append_u16(mix, 1U);
+    append_u32(mix, 0U);
+    append_u32(mix, 20U);
+    append_u16(mix, 1U);
+    append_u16(mix, 0U);
+    append_u16(mix, 0U);
+    append_i16(mix, 32767);
+    append_record(payload, RESONITH_MAF_TYPED_MIX, mix);
+
+    std::vector<std::uint8_t> basis;
+    append_u16(basis, 0U);
+    append_u16(basis, 4U);
+    append_u32(basis, 0U);
+    append_i16(basis, 1000);
+    append_i16(basis, -2000);
+    append_i16(basis, 3000);
+    append_i16(basis, -4000);
+    append_record(payload, RESONITH_MAF_TYPED_BASIS, basis);
+
+    for (std::uint16_t id = 0U; id < 3U; ++id) {
+        std::vector<std::uint8_t> instance;
+        append_u16(instance, id);
+        append_u16(instance, 0U);
+        append_u16(instance, 0U);
+        append_u16(
+            instance,
+            id == 0U
+                ? 0U
+                : (
+                    RESONITH_MAF_TYPED_BASIS_INSTANCE_CIRCULAR
+                    | (
+                        id == 2U
+                            ? static_cast<std::uint16_t>(
+                                  RESONITH_MAF_TYPED_BASIS_INSTANCE_LINEAR_GAIN
+                              )
+                            : 0U
+                    )
+                )
+        );
+        append_u32(instance, id == 0U ? 0U : (id == 1U ? 8U : 14U));
+        append_i32(instance, id == 1U ? -32768 : 32768);
+        append_u16(instance, id == 0U ? 0U : (id == 1U ? 1U : 2U));
+        append_u16(instance, 4U);
+        append_i32(instance, 0);
+        append_record(
+            payload,
+            RESONITH_MAF_TYPED_BASIS_INSTANCE,
+            instance
+        );
+    }
+
+    std::vector<std::uint8_t> stream(
+        RESONITH_MAF_TYPED_HEADER_BYTES,
+        0U
+    );
+    std::memcpy(stream.data(), "MFT1", 4U);
+    stream[4] = 1U;
+    write_u16(stream, 6U, RESONITH_MAF_TYPED_HEADER_BYTES);
+    write_u32(stream, 8U, 48000U);
+    write_u32(stream, 12U, 20U);
+    write_u32(stream, 16U, 8U);
+    write_u16(stream, 20U, 1U);
+    write_u16(stream, 22U, 1U);
+    write_u16(stream, 32U, 1U);
+    write_u16(stream, 34U, 5U);
+    write_u64(stream, 36U, 0x5245'534f'4e49'5448ULL);
+    write_u32(stream, 44U, 128U);
+    write_u32(stream, 48U, static_cast<std::uint32_t>(payload.size()));
+    write_u32(stream, 52U, 40U);
+    write_u32(stream, 56U, 50U);
+    stream.insert(stream.end(), payload.begin(), payload.end());
+    append_u32(stream, crc32(stream.data(), stream.size()));
+    return stream;
+}
+
+std::vector<std::uint8_t> build_reverse_basis_instance_stream() {
+    std::vector<std::uint8_t> payload;
+
+    std::vector<std::uint8_t> mix;
+    append_u16(mix, 0U);
+    append_u16(mix, 1U);
+    append_u32(mix, 0U);
+    append_u32(mix, 8U);
+    append_u16(mix, 1U);
+    append_u16(mix, 0U);
+    append_u16(mix, 0U);
+    append_i16(mix, 32767);
+    append_record(payload, RESONITH_MAF_TYPED_MIX, mix);
+
+    std::vector<std::uint8_t> basis;
+    append_u16(basis, 0U);
+    append_u16(basis, 4U);
+    append_u32(basis, 0U);
+    constexpr std::array<std::int16_t, 4> basis_values{
+        100,
+        -200,
+        300,
+        -400,
+    };
+    for (const std::int16_t value : basis_values) {
+        append_i16(basis, value);
+    }
+    append_record(payload, RESONITH_MAF_TYPED_BASIS, basis);
+
+    for (std::uint16_t id = 0U; id < 2U; ++id) {
+        std::vector<std::uint8_t> instance;
+        append_u16(instance, id);
+        append_u16(instance, 0U);
+        append_u16(instance, 0U);
+        append_u16(
+            instance,
+            RESONITH_MAF_TYPED_BASIS_INSTANCE_REVERSE
+                | (
+                    id == 1U
+                        ? static_cast<std::uint16_t>(
+                              RESONITH_MAF_TYPED_BASIS_INSTANCE_CIRCULAR
+                          )
+                        : 0U
+                )
+        );
+        append_u32(instance, id == 0U ? 0U : 4U);
+        append_i32(instance, 32768);
+        append_u16(instance, id == 0U ? 3U : 1U);
+        append_u16(instance, 4U);
+        append_i32(instance, 0);
+        append_record(
+            payload,
+            RESONITH_MAF_TYPED_BASIS_INSTANCE,
+            instance
+        );
+    }
+
+    std::vector<std::uint8_t> stream(
+        RESONITH_MAF_TYPED_HEADER_BYTES,
+        0U
+    );
+    std::memcpy(stream.data(), "MFT1", 4U);
+    stream[4] = 1U;
+    write_u16(stream, 6U, RESONITH_MAF_TYPED_HEADER_BYTES);
+    write_u32(stream, 8U, 48000U);
+    write_u32(stream, 12U, 8U);
+    write_u32(stream, 16U, 8U);
+    write_u16(stream, 20U, 1U);
+    write_u16(stream, 22U, 1U);
+    write_u16(stream, 32U, 1U);
+    write_u16(stream, 34U, 4U);
+    write_u64(stream, 36U, 0x5245'534f'4e49'5448ULL);
+    write_u32(stream, 44U, 128U);
+    write_u32(stream, 48U, static_cast<std::uint32_t>(payload.size()));
+    write_u32(stream, 52U, 40U);
+    write_u32(stream, 56U, 50U);
+    stream.insert(stream.end(), payload.begin(), payload.end());
+    append_u32(stream, crc32(stream.data(), stream.size()));
+    return stream;
+}
+
 bool expect(bool condition, const char* message) {
     if (!condition) {
         std::fprintf(stderr, "FAIL: %s\n", message);
@@ -423,10 +584,237 @@ bool test_hostile_streams() {
     );
 }
 
+bool test_basis_instance_partition_invariance() {
+    const std::vector<std::uint8_t> stream = build_basis_instance_stream();
+    resonith_maf_typed_requirements requirements{};
+    const resonith_status inspection_status = resonith_maf_typed_inspect(
+        stream.data(),
+        stream.size(),
+        &requirements
+    );
+    if (inspection_status != RESONITH_STATUS_OK) {
+        std::fprintf(
+            stderr,
+            "MFT1 Basis Instance inspection status: %d\n",
+            static_cast<int>(inspection_status)
+        );
+    }
+    if (!expect(
+            inspection_status == RESONITH_STATUS_OK
+                && requirements.basis_count == 1U
+                && requirements.basis_instance_count == 3U
+                && requirements.basis_elements == 4U,
+            "MFT1 Basis Instance inspection"
+        )) {
+        return false;
+    }
+
+    Memory regular_memory{};
+    Memory irregular_memory{};
+    resonith_maf_typed_workspace regular_workspace = regular_memory.view();
+    resonith_maf_typed_workspace irregular_workspace =
+        irregular_memory.view();
+    regular_workspace.basis_capacity = regular_memory.bases.size();
+    irregular_workspace.basis_capacity = irregular_memory.bases.size();
+    resonith_maf_typed_session regular_session{};
+    resonith_maf_typed_session irregular_session{};
+    if (
+        resonith_maf_typed_open(
+            stream.data(),
+            stream.size(),
+            &regular_workspace,
+            &regular_session
+        ) != RESONITH_STATUS_OK
+        || resonith_maf_typed_open(
+            stream.data(),
+            stream.size(),
+            &irregular_workspace,
+            &irregular_session
+        ) != RESONITH_STATUS_OK
+    ) {
+        return expect(false, "MFT1 Basis Instance open");
+    }
+
+    std::array<std::int16_t, 20> regular{};
+    std::array<std::int16_t, 20> irregular{};
+    std::uint32_t regular_cursor = 0U;
+    for (const std::uint32_t request : {8U, 8U, 4U}) {
+        std::uint32_t written = 0U;
+        const resonith_status status = resonith_maf_typed_render(
+            &regular_session,
+            request,
+            regular.data() + regular_cursor,
+            regular.size() - regular_cursor,
+            &written
+        );
+        if (status != RESONITH_STATUS_OK) {
+            std::fprintf(
+                stderr,
+                "MFT1 Basis Instance render status: %d at %u\n",
+                static_cast<int>(status),
+                regular_cursor
+            );
+            return expect(false, "MFT1 Basis Instance regular render");
+        }
+        regular_cursor += written;
+    }
+    std::uint32_t irregular_cursor = 0U;
+    for (const std::uint32_t request : {3U, 5U, 2U, 7U, 3U}) {
+        std::uint32_t written = 0U;
+        if (
+            resonith_maf_typed_render(
+                &irregular_session,
+                request,
+                irregular.data() + irregular_cursor,
+                irregular.size() - irregular_cursor,
+                &written
+            ) != RESONITH_STATUS_OK
+        ) {
+            return expect(false, "MFT1 Basis Instance irregular render");
+        }
+        irregular_cursor += written;
+    }
+    if (!expect(
+        regular_cursor == 20U
+            && irregular_cursor == 20U
+            && regular == irregular
+            && regular[0] == 1000
+            && regular[1] == -2000
+            && regular[2] == 3000
+            && regular[3] == -4000
+            && std::all_of(
+                regular.begin() + 4,
+                regular.begin() + 8,
+                [](std::int16_t value) { return value == 0; }
+            )
+            && regular[8] == 2000
+            && regular[9] == -3000
+            && regular[10] == 4000
+            && regular[11] == -1000
+            && std::all_of(
+                regular.begin() + 12,
+                regular.begin() + 14,
+                [](std::int16_t value) { return value == 0; }
+            )
+            && regular[14] == 3000
+            && regular[17] == 0
+            && regular[18] == 0
+            && regular[19] == 0,
+        "MFT1 phase, counterphase, envelope, and callback invariance"
+    )) {
+        return false;
+    }
+
+    std::vector<std::uint8_t> invalid_reference = stream;
+    write_u16(invalid_reference, 128U, 1U);
+    write_u32(
+        invalid_reference,
+        invalid_reference.size() - 4U,
+        crc32(
+            invalid_reference.data(),
+            invalid_reference.size() - 4U
+        )
+    );
+    resonith_maf_typed_requirements invalid_requirements{};
+    if (!expect(
+        resonith_maf_typed_inspect(
+            invalid_reference.data(),
+            invalid_reference.size(),
+            &invalid_requirements
+        ) == RESONITH_STATUS_MALFORMED,
+        "MFT1 unresolved Basis Instance rejection"
+    )) {
+        return false;
+    }
+
+    std::vector<std::uint8_t> invalid_flags = stream;
+    write_u16(invalid_flags, 130U, 4U);
+    write_u32(
+        invalid_flags,
+        invalid_flags.size() - 4U,
+        crc32(invalid_flags.data(), invalid_flags.size() - 4U)
+    );
+    return expect(
+        resonith_maf_typed_inspect(
+            invalid_flags.data(),
+            invalid_flags.size(),
+            &invalid_requirements
+        ) == RESONITH_STATUS_MALFORMED,
+        "MFT1 unknown Basis Instance flag rejection"
+    );
+}
+
+bool test_reverse_basis_instances() {
+    const std::vector<std::uint8_t> stream =
+        build_reverse_basis_instance_stream();
+    resonith_maf_typed_requirements requirements{};
+    if (!expect(
+            resonith_maf_typed_inspect(
+                stream.data(),
+                stream.size(),
+                &requirements
+            ) == RESONITH_STATUS_OK
+                && requirements.basis_count == 1U
+                && requirements.basis_instance_count == 2U,
+            "MFT1 reverse Basis Instance inspection"
+        )) {
+        return false;
+    }
+
+    Memory memory{};
+    resonith_maf_typed_workspace workspace = memory.view();
+    workspace.basis_capacity = memory.bases.size();
+    resonith_maf_typed_session session{};
+    if (
+        resonith_maf_typed_open(
+            stream.data(),
+            stream.size(),
+            &workspace,
+            &session
+        ) != RESONITH_STATUS_OK
+    ) {
+        return expect(false, "MFT1 reverse Basis Instance open");
+    }
+    std::array<std::int16_t, 8> output{};
+    std::uint32_t cursor = 0U;
+    for (const std::uint32_t request : {3U, 2U, 3U}) {
+        std::uint32_t written = 0U;
+        if (
+            resonith_maf_typed_render(
+                &session,
+                request,
+                output.data() + cursor,
+                output.size() - cursor,
+                &written
+            ) != RESONITH_STATUS_OK
+            || written != request
+        ) {
+            return expect(false, "MFT1 reverse Basis Instance render");
+        }
+        cursor += written;
+    }
+    const std::array<std::int16_t, 8> expected{
+        -400,
+        300,
+        -200,
+        100,
+        -200,
+        100,
+        -400,
+        300,
+    };
+    return expect(
+        cursor == output.size() && output == expected,
+        "MFT1 reverse/circular composition and callback invariance"
+    );
+}
+
 }  // namespace
 
 int main() {
     return test_inspect_and_partition_invariance()
+            && test_basis_instance_partition_invariance()
+            && test_reverse_basis_instances()
             && test_hostile_streams()
         ? 0
         : 1;

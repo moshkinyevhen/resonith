@@ -6,6 +6,11 @@ option(RESONITH_WARNINGS_AS_ERRORS "Treat native-core warnings as errors" ON)
 option(RESONITH_BUILD_SHARED "Build the shared Resonith Core library" ON)
 option(RESONITH_BUILD_FUZZERS "Build Clang libFuzzer security targets" OFF)
 option(RESONITH_BUILD_TOOLS "Build native measurement tools" ON)
+option(
+    RESONITH_BUILD_CUDA_FOUNDRY
+    "Build the optional exhaustive CUDA Foundry backend"
+    OFF
+)
 
 set(RESONITH_CORE_SOURCES
     src/basis.cpp
@@ -104,6 +109,31 @@ if(MSVC)
     endif()
 endif()
 
+if(RESONITH_BUILD_CUDA_FOUNDRY)
+    add_library(resonith_foundry_cuda SHARED
+        src/foundry_cuda.cpp
+    )
+    add_library(Resonith::FoundryCuda ALIAS resonith_foundry_cuda)
+    target_compile_features(resonith_foundry_cuda PUBLIC cxx_std_23)
+    target_include_directories(resonith_foundry_cuda
+        PUBLIC
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+            "$<INSTALL_INTERFACE:include>"
+    )
+    target_compile_definitions(resonith_foundry_cuda
+        PUBLIC RESONITH_FOUNDRY_SHARED
+        PRIVATE RESONITH_BUILDING_FOUNDRY
+    )
+    set_target_properties(resonith_foundry_cuda PROPERTIES
+        CXX_EXTENSIONS OFF
+        POSITION_INDEPENDENT_CODE ON
+    )
+    if(MINGW)
+        target_link_options(resonith_foundry_cuda PRIVATE -static)
+    endif()
+    resonith_enable_warnings(resonith_foundry_cuda)
+endif()
+
 if(RESONITH_BUILD_TOOLS)
     add_executable(resonith_decode
         tools/decode.cpp
@@ -112,6 +142,53 @@ if(RESONITH_BUILD_TOOLS)
     target_link_libraries(resonith_decode PRIVATE Resonith::Core)
     set_target_properties(resonith_decode PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_decode)
+
+    if(RESONITH_BUILD_CUDA_FOUNDRY)
+        add_executable(resonith_foundry_cuda_test
+            tests/foundry_cuda_test.cpp
+        )
+        target_compile_features(
+            resonith_foundry_cuda_test
+            PRIVATE cxx_std_23
+        )
+        target_link_libraries(
+            resonith_foundry_cuda_test
+            PRIVATE Resonith::FoundryCuda
+        )
+        if(MINGW)
+            target_link_options(
+                resonith_foundry_cuda_test
+                PRIVATE -static
+            )
+        endif()
+        set_target_properties(
+            resonith_foundry_cuda_test
+            PROPERTIES CXX_EXTENSIONS OFF
+        )
+        resonith_enable_warnings(resonith_foundry_cuda_test)
+
+        add_executable(resonith_foundry_c_header_test
+            tests/foundry_c_header_test.c
+        )
+        target_compile_features(
+            resonith_foundry_c_header_test
+            PRIVATE c_std_99
+        )
+        target_link_libraries(
+            resonith_foundry_c_header_test
+            PRIVATE Resonith::FoundryCuda
+        )
+        if(MINGW)
+            target_link_options(
+                resonith_foundry_c_header_test
+                PRIVATE -static
+            )
+        endif()
+        add_test(
+            NAME foundry_c_header_compatibility
+            COMMAND resonith_foundry_c_header_test
+        )
+    endif()
 
     add_executable(resonith_lapped_device_bench
         tools/lapped_device_bench.cpp

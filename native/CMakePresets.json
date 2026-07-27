@@ -14,6 +14,7 @@
         "CMAKE_BUILD_TYPE": "Release",
         "BUILD_TESTING": "OFF",
         "RESONITH_BUILD_FUZZERS": "OFF",
+        "RESONITH_BUILD_CUDA_FOUNDRY": "OFF",
         "RESONITH_BUILD_TOOLS": "OFF",
         "RESONITH_WARNINGS_AS_ERRORS": "ON"
       }

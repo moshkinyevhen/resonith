@@ -13,7 +13,8 @@ extern "C" {
 enum {
     RESONITH_MAF_TYPED_HEADER_BYTES = 64,
     RESONITH_MAF_TYPED_RECORD_HEADER_BYTES = 8,
-    RESONITH_MAF_TYPED_MAX_SOURCE_LIFETIMES = 4096
+    RESONITH_MAF_TYPED_MAX_SOURCE_LIFETIMES = 4096,
+    RESONITH_MAF_TYPED_MAX_BASIS_INSTANCES = 4096
 };
 
 typedef enum resonith_maf_typed_record_type {
@@ -22,8 +23,15 @@ typedef enum resonith_maf_typed_record_type {
     RESONITH_MAF_TYPED_SOURCE_FILTER = 3,
     RESONITH_MAF_TYPED_TRANSIENT = 4,
     RESONITH_MAF_TYPED_MIX = 5,
-    RESONITH_MAF_TYPED_BASIS = 6
+    RESONITH_MAF_TYPED_BASIS = 6,
+    RESONITH_MAF_TYPED_BASIS_INSTANCE = 7
 } resonith_maf_typed_record_type;
+
+typedef enum resonith_maf_typed_basis_instance_flags {
+    RESONITH_MAF_TYPED_BASIS_INSTANCE_CIRCULAR = 1,
+    RESONITH_MAF_TYPED_BASIS_INSTANCE_LINEAR_GAIN = 2,
+    RESONITH_MAF_TYPED_BASIS_INSTANCE_REVERSE = 4
+} resonith_maf_typed_basis_instance_flags;
 
 typedef enum resonith_maf_typed_excitation {
     RESONITH_MAF_TYPED_EXCITATION_IMPULSE = 1,
@@ -35,7 +43,7 @@ typedef enum resonith_maf_typed_excitation {
  * Exact caller-owned memory for one validated prospective MFT1 stream.
  *
  * Counts are elements. No allocation is performed by inspect, open, or render.
- * See Resonith-0 section 14.5 and decision R-130.
+ * See Resonith-0 sections 14.5-14.6 and decisions R-130/R-142.
  */
 typedef struct resonith_maf_typed_requirements {
     uint32_t sample_rate;
@@ -56,6 +64,7 @@ typedef struct resonith_maf_typed_requirements {
     uint16_t transient_count;
     uint16_t mix_count;
     uint16_t basis_count;
+    uint16_t basis_instance_count;
 } resonith_maf_typed_requirements;
 
 /*

@@ -12,6 +12,7 @@ from maf_p0.maf_typed import (
     PERIODIC_BASIS_EXCITATION,
     STOCHASTIC_EXCITATION,
     MafBasis,
+    MafBasisInstance,
     MafFilter,
     MafMix,
     MafSourceFilter,
@@ -26,7 +27,14 @@ from maf_p0.maf_typed_candidate import (
     encode_maf_typed_truth_candidate,
     fit_maf_typed_prediction,
 )
+from maf_p0.motif_orbit import _fit_gain_shift_q15
 from maf_p0.native_core import NativeMain0Decoder
+from maf_p0.motif_orbit import (
+    _render_gain_shift_envelope,
+    encode_gain_orbit_candidate,
+    encode_multichannel_gain_orbit_candidate,
+    encode_optimized_independent_truth,
+)
 
 
 def _vector() -> bytes:
@@ -90,6 +98,7 @@ class MafTypedReferenceTests(unittest.TestCase):
         self.assertEqual(len(info.transients), 1)
         self.assertEqual(len(info.mixes), 1)
         self.assertEqual(len(info.bases), 0)
+        self.assertEqual(len(info.basis_instances), 0)
 
     def test_checksum_mutation_is_rejected(self) -> None:
         payload = bytearray(_vector())
@@ -114,6 +123,21 @@ class MafTypedReferenceTests(unittest.TestCase):
                 16000,
                 native_decoder=None,
                 allowed_modes=(99,),
+            )
+
+    def test_basis_instance_reference_is_checked_before_packing(self) -> None:
+        with self.assertRaisesRegex(ValueError, "resolved bounds"):
+            pack_maf_typed(
+                sample_rate=48000,
+                total_frames=16,
+                render_quantum=8,
+                output_channels=1,
+                emitter_count=1,
+                mixes=(MafMix(0, 16, ((32767,),)),),
+                bases=(MafBasis((1, 2, 3, 4)),),
+                basis_instances=(
+                    MafBasisInstance(0, 1, 0, 32768, 0, 4),
+                ),
             )
 
 
@@ -210,6 +234,274 @@ class MafTypedNativeTests(unittest.TestCase):
         irregular = self.decoder.decode_maf_typed(payload, callback_frames=7)
         np.testing.assert_array_equal(regular.samples, irregular.samples)
         self.assertGreater(np.max(np.abs(regular.samples)), 32000)
+
+    def test_basis_instance_reuses_one_immutable_waveform(self) -> None:
+        basis = (1000, -2000, 3000, -4000)
+        payload = pack_maf_typed(
+            sample_rate=48000,
+            total_frames=20,
+            render_quantum=8,
+            output_channels=1,
+            emitter_count=1,
+            mixes=(MafMix(0, 20, ((32767,),)),),
+            bases=(MafBasis(basis),),
+            basis_instances=(
+                MafBasisInstance(0, 0, 0, 32768, 0, len(basis)),
+                MafBasisInstance(0, 0, 8, 32768, 0, len(basis)),
+            ),
+            declared_operations_per_frame=32,
+        )
+        info = parse_maf_typed(payload)
+        self.assertEqual(info.bases[0].samples, basis)
+        self.assertEqual(len(info.basis_instances), 2)
+        regular = self.decoder.decode_maf_typed(payload, callback_frames=8)
+        irregular = self.decoder.decode_maf_typed(payload, callback_frames=3)
+        np.testing.assert_array_equal(regular.samples, irregular.samples)
+        np.testing.assert_array_equal(
+            regular.samples[0:4, 0],
+            regular.samples[8:12, 0],
+        )
+        self.assertTrue(np.all(regular.samples[4:8, 0] == 0))
+        self.assertTrue(np.all(regular.samples[12:, 0] == 0))
+
+    def test_basis_instance_phase_counterphase_and_envelope(self) -> None:
+        basis = (1000, -2000, 3000, -4000)
+        payload = pack_maf_typed(
+            sample_rate=48000,
+            total_frames=16,
+            render_quantum=8,
+            output_channels=1,
+            emitter_count=1,
+            mixes=(MafMix(0, 16, ((32767,),)),),
+            bases=(MafBasis(basis),),
+            basis_instances=(
+                MafBasisInstance(
+                    0,
+                    0,
+                    0,
+                    -32768,
+                    1,
+                    4,
+                    circular=True,
+                ),
+                MafBasisInstance(
+                    0,
+                    0,
+                    8,
+                    32768,
+                    2,
+                    4,
+                    circular=True,
+                    end_gain_q15=0,
+                ),
+            ),
+            declared_operations_per_frame=64,
+        )
+        info = parse_maf_typed(payload)
+        self.assertTrue(info.basis_instances[0].circular)
+        self.assertEqual(info.basis_instances[1].end_gain_q15, 0)
+        decoded = self.decoder.decode_maf_typed(payload, callback_frames=3)
+        np.testing.assert_array_equal(
+            decoded.samples[0:4, 0],
+            np.asarray((2000, -3000, 4000, -1000), dtype=np.int16),
+        )
+        self.assertEqual(int(decoded.samples[8, 0]), 3000)
+        self.assertEqual(int(decoded.samples[11, 0]), 0)
+
+    def test_basis_instance_reverse_and_circular_reverse(self) -> None:
+        basis = (100, -200, 300, -400)
+        payload = pack_maf_typed(
+            sample_rate=48000,
+            total_frames=8,
+            render_quantum=4,
+            output_channels=1,
+            emitter_count=1,
+            mixes=(MafMix(0, 8, ((32767,),)),),
+            bases=(MafBasis(basis),),
+            basis_instances=(
+                MafBasisInstance(
+                    0,
+                    0,
+                    0,
+                    32768,
+                    3,
+                    4,
+                    reverse=True,
+                ),
+                MafBasisInstance(
+                    0,
+                    0,
+                    4,
+                    32768,
+                    1,
+                    4,
+                    circular=True,
+                    reverse=True,
+                ),
+            ),
+            declared_operations_per_frame=64,
+        )
+        info = parse_maf_typed(payload)
+        self.assertTrue(all(item.reverse for item in info.basis_instances))
+        regular = self.decoder.decode_maf_typed(payload, callback_frames=4)
+        irregular = self.decoder.decode_maf_typed(payload, callback_frames=3)
+        np.testing.assert_array_equal(regular.samples, irregular.samples)
+        np.testing.assert_array_equal(
+            regular.samples[:, 0],
+            np.asarray(
+                (-400, 300, -200, 100, -200, 100, -400, 300),
+                dtype=np.int16,
+            ),
+        )
+
+    def test_phase_search_finds_shift_and_counterphase(self) -> None:
+        basis = np.asarray((100, 200, -300, 500, -700, 1100), dtype=np.int64)
+        target = -np.roll(basis, 2)
+        gain, source_offset, error = _fit_gain_shift_q15(basis, target)
+        self.assertEqual(gain, -32768)
+        self.assertEqual(source_offset, basis.size - 2)
+        self.assertEqual(error, 0.0)
+
+    def test_one_basis_routes_to_two_channels_with_transfer_laws(self) -> None:
+        basis = (1000, -2000, 3000, -4000)
+        payload = pack_maf_typed(
+            sample_rate=48000,
+            total_frames=16,
+            render_quantum=8,
+            output_channels=2,
+            emitter_count=2,
+            mixes=(
+                MafMix(
+                    0,
+                    16,
+                    (
+                        (32767, 0),
+                        (0, 32767),
+                    ),
+                ),
+            ),
+            bases=(MafBasis(basis),),
+            basis_instances=(
+                MafBasisInstance(0, 0, 0, 32768, 0, 4),
+                MafBasisInstance(
+                    1,
+                    0,
+                    2,
+                    16384,
+                    1,
+                    4,
+                    circular=True,
+                    end_gain_q15=0,
+                ),
+            ),
+            declared_operations_per_frame=128,
+        )
+        regular = self.decoder.decode_maf_typed(payload, callback_frames=8)
+        irregular = self.decoder.decode_maf_typed(payload, callback_frames=3)
+        np.testing.assert_array_equal(regular.samples, irregular.samples)
+        np.testing.assert_array_equal(
+            regular.samples[0:4, 0],
+            np.asarray(basis, dtype=np.int16),
+        )
+        self.assertEqual(int(regular.samples[2, 1]), -1000)
+        self.assertEqual(int(regular.samples[5, 1]), 0)
+        self.assertTrue(np.all(regular.samples[6:, 1] == 0))
+
+    def test_cross_channel_phase_and_decay_dictionary_reduces_bytes(self) -> None:
+        length = 256
+        position = np.arange(length, dtype=np.float64)
+        basis = np.rint(
+            9000.0 * np.sin(2.0 * np.pi * 5.0 * position / length)
+            + 2500.0 * np.sin(2.0 * np.pi * 19.0 * position / length)
+        ).astype(np.int64)
+        left_blocks = []
+        right_blocks = []
+        for block_index in range(32):
+            left_blocks.append(
+                _render_gain_shift_envelope(
+                    basis,
+                    (3 * block_index) % length,
+                    32768 - 256 * (block_index % 8),
+                    None,
+                )
+            )
+            right_blocks.append(
+                _render_gain_shift_envelope(
+                    basis,
+                    (5 * block_index + 17) % length,
+                    28672,
+                    16384,
+                )
+            )
+        source = np.column_stack(
+            (
+                np.concatenate(left_blocks),
+                np.concatenate(right_blocks),
+            )
+        ).astype(np.int16)
+        baseline_bytes = 0
+        for channel in range(2):
+            payload, _ = encode_optimized_independent_truth(
+                source[:, channel : channel + 1],
+                truth_block_sizes=(1024,),
+            )
+            baseline_bytes += 4 + len(payload)
+        candidate = encode_multichannel_gain_orbit_candidate(
+            source,
+            48000,
+            native_decoder=self.decoder,
+            block_samples=length,
+            truth_block_sizes=(1024,),
+            maximum_normalized_error=1.0e-6,
+        )
+        np.testing.assert_array_equal(candidate.reconstruction, source)
+        self.assertEqual(candidate.report["basis_count"], 1)
+        self.assertGreater(
+            candidate.report["linear_gain_instance_count"],
+            0,
+        )
+        self.assertTrue(
+            all(
+                value > 0
+                for value in candidate.report["covered_samples_by_channel"]
+            )
+        )
+        self.assertLess(candidate.representation_bytes, baseline_bytes)
+
+    def test_gain_orbit_reduces_exact_transformed_loop_bytes(self) -> None:
+        length = 256
+        phase = np.arange(length, dtype=np.float64)
+        basis = np.rint(
+            9000.0 * np.sin(2.0 * np.pi * 5.0 * phase / length)
+            + 3000.0 * np.sin(2.0 * np.pi * 17.0 * phase / length)
+        ).astype(np.int64)
+        gains = (32768, 24576, -32768, 16384) * 16
+        blocks = []
+        for gain in gains:
+            product = basis * gain
+            scaled = np.where(
+                product >= 0,
+                (product + 16384) // 32768,
+                -((-product + 16384) // 32768),
+            )
+            blocks.append(scaled.astype(np.int16))
+        source = np.concatenate(blocks)[:, None]
+        baseline, _ = encode_optimized_independent_truth(
+            source,
+            truth_block_sizes=(1024,),
+        )
+        candidate = encode_gain_orbit_candidate(
+            source,
+            48000,
+            native_decoder=self.decoder,
+            block_samples=length,
+            truth_block_sizes=(1024,),
+            maximum_normalized_error=1.0e-6,
+        )
+        np.testing.assert_array_equal(candidate.reconstruction, source)
+        self.assertEqual(candidate.report["basis_count"], 1)
+        self.assertEqual(candidate.report["instance_count"], len(gains))
+        self.assertLess(candidate.representation_bytes, len(baseline))
 
 
 if __name__ == "__main__":

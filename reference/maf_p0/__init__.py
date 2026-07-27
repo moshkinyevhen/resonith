@@ -11,6 +11,35 @@ from .cached_additive_oracle import (
     run_cached_additive_oracle,
 )
 from .codec import DecodeResult, EncodeResult, decode_bytes, encode_samples
+from .foundry_cuda import (
+    FoundryCudaError,
+    FoundryCudaEvidence,
+    GainPhaseCudaFoundry,
+)
+from .complete_pattern_field import (
+    CompletePatternResult,
+    PatternFieldCandidate,
+    PatternLanguage,
+    PatternLocation,
+    PatternMatch,
+    PatternRdoCandidate,
+    PatternRdoResult,
+    PatternScale,
+    ScaleEvidence,
+    assert_cpu_gpu_parity,
+    encode_complete_pattern_field_candidate,
+    search_complete_pattern_field,
+    select_complete_pattern_cover,
+)
+from .hierarchical_grammar import (
+    CompoundDiscovery,
+    GrammarSelection,
+    GrammarSpan,
+    StateAtom,
+    discover_affine_state_compounds,
+    discover_exact_compounds,
+    select_minimum_description,
+)
 from .model import (
     encode_basis_latent,
     load_analysis_model,
@@ -72,6 +101,12 @@ from .multichannel import (
     encode_main0_independent_rdo,
     pack_main0_independent_stream,
 )
+from .motif_orbit import (
+    MotifOrbitCandidate,
+    encode_gain_orbit_candidate,
+    encode_multichannel_gain_orbit_candidate,
+    encode_optimized_independent_truth,
+)
 from .native_core import (
     NativeMain0Decoder,
     NativeMultichannelDecodeResult,
@@ -104,6 +139,16 @@ __all__ = [
     "CachedAdditiveOracleResult",
     "DecodeResult",
     "EncodeResult",
+    "FoundryCudaError",
+    "FoundryCudaEvidence",
+    "GainPhaseCudaFoundry",
+    "CompoundDiscovery",
+    "GrammarSelection",
+    "GrammarSpan",
+    "StateAtom",
+    "discover_affine_state_compounds",
+    "discover_exact_compounds",
+    "select_minimum_description",
     "Main0DecodeResult",
     "Main0EncodeResult",
     "Main0State",
@@ -121,6 +166,7 @@ __all__ = [
     "NativeMain0Decoder",
     "NativeMultichannelDecodeResult",
     "NativeMultichannelRequirements",
+    "MotifOrbitCandidate",
     "PacketLossSimulationResult",
     "analyze_lapped_source",
     "decode_bytes",
@@ -129,6 +175,9 @@ __all__ = [
     "encode_main0_periodic_rdo",
     "encode_main0_state_rdo",
     "encode_main0_independent_rdo",
+    "encode_gain_orbit_candidate",
+    "encode_multichannel_gain_orbit_candidate",
+    "encode_optimized_independent_truth",
     "encode_samples",
     "pack_main0_cibs_stream",
     "pack_main0_raw_stream",

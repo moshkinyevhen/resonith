@@ -20,6 +20,7 @@
 | [15_CONTINUOUS_EVIDENCE.md](15_CONTINUOUS_EVIDENCE.md) | Per-milestone benchmark, publication, versioning, and player-coupled release gate |
 | [16_TOOLCHAIN_BASELINE.md](16_TOOLCHAIN_BASELINE.md) | C++23 production language, stable tool versions, hashes, and upgrade gates |
 | [17_MAF_RATE_DISTORTION_FRONTIER.md](17_MAF_RATE_DISTORTION_FRONTIER.md) | Unified MAF cell, theoretical-limit definitions, target budgets, and admission frontier |
+| [18_COMPLETE_PATTERN_FIELD.md](18_COMPLETE_PATTERN_FIELD.md) | STEP M-151 finite-complete multiscale pattern search, global RDO, player, and evidence gate |
 | [results/EXTENDED_AUDIO_CORPUS_2026-07-27.md](results/EXTENDED_AUDIO_CORPUS_2026-07-27.md) | R-111 heterogeneous corpus acquisition, coverage, and preparation evidence |
 | [results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md](results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md) | R-107 gain-shape results against Opus across all 16 R-111 classes |
 | [results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md](results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md) | R-107 complete speech, piano, and full-Mozart admission result |
@@ -36,6 +37,8 @@
 | [results/PERIODIC_MAF_AND_EXACT_BOUNDARIES_2026-07-27.md](results/PERIODIC_MAF_AND_EXACT_BOUNDARIES_2026-07-27.md) | R-131/R-134 exact-sample boundary search and periodic-Basis fast diagnostic |
 | [results/TYPED_MAF_R118_2026-07-27.md](results/TYPED_MAF_R118_2026-07-27.md) | R-131/R-135 complete 19-item typed-MAF rate and quality gate |
 | [results/MAF_TRUTH_FRONTIER_AND_ABLATION_2026-07-27.md](results/MAF_TRUTH_FRONTIER_AND_ABLATION_2026-07-27.md) | R-136–R-138 quality-constrained residual frontier and MAF family ablation |
+| [results/GEMINI_BYTE_PATTERN_2026-07-27.md](results/GEMINI_BYTE_PATTERN_2026-07-27.md) | R-152 Gemini-on-PCM16-hex precision/recall A/B gate against exact CUDA Foundry |
+| [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
 
 Normative draft:

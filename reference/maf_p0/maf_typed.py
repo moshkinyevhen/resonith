@@ -21,6 +21,7 @@ SOURCE_FILTER = 3
 TRANSIENT = 4
 MIX = 5
 BASIS = 6
+BASIS_INSTANCE = 7
 IMPULSE_EXCITATION = 1
 STOCHASTIC_EXCITATION = 2
 PERIODIC_BASIS_EXCITATION = 3
@@ -43,6 +44,21 @@ class MafBasis:
     """One immutable periodic PCM16 waveform."""
 
     samples: tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class MafBasisInstance:
+    """One finite placement of an immutable Basis subrange."""
+
+    emitter_id: int
+    basis_id: int
+    start: int
+    gain_q15: int
+    source_offset: int
+    sample_count: int
+    circular: bool = False
+    end_gain_q15: int | None = None
+    reverse: bool = False
 
 
 @dataclass(frozen=True)
@@ -106,6 +122,7 @@ class MafTypedInfo:
     transients: tuple[MafTransient, ...]
     mixes: tuple[MafMix, ...]
     bases: tuple[MafBasis, ...]
+    basis_instances: tuple[MafBasisInstance, ...]
 
 
 def _validated_gain(value: int) -> int:
@@ -232,6 +249,38 @@ def _basis_body(identifier: int, item: MafBasis) -> bytes:
     )
 
 
+def _basis_instance_body(
+    identifier: int,
+    item: MafBasisInstance,
+) -> bytes:
+    if (
+        not 0 <= int(item.source_offset) <= 0xFFFF
+        or not 1 <= int(item.sample_count) <= 0xFFFF
+    ):
+        raise ValueError("MFT1 Basis Instance crop exceeds schema-1 bounds")
+    flags = int(bool(item.circular))
+    if item.reverse:
+        flags |= 4
+    end_gain = 0
+    if item.end_gain_q15 is not None:
+        flags |= 2
+        end_gain = _validated_gain(item.end_gain_q15)
+        if int(item.sample_count) < 2:
+            raise ValueError("MFT1 linear gain requires two samples")
+    return struct.pack(
+        "<HHHHIiHHI",
+        identifier,
+        int(item.emitter_id),
+        int(item.basis_id),
+        flags,
+        int(item.start),
+        _validated_gain(item.gain_q15),
+        int(item.source_offset),
+        int(item.sample_count),
+        end_gain & 0xFFFF_FFFF,
+    )
+
+
 def pack_maf_typed(
     *,
     sample_rate: int,
@@ -245,6 +294,7 @@ def pack_maf_typed(
     transients: tuple[MafTransient, ...] = (),
     mixes: tuple[MafMix, ...],
     bases: tuple[MafBasis, ...] = (),
+    basis_instances: tuple[MafBasisInstance, ...] = (),
     stream_seed: int = 0x5245_534F_4E49_5448,
     declared_operations_per_frame: int = 1 << 20,
 ) -> bytes:
@@ -267,6 +317,38 @@ def pack_maf_typed(
         raise ValueError("MFT1 requires one or more mix lifetimes")
     if len(bases) > 256:
         raise ValueError("MFT1 Basis count exceeds Main")
+    if len(basis_instances) > 4096:
+        raise ValueError("MFT1 Basis Instance count exceeds Main")
+    for instance in basis_instances:
+        basis_length = len(bases[int(instance.basis_id)].samples) if (
+            0 <= int(instance.basis_id) < len(bases)
+        ) else 0
+        crop_is_valid = (
+            (
+                0 <= int(instance.source_offset) < basis_length
+                and int(instance.sample_count) <= basis_length
+            )
+            if instance.circular
+            else (
+                0 <= int(instance.source_offset) < basis_length
+                and int(instance.sample_count)
+                <= int(instance.source_offset) + 1
+            )
+            if instance.reverse
+            else (
+                0 <= int(instance.source_offset) <= basis_length
+                and int(instance.sample_count)
+                <= basis_length - int(instance.source_offset)
+            )
+        )
+        if (
+            not 0 <= int(instance.emitter_id) < emitter_count
+            or not 0 <= int(instance.basis_id) < len(bases)
+            or not 0 <= int(instance.start) < total_frames
+            or int(instance.sample_count) > total_frames - int(instance.start)
+            or not crop_is_valid
+        ):
+            raise ValueError("MFT1 Basis Instance exceeds its resolved bounds")
 
     records: list[bytes] = []
     records.extend(
@@ -300,6 +382,13 @@ def pack_maf_typed(
     records.extend(
         _record(BASIS, _basis_body(index, item))
         for index, item in enumerate(bases)
+    )
+    records.extend(
+        _record(
+            BASIS_INSTANCE,
+            _basis_instance_body(index, item),
+        )
+        for index, item in enumerate(basis_instances)
     )
     body = b"".join(records)
     coefficient_elements = len(filters) * MAX_FILTER_ORDER
@@ -402,7 +491,6 @@ def parse_maf_typed(payload: bytes) -> MafTypedInfo:
     )
     if record_count < fixed_records:
         raise ValueError("MFT1 record count mismatch")
-    basis_count = record_count - fixed_records
     expected_persistent_without_basis = 4 * filter_count * MAX_FILTER_ORDER
     expected_persistent_without_basis += 2 * emitter_count * MAX_FILTER_ORDER
     expected_scratch = 2 * (
@@ -419,7 +507,8 @@ def parse_maf_typed(payload: bytes) -> MafTypedInfo:
     transients: list[MafTransient] = []
     mixes: list[MafMix] = []
     bases: list[MafBasis] = []
-    expected_ids = [0] * 7
+    basis_instances: list[MafBasisInstance] = []
+    expected_ids = [0] * 8
     previous_type = 0
     cursor = HEADER_BYTES
     body_end = cursor + body_bytes
@@ -434,7 +523,7 @@ def parse_maf_typed(payload: bytes) -> MafTypedInfo:
             record_version != 1
             or record_flags != 0
             or record_type < FILTER
-            or record_type > BASIS
+            or record_type > BASIS_INSTANCE
             or record_type < previous_type
             or size > body_end - cursor
         ):
@@ -547,17 +636,94 @@ def parse_maf_typed(payload: bytes) -> MafTypedInfo:
                 for channel in range(channels)
             )
             mixes.append(MafMix(start, end, matrix))
-        else:
+        elif record_type == BASIS:
             _, count, zero = struct.unpack_from("<HHI", body)
-            if zero != 0 or len(body) != 8 + 2 * count:
+            if (
+                zero != 0
+                or not 2 <= count <= 8 * 2048
+                or len(body) != 8 + 2 * count
+            ):
                 raise ValueError("invalid MFT1 periodic Basis")
             bases.append(
                 MafBasis(struct.unpack_from(f"<{count}h", body, 8))
             )
+        else:
+            if len(body) != 24:
+                raise ValueError("invalid MFT1 Basis Instance size")
+            (
+                _,
+                emitter,
+                basis_id,
+                instance_flags,
+                start,
+                gain,
+                source_offset,
+                sample_count,
+                end_gain_bits,
+            ) = struct.unpack("<HHHHIiHHI", body)
+            if instance_flags & ~7:
+                raise ValueError("invalid MFT1 Basis Instance flags")
+            end_gain = struct.unpack("<i", struct.pack("<I", end_gain_bits))[0]
+            linear_gain = bool(instance_flags & 2)
+            if (
+                (not linear_gain and end_gain != 0)
+                or (linear_gain and sample_count < 2)
+            ):
+                raise ValueError("invalid MFT1 Basis Instance gain law")
+            basis_instances.append(
+                MafBasisInstance(
+                    emitter,
+                    basis_id,
+                    start,
+                    gain,
+                    source_offset,
+                    sample_count,
+                    bool(instance_flags & 1),
+                    end_gain if linear_gain else None,
+                    bool(instance_flags & 4),
+                )
+            )
     if cursor != body_end:
         raise ValueError("trailing MFT1 record bytes")
-    if len(bases) != basis_count:
-        raise ValueError("MFT1 Basis count mismatch")
+    if record_count != fixed_records + len(bases) + len(basis_instances):
+        raise ValueError("MFT1 record count mismatch")
+    if len(bases) > 256 or len(basis_instances) > 4096:
+        raise ValueError("MFT1 immutable resource count exceeds Main")
+    for instance in basis_instances:
+        basis_length = len(bases[instance.basis_id].samples) if (
+            0 <= instance.basis_id < len(bases)
+        ) else 0
+        crop_is_valid = (
+            (
+                instance.source_offset < basis_length
+                and instance.sample_count <= basis_length
+            )
+            if instance.circular
+            else (
+                instance.source_offset < basis_length
+                and instance.sample_count <= instance.source_offset + 1
+            )
+            if instance.reverse
+            else (
+                instance.source_offset <= basis_length
+                and instance.sample_count
+                <= basis_length - instance.source_offset
+            )
+        )
+        if (
+            not -32768 <= instance.gain_q15 <= 32768
+            or (
+                instance.end_gain_q15 is not None
+                and not -32768 <= instance.end_gain_q15 <= 32768
+            )
+            or not 0 <= instance.emitter_id < emitter_count
+            or not 0 <= instance.basis_id < len(bases)
+            or not 0 <= instance.start < total_frames
+            or instance.sample_count <= 0
+            or instance.sample_count > total_frames - instance.start
+            or not crop_is_valid
+        ):
+            raise ValueError("MFT1 Basis Instance exceeds its resolved bounds")
     if persistent_bytes != expected_persistent_without_basis + 2 * sum(
         len(item.samples) for item in bases
     ):
@@ -576,4 +742,5 @@ def parse_maf_typed(payload: bytes) -> MafTypedInfo:
         tuple(transients),
         tuple(mixes),
         tuple(bases),
+        tuple(basis_instances),
     )

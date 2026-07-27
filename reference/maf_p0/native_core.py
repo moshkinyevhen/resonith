@@ -158,6 +158,7 @@ class _MafTypedRequirements(ctypes.Structure):
         ("transient_count", ctypes.c_uint16),
         ("mix_count", ctypes.c_uint16),
         ("basis_count", ctypes.c_uint16),
+        ("basis_instance_count", ctypes.c_uint16),
     ]
 
 

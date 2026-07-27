@@ -449,3 +449,184 @@ Exact sample reuse is the first implementation because it has unambiguous
 identity and a tiny decoder. Gain/phase normalization follows, then bounded
 pitch/time laws and overlap. This ordering preserves the simple mechanism
 while exposing increasingly common repetitions to the same immutable memory.
+
+## 21. Multiscale minimum-description law
+
+MAF does not assume that one representation explains every signal. Each
+region competes under the common causal decomposition:
+
+```text
+observed region
+    = bounded transform(immutable Basis)
+    + counter-addressed stochastic law
+    + objective Truth
+```
+
+The useful scale is discovered rather than declared semantically. A Basis may
+span a few samples, one oscillation, a transient attack, a room resonance, a
+phrase, or a complete repeated section. The encoder pays the dictionary,
+transform parameters, stochastic parameters, placement, checkpoints,
+operation cost, and correction before admitting reuse.
+
+Noise does not invalidate memory. Rain, wind, surf, breath, and applause can
+reuse event shapes, resonances, spectral density, modulation, correlation,
+and event-rate laws even when their exact PCM realization never repeats. A
+seeded realization is objective only when Truth corrects it to the declared
+source; without that correction it is non-reference perceptual detail.
+
+The existence of some mathematical mapping between two regions proves
+nothing: an arbitrary mapping can be as expensive as the target samples. Main
+therefore exposes only a fixed bounded integer transform ISA and always
+competes it with optimized independent Truth.
+
+## 22. Latent acoustic tomography
+
+A finished mix supplies changing observations of recurring causes. Foundry may
+use those observations to factor:
+
+```text
+channel_c(t)
+    = sum_i route_ci(t) * transform_i(Basis_i, t)
+    + Truth_c(t)
+```
+
+This is analogous to reconstructing a persistent surface from differently
+occluded views. A source that appears under several gains, positions, filters,
+and overlaps can reveal a reusable latent Basis even when no mixed PCM chunk
+repeats directly.
+
+The factorization need not recover a semantically or physically named
+instrument. It must only synthesize a cheaper objective sum. Sources that
+cannot be identified separately may remain one composite Basis. Neural
+separation, sparse factorization, cross-occurrence subtraction, and
+multi-channel analysis are encoder-side proposers; the decoder only executes
+the existing bounded emitter sum. Native synthesis and Truth determine
+admission, so a wrong separation cannot silently alter the recording.
+
+## 23. Semantic-free partial-spectrum memory
+
+Dictionary identity is an objective coefficient sequence, not a recognized
+sound. A Basis may own only one bounded time-frequency region. Unrelated
+simultaneous content in the other regions remains independently represented,
+so a recurring high-band texture can be reused under changing bass, speech,
+noise, or room content.
+
+The exact model is:
+
+```text
+coefficient region
+    = bounded_integer_transform(dictionary Basis)
+    + exact coefficient Truth
+```
+
+Lossless operation requires a reversible integer analysis/synthesis pair.
+Magnitude spectra alone are only search hints because sign, phase-equivalent
+alignment, overlap state, and rounding affect the waveform. The first R-145
+oracle uses exact average/difference lifting to prove the ownership and
+correction rule. It is a research decomposition, not the final frequency
+tiling.
+
+Every coefficient cell has one owner. A cell selected for a transformed Basis
+cannot also be paid as a stochastic, source-filter, transient, or independent
+Truth cell; only its correction is transmitted. Complete RDO includes the
+analysis mode, support, dictionary, placements, transform parameters,
+checkpoints, correction, and bounded decode operations.
+
+## 24. Phase-complete and cross-channel reuse
+
+Power-spectrum similarity only proposes a candidate. Foundry compares complex
+cross-spectrum or exact waveform correlation to recover circular
+sample-alignment and polarity. Schema-1 `BASIS_INSTANCE` executes that first
+phase-complete subset with:
+
+- `CIRCULAR` Basis indexing for exact integer phase/alignment;
+- signed gain for polarity and 180-degree counterphase;
+- `LINEAR_GAIN` for one exact fade or damping trajectory;
+- emitter placement plus the persistent mix matrix for cross-channel reuse.
+
+The dictionary is global across channels and bands. A Basis observed on the
+left may be placed on the right, center, or surround with a different delay,
+phase, polarity, gain trajectory, and later a bounded short transfer filter.
+Each output channel retains independent Truth, and complete RDO competes with
+independent channels and reversible channel lifting.
+
+Channel identity is not part of the acoustic Basis. It is one placement and
+routing coordinate. This lets one immutable acoustic cause explain panning,
+echo, room decay, and correlated microphone observations without duplicating
+its waveform.
+
+## 25. Learned search without learned Truth
+
+The combinatorial search over duration, band, channel, phase, gain, pitch/time,
+filter, and overlap is an encoder problem. Foundry may use a local
+original-PCM representation model and GPU nearest-neighbor index to propose
+multiscale related regions. The proposal is label-free; recognized phonemes,
+notes, instruments, speakers, and natural-sound classes are unnecessary.
+
+Each proposal is converted into a bounded mathematical candidate by the exact
+DSP fitter. Native decoder-in-loop RDO then accepts or rejects the complete
+bytes. The local model therefore improves candidate recall but cannot change
+Truth, bitstream semantics, or standalone decoding. Cloud models remain
+optional coarse proposers under the privacy gate.
+
+For speech, learned similarity search runs beside the causal excitation and
+speaker-local vocal-tract filter model. Persistent timbre/filter state,
+pitch/phase trajectories, cross-occurrence micro-Basis reuse, and exact
+Innovation compete and compose without requiring text recognition.
+
+## 26. Complete GPU Foundry
+
+R-149 separates fast proposal from evidence-grade search. A Foundry run
+declares a finite hypothesis language and evaluates every candidate in that
+language. A fingerprint, embedding, classifier, or cloud model may change
+execution order, but cannot delete a declared candidate. Fast and Live modes
+may use top-K search only when their reports say so explicitly.
+
+The first native exhaustive lattice is:
+
+```text
+all fixed-lattice blocks
+    x all ordered unequal block pairs
+    x all circular sample phases
+    x signed constant/linear Q1.15 gain laws
+```
+
+NVRTC compiles the C++23 kernel at runtime and the CUDA Driver API executes it
+in deterministic tiles. An 8 GB device therefore changes batch residency, not
+candidate membership. Every result contains exact integer synthesis error and
+is checked against a portable CPU reference. The decoder and bitstream do not
+depend on CUDA, NVRTC, Python, or a particular GPU vendor.
+
+Completeness is meaningful only relative to explicit bounds. The infinite set
+of arbitrary programs is neither searchable nor a useful codec. New pitch,
+time, filter, stochastic, partial-band, overlap, and cross-channel laws enter
+Foundry as separately bounded families and must pass their own recall, parity,
+complete-byte, and decoder-resource gates.
+
+## 27. Scale-parallel hierarchical Basis grammar
+
+R-150 prevents a small discovery from hiding a larger explanation. Foundry
+analyzes original PCM independently at every declared duration, band, channel,
+and transform family. A discovered micro-Basis does not claim samples and
+does not suppress an overlapping direct large-span candidate.
+
+The candidate pool then includes:
+
+- direct candidates found from original PCM at every scale;
+- exact or transformed micro-Basis placements;
+- adjacent atoms combined under one phase/gain/pitch/time/filter state law;
+- compounds built from existing immutable Basis entries;
+- larger compounds built from smaller acyclic compounds;
+- independent Truth for every uncovered region.
+
+One exact bounded minimum-description chart chooses among them simultaneously.
+It charges a dictionary entry once, every placement and state increment in
+full, all correction bytes, and declared decode operations. Greedy
+first-match ownership is forbidden for Foundry evidence.
+
+The first executable oracle already supports repeated exact atom sequences,
+removal of absolute phase/gain state followed by exact increment reuse,
+one-time existing-Basis activation, overlapping direct large spans, and a
+global chart that rejects locally attractive but globally expensive merges.
+The normative decoder grammar remains prospective until its complete-byte
+stream gate passes.
