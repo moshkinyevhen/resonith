@@ -208,6 +208,19 @@ Platform adapters target:
 | Browser | AudioWorklet | WASM SIMD, WebGPU |
 | Embedded/DSP | callback/ring-buffer C ABI | scalar, vendor SIMD, DMA |
 
+The mandatory first mobile matrix is:
+
+| Artifact | Architecture | Baseline |
+|---|---|---|
+| Android production Core | `arm64-v8a` | NDK r29, API 26, static libc++ |
+| Android emulator Core | `x86_64` | NDK r29, API 26, static libc++ |
+| iOS device Core | ARM64 | stable Xcode, iOS 15 deployment |
+| iOS simulator Core | x86-64 | stable Xcode, iOS 15 deployment |
+
+These are codec-library gates. Orkela owns separate UI, file-provider,
+background-audio, lifecycle, interruption, and device-output tests. A library
+compile does not by itself establish player compatibility.
+
 The desktop and mobile UI may use native UI, Qt/QML, or Flutter, but the
 choice is non-normative and lives above the Rust/C ABI boundary. No UI
 framework may enter the decoder dependency graph.

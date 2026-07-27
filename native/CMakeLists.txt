@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 project(resonith_core VERSION 0.1.0 LANGUAGES C CXX)
 
 option(RESONITH_WARNINGS_AS_ERRORS "Treat native-core warnings as errors" ON)
+option(RESONITH_BUILD_SHARED "Build the shared Resonith Core library" ON)
 option(RESONITH_BUILD_FUZZERS "Build Clang libFuzzer security targets" OFF)
 option(RESONITH_BUILD_TOOLS "Build native measurement tools" ON)
 
@@ -46,26 +47,28 @@ if(MINGW)
     target_link_options(resonith_core INTERFACE -static)
 endif()
 
-add_library(resonith_core_shared SHARED
-    ${RESONITH_CORE_SOURCES}
-)
-add_library(Resonith::CoreShared ALIAS resonith_core_shared)
-target_compile_features(resonith_core_shared PUBLIC cxx_std_23)
-target_include_directories(resonith_core_shared
-    PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-        "$<INSTALL_INTERFACE:include>"
-)
-target_compile_definitions(resonith_core_shared
-    PUBLIC RESONITH_SHARED
-    PRIVATE RESONITH_BUILDING_LIBRARY
-)
-set_target_properties(resonith_core_shared PROPERTIES
-    CXX_EXTENSIONS OFF
-    POSITION_INDEPENDENT_CODE ON
-)
-if(MINGW)
-    target_link_options(resonith_core_shared PRIVATE -static)
+if(RESONITH_BUILD_SHARED)
+    add_library(resonith_core_shared SHARED
+        ${RESONITH_CORE_SOURCES}
+    )
+    add_library(Resonith::CoreShared ALIAS resonith_core_shared)
+    target_compile_features(resonith_core_shared PUBLIC cxx_std_23)
+    target_include_directories(resonith_core_shared
+        PUBLIC
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+            "$<INSTALL_INTERFACE:include>"
+    )
+    target_compile_definitions(resonith_core_shared
+        PUBLIC RESONITH_SHARED
+        PRIVATE RESONITH_BUILDING_LIBRARY
+    )
+    set_target_properties(resonith_core_shared PROPERTIES
+        CXX_EXTENSIONS OFF
+        POSITION_INDEPENDENT_CODE ON
+    )
+    if(MINGW)
+        target_link_options(resonith_core_shared PRIVATE -static)
+    endif()
 endif()
 
 function(resonith_enable_warnings target)
@@ -89,10 +92,14 @@ function(resonith_enable_warnings target)
 endfunction()
 
 resonith_enable_warnings(resonith_core)
-resonith_enable_warnings(resonith_core_shared)
+if(RESONITH_BUILD_SHARED)
+    resonith_enable_warnings(resonith_core_shared)
+endif()
 if(MSVC)
     target_compile_options(resonith_core PRIVATE /permissive-)
-    target_compile_options(resonith_core_shared PRIVATE /permissive-)
+    if(RESONITH_BUILD_SHARED)
+        target_compile_options(resonith_core_shared PRIVATE /permissive-)
+    endif()
 endif()
 
 if(RESONITH_BUILD_TOOLS)

@@ -112,6 +112,40 @@ python -m unittest discover -s tests -p test_native_bridge.py -v
 The binding inspects exact workspace counts and applies a host memory ceiling
 before creating caller-owned arrays.
 
+## Android and iOS compile gates
+
+Mobile builds use the checked-in CMake presets. Android requires stable NDK
+r29 through `ANDROID_NDK_ROOT`:
+
+```sh
+export ANDROID_NDK_ROOT="$ANDROID_SDK_ROOT/ndk/29.0.14206865"
+cd native
+cmake --preset android-arm64
+cmake --build --preset android-arm64
+cmake --preset android-x86_64
+cmake --build --preset android-x86_64
+```
+
+The Android presets target API 26 and link `c++_static`, so the shipped Core
+shared object does not require a separately packaged `libc++_shared.so`.
+ARM64 is the production target; x86-64 exists for emulator and sanitizer
+work.
+
+iOS requires Xcode on macOS. Windows cannot provide a valid Apple SDK,
+linker, or code-signing environment:
+
+```sh
+cd native
+cmake --preset ios-device-arm64
+cmake --build --preset ios-device-arm64
+cmake --preset ios-simulator-x86_64
+cmake --build --preset ios-simulator-x86_64
+```
+
+The iOS presets emit a static C++23 Core for device ARM64 and simulator
+x86-64 with an iOS 15 deployment floor. Shared-library, tools, fuzzers, and
+host tests are disabled for the cross-compiled Apple artifact.
+
 The same C99 ABI now exposes allocation-explicit fixed Q15/Q14 forward
 analysis through `resonith_lapped_analyze_requirements` and
 `resonith_lapped_analyze_pcm16`. It emits immutable scale, quantized

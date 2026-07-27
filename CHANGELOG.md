@@ -11,6 +11,9 @@ version.
 
 ### Research
 
+- Added R-116 mobile portability gates, checked-in CMake presets for Android
+  ARM64/x86-64 and iOS device/simulator builds, and CI artifact production
+  with stable NDK r29 and Xcode.
 - Adopted C++23 as the production language baseline while retaining C++26 as
   a non-blocking forward-compatibility check. Pinned the Windows research
   workstation to stable Python 3.14.6, LLVM/Clang 22.1.8, CMake 4.4.0, and

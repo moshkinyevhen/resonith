@@ -1,0 +1,106 @@
+name: Mobile Core
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Android ${{ matrix.preset }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        preset:
+          - android-arm64
+          - android-x86_64
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select stable NDK r29
+        shell: bash
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "ndk;29.0.14206865" >/dev/null
+          echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/29.0.14206865" \
+            >> "$GITHUB_ENV"
+
+      - name: Record toolchain
+        shell: bash
+        run: |
+          cmake --version
+          ninja --version
+          "$ANDROID_HOME/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++" \
+            --version
+
+      - name: Configure
+        working-directory: native
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        working-directory: native
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Verify artifacts
+        shell: bash
+        run: |
+          test -s "build/${{ matrix.preset }}/libresonith_core.a"
+          test -s "build/${{ matrix.preset }}/libresonith_core_shared.so"
+          ! "$ANDROID_HOME/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf" \
+            -d "build/${{ matrix.preset }}/libresonith_core_shared.so" \
+            | grep -q 'libc++_shared'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: resonith-${{ matrix.preset }}
+          path: |
+            build/${{ matrix.preset }}/libresonith_core.a
+            build/${{ matrix.preset }}/libresonith_core_shared.so
+          if-no-files-found: error
+
+  ios:
+    name: ${{ matrix.preset }}
+    runs-on: macos-26
+    strategy:
+      fail-fast: false
+      matrix:
+        preset:
+          - ios-device-arm64
+          - ios-simulator-x86_64
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select stable Xcode
+        shell: bash
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.4.1.app
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          cmake --version
+
+      - name: Configure
+        working-directory: native
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        working-directory: native
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Verify static Core
+        shell: bash
+        run: |
+          artifact="$(find "build/${{ matrix.preset }}" \
+            -name libresonith_core.a -print -quit)"
+          test -n "$artifact"
+          test -s "$artifact"
+          xcrun lipo -info "$artifact"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: resonith-${{ matrix.preset }}
+          path: build/${{ matrix.preset }}/**/libresonith_core.a
+          if-no-files-found: error

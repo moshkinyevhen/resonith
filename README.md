@@ -114,6 +114,7 @@ The first portable decoder subset is documented in
 - [Continuous evidence and immediate-improvement protocol](docs/15_CONTINUOUS_EVIDENCE.md)
 - [C++23 production toolchain baseline](docs/16_TOOLCHAIN_BASELINE.md)
 - [C++23 migration and exact regression evidence](docs/results/CPP23_TOOLCHAIN_GATE_2026-07-27.md)
+- [Android and iOS Core portability evidence](docs/results/MOBILE_CORE_GATE_2026-07-27.md)
 - [Latest bounded-value entropy result](docs/results/BOUNDED_VALUE_ENTROPY_2026-07-27.md)
 - [Corrected PVQ envelope fast gate](docs/results/PVQ_ENVELOPE_FAST_GATE_2026-07-27.md)
 - [Primary sources](docs/REFERENCES.md)
@@ -242,6 +243,8 @@ PYTHONPATH=reference python -m maf_p0 decode-lapped \
 - C++23/SIMD and optional CUDA kernels for scaling transform, search,
   reconstruction, synthesis, and Studio/Foundry encoding work;
 - scalar, x86 SIMD, ARM NEON/SVE2, WASM SIMD, and vendor-DSP decode paths.
+- mandatory CMake compile gates for Windows x86-64, Android ARM64/x86-64, and
+  iOS device ARM64/simulator x86-64.
 
 See
 [Implementation Language and Runtime Architecture](docs/11_IMPLEMENTATION_LANGUAGE.md)

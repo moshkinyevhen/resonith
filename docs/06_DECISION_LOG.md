@@ -3699,3 +3699,40 @@ new oscillator opcode.
   - post-fix dependency inspection found only Windows system runtime imports
     in both the Core DLL and the C-header test executable; all 10 native tests
     then passed without adding the compiler directory to `PATH`.
+
+## R-116 — Mandatory Windows, Android, and iOS portability gates
+
+- Date: 2026-07-27
+- Status: **ACCEPTED**
+- Decision:
+  - every promoted Resonith Core change must compile as strict C++23 for
+    Windows x86-64, Android ARM64, and iOS ARM64;
+  - Android x86-64 is a mandatory emulator compile target. Android ARMv7 is an
+    optional compatibility target and may not constrain the Main decoder;
+  - use stable Android NDK r29 and API 26 as the first mobile baseline.
+    Android ARM64 artifacts expose the same stable C ABI and deterministic
+    integer semantics as desktop builds;
+  - iOS artifacts are built by current stable Xcode on a macOS runner for
+    device ARM64 and at least one simulator architecture. A Windows host
+    cannot substitute for Apple's SDK, linker, signing, or runtime;
+  - iOS 15 is the initial deployment floor. Increasing either mobile floor
+    requires measured necessity and an explicit owner decision;
+  - codec conformance is separate from player conformance. Resonith CI proves
+    library compilation, tests that can execute on the host or emulator, ABI
+    visibility, and conformance-vector identity. Orkela separately proves its
+    Android and iOS package, UI, audio-device, lifecycle, file-picker, and
+    background-playback adapters;
+  - a Windows-only Orkela feature may be merged during the migration only
+    when the portable session contract is unchanged and the platform gap is
+    declared. Once the first Android and iOS packages pass, every new Orkela
+    release must produce Windows, Android, and iOS artifacts from one source
+    revision;
+  - local Android builds use a pinned JDK, command-line SDK, build tools, and
+    NDK under ignored repository artifacts. iOS builds remain reproducible in
+    GitHub Actions until a physical macOS build host is available.
+- Rationale:
+  - C++23 preserves substantially wider current Android NDK and Apple Clang
+    coverage than an early C++26 baseline;
+  - compile-only success is necessary but insufficient for a player. Codec
+    determinism, real-time audio behavior, mobile lifecycle, thermal limits,
+    and package installation require separate evidence.

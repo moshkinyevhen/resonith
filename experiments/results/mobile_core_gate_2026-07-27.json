@@ -1,0 +1,39 @@
+{
+  "schema": "resonith-mobile-core-gate-1",
+  "decision": "R-116",
+  "date": "2026-07-27",
+  "android": {
+    "status": "passed locally",
+    "ndk": "29.0.14206865 (r29)",
+    "clang": "21.0.0",
+    "api": 26,
+    "stl": "c++_static",
+    "artifacts": {
+      "arm64-v8a": {
+        "machine": "AArch64",
+        "bytes": 2368272,
+        "sha256": "f3a46292262db65519c7a05932b97e6a8d58fdcc6f2c5fe6bbae121a227f8774",
+        "exported_resonith_symbols": 66,
+        "depends_on_libcxx_shared": false
+      },
+      "x86_64": {
+        "machine": "Advanced Micro Devices X86-64",
+        "bytes": 2232608,
+        "sha256": "9b05267cf9b1ec6941ebf2c09ebe6621c469dda1dc4bbddb947fe0977efab0e9",
+        "exported_resonith_symbols": 66,
+        "depends_on_libcxx_shared": false
+      }
+    }
+  },
+  "ios": {
+    "status": "pending first macOS/Xcode CI run",
+    "deployment_target": "15.0",
+    "device_architecture": "arm64",
+    "simulator_architecture": "x86_64"
+  },
+  "windows_regression": {
+    "native_tests_passed": 10,
+    "native_tests_total": 10
+  },
+  "status": "android passed; iOS pending CI"
+}
