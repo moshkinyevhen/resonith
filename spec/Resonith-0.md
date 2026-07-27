@@ -1179,15 +1179,27 @@ playback milestone MUST:
 1. rerun the pinned LibriSpeech `1272-128104-0000` speech reference, the
    eight-second Emotional piano reference, and the complete 400.773-second
    Mozart *Die Zauberflöte* overture;
-2. account for the complete `.resonith` file and a current official Opus
+2. rerun every one of the 16 pinned R-111 heterogeneous classes, making the
+   union of three complete and 16 heterogeneous items the non-negotiable
+   minimum architecture gate;
+3. account for the complete `.resonith` file and a current official Opus
    anchor matched by complete Ogg bytes from the identical PCM16 input;
-3. obtain evaluated PCM from the actual released decoders;
-4. publish source, executable, configuration, version, commit, wall-time, byte,
+4. obtain evaluated PCM from the actual released decoders;
+5. publish source, executable, configuration, version, commit, wall-time, byte,
    bitrate, hash, waveform, multi-resolution spectral, log-spectral, log-mel,
    harmonic, and speech-intelligibility diagnostics;
-5. publish the inputs and listening files with their licenses and hashes,
+6. publish the inputs and listening files with their licenses and hashes,
    including results in which Resonith loses;
-6. keep perceptual claims conditional on controlled blinded listening.
+7. publish one row and an explicit candidate-pass, fallback, or failure status
+   for each of the 19 items;
+8. run every additional packet-loss, seek/reset, transient/pre-echo,
+   stereo/spatial, latency, corruption, determinism, memory, throughput,
+   mobile, or listening gate affected by the change;
+9. keep perceptual claims conditional on controlled blinded listening.
+
+A subset run is a fast diagnostic only. It MUST NOT authorize a material
+architecture conclusion, default change, version, general compression or
+quality claim, or release.
 
 Every released improvement MUST have a semantic version and an English
 `CHANGELOG.md` entry linked to the evidence report. The entry MUST identify

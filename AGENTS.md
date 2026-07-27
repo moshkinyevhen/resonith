@@ -91,3 +91,7 @@ After a change, verify:
 11. every released improvement has a semantic version and an English
     `CHANGELOG.md` entry linked to the evidence report, with local and GitHub
     artifacts carrying matching versions and hashes.
+12. every material architecture gate runs the non-negotiable R-118 union:
+    all three complete references plus all 16 R-111 heterogeneous classes.
+    A three-file-only or corpus-only result is a fast diagnostic, never a
+    milestone, default, version, or general quality/compression claim.

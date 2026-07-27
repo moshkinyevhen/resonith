@@ -3736,3 +3736,93 @@ new oscillator opcode.
   - compile-only success is necessary but insufficient for a player. Codec
     determinism, real-time audio behavior, mobile lifecycle, thermal limits,
     and package installation require separate evidence.
+
+## R-117 — Temporal score companding before band-local representation RDO
+
+- Date: 2026-07-27
+- Status: **RESEARCH — FAST GATE PASSED ON PINNED SPEECH**
+- Observation:
+  - the R-113 speech winner spends a globally fixed transform-coefficient
+    budget according to raw energy. A frame-energy exponent of `0.02` preserves
+    the same 17,904 complete bytes while reallocating a small number of
+    coefficients from the loudest frames to quieter acoustic state;
+  - on the pinned speech reference, the actual LPS6 decoder output improved
+    SNR from 19.728443 to 19.730429 dB, STOI from 0.953871 to 0.954650, ESTOI
+    from 0.907409 to 0.908310, and log-mel RMSE from 3.651023 to 3.644395;
+  - this is an encoder-only RDO candidate. It changes neither syntax nor the
+    bounded C++23 decoder.
+- Decision:
+  - add temporal score companding as a continuous encoder search parameter,
+    with exact zero as the existing fallback;
+  - evaluate the fixed `0.02` fast-gate point against the current R-113
+    selected streams on all 16 R-111 classes and the complete speech, piano,
+    and Mozart references before changing a default or version;
+  - retain the preceding stream per item whenever complete bytes or any
+    mandatory quality diagnostic regresses. A corpus aggregate may not hide
+    an individual loss;
+  - after this isolated encoder result, resume R-108 as a band-local
+    representation competition. Global PVE2 is rejected as the factorization:
+    at 17,821 bytes it improved speech log-mel RMSE from 3.651 to 2.968 but
+    reduced SNR/STOI/ESTOI to 10.674 dB, 0.916774, and 0.868799 because the
+    stream paid globally for both a PVQ basis and sparse correction;
+  - the next PVE experiment must let each band select exactly one primary
+    representation, with optional measured TruthInnovation only where the
+    complete-byte RDO proves that correction is cheaper than the ordinary
+    sparse-Truth fallback.
+- Gate:
+  - the temporal candidate is selectable only when it is no larger than the
+    preceding complete stream, does not regress SNR or log-mel RMSE, and, for
+    speech, does not regress STOI or ESTOI;
+  - a material default requires the R-109 publication set, native decoder
+    output, current Opus anchors, full Mozart, and the mandatory mobile
+    compile matrix from R-116.
+- Complete R-118 result:
+  - all three complete references and all 16 heterogeneous classes were
+    encoded and decoded, for 19 actual candidate streams;
+  - the pinned LibriSpeech candidate remained exactly 17,904 bytes and
+    improved all four mandatory diagnostics, so it is retained as an
+    encoder-side search candidate;
+  - piano added one byte and slightly reduced SNR; full Mozart added 907 bytes
+    and reduced SNR by 0.010581 dB. Both retained their exact R-113 streams;
+  - none of the 16 R-111 items passed the complete-byte and quality gate.
+    Female and male speech improved STOI/ESTOI and log-mel slightly, but added
+    23 and 14 bytes and reduced SNR. Every heterogeneous item therefore
+    retained its exact R-113 fallback;
+  - R-117 is not a new default and causes no version or syntax change. It
+    demonstrates that file-global score parameters are too coarse; the next
+    architecture gate moves the competition to bounded packets and bands.
+
+## R-118 — Non-negotiable 19-item architecture gate
+
+- Date: 2026-07-27
+- Status: **ACCEPTED — OWNER REQUIREMENT**
+- Decision:
+  - no architecture change, codec milestone, default change, version, or
+    compression/quality claim may be admitted from only the three complete
+    references;
+  - the minimum clean-channel architecture gate is the union of:
+    1. the complete pinned LibriSpeech excerpt;
+    2. the complete pinned Emotional piano reference;
+    3. the complete pinned Mozart overture;
+    4. all 16 pinned R-111 heterogeneous classes;
+  - every one of these 19 items must be encoded and decoded by the actual
+    candidate and preceding codec paths. A fallback selection is reported per
+    item and may not be counted as a candidate improvement;
+  - the 19-item gate is a floor, not a complete test universe. Affected
+    mechanisms also require their dedicated packet-loss, seek/reset,
+    transient/pre-echo, stereo/spatial, latency, corruption, determinism,
+    memory, throughput, mobile, and listening gates;
+  - new reproducible classes are added when an experiment exposes a missing
+    acoustic regime. Existing pinned items are never removed or silently
+    replaced to improve an aggregate score;
+  - a partial run must be labelled `FAST GATE` or `DIAGNOSTIC`. It cannot
+    authorize a version or a statement that Resonith improved generally;
+  - reports must publish a 19-row result table, per-item pass/fallback/failure,
+    aggregate counts, actual complete bytes, decoder-derived metrics, hashes,
+    wall time, and the exact candidate revision.
+- Rationale:
+  - the three complete references detect long-stream and public-listening
+    regressions, while the heterogeneous set detects content-class failures
+    that a speech/piano/orchestra trio cannot represent;
+  - requiring their union prevents either long-form evidence or breadth from
+    being treated as optional in later development.

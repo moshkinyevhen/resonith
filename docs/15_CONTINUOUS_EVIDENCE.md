@@ -6,9 +6,9 @@ This protocol turns every material Resonith milestone into a reproducible
 compression, quality, portability, and playback experiment. It applies before
 an improvement claim, version, tag, or public release.
 
-## 1. Pinned public references
+## 1. Mandatory 19-item gate
 
-The minimum gate uses:
+The long-form portion uses:
 
 | Role | Source | Canonical PCM input |
 |---|---|---|
@@ -21,10 +21,22 @@ and SHA-256 hashes belong in the benchmark manifest. A milestone MAY add
 material but MUST NOT silently replace these references after observing a
 result.
 
-Fast inner-loop experiments MAY run speech plus Emotional piano first. A
-material milestone, version, performance claim, or release MUST also complete
-the full Mozart run and preserve all three adjacent original/Resonith/Opus
-listening triplets.
+The breadth portion is every one of the 16 pinned R-111 heterogeneous classes:
+deterministic sustain, stochastic noise, vibrato/resonance, electronic
+material, solo tonal instruments, sparse attacks, drums, stochastic
+transients, polyphonic piano, solo voice, female speech, male speech, dense
+orchestra, dense popular music, and two dialogue/music/effects/ambience film
+mixes. Their exact inputs and preparation are fixed by the R-111 manifest.
+
+Fast inner-loop experiments MAY run a subset, but they MUST be labelled
+`FAST GATE` or `DIAGNOSTIC`. A material architecture conclusion, default,
+version, compression/quality claim, or release MUST encode and decode the
+union of all three complete references and all 16 R-111 classes. It must
+preserve all three adjacent original/Resonith/Opus listening triplets.
+
+The 19 items are a minimum. Affected changes also run their applicable
+packet-loss, seek/reset, transient/pre-echo, stereo/spatial, latency,
+corruption, determinism, memory, throughput, mobile, and listening gates.
 
 ## 2. Compared streams
 
@@ -62,7 +74,8 @@ blinded listening.
 ## 4. Decision rule
 
 The report compares the candidate against both the previous Resonith version
-and Opus. It states wins and losses by metric and material.
+and Opus. It states wins and losses for every one of the 19 items. A fallback
+is labelled as a fallback and is not counted as a candidate improvement.
 
 - A mechanism that loses its declared gate is removed.
 - A mechanism with a narrow or ambiguous result remains explicitly
