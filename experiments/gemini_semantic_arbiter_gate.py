@@ -29,7 +29,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
 from maf_p0.semantic_arbiter import (  # noqa: E402
+    ACOUSTIC_STYLES,
     BASIS_FAMILIES,
+    EVENT_TYPES,
     PRIMARY_CLASSES,
     REASON_CODES,
     SCHEMA_VERSION,
@@ -37,6 +39,7 @@ from maf_p0.semantic_arbiter import (  # noqa: E402
     SPECIALIST_PROVIDERS,
     SPECIALIST_TASKS,
     analyze_proxy_evidence,
+    align_event_boundaries,
     audit_proposals,
     validate_semantic_proposals,
 )
@@ -331,6 +334,11 @@ class GeminiFilesClient:
                     "acceptable only for a genuinely steady tone, stationary noise, "
                     "or unchanged ambience. A transient region must be no longer "
                     "than one second and must tightly surround its attack. "
+                    "Emit an ordered events ledger for every material audible change. "
+                    "Each event identifies its exact time, source or scene-global "
+                    "scope, change type, post-change acoustic style, candidate basis, "
+                    "strength, and confidence. Merge changes closer than 80 ms and "
+                    "keep at most 64 highest-value events per clip. "
                     "Request ElevenLabs only for speech timing, diarization, or voice "
                     "isolation; request Azure only for long/domain speech. Otherwise "
                     "return an empty specialist_tasks array, never a none placeholder. "
@@ -500,6 +508,10 @@ def _response_schema(clip_count: int) -> dict[str, Any]:
                                         "type": "string",
                                         "enum": sorted(REASON_CODES),
                                     },
+                                    "acoustic_style": {
+                                        "type": "string",
+                                        "enum": sorted(ACOUSTIC_STYLES),
+                                    },
                                 },
                                 "required": [
                                     "start_seconds",
@@ -508,6 +520,58 @@ def _response_schema(clip_count: int) -> dict[str, Any]:
                                     "confidence",
                                     "lifetime_seconds",
                                     "reason_code",
+                                    "acoustic_style",
+                                ],
+                            },
+                        },
+                        "events": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "properties": {
+                                    "time_seconds": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                    },
+                                    "event_type": {
+                                        "type": "string",
+                                        "enum": sorted(EVENT_TYPES),
+                                    },
+                                    "source_id": {
+                                        "type": "string",
+                                        "description": (
+                                            "Declared source_id, or empty for "
+                                            "scene-global change."
+                                        ),
+                                    },
+                                    "acoustic_style": {
+                                        "type": "string",
+                                        "enum": sorted(ACOUSTIC_STYLES),
+                                    },
+                                    "primary_basis": {
+                                        "type": "string",
+                                        "enum": sorted(BASIS_FAMILIES),
+                                    },
+                                    "change_strength": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                    },
+                                    "confidence": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 1,
+                                    },
+                                },
+                                "required": [
+                                    "time_seconds",
+                                    "event_type",
+                                    "source_id",
+                                    "acoustic_style",
+                                    "primary_basis",
+                                    "change_strength",
+                                    "confidence",
                                 ],
                             },
                         },
@@ -543,6 +607,7 @@ def _response_schema(clip_count: int) -> dict[str, Any]:
                         "primary_class",
                         "sources",
                         "regions",
+                        "events",
                         "specialist_tasks",
                     ],
                 },
@@ -651,9 +716,25 @@ def main() -> None:
         interaction_result["proposal"],
         expected_durations,
     )
+    aligned_by_clip: dict[str, dict[str, Any]] = {}
+    alignment_summary: dict[str, dict[str, Any]] = {}
+    for clip in canonical["clips"]:
+        clip_id = clip["clip_id"]
+        sample_rate, source_channels = _read_pcm16(sources[clip_id])
+        aligned = align_event_boundaries(
+            source_channels,
+            sample_rate,
+            clip["events"],
+        )
+        aligned_by_clip[clip_id] = aligned
+        alignment_summary[clip_id] = aligned["summary"]
     raw_path = args.output_directory / "validated-proposals.json"
     raw_path.write_text(
         json.dumps(canonical, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (args.output_directory / "aligned-events.json").write_text(
+        json.dumps(aligned_by_clip, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     audit = audit_proposals(canonical, local_evidence)
@@ -662,8 +743,12 @@ def main() -> None:
             "primary_class": clip["primary_class"],
             "source_count": clip["source_count"],
             "region_count": clip["region_count"],
+            "event_count": clip["event_count"],
             "specialist_task_count": clip["specialist_task_count"],
             "family_evidence": clip["family_evidence"],
+            "event_types": clip["event_types"],
+            "acoustic_styles": clip["acoustic_styles"],
+            "alignment": alignment_summary[clip["clip_id"]],
         }
         for clip in audit["clips"]
     }
@@ -696,6 +781,15 @@ def main() -> None:
         "proposal_audit": {
             "totals": audit["totals"],
             "clips": clip_summary,
+        },
+        "event_alignment": {
+            "algorithm": (
+                "local original-PCM 20 ms spectral/energy analysis at "
+                "approximately 1 ms hop"
+            ),
+            "provider_timestamp_is_normative": False,
+            "exact_rdo_neighbor_search_required": True,
+            "clips": alignment_summary,
         },
         "admission": {
             "bitstream_changed": False,

@@ -4289,3 +4289,39 @@ new oscillator opcode.
   - demonstrate at least one measured reduction in local candidate-search
     work or one exact-RDO admission before describing the semantic layer as an
     encoder improvement.
+
+## R-129 — Semantic change ledger instead of whole-track labels
+
+- Status: **RESEARCH — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Decision:
+  - a Foundry arbiter response is not useful merely because it classifies an
+    entire recording correctly. It SHALL propose a bounded ordered ledger of
+    material acoustic changes across time;
+  - each proposal event carries its time, source identity or scene-global
+    scope, change type, post-change acoustic style, candidate Basis family,
+    change strength, and confidence;
+  - stable regions separately carry start, end, acoustic style, candidate
+    Basis, lifetime, reason, and confidence. A changing speech, music,
+    percussion, synthetic, or mixed recording longer than five seconds cannot
+    be represented by one undifferentiated full-file region;
+  - event classes initially cover source start/stop, section, pitch regime,
+    timbre, energy, rhythm, transient, spatial, speech-state, and uncertain
+    changes. Acoustic style is a bounded physical/search hint, not a genre or
+    copyrighted semantic label;
+  - the provider merges changes closer than the declared analysis resolution
+    and obeys a hard event-count limit. It is never asked to emit every sample
+    fluctuation or a transcript;
+  - local deterministic features align every proposed event to a nearby
+    sample-accurate candidate boundary, add missed high-confidence DSP
+    changes, and remove unsupported provider events;
+  - exact decoder-in-loop RDO then prunes any aligned event whose additional
+    state/header cost does not reduce complete rate-distortion cost. Therefore
+    semantic detail may enlarge the search but cannot enlarge an admitted
+    stream or degrade its reconstruction relative to the complete fallback.
+- Evidence rule:
+  - reports publish event and stable-region counts, styles, change families,
+    local support, pruning, timing, and search reduction. Raw transcript,
+    lyrics, copyrighted descriptions, and provider prose remain unrecorded;
+  - a one-label response is reported as classification-only and rejected from
+    encoder admission even if its label is correct.

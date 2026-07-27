@@ -18,6 +18,7 @@ import numpy as np
 SCHEMA_VERSION = "resonith-semantic-proposal-1"
 MAX_SOURCES = 12
 MAX_REGIONS = 32
+MAX_EVENTS = 64
 MAX_SPECIALIST_TASKS = 8
 MAX_OVERLAP_DEPTH = 8
 
@@ -67,6 +68,37 @@ REASON_CODES = frozenset(
         "repetition",
         "polyphony",
         "unpredictable",
+    }
+)
+ACOUSTIC_STYLES = frozenset(
+    {
+        "steady_tonal",
+        "voiced",
+        "unvoiced",
+        "attack",
+        "decay",
+        "stationary_noise",
+        "rhythmic",
+        "polyphonic",
+        "dense_mix",
+        "ambience",
+        "transition",
+        "unknown",
+    }
+)
+EVENT_TYPES = frozenset(
+    {
+        "source_start",
+        "source_stop",
+        "section_change",
+        "pitch_regime_change",
+        "timbre_change",
+        "energy_change",
+        "rhythm_change",
+        "transient",
+        "spatial_change",
+        "speech_state_change",
+        "uncertain_change",
     }
 )
 SPECIALIST_PROVIDERS = frozenset({"elevenlabs", "azure", "none"})
@@ -195,6 +227,7 @@ def validate_semantic_proposals(
             "primary_class",
             "sources",
             "regions",
+            "events",
             "specialist_tasks",
         }
     )
@@ -222,11 +255,14 @@ def validate_semantic_proposals(
 
         sources = clip["sources"]
         regions = clip["regions"]
+        events = clip["events"]
         tasks = clip["specialist_tasks"]
         if not isinstance(sources, list) or len(sources) > MAX_SOURCES:
             raise ProposalValidationError(f"{context}.sources exceeds its bound")
         if not isinstance(regions, list) or not 1 <= len(regions) <= MAX_REGIONS:
             raise ProposalValidationError(f"{context}.regions exceeds its bound")
+        if not isinstance(events, list) or len(events) > MAX_EVENTS:
+            raise ProposalValidationError(f"{context}.events exceeds its bound")
         if not isinstance(tasks, list) or len(tasks) > MAX_SPECIALIST_TASKS:
             raise ProposalValidationError(
                 f"{context}.specialist_tasks exceeds its bound"
@@ -292,6 +328,7 @@ def validate_semantic_proposals(
                 "confidence",
                 "lifetime_seconds",
                 "reason_code",
+                "acoustic_style",
             }
         )
         for region_index, region in enumerate(regions):
@@ -334,9 +371,108 @@ def validate_semantic_proposals(
                         REASON_CODES,
                         context=f"{region_context}.reason_code",
                     ),
+                    "acoustic_style": _enum(
+                        region["acoustic_style"],
+                        ACOUSTIC_STYLES,
+                        context=f"{region_context}.acoustic_style",
+                    ),
                 }
             )
         _check_overlap_depth(region_intervals, context=f"{context}.regions")
+
+        canonical_events: list[dict[str, Any]] = []
+        event_keys = frozenset(
+            {
+                "time_seconds",
+                "event_type",
+                "source_id",
+                "acoustic_style",
+                "primary_basis",
+                "change_strength",
+                "confidence",
+            }
+        )
+        for event_index, event in enumerate(events):
+            event_context = f"{context}.events[{event_index}]"
+            if not isinstance(event, Mapping):
+                raise ProposalValidationError(f"{event_context} must be an object")
+            _require_exact_keys(event, event_keys, context=event_context)
+            event_time = _finite_number(
+                event["time_seconds"],
+                context=f"{event_context}.time_seconds",
+            )
+            epsilon = max(0.050, expected_duration * 0.001)
+            if not -epsilon <= event_time <= expected_duration + epsilon:
+                raise ProposalValidationError(
+                    f"{event_context}.time_seconds is outside the clip"
+                )
+            source_id = event["source_id"]
+            if not isinstance(source_id, str) or len(source_id) > 48:
+                raise ProposalValidationError(f"{event_context}.source_id invalid")
+            if source_id and source_id not in source_ids:
+                raise ProposalValidationError(
+                    f"{event_context}.source_id is not declared"
+                )
+            canonical_events.append(
+                {
+                    "time_seconds": min(
+                        expected_duration,
+                        max(0.0, event_time),
+                    ),
+                    "event_type": _enum(
+                        event["event_type"],
+                        EVENT_TYPES,
+                        context=f"{event_context}.event_type",
+                    ),
+                    "source_id": source_id,
+                    "acoustic_style": _enum(
+                        event["acoustic_style"],
+                        ACOUSTIC_STYLES,
+                        context=f"{event_context}.acoustic_style",
+                    ),
+                    "primary_basis": _enum(
+                        event["primary_basis"],
+                        BASIS_FAMILIES,
+                        context=f"{event_context}.primary_basis",
+                    ),
+                    "change_strength": _bounded_confidence(
+                        event["change_strength"],
+                        context=f"{event_context}.change_strength",
+                    ),
+                    "confidence": _bounded_confidence(
+                        event["confidence"],
+                        context=f"{event_context}.confidence",
+                    ),
+                }
+            )
+        canonical_events.sort(
+            key=lambda event: (
+                event["time_seconds"],
+                event["source_id"],
+                event["event_type"],
+            )
+        )
+
+        primary_class = _enum(
+            clip["primary_class"],
+            PRIMARY_CLASSES,
+            context=f"{context}.primary_class",
+        )
+        changing_classes = {
+            "speech",
+            "music",
+            "mixed",
+            "synthetic",
+            "percussion",
+        }
+        if (
+            expected_duration > 5.0
+            and primary_class in changing_classes
+            and not canonical_events
+        ):
+            raise ProposalValidationError(
+                f"{context} changing long-form clip has no events"
+            )
 
         canonical_tasks: list[dict[str, Any]] = []
         task_keys = frozenset(
@@ -392,13 +528,10 @@ def validate_semantic_proposals(
             {
                 "clip_id": clip_id,
                 "duration_seconds": expected_duration,
-                "primary_class": _enum(
-                    clip["primary_class"],
-                    PRIMARY_CLASSES,
-                    context=f"{context}.primary_class",
-                ),
+                "primary_class": primary_class,
                 "sources": canonical_sources,
                 "regions": canonical_regions,
+                "events": canonical_events,
                 "specialist_tasks": canonical_tasks,
             }
         )
@@ -487,6 +620,7 @@ def audit_proposals(
     total_contradicted = 0
     total_boundaries = 0
     nontrivial_clips = 0
+    total_events = 0
     for clip in proposal["clips"]:
         clip_id = clip["clip_id"]
         local = evidence[clip_id]
@@ -494,6 +628,7 @@ def audit_proposals(
         if len(clip["regions"]) > 1:
             nontrivial_clips += 1
             total_boundaries += len(clip["regions"]) - 1
+        total_events += len(clip["events"])
         for region in clip["regions"]:
             family = region["primary_basis"]
             start = float(region["start_seconds"])
@@ -552,8 +687,18 @@ def audit_proposals(
                 "primary_class": clip["primary_class"],
                 "source_count": len(clip["sources"]),
                 "region_count": len(clip["regions"]),
+                "event_count": len(clip["events"]),
                 "specialist_task_count": len(clip["specialist_tasks"]),
                 "family_evidence": family_counts,
+                "event_types": sorted(
+                    {event["event_type"] for event in clip["events"]}
+                ),
+                "acoustic_styles": sorted(
+                    {
+                        region["acoustic_style"]
+                        for region in clip["regions"]
+                    }
+                ),
             }
         )
     return {
@@ -563,6 +708,177 @@ def audit_proposals(
             "weak": total_weak,
             "contradicted": total_contradicted,
             "proposed_boundaries": total_boundaries,
+            "proposed_events": total_events,
             "nontrivial_clip_count": nontrivial_clips,
+        },
+    }
+
+
+def align_event_boundaries(
+    samples: np.ndarray,
+    sample_rate: int,
+    events: Sequence[Mapping[str, Any]],
+    *,
+    search_radius_seconds: float = 0.250,
+    hop_seconds: float = 0.001,
+) -> dict[str, Any]:
+    """Snap coarse provider events to deterministic local PCM change evidence.
+
+    The provider timestamp is only the center of a bounded search window.
+    Twenty-millisecond analysis frames advance by one millisecond; the final
+    candidate is represented as an exact source-sample index.  Exact encoder
+    RDO may later test neighboring samples or reject the event entirely.
+    """
+
+    source = np.asarray(samples, dtype=np.float64)
+    if source.ndim == 2:
+        source = np.mean(source, axis=1)
+    source = source.reshape(-1)
+    if (
+        source.size < 64
+        or not 8000 <= sample_rate <= 192000
+        or not 0.050 <= search_radius_seconds <= 1.0
+        or not 0.00025 <= hop_seconds <= 0.010
+    ):
+        raise ValueError("invalid local event-alignment input")
+    source /= 32768.0
+    analysis_size = max(64, round(sample_rate * 0.020))
+    hop_size = max(1, round(sample_rate * hop_seconds))
+    radius_samples = max(analysis_size, round(sample_rate * search_radius_seconds))
+    window = np.hanning(analysis_size)
+
+    aligned_events: list[dict[str, Any]] = []
+    supported_count = 0
+    shifts: list[float] = []
+    for event in events:
+        provider_time = float(event["time_seconds"])
+        center = int(round(provider_time * sample_rate))
+        search_start = max(0, center - radius_samples - analysis_size)
+        search_end = min(source.size, center + radius_samples + analysis_size)
+        excerpt = source[search_start:search_end]
+        if excerpt.size < analysis_size * 2:
+            aligned_sample = min(max(center, 0), source.size - 1)
+            support = 0.0
+        else:
+            starts = np.arange(
+                0,
+                excerpt.size - analysis_size + 1,
+                hop_size,
+                dtype=np.int64,
+            )
+            energy = np.empty(starts.size, dtype=np.float64)
+            centroid = np.empty(starts.size, dtype=np.float64)
+            flux = np.zeros(starts.size, dtype=np.float64)
+            previous_normalized: np.ndarray | None = None
+            frequencies = np.fft.rfftfreq(analysis_size, 1.0 / sample_rate)
+            for frame_index, start in enumerate(starts):
+                frame = excerpt[start : start + analysis_size] * window
+                energy[frame_index] = np.sqrt(np.mean(frame * frame) + 1.0e-12)
+                magnitude = np.abs(np.fft.rfft(frame)) + 1.0e-12
+                magnitude_sum = float(np.sum(magnitude))
+                normalized = magnitude / magnitude_sum
+                centroid[frame_index] = float(
+                    np.sum(normalized * frequencies)
+                )
+                if previous_normalized is not None:
+                    flux[frame_index] = float(
+                        np.sum(np.maximum(normalized - previous_normalized, 0.0))
+                    )
+                previous_normalized = normalized
+            log_energy = 20.0 * np.log10(energy + 1.0e-12)
+            energy_delta = np.diff(log_energy, prepend=log_energy[0])
+            centroid_delta = np.abs(
+                np.diff(centroid, prepend=centroid[0])
+            ) / max(1000.0, sample_rate / 8.0)
+            event_type = str(event["event_type"])
+            if event_type in {"source_start", "transient"}:
+                score = np.maximum(energy_delta, 0.0) + 12.0 * flux
+            elif event_type == "source_stop":
+                score = np.maximum(-energy_delta, 0.0) + 8.0 * flux
+            elif event_type in {
+                "pitch_regime_change",
+                "timbre_change",
+                "speech_state_change",
+            }:
+                score = 5.0 * flux + centroid_delta + 0.15 * np.abs(energy_delta)
+            else:
+                score = 8.0 * flux + centroid_delta + 0.30 * np.abs(energy_delta)
+            frame_centers = search_start + starts + analysis_size // 2
+            allowed = np.abs(frame_centers - center) <= radius_samples
+            allowed_indices = np.flatnonzero(allowed)
+            if allowed_indices.size == 0:
+                aligned_sample = min(max(center, 0), source.size - 1)
+                support = 0.0
+            else:
+                local_scores = score[allowed_indices]
+                best_local = int(np.argmax(local_scores))
+                best_index = int(allowed_indices[best_local])
+                aligned_sample = int(frame_centers[best_index])
+                rank = float(
+                    np.count_nonzero(local_scores <= local_scores[best_local])
+                ) / local_scores.size
+                median = float(np.median(local_scores))
+                deviation = float(np.median(np.abs(local_scores - median))) + 1.0e-9
+                prominence = max(
+                    0.0,
+                    (float(local_scores[best_local]) - median) / deviation,
+                )
+                support = min(1.0, 0.5 * rank + 0.1 * prominence)
+                if event_type in {"source_start", "source_stop", "transient"}:
+                    # Remove the 20 ms frame-center bias with a final
+                    # millisecond-envelope edge search on original samples.
+                    fine_radius = analysis_size
+                    fine_start = max(0, aligned_sample - fine_radius)
+                    fine_end = min(source.size, aligned_sample + fine_radius + 1)
+                    fine = np.abs(source[fine_start:fine_end])
+                    smoothing = max(1, round(sample_rate * 0.001))
+                    if fine.size > smoothing + 1:
+                        envelope = np.convolve(
+                            fine,
+                            np.ones(smoothing, dtype=np.float64) / smoothing,
+                            mode="valid",
+                        )
+                        derivative = np.diff(envelope)
+                        if event_type == "source_stop":
+                            edge_index = int(np.argmin(derivative))
+                        elif event_type == "source_start":
+                            edge_index = int(np.argmax(derivative))
+                        else:
+                            edge_index = int(np.argmax(np.abs(derivative)))
+                        aligned_sample = min(
+                            source.size - 1,
+                            fine_start + edge_index + smoothing // 2,
+                        )
+        aligned_time = aligned_sample / sample_rate
+        shift_ms = (aligned_time - provider_time) * 1000.0
+        supported = support >= 0.70
+        if supported:
+            supported_count += 1
+        shifts.append(abs(shift_ms))
+        aligned_events.append(
+            {
+                "provider_time_seconds": provider_time,
+                "aligned_sample": aligned_sample,
+                "aligned_time_seconds": aligned_time,
+                "shift_ms": shift_ms,
+                "support": support,
+                "supported": supported,
+                "event_type": event["event_type"],
+                "source_id": event["source_id"],
+                "primary_basis": event["primary_basis"],
+            }
+        )
+    return {
+        "events": aligned_events,
+        "summary": {
+            "event_count": len(aligned_events),
+            "supported_count": supported_count,
+            "unsupported_count": len(aligned_events) - supported_count,
+            "median_absolute_shift_ms": (
+                float(np.median(shifts)) if shifts else 0.0
+            ),
+            "maximum_absolute_shift_ms": max(shifts, default=0.0),
+            "analysis_hop_ms": hop_size * 1000.0 / sample_rate,
+            "search_radius_ms": search_radius_seconds * 1000.0,
         },
     }

@@ -9,6 +9,7 @@ import numpy as np
 
 from maf_p0.semantic_arbiter import (
     ProposalValidationError,
+    align_event_boundaries,
     analyze_proxy_evidence,
     audit_proposals,
     validate_semantic_proposals,
@@ -40,8 +41,10 @@ def _valid_payload() -> dict:
                         "confidence": 0.9,
                         "lifetime_seconds": 1.0,
                         "reason_code": "stable_pitch",
+                        "acoustic_style": "steady_tonal",
                     }
                 ],
+                "events": [],
                 "specialist_tasks": [],
             }
         ],
@@ -90,6 +93,48 @@ class SemanticArbiterTests(unittest.TestCase):
         audit = audit_proposals(proposal, {"tone": evidence_a})
         self.assertGreater(audit["totals"]["supported"], 0)
         self.assertEqual(audit["totals"]["proposed_boundaries"], 0)
+
+    def test_changing_long_form_clip_requires_event_ledger(self) -> None:
+        payload = _valid_payload()
+        clip = payload["clips"][0]
+        clip["duration_seconds"] = 6.0
+        clip["primary_class"] = "music"
+        clip["sources"][0]["end_seconds"] = 6.0
+        clip["regions"][0]["end_seconds"] = 6.0
+        clip["regions"][0]["lifetime_seconds"] = 6.0
+        with self.assertRaises(ProposalValidationError):
+            validate_semantic_proposals(payload, {"tone": 6.0})
+
+    def test_event_source_reference_is_validated(self) -> None:
+        payload = _valid_payload()
+        payload["clips"][0]["events"] = [
+            {
+                "time_seconds": 0.5,
+                "event_type": "timbre_change",
+                "source_id": "missing",
+                "acoustic_style": "transition",
+                "primary_basis": "coherent",
+                "change_strength": 0.7,
+                "confidence": 0.8,
+            }
+        ]
+        with self.assertRaises(ProposalValidationError):
+            validate_semantic_proposals(payload, {"tone": 1.0})
+
+    def test_coarse_event_is_aligned_to_millisecond_local_step(self) -> None:
+        sample_rate = 16000
+        samples = np.zeros(sample_rate, dtype=np.int16)
+        samples[sample_rate // 2 :] = 12000
+        event = {
+            "time_seconds": 0.460,
+            "event_type": "source_start",
+            "source_id": "s0",
+            "primary_basis": "coherent",
+        }
+        result = align_event_boundaries(samples, sample_rate, [event])
+        aligned = result["events"][0]
+        self.assertLess(abs(aligned["aligned_time_seconds"] - 0.5), 0.006)
+        self.assertTrue(aligned["supported"])
 
     def test_none_specialist_placeholder_is_canonicalized_away(self) -> None:
         payload = _valid_payload()
