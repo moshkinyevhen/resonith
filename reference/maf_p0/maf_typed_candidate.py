@@ -308,6 +308,7 @@ def fit_maf_typed_prediction(
     rate_coefficients_per_frame: int = 64,
     rate_half_window: int = 512,
     rate_band_count: int = 24,
+    allowed_modes: tuple[int, ...] | None = None,
 ) -> MafTypedPrediction:
     """Fit impulse/stochastic lifetimes and judge them in the native decoder."""
 
@@ -321,6 +322,18 @@ def fit_maf_typed_prediction(
         raise TypeError("typed MAF fitting requires frame-major PCM16")
     if not 1 <= filter_order <= 16:
         raise ValueError("typed MAF filter order exceeds Main")
+    supported_modes = {
+        IMPULSE_EXCITATION,
+        STOCHASTIC_EXCITATION,
+        PERIODIC_BASIS_EXCITATION,
+    }
+    enabled_modes = (
+        supported_modes
+        if allowed_modes is None
+        else set(allowed_modes)
+    )
+    if not enabled_modes <= supported_modes:
+        raise ValueError("typed MAF mode mask contains an unknown family")
     source = np.ascontiguousarray(source_view)
     frames, channels = source.shape
     minimum_segment = math.ceil(frames * channels / MAX_SOURCE_LIFETIMES)
@@ -555,7 +568,7 @@ def fit_maf_typed_prediction(
     for channel in range(channels):
         for start in range(0, frames, segment_frames):
             end = min(frames, start + segment_frames)
-            costs = (
+            costs = [
                 (
                     _coefficient_proxy(
                         source_grid,
@@ -567,7 +580,9 @@ def fit_maf_typed_prediction(
                     NO_MODEL,
                     0,
                 ),
-                (
+            ]
+            if IMPULSE_EXCITATION in enabled_modes:
+                costs.append((
                     _coefficient_proxy(
                         impulse_grid,
                         channel=channel,
@@ -577,8 +592,9 @@ def fit_maf_typed_prediction(
                     ) + record_penalty_bits,
                     IMPULSE_EXCITATION,
                     impulse_scaled_gains[state],
-                ),
-                (
+                ))
+            if STOCHASTIC_EXCITATION in enabled_modes:
+                costs.append((
                     _coefficient_proxy(
                         noise_grid,
                         channel=channel,
@@ -588,8 +604,9 @@ def fit_maf_typed_prediction(
                     ) + record_penalty_bits,
                     STOCHASTIC_EXCITATION,
                     noise_scaled_gains[state],
-                ),
-                (
+                ))
+            if PERIODIC_BASIS_EXCITATION in enabled_modes:
+                costs.append((
                     _coefficient_proxy(
                         periodic_grid,
                         channel=channel,
@@ -599,8 +616,7 @@ def fit_maf_typed_prediction(
                     ) + record_penalty_bits,
                     PERIODIC_BASIS_EXCITATION,
                     periodic_scaled_gains[state],
-                ),
-            )
+                ))
             _, mode, gain = min(costs, key=lambda item: (item[0], item[1]))
             modes.append(mode)
             gains.append(gain)
@@ -653,6 +669,7 @@ def fit_maf_typed_prediction(
         "filter_count": len(filters) if source_filter_active else 0,
         "stochastic_field_count": len(fields) if source_filter_active else 0,
         "basis_count": 1 if periodic_active else 0,
+        "allowed_modes": sorted(enabled_modes),
         "impulse_lifetime_count": impulse_selected,
         "stochastic_lifetime_count": stochastic_selected,
         "periodic_basis_lifetime_count": periodic_selected,
@@ -678,6 +695,11 @@ def encode_maf_typed_truth_candidate(
     filter_order: int = 10,
     half_window: int = 512,
     band_count: int = 24,
+    residual_budget_override: int | None = None,
+    allowed_modes: tuple[int, ...] | None = None,
+    residual_selection_backend: str = "energy",
+    residual_frame_whitening: float = 0.0,
+    residual_band_whitening: float = 0.0,
 ) -> MafTypedTruthCandidate:
     """Encode complete MFT1+Truth and preserve the direct lapped fallback."""
 
@@ -691,6 +713,7 @@ def encode_maf_typed_truth_candidate(
         rate_coefficients_per_frame=coefficients_per_frame,
         rate_half_window=half_window,
         rate_band_count=band_count,
+        allowed_modes=allowed_modes,
     )
     difference = (
         source.astype(np.int32) - prediction.reconstruction.astype(np.int32)
@@ -740,6 +763,10 @@ def encode_maf_typed_truth_candidate(
         for budget in budget_candidates
         if budget <= coefficients_per_frame
     ]
+    if residual_budget_override is not None:
+        if not 1 <= residual_budget_override <= coefficients_per_frame:
+            raise ValueError("residual budget override exceeds the candidate")
+        budget_candidates = [residual_budget_override]
     candidate_options = []
     for residual_budget in budget_candidates:
         current_residual = encode_lapped_analysis(
@@ -747,7 +774,9 @@ def encode_maf_typed_truth_candidate(
             coefficients_per_frame=residual_budget,
             entropy_backend="bounded",
             density_backend="adaptive",
-            selection_backend="energy",
+            selection_backend=residual_selection_backend,
+            frame_whitening=residual_frame_whitening,
+            band_whitening=residual_band_whitening,
             native_decoder=native_decoder,
         )
         current_reconstruction = np.clip(
@@ -832,6 +861,9 @@ def encode_maf_typed_truth_candidate(
         "predictor": prediction.report,
         "residual_stream_bytes": len(residual.payload),
         "selected_residual_coefficients_per_frame": selected_residual_budget,
+        "residual_selection_backend": residual_selection_backend,
+        "residual_frame_whitening": residual_frame_whitening,
+        "residual_band_whitening": residual_band_whitening,
         "tested_residual_coefficients_per_frame": budget_candidates,
         "residual_clip_count": int(np.count_nonzero(
             (difference < -32768) | (difference > 32767)

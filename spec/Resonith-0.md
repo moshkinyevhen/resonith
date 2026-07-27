@@ -1409,6 +1409,35 @@ SHALL retain the preceding complete Truth candidate whenever the typed MAF
 candidate fails complete-byte decoder-in-loop RDO or any reconstruction,
 resource, robustness, or listening gate.
 
+### 14.6 Prospective immutable motif instances
+
+A Main-development motif dictionary stores each finite objective acoustic
+Basis once and places bounded instances on the absolute sample timeline. A
+motif Basis MUST be immutable PCM16 or the verified output of a bounded CIBS
+materialization. It MUST NOT refer to an external service or mutable decoder
+model.
+
+Each motif instance SHALL declare:
+
+- a resolved Basis identifier;
+- exact half-open support in source-sample frames;
+- output emitter or channel placement;
+- signed fixed-point gain;
+- absolute phase/time origin;
+- a profile-bounded resampling or pitch/time law.
+
+The first executable level SHALL support exact one-shot placement at unity
+time scale before optional transformed placement. Later levels MAY add
+bounded interpolation, overlap, and multichannel matrices, but MUST declare
+maximum Basis samples, instances, simultaneous overlap, operations per output
+frame, correction bytes, and random-access dependency span.
+
+Content-defined hashing, fingerprinting, semantic motif recognition, and
+near-duplicate search are encoder operations and are non-normative. The
+decoder receives no hash search or semantic label. An encoder SHALL account
+for the complete dictionary, instance, checkpoint, and objective correction
+cost and SHALL retain optimized independent Truth as a complete candidate.
+
 ## 15. Security
 
 Decoder MUST:

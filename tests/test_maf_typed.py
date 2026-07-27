@@ -107,6 +107,15 @@ class MafTypedReferenceTests(unittest.TestCase):
         self.assertLess(abs(period - 44.1), 0.25)
         self.assertGreater(score, 0.99)
 
+    def test_unknown_representation_mask_is_rejected(self) -> None:
+        with self.assertRaisesRegex(ValueError, "unknown family"):
+            fit_maf_typed_prediction(
+                np.zeros((128, 1), dtype=np.int16),
+                16000,
+                native_decoder=None,
+                allowed_modes=(99,),
+            )
+
 
 @unittest.skipUnless(
     os.environ.get("RESONITH_NATIVE_CORE"),
@@ -156,6 +165,7 @@ class MafTypedNativeTests(unittest.TestCase):
             filter_order=6,
             half_window=64,
             band_count=8,
+            residual_budget_override=7,
         )
         decoded_rate, decoded = decode_maf_typed_truth_candidate(
             candidate.payload,
@@ -166,6 +176,10 @@ class MafTypedNativeTests(unittest.TestCase):
         self.assertIn(
             candidate.selected_kind,
             {"mft1-truth", "truth-fallback"},
+        )
+        self.assertEqual(
+            candidate.report["selected_residual_coefficients_per_frame"],
+            7,
         )
 
     def test_periodic_basis_is_absolute_and_partition_invariant(self) -> None:

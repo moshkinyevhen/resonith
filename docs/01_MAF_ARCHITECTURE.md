@@ -272,8 +272,11 @@ mandatory regime.
 - unlimited convolution;
 - unlimited number of atoms per sample.
 
-Repeated motif programs and shared package dictionaries remain **RESEARCH** and
-must be compiled into the same ISA. CIBS adopted decision R-014.
+R-139 adopts bounded in-stream motif dictionaries for Main development.
+External cloud dictionaries and arbitrary motif programs remain excluded.
+Every reusable motif is an immutable objective Basis carried by the stream or
+materialized through bounded CIBS, and every placement compiles into the same
+fixed integer ISA. CIBS adopted decision R-014.
 
 ## 15. The operational MAF cell
 
@@ -422,3 +425,27 @@ callback boundaries do not change PCM or acoustic state.
 graphs, bytecode, decoder-side AI, or a second residual. Deterministic Truth
 remains the complete fallback until a typed lifetime candidate wins exact
 complete-byte RDO on real evidence.
+
+## 20. Content-defined motif memory
+
+R-139 generalizes persistent memory from periodic timbre to finite acoustic
+events. The encoder first finds bit-identical content-defined chunks, then
+searches canonical near-duplicates after factoring exact sample alignment,
+gain, phase, bounded pitch/time drift, and channel placement. A provider may
+suggest that two phrases or notes are related, but only objective
+decoder-in-loop correction can admit their reuse.
+
+One immutable motif Basis may serve many one-shot timeline instances. Each
+instance is an exact-sample, half-open placement with bounded transform laws;
+it does not copy executable code into the stream. The instance is paid only
+when:
+
+```text
+Basis bytes + all placement bytes + all corrections
+    < optimized independent Truth bytes
+```
+
+Exact sample reuse is the first implementation because it has unambiguous
+identity and a tiny decoder. Gain/phase normalization follows, then bounded
+pitch/time laws and overlap. This ordering preserves the simple mechanism
+while exposing increasingly common repetitions to the same immutable memory.

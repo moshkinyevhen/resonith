@@ -33,6 +33,9 @@
 | [results/BOUNDED_MAF_DSP_2026-07-27.md](results/BOUNDED_MAF_DSP_2026-07-27.md) | R-122/R-127 bounded MAF DSP, transactional stream integration, and cross-platform evidence |
 | [results/GEMINI_SEMANTIC_ARBITER_2026-07-27.md](results/GEMINI_SEMANTIC_ARBITER_2026-07-27.md) | R-128/R-129 complete live Gemini change-ledger and local millisecond-alignment evidence |
 | [results/TYPED_MAF_LIFETIMES_2026-07-27.md](results/TYPED_MAF_LIFETIMES_2026-07-27.md) | R-130 typed source-filter/stochastic/transient/mix lifetime decoder and portability gate |
+| [results/PERIODIC_MAF_AND_EXACT_BOUNDARIES_2026-07-27.md](results/PERIODIC_MAF_AND_EXACT_BOUNDARIES_2026-07-27.md) | R-131/R-134 exact-sample boundary search and periodic-Basis fast diagnostic |
+| [results/TYPED_MAF_R118_2026-07-27.md](results/TYPED_MAF_R118_2026-07-27.md) | R-131/R-135 complete 19-item typed-MAF rate and quality gate |
+| [results/MAF_TRUTH_FRONTIER_AND_ABLATION_2026-07-27.md](results/MAF_TRUTH_FRONTIER_AND_ABLATION_2026-07-27.md) | R-136–R-138 quality-constrained residual frontier and MAF family ablation |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
 
 Normative draft:

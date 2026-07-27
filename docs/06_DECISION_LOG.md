@@ -4516,3 +4516,185 @@ new oscillator opcode.
     local anchor count, exact samples per anchor, and full-RDO finalist count;
   - candidate generation is encoder-only. It changes neither the bounded
     integer decoder nor the normative stream syntax.
+
+## R-135 — Spectral quality guard supersedes waveform-SSE-only admission
+
+- Status: **RESEARCH — ACTIVE GATE**
+- Date: 2026-07-27
+- Trigger:
+  - the corrected periodic-Basis fast candidate reduced complete bytes and
+    improved waveform SSE/SNR on the EBU sustained-sine item, yet worsened
+    log-mel and multiresolution spectral error;
+  - a waveform-SSE-only decision can therefore select a smaller stream that
+    is objectively worse in a perceptually relevant domain.
+- Decision:
+  - complete-byte and decoder-output checks remain mandatory, but waveform
+    SSE alone SHALL NOT admit a material architecture candidate;
+  - the research admission guard SHALL also compare log-mel error,
+    multiresolution spectral convergence, magnitude similarity, and the
+    applicable speech/intelligibility or transient diagnostics;
+  - a candidate that fails any declared non-regression limit SHALL emit the
+    unchanged complete Truth fallback even when it is smaller and has better
+    waveform SNR;
+  - the report SHALL preserve the rejected candidate and every metric so that
+    its representation gain remains measurable without degrading listening
+    artifacts or released defaults;
+  - thresholds are research policy, not decoder syntax. Final promotion still
+    requires complete-byte-matched Opus anchors and blinded listening on the
+    complete R-118 union.
+- First complete result:
+  - revision `b86fdadc501c57c7fe635e6ad9bff1da1e5bad17` evaluated all
+    three complete references and all 16 R-111 classes in 1,543.6 seconds;
+  - zero of 19 candidates passed both the complete-byte and multi-objective
+    quality gates, so every selected artifact is the exact preceding Resonith
+    fallback;
+  - the EBU electronic-tune candidate reduced complete bytes from 86,387 to
+    27,318 but failed log-mel, magnitude-cosine, and all declared
+    multiresolution STFT limits. This proves a representation-rate opportunity
+    but also proves that the current SSE-directed residual allocator cannot be
+    promoted;
+  - Mozart passed the declared quality guard but remained 8.64% larger than
+    the preceding stream. Speech also passed quality but remained 6.57%
+    larger. These results isolate persistent record/residual overhead from
+    perceptual allocation failure;
+  - the next experiment SHALL search the residual frontier under the R-135
+    spectral guard before adding another decoder operation.
+
+## R-136 — Quality-constrained Truth frontier before new syntax
+
+- Status: **RESEARCH — ACTIVE GATE**
+- Date: 2026-07-27
+- Decision:
+  - expose an encoder-only exact residual-budget override for the existing
+    `MFT1` plus Truth candidate without changing any decoder record;
+  - on the EBU electronic-tune opportunity, serialize and independently decode
+    a bounded residual frontier, measure complete bytes and every R-135 metric,
+    and choose the smallest point that passes the preceding-stream quality
+    guard;
+  - if no passing point remains smaller than the preceding 86,387-byte stream,
+    close pure residual reallocation as the solution and proceed to
+    band-local representation plus persistent-state merging;
+  - every frontier point retains the same native predictor, complete outer
+    bytes, exact fallback, and deterministic decoder path. A lower-rate failed
+    point remains diagnostic only.
+- Measured result:
+  - the exact residual budgets 12, 16, 24, 32, 48, 64, and 71 were serialized
+    and independently decoded on EBU electronic tune;
+  - no point passed R-135. Log-mel error improved monotonically from 4.001 to
+    2.430 but remained far above the preceding 0.459;
+  - the 48-budget point remained smaller at 71,907 versus 86,387 bytes but
+    failed log-mel and magnitude similarity. Budgets 64 and 71 were both
+    larger and still failed those metrics;
+  - pure residual-budget reallocation is therefore closed as the solution.
+    The failure originates in representation selection and final-sum
+    allocation rather than too little search over the existing scalar budget.
+
+## R-137 — Final-output representation ablation before band-local syntax
+
+- Status: **RESEARCH — ACTIVE GATE**
+- Date: 2026-07-27
+- Decision:
+  - expose encoder-only allowed-family masks while retaining `NO_MODEL` as a
+    mandatory candidate and changing no decoder syntax;
+  - ablate periodic, impulse source-filter, and stochastic source-filter
+    families on the electronic-tune opportunity at an otherwise identical
+    residual point;
+  - a representation family is useful only when the complete native-decoded
+    sum, not its isolated residual proxy, passes the R-135 spectral guard;
+  - if `NO_MODEL + PERIODIC_BASIS` materially improves the frontier, full-band
+    impulse/stochastic admission is disabled until closed-loop final-output
+    or band-local RDO exists;
+  - if no family mask passes below the preceding bytes, proceed directly to
+    band-local mutual exclusion and persistent-state merging. Do not add a new
+    excitation opcode to rescue this gate.
+- Measured result:
+  - at a fixed 48-coefficient residual budget, only `NO_MODEL` passed all
+    declared limits: 63,412 bytes versus the preceding 86,387 and log-mel
+    0.466 versus 0.459;
+  - this is a better ordinary Truth point, not a MAF gain;
+  - periodic-only improved waveform SNR from 36.181 to 43.634 dB for 64,607
+    bytes, but log-mel rose to 0.512 and magnitude similarity missed the R-135
+    limit;
+  - every mask containing impulse or stochastic source-filter excitation
+    produced a much larger spectral regression. Those full-band modes are
+    disabled from promotion until final-output or band-local RDO exists.
+
+## R-138 — Optimized Truth is the incremental MAF baseline
+
+- Status: **RESEARCH — ACTIVE GATE**
+- Date: 2026-07-27
+- Decision:
+  - every structural MAF result SHALL report two comparisons: the preceding
+    released Resonith stream and the best eligible `NO_MODEL` Truth point from
+    the same search. Only the second comparison is incremental MAF gain;
+  - the 63,412-byte electronic-tune `NO_MODEL` point becomes the local
+    architecture baseline. Its reduction MUST NOT be attributed to periodic,
+    source-filter, stochastic, AI, or lifetime coding;
+  - before adding band-local syntax, test the existing gain-shape residual
+    selector and bounded whitening frontier with periodic-only MAF. This may
+    preserve the periodic waveform gain while directing Truth toward spectral
+    non-regression;
+  - periodic MAF is admitted only if it beats or improves on optimized Truth
+    under a declared complete-byte/quality tradeoff. Otherwise the next
+    mechanism is band-local mutual exclusion, not a looser quality threshold.
+- Measured result:
+  - six periodic-only gain-shape residual variants at budget 48 tested frame
+    whitening 0, 0.02, 0.10, and 0.25 plus two band-whitened combinations;
+  - complete bytes ranged from 63,866 to 64,595, but log-mel ranged from 0.517
+    to 0.542 versus 0.459 for the preceding stream and 0.466 for optimized
+    `NO_MODEL`;
+  - no periodic point passed R-135. Gain-shape residual selection is closed as
+    the missing solution for this full-band periodic candidate.
+
+## R-139 — Content-defined immutable motif dictionary
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- North-star decision:
+  - MAF SHALL support paying once for a reusable acoustic motif and placing
+    bounded instances over the continuous timeline. Repetition is not limited
+    to periodic oscillators or transform-frame back-references;
+  - the dictionary contains immutable objective PCM16 or integer-synthesized
+    Basis. An instance carries an exact start sample, Basis reference, gain,
+    absolute phase/time origin, bounded pitch/time law, channel/emitter
+    placement, and half-open support;
+  - objective per-instance correction remains Truth. A transformed instance
+    that cannot repay its dictionary bytes, command bytes, and correction is
+    rejected in favor of `NO_MODEL`.
+- Encoder layers:
+  1. exact content-defined chunking and hashing finds bit-identical motifs
+     despite unknown positions;
+  2. canonical matching factors gain, sample alignment, phase, modest
+     pitch/time drift, and channel placement before searching near-duplicates;
+  3. decoder-in-loop RDO compares immutable Basis plus all instances and their
+     corrections against optimized ordinary Truth;
+  4. learned or semantic models MAY propose motif families, but cannot define
+     equality, correction, or admission.
+- Scope and honesty:
+  - exact sample, loop, percussion, game, interface, and electronic material
+    may obtain very large gains. Live speech and classical stereo mixes may
+    expose fewer reusable objective motifs because articulation, overlap,
+    reverberation, and other sources change every occurrence;
+  - raw waveform hashes alone are insufficient: a one-sample shift, gain
+    change, phase change, room response, or overlapping source changes every
+    byte. Canonical transformed matching plus objective correction is the
+    required general mechanism;
+  - this combines known dictionary, long-term prediction, sample-reuse, and
+    fingerprinting principles into MAF lifetime syntax. Novelty is not claimed
+    until a documented prior-art and patent search is complete.
+- Decoder and security:
+  - Basis and instance counts, total Basis samples, simultaneous instances,
+    interpolation work, correction bytes, and random-access dependency span
+    SHALL be profile-bounded;
+  - the decoder executes fixed integer placement only. No search, hash,
+    semantic model, arbitrary graph, or per-sample neural inference enters the
+    bitstream;
+  - checkpoints SHALL name every live instance and required immutable Basis.
+    Missing or corrupt dictionary data cannot contaminate unrelated future
+    state.
+- Admission order:
+  1. exact one-shot Basis reuse and exact-sample placement;
+  2. signed gain and phase/alignment normalization;
+  3. bounded pitch/time laws;
+  4. overlapping and multichannel instances;
+  5. canonical learned Basis proposals only after deterministic gates.

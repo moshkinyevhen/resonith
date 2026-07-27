@@ -30,6 +30,44 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _quality_guard(candidate: dict, baseline: dict) -> dict:
+    """Reject a byte win when declared waveform or spectral metrics regress."""
+
+    checks = {
+        "snr_non_regression": (
+            candidate["waveform"]["snr_db"]
+            >= baseline["waveform"]["snr_db"] - 0.10
+        ),
+        "si_sdr_non_regression": (
+            candidate["waveform"]["si_sdr_db"]
+            >= baseline["waveform"]["si_sdr_db"] - 0.10
+        ),
+        "log_mel_within_3_percent": (
+            candidate["spectral"]["log_mel_rmse"]
+            <= baseline["spectral"]["log_mel_rmse"] * 1.03 + 1.0e-12
+        ),
+        "magnitude_cosine_non_regression": (
+            candidate["spectral"]["magnitude_cosine_similarity"]
+            >= baseline["spectral"]["magnitude_cosine_similarity"] - 1.0e-5
+        ),
+    }
+    candidate_stft = candidate["spectral"]["multiresolution_stft"]
+    baseline_stft = baseline["spectral"]["multiresolution_stft"]
+    for size in sorted(baseline_stft, key=int):
+        checks[f"stft_{size}_within_5_percent"] = (
+            candidate_stft[size]["spectral_convergence"]
+            <= baseline_stft[size]["spectral_convergence"] * 1.05 + 1.0e-12
+        )
+    return {
+        "passed": all(checks.values()),
+        "checks": checks,
+        "policy": (
+            "R-135 fast non-regression guard; listening and complete R-118 "
+            "admission remain pending"
+        ),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, required=True)
@@ -58,6 +96,41 @@ def main() -> None:
         band_count=args.band_count,
     )
     wall_seconds = time.perf_counter() - started
+    candidate_metrics = _diagnostics(
+        samples,
+        candidate.reconstruction,
+        sample_rate,
+        args.mode,
+    )
+    baseline_metrics = _diagnostics(
+        samples,
+        candidate.baseline.reconstruction,
+        sample_rate,
+        args.mode,
+    )
+    quality_guard = _quality_guard(candidate_metrics, baseline_metrics)
+    admitted = (
+        candidate.selected_kind == "mft1-truth"
+        and quality_guard["passed"]
+    )
+    selected_payload = (
+        candidate.payload if admitted else candidate.baseline.payload
+    )
+    selected_reconstruction = (
+        candidate.reconstruction
+        if admitted
+        else candidate.baseline.reconstruction
+    )
+    selected_metrics = candidate_metrics if admitted else baseline_metrics
+    selected_kind = (
+        "mft1-truth"
+        if admitted
+        else (
+            "truth-fallback-quality-guard"
+            if candidate.selected_kind == "mft1-truth"
+            else "truth-fallback-rate-distortion"
+        )
+    )
 
     args.output_directory.mkdir(parents=True, exist_ok=True)
     paths = {
@@ -76,7 +149,7 @@ def main() -> None:
     }
     paths["candidate"].write_bytes(candidate.payload)
     paths["baseline"].write_bytes(candidate.baseline.payload)
-    paths["selected"].write_bytes(candidate.selected_payload)
+    paths["selected"].write_bytes(selected_payload)
     write_pcm16_channels(
         paths["candidate_decoded"],
         sample_rate,
@@ -90,7 +163,7 @@ def main() -> None:
     write_pcm16_channels(
         paths["selected_decoded"],
         sample_rate,
-        candidate.selected_reconstruction,
+        selected_reconstruction,
     )
 
     report = {
@@ -118,34 +191,20 @@ def main() -> None:
         "candidate": {
             "bytes": len(candidate.payload),
             "sha256": _sha256(paths["candidate"]),
-            "metrics": _diagnostics(
-                samples,
-                candidate.reconstruction,
-                sample_rate,
-                args.mode,
-            ),
+            "metrics": candidate_metrics,
         },
         "baseline": {
             "bytes": len(candidate.baseline.payload),
             "sha256": _sha256(paths["baseline"]),
-            "metrics": _diagnostics(
-                samples,
-                candidate.baseline.reconstruction,
-                sample_rate,
-                args.mode,
-            ),
+            "metrics": baseline_metrics,
         },
         "selected": {
-            "kind": candidate.selected_kind,
-            "bytes": len(candidate.selected_payload),
+            "kind": selected_kind,
+            "bytes": len(selected_payload),
             "sha256": _sha256(paths["selected"]),
-            "metrics": _diagnostics(
-                samples,
-                candidate.selected_reconstruction,
-                sample_rate,
-                args.mode,
-            ),
+            "metrics": selected_metrics,
         },
+        "quality_guard": quality_guard,
         "encoder_report": candidate.report,
         "artifacts": {
             key: {
@@ -165,7 +224,7 @@ def main() -> None:
     print(
         f"MFT1+Truth {len(candidate.payload)} bytes; "
         f"Truth baseline {len(candidate.baseline.payload)} bytes; "
-        f"selected {candidate.selected_kind}; {wall_seconds:.3f} s",
+        f"selected {selected_kind}; {wall_seconds:.3f} s",
         flush=True,
     )
     print(f"Wrote {report_path}", flush=True)

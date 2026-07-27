@@ -11,6 +11,27 @@ version.
 
 ### Research
 
+- Added R-131/R-134 exact-sample semantic-boundary candidate sets and immutable
+  periodic Basis lifetimes. A deliberately favorable EBU SQAM sustained-tone
+  fast diagnostic reduced complete bytes by 75.15% against direct Resonith
+  Truth while improving waveform SNR, but regressed log-mel error; it remains
+  research evidence and makes no Opus or general-audio claim. See
+  [the exact-boundary and periodic-MAF report](docs/results/PERIODIC_MAF_AND_EXACT_BOUNDARIES_2026-07-27.md).
+- Completed the R-135 19-item typed-MAF gate. Zero candidates passed both
+  complete-byte and multi-objective quality admission, so all selected
+  artifacts remain exact preceding Resonith fallbacks. The rejected
+  electronic-tune candidate exposed a large rate opportunity and an equally
+  clear spectral-allocation failure. See
+  [the complete R-118 report](docs/results/TYPED_MAF_R118_2026-07-27.md).
+- Closed residual-budget and gain-shape reallocation as fixes for the
+  full-band MAF spectral regression. R-137 found a 63,412-byte eligible
+  ordinary Truth point on EBU electronic tune, while every enabled MAF family
+  failed the spectral guard. This Truth saving is explicitly excluded from
+  MAF claims. See
+  [the frontier and ablation report](docs/results/MAF_TRUTH_FRONTIER_AND_ABLATION_2026-07-27.md).
+- Adopted R-139 content-defined immutable motif memory: exact one-shot Basis
+  reuse first, followed by bounded gain/phase and pitch/time-normalized
+  instances with objective correction and optimized Truth fallback.
 - Added R-130 prospective `MFT1`, the first executable typed MAF lifetime
   stream for stable source filters, counter-addressed stochastic fields,
   phase-continuous impulse or stochastic excitation, bounded transients, and
