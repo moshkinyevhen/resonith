@@ -123,6 +123,7 @@ The first portable decoder subset is documented in
 - [R-120 unified MAF speech fast diagnostic](docs/results/R120_UNIFIED_MAF_SPEECH_FAST_2026-07-27.md)
 - [C++23 migration and exact regression evidence](docs/results/CPP23_TOOLCHAIN_GATE_2026-07-27.md)
 - [Android and iOS Core portability evidence](docs/results/MOBILE_CORE_GATE_2026-07-27.md)
+- [Bounded MAF DSP and stream-integration evidence](docs/results/BOUNDED_MAF_DSP_2026-07-27.md)
 - [Latest bounded-value entropy result](docs/results/BOUNDED_VALUE_ENTROPY_2026-07-27.md)
 - [Corrected PVQ envelope fast gate](docs/results/PVQ_ENVELOPE_FAST_GATE_2026-07-27.md)
 - [Primary sources](docs/REFERENCES.md)
