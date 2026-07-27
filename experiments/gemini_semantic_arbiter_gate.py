@@ -325,10 +325,17 @@ class GeminiFilesClient:
                     "not a transcript, lyrics, names, copyrighted text, codec bytes, "
                     "or final decisions. Regions may overlap only for genuinely "
                     "simultaneous bases. Use truth for unpredictable material. "
+                    "Do not use one full-file region for changing speech, music, or "
+                    "a mixed scene longer than five seconds: place bounded regions "
+                    "at audible acoustic-state changes. One full-file region is "
+                    "acceptable only for a genuinely steady tone, stationary noise, "
+                    "or unchanged ambience. A transient region must be no longer "
+                    "than one second and must tightly surround its attack. "
                     "Request ElevenLabs only for speech timing, diarization, or voice "
                     "isolation; request Azure only for long/domain speech. Otherwise "
-                    "emit no specialist task. Cover each clip's full duration with at "
-                    "least one region and use no more than 32 regions."
+                    "return an empty specialist_tasks array, never a none placeholder. "
+                    "Cover each clip's full duration with at least one region and use "
+                    "no more than 32 regions."
                 ),
             }
         ]

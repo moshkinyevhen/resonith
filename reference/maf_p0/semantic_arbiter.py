@@ -90,6 +90,7 @@ class LocalEvidence:
     """Coarse local evidence used only to audit semantic search proposals."""
 
     duration_seconds: float
+    frame_times: np.ndarray
     energy_change_times: np.ndarray
     onset_times: np.ndarray
     periodic_times: np.ndarray
@@ -372,6 +373,8 @@ def validate_semantic_proposals(
                 raise ProposalValidationError(
                     f"{task_context} none provider/task must match"
                 )
+            if provider == "none":
+                continue
             canonical_tasks.append(
                 {
                     "provider": provider,
@@ -464,6 +467,7 @@ def analyze_proxy_evidence(
     onset_score = energy_delta + centroid_delta / 1000.0
     return LocalEvidence(
         duration_seconds=source.size / sample_rate,
+        frame_times=times,
         energy_change_times=times[energy_delta >= np.percentile(energy_delta, 85.0)],
         onset_times=times[onset_score >= np.percentile(onset_score, 90.0)],
         periodic_times=times[periodicity >= 0.45],
@@ -481,34 +485,56 @@ def audit_proposals(
     total_supported = 0
     total_weak = 0
     total_contradicted = 0
+    total_boundaries = 0
+    nontrivial_clips = 0
     for clip in proposal["clips"]:
         clip_id = clip["clip_id"]
         local = evidence[clip_id]
         family_counts: dict[str, dict[str, int]] = {}
+        if len(clip["regions"]) > 1:
+            nontrivial_clips += 1
+            total_boundaries += len(clip["regions"]) - 1
         for region in clip["regions"]:
             family = region["primary_basis"]
-            midpoint = 0.5 * (
-                float(region["start_seconds"]) + float(region["end_seconds"])
-            )
-            radius = max(0.150, 0.5 * float(region["lifetime_seconds"]))
+            start = float(region["start_seconds"])
+            end = float(region["end_seconds"])
+            duration = end - start
+            frame_mask = (local.frame_times >= start) & (local.frame_times < end)
+            frame_count = int(np.count_nonzero(frame_mask))
             if family in {"coherent", "source_filter", "resonant"}:
                 matching = local.periodic_times
+                required_fraction = 0.25 if family == "source_filter" else 0.35
             elif family == "stochastic":
                 matching = local.stochastic_times
+                required_fraction = 0.35
             elif family == "transient":
                 matching = local.onset_times
+                required_fraction = 0.0
             else:
-                matching = local.energy_change_times
-            if matching.size == 0:
-                status = "contradicted"
-            else:
-                distance = float(np.min(np.abs(matching - midpoint)))
-                if distance <= radius:
+                matching = np.empty(0, dtype=np.float64)
+                required_fraction = 0.0
+            matching_count = int(
+                np.count_nonzero((matching >= start) & (matching < end))
+            )
+            evidence_fraction = matching_count / max(1, frame_count)
+            if family in {"mix", "truth"}:
+                # These are safe fallbacks, not evidence of a cheaper basis.
+                status = "weak"
+            elif family == "transient":
+                if duration <= 1.0 and matching_count > 0:
                     status = "supported"
-                elif distance <= radius * 2.0:
+                elif duration <= 2.0 and matching_count > 0:
                     status = "weak"
                 else:
                     status = "contradicted"
+            elif matching_count == 0:
+                status = "contradicted"
+            elif evidence_fraction >= required_fraction:
+                status = "supported"
+            elif evidence_fraction >= required_fraction * 0.5:
+                status = "weak"
+            else:
+                status = "contradicted"
             counts = family_counts.setdefault(
                 family,
                 {"supported": 0, "weak": 0, "contradicted": 0},
@@ -536,5 +562,7 @@ def audit_proposals(
             "supported": total_supported,
             "weak": total_weak,
             "contradicted": total_contradicted,
+            "proposed_boundaries": total_boundaries,
+            "nontrivial_clip_count": nontrivial_clips,
         },
     }

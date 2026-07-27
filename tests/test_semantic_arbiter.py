@@ -89,6 +89,21 @@ class SemanticArbiterTests(unittest.TestCase):
         proposal = validate_semantic_proposals(_valid_payload(), {"tone": 1.0})
         audit = audit_proposals(proposal, {"tone": evidence_a})
         self.assertGreater(audit["totals"]["supported"], 0)
+        self.assertEqual(audit["totals"]["proposed_boundaries"], 0)
+
+    def test_none_specialist_placeholder_is_canonicalized_away(self) -> None:
+        payload = _valid_payload()
+        payload["clips"][0]["specialist_tasks"] = [
+            {
+                "provider": "none",
+                "task": "none",
+                "start_seconds": 0.0,
+                "end_seconds": 1.0,
+                "confidence": 1.0,
+            }
+        ]
+        result = validate_semantic_proposals(payload, {"tone": 1.0})
+        self.assertEqual(result["clips"][0]["specialist_tasks"], [])
 
 
 if __name__ == "__main__":
