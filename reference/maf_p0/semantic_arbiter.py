@@ -752,11 +752,21 @@ def align_event_boundaries(
     shifts: list[float] = []
     for event in events:
         provider_time = float(event["time_seconds"])
+        event_type = str(event["event_type"])
         center = int(round(provider_time * sample_rate))
         search_start = max(0, center - radius_samples - analysis_size)
         search_end = min(source.size, center + radius_samples + analysis_size)
         excerpt = source[search_start:search_end]
-        if excerpt.size < analysis_size * 2:
+        if event_type == "source_start" and center <= hop_size * 2:
+            aligned_sample = 0
+            support = 1.0
+        elif (
+            event_type == "source_stop"
+            and source.size - center <= hop_size * 2
+        ):
+            aligned_sample = source.size - 1
+            support = 1.0
+        elif excerpt.size < analysis_size * 2:
             aligned_sample = min(max(center, 0), source.size - 1)
             support = 0.0
         else:
@@ -790,7 +800,6 @@ def align_event_boundaries(
             centroid_delta = np.abs(
                 np.diff(centroid, prepend=centroid[0])
             ) / max(1000.0, sample_rate / 8.0)
-            event_type = str(event["event_type"])
             if event_type in {"source_start", "transient"}:
                 score = np.maximum(energy_delta, 0.0) + 12.0 * flux
             elif event_type == "source_stop":

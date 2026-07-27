@@ -1,0 +1,1011 @@
+{
+  "admission": {
+    "bitstream_changed": false,
+    "compression_improvement_claimed": false,
+    "exact_local_rdo_required": true,
+    "quality_improvement_claimed": false,
+    "result": "proposal layer validated; encoder admission pending"
+  },
+  "all_uploaded_files_deleted": true,
+  "credential_recorded": false,
+  "credential_source": "Windows Credential Manager",
+  "deleted_file_count": 19,
+  "event_alignment": {
+    "algorithm": "local original-PCM 20 ms spectral/energy analysis at approximately 1 ms hop",
+    "clips": {
+      "ebu-claves": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 125.12471655328805,
+        "median_absolute_shift_ms": 62.81179138321999,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 1
+      },
+      "ebu-cymbal": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 35.51020408163264,
+        "median_absolute_shift_ms": 18.004535147392282,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 1
+      },
+      "ebu-dense-orchestra": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 116.14512471655303,
+        "median_absolute_shift_ms": 58.32199546485248,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 1
+      },
+      "ebu-dense-pop": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 63.44671201814034,
+        "median_absolute_shift_ms": 31.972789115646133,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 1
+      },
+      "ebu-electronic-tune": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 242.04081632653018,
+        "median_absolute_shift_ms": 121.26984126984105,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 1
+      },
+      "ebu-female-speech-en": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 121.31519274376413,
+        "median_absolute_shift_ms": 80.65759637188206,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 1
+      },
+      "ebu-grand-piano": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 168.0272108843539,
+        "median_absolute_shift_ms": 84.26303854875292,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 1
+      },
+      "ebu-male-speech-en": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 90.00000000000001,
+        "median_absolute_shift_ms": 46.70068027210891,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 1
+      },
+      "ebu-pink-noise": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 1,
+        "maximum_absolute_shift_ms": 0.4988662131519275,
+        "median_absolute_shift_ms": 0.4988662131519275,
+        "search_radius_ms": 250.0,
+        "supported_count": 0,
+        "unsupported_count": 1
+      },
+      "ebu-side-drum": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 202.9478458049887,
+        "median_absolute_shift_ms": 101.72335600907032,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 1
+      },
+      "ebu-soprano": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 240.04535147392315,
+        "median_absolute_shift_ms": 120.27210884353754,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 1
+      },
+      "ebu-sustained-sine": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 1,
+        "maximum_absolute_shift_ms": 0.4988662131519275,
+        "median_absolute_shift_ms": 0.4988662131519275,
+        "search_radius_ms": 250.0,
+        "supported_count": 0,
+        "unsupported_count": 1
+      },
+      "ebu-vibrato-gong": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 238.866213151927,
+        "median_absolute_shift_ms": 119.68253968253947,
+        "search_radius_ms": 250.0,
+        "supported_count": 0,
+        "unsupported_count": 2
+      },
+      "ebu-violin": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 213.922902494331,
+        "median_absolute_shift_ms": 107.21088435374146,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 1
+      },
+      "emotional-piano": {
+        "analysis_hop_ms": 0.9977324263038548,
+        "event_count": 2,
+        "maximum_absolute_shift_ms": 249.0249433106575,
+        "median_absolute_shift_ms": 154.5804988662131,
+        "search_radius_ms": 250.0,
+        "supported_count": 2,
+        "unsupported_count": 0
+      },
+      "mozart": {
+        "analysis_hop_ms": 1.0,
+        "event_count": 4,
+        "maximum_absolute_shift_ms": 197.00000000000273,
+        "median_absolute_shift_ms": 110.39583333333185,
+        "search_radius_ms": 250.0,
+        "supported_count": 4,
+        "unsupported_count": 0
+      },
+      "speech": {
+        "analysis_hop_ms": 1.0,
+        "event_count": 1,
+        "maximum_absolute_shift_ms": 212.00000000000003,
+        "median_absolute_shift_ms": 212.00000000000003,
+        "search_radius_ms": 250.0,
+        "supported_count": 1,
+        "unsupported_count": 0
+      },
+      "xiph-elephants-dream-film-mix": {
+        "analysis_hop_ms": 1.0,
+        "event_count": 3,
+        "maximum_absolute_shift_ms": 185.14583333333334,
+        "median_absolute_shift_ms": 119.45833333333333,
+        "search_radius_ms": 250.0,
+        "supported_count": 3,
+        "unsupported_count": 0
+      },
+      "xiph-sintel-film-mix": {
+        "analysis_hop_ms": 1.0,
+        "event_count": 3,
+        "maximum_absolute_shift_ms": 200.60416666666646,
+        "median_absolute_shift_ms": 119.27083333333333,
+        "search_radius_ms": 250.0,
+        "supported_count": 3,
+        "unsupported_count": 0
+      }
+    },
+    "exact_rdo_neighbor_search_required": true,
+    "provider_timestamp_is_normative": false
+  },
+  "interaction_id_present": true,
+  "model": "models/gemini-3.6-flash",
+  "proposal_audit": {
+    "clips": {
+      "ebu-claves": {
+        "acoustic_styles": [
+          "attack",
+          "rhythmic"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 125.12471655328805,
+          "median_absolute_shift_ms": 62.81179138321999,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 1
+        },
+        "event_count": 2,
+        "event_types": [
+          "rhythm_change",
+          "transient"
+        ],
+        "family_evidence": {
+          "resonant": {
+            "contradicted": 0,
+            "supported": 1,
+            "weak": 0
+          },
+          "transient": {
+            "contradicted": 0,
+            "supported": 0,
+            "weak": 1
+          }
+        },
+        "primary_class": "percussion",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "ebu-cymbal": {
+        "acoustic_styles": [
+          "attack",
+          "decay"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 35.51020408163264,
+          "median_absolute_shift_ms": 18.004535147392282,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 1
+        },
+        "event_count": 2,
+        "event_types": [
+          "energy_change",
+          "transient"
+        ],
+        "family_evidence": {
+          "stochastic": {
+            "contradicted": 0,
+            "supported": 1,
+            "weak": 0
+          },
+          "transient": {
+            "contradicted": 0,
+            "supported": 1,
+            "weak": 0
+          }
+        },
+        "primary_class": "percussion",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "ebu-dense-orchestra": {
+        "acoustic_styles": [
+          "dense_mix",
+          "polyphonic"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 116.14512471655303,
+          "median_absolute_shift_ms": 58.32199546485248,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 1
+        },
+        "event_count": 2,
+        "event_types": [
+          "source_start",
+          "timbre_change"
+        ],
+        "family_evidence": {
+          "coherent": {
+            "contradicted": 0,
+            "supported": 1,
+            "weak": 0
+          },
+          "mix": {
+            "contradicted": 0,
+            "supported": 0,
+            "weak": 1
+          }
+        },
+        "primary_class": "music",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "ebu-dense-pop": {
+        "acoustic_styles": [
+          "dense_mix",
+          "steady_tonal"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 63.44671201814034,
+          "median_absolute_shift_ms": 31.972789115646133,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 1
+        },
+        "event_count": 2,
+        "event_types": [
+          "section_change",
+          "source_start"
+        ],
+        "family_evidence": {
+          "coherent": {
+            "contradicted": 0,
+            "supported": 1,
+            "weak": 0
+          },
+          "mix": {
+            "contradicted": 0,
+            "supported": 0,
+            "weak": 1
+          }
+        },
+        "primary_class": "music",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "ebu-electronic-tune": {
+        "acoustic_styles": [
+          "rhythmic"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 242.04081632653018,
+          "median_absolute_shift_ms": 121.26984126984105,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 1
+        },
+        "event_count": 2,
+        "event_types": [
+          "rhythm_change",
+          "source_start"
+        ],
+        "family_evidence": {
+          "coherent": {
+            "contradicted": 0,
+            "supported": 2,
+            "weak": 0
+          }
+        },
+        "primary_class": "synthetic",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "ebu-female-speech-en": {
+        "acoustic_styles": [
+          "voiced"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 121.31519274376413,
+          "median_absolute_shift_ms": 80.65759637188206,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 1
+        },
+        "event_count": 2,
+        "event_types": [
+          "speech_state_change"
+        ],
+        "family_evidence": {
+          "source_filter": {
+            "contradicted": 0,
+            "supported": 2,
+            "weak": 0
+          }
+        },
+        "primary_class": "speech",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 1
+      },
+      "ebu-grand-piano": {
+        "acoustic_styles": [
+          "polyphonic"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 168.0272108843539,
+          "median_absolute_shift_ms": 84.26303854875292,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 1
+        },
+        "event_count": 2,
+        "event_types": [
+          "pitch_regime_change",
+          "source_start"
+        ],
+        "family_evidence": {
+          "resonant": {
+            "contradicted": 0,
+            "supported": 2,
+            "weak": 0
+          }
+        },
+        "primary_class": "music",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "ebu-male-speech-en": {
+        "acoustic_styles": [
+          "voiced"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 90.00000000000001,
+          "median_absolute_shift_ms": 46.70068027210891,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 1
+        },
+        "event_count": 2,
+        "event_types": [
+          "speech_state_change"
+        ],
+        "family_evidence": {
+          "source_filter": {
+            "contradicted": 0,
+            "supported": 2,
+            "weak": 0
+          }
+        },
+        "primary_class": "speech",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 1
+      },
+      "ebu-pink-noise": {
+        "acoustic_styles": [
+          "stationary_noise"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 1,
+          "maximum_absolute_shift_ms": 0.4988662131519275,
+          "median_absolute_shift_ms": 0.4988662131519275,
+          "search_radius_ms": 250.0,
+          "supported_count": 0,
+          "unsupported_count": 1
+        },
+        "event_count": 1,
+        "event_types": [
+          "source_start"
+        ],
+        "family_evidence": {
+          "stochastic": {
+            "contradicted": 0,
+            "supported": 1,
+            "weak": 0
+          }
+        },
+        "primary_class": "noise",
+        "region_count": 1,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "ebu-side-drum": {
+        "acoustic_styles": [
+          "attack",
+          "rhythmic"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 202.9478458049887,
+          "median_absolute_shift_ms": 101.72335600907032,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 1
+        },
+        "event_count": 2,
+        "event_types": [
+          "rhythm_change",
+          "transient"
+        ],
+        "family_evidence": {
+          "stochastic": {
+            "contradicted": 0,
+            "supported": 0,
+            "weak": 1
+          },
+          "transient": {
+            "contradicted": 0,
+            "supported": 1,
+            "weak": 0
+          }
+        },
+        "primary_class": "percussion",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "ebu-soprano": {
+        "acoustic_styles": [
+          "voiced"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 240.04535147392315,
+          "median_absolute_shift_ms": 120.27210884353754,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 1
+        },
+        "event_count": 2,
+        "event_types": [
+          "pitch_regime_change",
+          "source_start"
+        ],
+        "family_evidence": {
+          "source_filter": {
+            "contradicted": 0,
+            "supported": 2,
+            "weak": 0
+          }
+        },
+        "primary_class": "music",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "ebu-sustained-sine": {
+        "acoustic_styles": [
+          "steady_tonal"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 1,
+          "maximum_absolute_shift_ms": 0.4988662131519275,
+          "median_absolute_shift_ms": 0.4988662131519275,
+          "search_radius_ms": 250.0,
+          "supported_count": 0,
+          "unsupported_count": 1
+        },
+        "event_count": 1,
+        "event_types": [
+          "source_start"
+        ],
+        "family_evidence": {
+          "coherent": {
+            "contradicted": 0,
+            "supported": 1,
+            "weak": 0
+          }
+        },
+        "primary_class": "tonal",
+        "region_count": 1,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "ebu-vibrato-gong": {
+        "acoustic_styles": [
+          "steady_tonal"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 238.866213151927,
+          "median_absolute_shift_ms": 119.68253968253947,
+          "search_radius_ms": 250.0,
+          "supported_count": 0,
+          "unsupported_count": 2
+        },
+        "event_count": 2,
+        "event_types": [
+          "source_start",
+          "timbre_change"
+        ],
+        "family_evidence": {
+          "resonant": {
+            "contradicted": 0,
+            "supported": 2,
+            "weak": 0
+          }
+        },
+        "primary_class": "synthetic",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "ebu-violin": {
+        "acoustic_styles": [
+          "steady_tonal"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 213.922902494331,
+          "median_absolute_shift_ms": 107.21088435374146,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 1
+        },
+        "event_count": 2,
+        "event_types": [
+          "pitch_regime_change",
+          "source_start"
+        ],
+        "family_evidence": {
+          "coherent": {
+            "contradicted": 0,
+            "supported": 2,
+            "weak": 0
+          }
+        },
+        "primary_class": "music",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "emotional-piano": {
+        "acoustic_styles": [
+          "polyphonic"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 0.9977324263038548,
+          "event_count": 2,
+          "maximum_absolute_shift_ms": 249.0249433106575,
+          "median_absolute_shift_ms": 154.5804988662131,
+          "search_radius_ms": 250.0,
+          "supported_count": 2,
+          "unsupported_count": 0
+        },
+        "event_count": 2,
+        "event_types": [
+          "section_change",
+          "source_start"
+        ],
+        "family_evidence": {
+          "resonant": {
+            "contradicted": 0,
+            "supported": 2,
+            "weak": 0
+          }
+        },
+        "primary_class": "music",
+        "region_count": 2,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "mozart": {
+        "acoustic_styles": [
+          "dense_mix"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 1.0,
+          "event_count": 4,
+          "maximum_absolute_shift_ms": 197.00000000000273,
+          "median_absolute_shift_ms": 110.39583333333185,
+          "search_radius_ms": 250.0,
+          "supported_count": 4,
+          "unsupported_count": 0
+        },
+        "event_count": 4,
+        "event_types": [
+          "section_change",
+          "source_start"
+        ],
+        "family_evidence": {
+          "mix": {
+            "contradicted": 0,
+            "supported": 0,
+            "weak": 4
+          }
+        },
+        "primary_class": "music",
+        "region_count": 4,
+        "source_count": 1,
+        "specialist_task_count": 0
+      },
+      "speech": {
+        "acoustic_styles": [
+          "voiced"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 1.0,
+          "event_count": 1,
+          "maximum_absolute_shift_ms": 212.00000000000003,
+          "median_absolute_shift_ms": 212.00000000000003,
+          "search_radius_ms": 250.0,
+          "supported_count": 1,
+          "unsupported_count": 0
+        },
+        "event_count": 1,
+        "event_types": [
+          "speech_state_change"
+        ],
+        "family_evidence": {
+          "source_filter": {
+            "contradicted": 0,
+            "supported": 1,
+            "weak": 0
+          }
+        },
+        "primary_class": "speech",
+        "region_count": 1,
+        "source_count": 1,
+        "specialist_task_count": 1
+      },
+      "xiph-elephants-dream-film-mix": {
+        "acoustic_styles": [
+          "ambience",
+          "dense_mix",
+          "voiced"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 1.0,
+          "event_count": 3,
+          "maximum_absolute_shift_ms": 185.14583333333334,
+          "median_absolute_shift_ms": 119.45833333333333,
+          "search_radius_ms": 250.0,
+          "supported_count": 3,
+          "unsupported_count": 0
+        },
+        "event_count": 3,
+        "event_types": [
+          "source_start",
+          "source_stop"
+        ],
+        "family_evidence": {
+          "mix": {
+            "contradicted": 0,
+            "supported": 0,
+            "weak": 2
+          },
+          "source_filter": {
+            "contradicted": 0,
+            "supported": 1,
+            "weak": 0
+          }
+        },
+        "primary_class": "mixed",
+        "region_count": 3,
+        "source_count": 2,
+        "specialist_task_count": 1
+      },
+      "xiph-sintel-film-mix": {
+        "acoustic_styles": [
+          "dense_mix",
+          "voiced"
+        ],
+        "alignment": {
+          "analysis_hop_ms": 1.0,
+          "event_count": 3,
+          "maximum_absolute_shift_ms": 200.60416666666646,
+          "median_absolute_shift_ms": 119.27083333333333,
+          "search_radius_ms": 250.0,
+          "supported_count": 3,
+          "unsupported_count": 0
+        },
+        "event_count": 3,
+        "event_types": [
+          "source_start",
+          "source_stop"
+        ],
+        "family_evidence": {
+          "mix": {
+            "contradicted": 0,
+            "supported": 0,
+            "weak": 1
+          },
+          "source_filter": {
+            "contradicted": 0,
+            "supported": 2,
+            "weak": 0
+          }
+        },
+        "primary_class": "mixed",
+        "region_count": 3,
+        "source_count": 3,
+        "specialist_task_count": 1
+      }
+    },
+    "totals": {
+      "contradicted": 0,
+      "nontrivial_clip_count": 16,
+      "proposed_boundaries": 20,
+      "proposed_events": 39,
+      "supported": 28,
+      "weak": 11
+    }
+  },
+  "provider": "Gemini",
+  "proxy_policy": {
+    "channels": 1,
+    "full_duration": true,
+    "sample_rate": 16000,
+    "source_audio_recorded": false,
+    "transcript_recorded": false
+  },
+  "schema": "resonith-r128-gemini-semantic-arbiter-gate-1",
+  "source_revision": "574c0cdff2e7c722a0732cddf804d666ac7d108e",
+  "sources": {
+    "ebu-claves": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "55e7ceadda1ffc1944db47a1b6a6ca14806b05d395907bbc58698103bd782faa",
+      "source_bytes": 2116844,
+      "source_channels": 2,
+      "source_sample_rate": 44100,
+      "source_sha256": "9069b02a7bf39a67c36f634aef759d79ad63241b8b709d08b12f8a6a043959df"
+    },
+    "ebu-cymbal": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "0e61c1b7e7d59f656e8d3be90f3f20bcca7ca49340e20bd3e5430de48314d1de",
+      "source_bytes": 2116844,
+      "source_channels": 2,
+      "source_sample_rate": 44100,
+      "source_sha256": "4e5fed73eea73f72b9b227591a9a586dbd664d762497aa6a9457920571447b42"
+    },
+    "ebu-dense-orchestra": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "6beaab1e4e5e5d1265af2ab0b10d031e03cc22c215a93e254212f468ac162c1d",
+      "source_bytes": 2116844,
+      "source_channels": 2,
+      "source_sample_rate": 44100,
+      "source_sha256": "0b4a52d215937c541b3443fbbda3e45dd75909e3086d31d7c14dc0ca0885f134"
+    },
+    "ebu-dense-pop": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "fab136ad01063c40c5397b43c299c2157e186b9db681926c60536b63e17c5692",
+      "source_bytes": 2116844,
+      "source_channels": 2,
+      "source_sample_rate": 44100,
+      "source_sha256": "268d05e02aa746ffad10a7d4f1b9567334fcc9c784d42b56819ffafa2437436e"
+    },
+    "ebu-electronic-tune": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "69aa550f04703eae3cf5e03ddc56268c51897c13590e3def792e49c92b6d8dac",
+      "source_bytes": 1058444,
+      "source_channels": 1,
+      "source_sample_rate": 44100,
+      "source_sha256": "8e863d085c3cfec9d8b4998e70db5de5dc0df414c1bb4c42547cf64e7f8db01e"
+    },
+    "ebu-female-speech-en": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "94644c799e9c756b4500201420d2649493dfa0d1a1e0e28d509b2967a8b3a252",
+      "source_bytes": 1058444,
+      "source_channels": 1,
+      "source_sample_rate": 44100,
+      "source_sha256": "f88f9321b302f2bab62cf5aa2dab62721b105efc36b37921372651625c4c0a0e"
+    },
+    "ebu-grand-piano": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "2f4e6ad234ed140a7f0d6db37846697558f1b33989eae3ccfa166ad2188b6d2a",
+      "source_bytes": 2116844,
+      "source_channels": 2,
+      "source_sample_rate": 44100,
+      "source_sha256": "7141951e68eac8533d3a78065cc3036cdd2f13025d6c0bcb98b79d804d31629c"
+    },
+    "ebu-male-speech-en": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "06015b01e813430f0475b9cef23ee98d0d6431c7c7e9fd0abda18aacb2fe4ce2",
+      "source_bytes": 1058444,
+      "source_channels": 1,
+      "source_sample_rate": 44100,
+      "source_sha256": "0b12c8ee0f3def4a525fbeb2f9362972285d114a30d959a6da2a53be6b09ffea"
+    },
+    "ebu-pink-noise": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "605b03d19e6185bcf5ff32c6211eef0159ea047be8e958ca56af5607c4a8ece9",
+      "source_bytes": 2116844,
+      "source_channels": 2,
+      "source_sample_rate": 44100,
+      "source_sha256": "b3198d029a6ffd9ec43e9f5a863b8d8603a940ade4bb9ef90c8e184f643c295a"
+    },
+    "ebu-side-drum": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "c914b2b7bd6fadf3fa5fe5d23d252c1e20b6623b8e335cc4996596e955ef55d4",
+      "source_bytes": 2116844,
+      "source_channels": 2,
+      "source_sample_rate": 44100,
+      "source_sha256": "47ef7efbb69684d60f68191182b482c083bb7e118903f761764817b75e4b0a31"
+    },
+    "ebu-soprano": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "f5c781bbd0e38028478d1dc47ef5421476f419e6598a6dc6e179e79a68a49fc0",
+      "source_bytes": 2116844,
+      "source_channels": 2,
+      "source_sample_rate": 44100,
+      "source_sha256": "b56f2d5b1b4f5a7061fe3c55e86ddd924c865fc3beeceeee5da1e0044e8cc0e2"
+    },
+    "ebu-sustained-sine": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "d0e6afc38a27354d5032f3dcff3dbf5d2377b013e066a641dc5c8564e65fa3d9",
+      "source_bytes": 1058444,
+      "source_channels": 1,
+      "source_sample_rate": 44100,
+      "source_sha256": "78faec4d9b92b72cba0ae1d13ec16bfc520c6c31e1b6df5f4e97e89515557e57"
+    },
+    "ebu-vibrato-gong": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "a426d9b25f1f1ce3014a84b21728ff50f0c55310d461410dc329347ac595e364",
+      "source_bytes": 1058444,
+      "source_channels": 1,
+      "source_sample_rate": 44100,
+      "source_sha256": "314210d30b03d67e4f923f1584d1bb30f548e39abecf717a63ce837e31b54187"
+    },
+    "ebu-violin": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "49b09e79fcf91891cb332fe4b50c70e3126303dfefee9ceb6cfc13bc9f1627d4",
+      "source_bytes": 2116844,
+      "source_channels": 2,
+      "source_sample_rate": 44100,
+      "source_sha256": "e0aadf5f82ab9c6ba9517d59e4266c9ad382e56de880096a9d2e5154f1135370"
+    },
+    "emotional-piano": {
+      "duration_seconds": 8.0,
+      "proxy_bytes": 256044,
+      "proxy_sha256": "04838383eabf9e74f66dfdae249fda451c33ce2eee613e515e87123269f93d4b",
+      "source_bytes": 1411244,
+      "source_channels": 2,
+      "source_sample_rate": 44100,
+      "source_sha256": "37d28f15c8b3ecb13c2c161049c39d5de18f0c1b7e5f4a832684dd8059afdab5"
+    },
+    "mozart": {
+      "duration_seconds": 400.7726666666667,
+      "proxy_bytes": 12824770,
+      "proxy_sha256": "d221ca774811cdc1db6e395c191e17199ae93c9412976df73c74900f046ae273",
+      "source_bytes": 76948396,
+      "source_channels": 2,
+      "source_sample_rate": 48000,
+      "source_sha256": "f9bcc829c8c61e850c8a15d7d25ec600a904b2041ed3bb4d9e13131ea30a5a6f"
+    },
+    "speech": {
+      "duration_seconds": 5.855,
+      "proxy_bytes": 187404,
+      "proxy_sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46",
+      "source_bytes": 187404,
+      "source_channels": 1,
+      "source_sample_rate": 16000,
+      "source_sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46"
+    },
+    "xiph-elephants-dream-film-mix": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "e3171480b0ab0599130b16fddf921b948ed60f8b6870834cc070f04966305079",
+      "source_bytes": 2304044,
+      "source_channels": 2,
+      "source_sample_rate": 48000,
+      "source_sha256": "d7992ab9edb34ba7fc5d750eb9cf76a843de7500110aa62b2d87b6f74de55af3"
+    },
+    "xiph-sintel-film-mix": {
+      "duration_seconds": 12.0,
+      "proxy_bytes": 384044,
+      "proxy_sha256": "10270e1497d2cee3677557f2242d94f7a34ab302c5d09fc1184376c17e3f2d8d",
+      "source_bytes": 2304044,
+      "source_channels": 2,
+      "source_sample_rate": 48000,
+      "source_sha256": "d4917c7b38fb9c409e29837d5907f5d932f75129c9e54ba2df6200fdb23416ca"
+    }
+  },
+  "status": "live validated diagnostic; no bitstream or compression change",
+  "timing": {
+    "proxy_and_local_dsp_wall_seconds": 5.630894100002479,
+    "total_wall_seconds": 116.05654859999777,
+    "upload_analysis_delete_wall_seconds": 108.40402409998933
+  },
+  "uploaded_file_count": 19,
+  "usage": {
+    "total_cached_tokens": 0,
+    "total_input_tokens": 15931,
+    "total_output_tokens": 10023,
+    "total_thought_tokens": 1484,
+    "total_tokens": 27438,
+    "total_tool_use_tokens": 0
+  }
+}

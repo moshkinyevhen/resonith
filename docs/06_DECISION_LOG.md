@@ -4325,3 +4325,23 @@ new oscillator opcode.
     lyrics, copyrighted descriptions, and provider prose remain unrecorded;
   - a one-label response is reported as classification-only and rejected from
     encoder admission even if its label is correct.
+- First complete live result:
+  - revision `574c0cdff2e7c722a0732cddf804d666ac7d108e` analyzed the
+    complete R-118 union in 116.057 seconds, uploaded 19 bounded proxies, and
+    deleted all 19 provider objects;
+  - the strict response contained 39 ordered change events and 20 stable-region
+    boundaries across 19 items. Sixteen items received more than one region;
+    complete Mozart received four regions/events rather than one whole-file
+    label;
+  - the independent coarse family audit reported 28 supported, 11 weak, and
+    zero contradicted region hypotheses. Original-PCM one-millisecond
+    alignment supported 24 of 39 event times; 15 require local replacement or
+    removal. Provider-to-local shifts reached 249.025 ms, directly confirming
+    that provider timestamps cannot be serialized;
+  - the result is accepted as a useful semantic proposal diagnostic but
+    rejected from encoder admission: event density remains too low for speech
+    and long-form music, no search-work reduction has been measured, and no
+    exact RDO candidate changed bytes or reconstruction;
+  - the next gate uses per-clip and long-form chunk analysis plus dense local
+    change proposals. It retains the exact non-AI search and stream as the
+    complete fallback.

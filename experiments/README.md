@@ -37,6 +37,8 @@ reproducible command and independent decode.
 - `gemini_semantic_arbiter_gate.py` — R-128 secret-safe Gemini Files API
   adapter, strict proposal validation, upload deletion, and independent local
   DSP audit across the complete R-118 union.
+- `results/gemini_semantic_arbiter_r118_2026-07-27.json` — first complete live
+  R-128/R-129 semantic change-ledger and original-PCM alignment evidence.
 - `prepare_extended_audio_corpus.py` — verified acquisition and deterministic
   lossless-FLAC-to-PCM16 preparation for the R-111 matrix.
 - `results/extended_audio_corpus_prepared_2026-07-27.json` — exact hashes and
