@@ -138,6 +138,59 @@ class _LappedAnalysisRequirements(ctypes.Structure):
     ]
 
 
+class _MafTypedRequirements(ctypes.Structure):
+    _fields_ = [
+        ("sample_rate", ctypes.c_uint32),
+        ("total_frames", ctypes.c_uint32),
+        ("render_quantum", ctypes.c_uint32),
+        ("filter_coefficient_elements", ctypes.c_uint32),
+        ("filter_history_elements", ctypes.c_uint32),
+        ("planar_elements", ctypes.c_uint32),
+        ("working_elements", ctypes.c_uint32),
+        ("mix_matrix_elements", ctypes.c_uint32),
+        ("basis_elements", ctypes.c_uint32),
+        ("declared_operations_per_frame", ctypes.c_uint32),
+        ("output_channels", ctypes.c_uint16),
+        ("emitter_count", ctypes.c_uint16),
+        ("filter_count", ctypes.c_uint16),
+        ("stochastic_count", ctypes.c_uint16),
+        ("source_filter_count", ctypes.c_uint16),
+        ("transient_count", ctypes.c_uint16),
+        ("mix_count", ctypes.c_uint16),
+        ("basis_count", ctypes.c_uint16),
+    ]
+
+
+class _MafTypedWorkspace(ctypes.Structure):
+    _fields_ = [
+        ("filter_coefficients_q15", ctypes.POINTER(ctypes.c_int32)),
+        ("filter_coefficient_capacity", ctypes.c_size_t),
+        ("bases", ctypes.POINTER(ctypes.c_int16)),
+        ("basis_capacity", ctypes.c_size_t),
+        ("filter_histories", ctypes.POINTER(ctypes.c_int16)),
+        ("filter_history_capacity", ctypes.c_size_t),
+        ("planar_sources", ctypes.POINTER(ctypes.c_int16)),
+        ("planar_capacity", ctypes.c_size_t),
+        ("excitation", ctypes.POINTER(ctypes.c_int16)),
+        ("excitation_capacity", ctypes.c_size_t),
+        ("filtered", ctypes.POINTER(ctypes.c_int16)),
+        ("filtered_capacity", ctypes.c_size_t),
+        ("mix_matrix_q15", ctypes.POINTER(ctypes.c_int16)),
+        ("mix_matrix_capacity", ctypes.c_size_t),
+    ]
+
+
+class _MafTypedSession(ctypes.Structure):
+    _fields_ = [
+        ("stream_data", ctypes.POINTER(ctypes.c_uint8)),
+        ("stream_size", ctypes.c_size_t),
+        ("stream_seed", ctypes.c_uint64),
+        ("cursor", ctypes.c_uint32),
+        ("requirements", _MafTypedRequirements),
+        ("workspace", _MafTypedWorkspace),
+    ]
+
+
 class _LappedFiniteRequirements(ctypes.Structure):
     _fields_ = [
         ("transform_frame_count", ctypes.c_uint32),
@@ -501,6 +554,17 @@ class NativeLappedPacketDecodeResult:
     workspace_bytes: int
 
 
+@dataclass(frozen=True)
+class NativeMafTypedDecodeResult:
+    """Native-decoded prospective MFT1 PCM and declared resources."""
+
+    samples: np.ndarray
+    sample_rate: int
+    render_quantum: int
+    emitter_count: int
+    workspace_bytes: int
+
+
 class NativeMain0Decoder:
     """Allocation-explicit host wrapper around `resonith_main0_decode`."""
 
@@ -746,6 +810,27 @@ class NativeMain0Decoder:
             ctypes.POINTER(ctypes.c_uint32),
         ]
         self._library.resonith_lapped_int16_entropy_encode.restype = ctypes.c_int
+        self._library.resonith_maf_typed_inspect.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(_MafTypedRequirements),
+        ]
+        self._library.resonith_maf_typed_inspect.restype = ctypes.c_int
+        self._library.resonith_maf_typed_open.argtypes = [
+            byte_pointer,
+            ctypes.c_size_t,
+            ctypes.POINTER(_MafTypedWorkspace),
+            ctypes.POINTER(_MafTypedSession),
+        ]
+        self._library.resonith_maf_typed_open.restype = ctypes.c_int
+        self._library.resonith_maf_typed_render.argtypes = [
+            ctypes.POINTER(_MafTypedSession),
+            ctypes.c_uint32,
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_uint32),
+        ]
+        self._library.resonith_maf_typed_render.restype = ctypes.c_int
         self._library.resonith_lapped_packet_open.argtypes = [
             byte_pointer,
             ctypes.c_size_t,
@@ -930,6 +1015,122 @@ class NativeMain0Decoder:
             int(native.coefficient_elements),
             int(native.overlap_elements),
             int(native.output_elements),
+            workspace_bytes,
+        )
+
+    def decode_maf_typed(
+        self,
+        payload: bytes,
+        *,
+        callback_frames: int | None = None,
+    ) -> NativeMafTypedDecodeResult:
+        """Decode prospective MFT1 through its allocation-free pull session."""
+
+        source = self._input_buffer(payload)
+        requirements = _MafTypedRequirements()
+        self._check(
+            self._library.resonith_maf_typed_inspect(
+                source,
+                len(payload),
+                ctypes.byref(requirements),
+            )
+        )
+        quantum = int(requirements.render_quantum)
+        requested = quantum if callback_frames is None else int(callback_frames)
+        if not 1 <= requested <= quantum:
+            raise ValueError("MFT1 callback size exceeds its render quantum")
+        if int(requirements.working_elements) != 2 * quantum:
+            raise RuntimeError("MFT1 reported a non-canonical working layout")
+
+        coefficient_count = int(requirements.filter_coefficient_elements)
+        basis_count = int(requirements.basis_elements)
+        history_count = int(requirements.filter_history_elements)
+        planar_count = int(requirements.planar_elements)
+        matrix_count = int(requirements.mix_matrix_elements)
+        workspace_bytes = (
+            4 * coefficient_count
+            + 2 * basis_count
+            + 2 * history_count
+            + 2 * planar_count
+            + 4 * quantum
+            + 2 * matrix_count
+        )
+        if workspace_bytes > self._max_workspace_bytes:
+            raise MemoryError("native MFT1 workspace exceeds the host ceiling")
+
+        coefficients = np.empty(max(1, coefficient_count), dtype=np.int32)
+        bases = np.empty(max(1, basis_count), dtype=np.int16)
+        histories = np.empty(max(1, history_count), dtype=np.int16)
+        planar = np.empty(max(1, planar_count), dtype=np.int16)
+        excitation = np.empty(quantum, dtype=np.int16)
+        filtered = np.empty(quantum, dtype=np.int16)
+        matrix = np.empty(max(1, matrix_count), dtype=np.int16)
+        workspace = _MafTypedWorkspace(
+            coefficients.ctypes.data_as(ctypes.POINTER(ctypes.c_int32)),
+            coefficient_count,
+            bases.ctypes.data_as(ctypes.POINTER(ctypes.c_int16)),
+            basis_count,
+            histories.ctypes.data_as(ctypes.POINTER(ctypes.c_int16)),
+            history_count,
+            planar.ctypes.data_as(ctypes.POINTER(ctypes.c_int16)),
+            planar_count,
+            excitation.ctypes.data_as(ctypes.POINTER(ctypes.c_int16)),
+            excitation.size,
+            filtered.ctypes.data_as(ctypes.POINTER(ctypes.c_int16)),
+            filtered.size,
+            matrix.ctypes.data_as(ctypes.POINTER(ctypes.c_int16)),
+            matrix_count,
+        )
+        session = _MafTypedSession()
+        self._check(
+            self._library.resonith_maf_typed_open(
+                source,
+                len(payload),
+                ctypes.byref(workspace),
+                ctypes.byref(session),
+            )
+        )
+
+        total_frames = int(requirements.total_frames)
+        channels = int(requirements.output_channels)
+        output = np.empty((total_frames, channels), dtype=np.int16)
+        cursor = 0
+        while cursor < total_frames:
+            block_frames = min(requested, total_frames - cursor)
+            written = ctypes.c_uint32()
+            target = output[cursor:].ctypes.data_as(
+                ctypes.POINTER(ctypes.c_int16)
+            )
+            self._check(
+                self._library.resonith_maf_typed_render(
+                    ctypes.byref(session),
+                    block_frames,
+                    target,
+                    output[cursor:].size,
+                    ctypes.byref(written),
+                )
+            )
+            if int(written.value) != block_frames:
+                raise RuntimeError("native MFT1 session returned partial PCM")
+            cursor += block_frames
+        final_written = ctypes.c_uint32(99)
+        self._check(
+            self._library.resonith_maf_typed_render(
+                ctypes.byref(session),
+                1,
+                output.ctypes.data_as(ctypes.POINTER(ctypes.c_int16)),
+                output.size,
+                ctypes.byref(final_written),
+            )
+        )
+        if final_written.value != 0 or int(session.cursor) != total_frames:
+            raise RuntimeError("native MFT1 session has a non-canonical end")
+        output.flags.writeable = False
+        return NativeMafTypedDecodeResult(
+            output,
+            int(requirements.sample_rate),
+            quantum,
+            int(requirements.emitter_count),
             workspace_bytes,
         )
 

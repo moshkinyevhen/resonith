@@ -1306,12 +1306,21 @@ sample-domain envelope or onset refinement after coarse time-frequency
 localization. A boundary is serialized only when complete decoder-in-loop RDO
 repays its record, reset, checkpoint, and residual consequences.
 
+Local refinement SHALL retain a bounded set of independently strong anchors
+rather than one winning analysis-frame center. Around every retained anchor,
+the encoder SHALL be capable of evaluating integer source-sample positions;
+AI confidence and timestamp precision MAY order this work but MUST NOT select
+the admitted boundary. Encoder profiles SHALL bound the remote search radius,
+local anchor count, exact samples per anchor, and full-RDO finalist count.
+These candidate-search limits are encoder requirements and add no decoder
+syntax or resource demand.
+
 ### 14.5 Prospective typed MAF lifetime stream
 
 `MFT1` schema 1 is the prospective allocation-free executable syntax for the
-source-filter, stochastic, transient, and mix portions of the MAF ISA. It is
-not yet a frozen Main bitstream requirement. All integers are little-endian.
-Every lifetime is half-open in absolute PCM sample frames.
+periodic-Basis, source-filter, stochastic, transient, and mix portions of the
+MAF ISA. It is not yet a frozen Main bitstream requirement. All integers are
+little-endian. Every lifetime is half-open in absolute PCM sample frames.
 
 The fixed 64-byte header is:
 
@@ -1350,16 +1359,24 @@ Records are ordered by type and use consecutive identifiers from zero:
 2. `STOCHASTIC`: field identifier, direct emitter identifier or `0xffff`,
    start, end, signed Q1.15 gain, and reserved zero. `0xffff` creates a field
    used only as source-filter excitation.
-3. `SOURCE_FILTER`: lifetime identifier, emitter, filter, excitation family,
-   flags, field reference or `0xffff`, reserved zero, start, end, excitation
-   gain, phase origin, and phase increment. Schema 1 permits exactly one of a
-   phase-continuous impulse excitation or a referenced counter-addressed
-   stochastic field.
+3. `SOURCE_FILTER`: lifetime identifier, emitter, filter or `0xffff`,
+   excitation family, flags, excitation reference or `0xffff`, reserved zero,
+   start, end, excitation gain, phase origin, and phase increment. Impulse
+   excitation uses the gain as its signed PCM16 amplitude. Stochastic
+   excitation combines it with the referenced field gain using normative
+   signed Q1.15 rounding. Periodic-Basis excitation uses `0xffff` as its
+   filter, references one immutable Basis, and applies the signed Q1.15 gain
+   after canonical absolute-phase Basis rendering. Schema 1 permits exactly
+   one excitation family per lifetime.
 4. `TRANSIENT`: identifier, emitter, onset, bounded sample count, reserved
    zero, signed Q1.15 gain, and the immutable PCM16 transient shape.
 5. `MIX`: identifier, source count, start, end, output channels, reserved
    zero, canonical emitter identifiers, then an output-major signed Q1.15
    matrix. Schema 1 lists every declared emitter in canonical order.
+6. `BASIS`: identifier, unsigned PCM16 sample count, then the immutable mono
+   periodic PCM16 table. Basis identifiers are consecutive from zero. The
+   Basis count is the total record count minus all five explicit header
+   counts, is bounded by Main, and is reported by inspection.
 
 Source-filter lifetimes on one emitter SHALL NOT overlap. A directly rendered
 stochastic emitter and a source-filter emitter SHALL NOT share an emitter in
@@ -1380,6 +1397,12 @@ lifetime start; render-block boundaries do not reset or mutate it. Counter
 fields depend only on the stream seed, field identifier, channel identifier,
 and absolute sample index. End of stream is reported as a successful render
 with zero frames.
+
+A periodic-Basis lifetime derives phase from its absolute lifetime-local
+sample index, origin, and increment. It uses the canonical Q16 periodic Basis
+interpolator and signed gain composition already defined by the integer Core.
+Splitting one render at arbitrary callback positions MUST therefore produce
+the same PCM as rendering the lifetime in one call.
 
 `MFT1` does not remove deterministic Truth Innovation. The official encoder
 SHALL retain the preceding complete Truth candidate whenever the typed MAF

@@ -34,6 +34,7 @@ struct Header {
     std::uint16_t source_count;
     std::uint16_t transient_count;
     std::uint16_t mix_count;
+    std::uint16_t basis_count;
     std::uint16_t record_count;
 };
 
@@ -199,6 +200,26 @@ bool valid_lifetime(
     return start < end && end <= total_frames;
 }
 
+std::int32_t combine_gain_q15(
+    std::int32_t left,
+    std::int32_t right
+) noexcept {
+    constexpr std::int64_t kDenominator = 1LL << 15U;
+    constexpr std::int64_t kHalf = kDenominator / 2;
+    const std::int64_t product =
+        static_cast<std::int64_t>(left) * right;
+    std::int64_t quotient = product / kDenominator;
+    const std::int64_t remainder = product % kDenominator;
+    if (remainder >= kHalf) {
+        ++quotient;
+    } else if (remainder <= -kHalf) {
+        --quotient;
+    }
+    return static_cast<std::int32_t>(
+        std::clamp<std::int64_t>(quotient, -32768, 32768)
+    );
+}
+
 resonith_status find_record(
     const Header& header,
     const std::uint8_t* data,
@@ -230,8 +251,45 @@ resonith_status find_record(
     return RESONITH_STATUS_NOT_FOUND;
 }
 
-resonith_status calculate_requirements(
+resonith_status find_basis(
     const Header& header,
+    const std::uint8_t* data,
+    std::uint16_t id,
+    std::uint32_t& element_offset,
+    Record& found
+) noexcept {
+    element_offset = 0U;
+    std::size_t cursor = kHeaderBytes;
+    for (std::uint16_t index = 0U; index < header.record_count; ++index) {
+        Record record{};
+        const resonith_status status = next_record(
+            header,
+            data,
+            cursor,
+            record
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        if (record.type != RESONITH_MAF_TYPED_BASIS) {
+            continue;
+        }
+        if (read_u16(record.payload) == id) {
+            found = record;
+            return RESONITH_STATUS_OK;
+        }
+        const std::uint32_t count = read_u16(record.payload + 2U);
+        if (count > std::numeric_limits<std::uint32_t>::max() - element_offset) {
+            return RESONITH_STATUS_PROFILE_BOUND;
+        }
+        element_offset += count;
+    }
+    return RESONITH_STATUS_NOT_FOUND;
+}
+
+resonith_status calculate_requirements(
+    Header& header,
+    const std::uint8_t* data,
     resonith_maf_typed_requirements& requirements
 ) noexcept {
     resonith_maf_limits limits{};
@@ -262,14 +320,20 @@ resonith_status calculate_requirements(
     ) {
         return RESONITH_STATUS_PROFILE_BOUND;
     }
-    const std::uint32_t expected_records =
+    const std::uint32_t fixed_records =
         static_cast<std::uint32_t>(header.filter_count)
         + header.stochastic_count
         + header.source_count
         + header.transient_count
         + header.mix_count;
-    if (header.record_count != expected_records) {
+    if (header.record_count < fixed_records) {
         return RESONITH_STATUS_MALFORMED;
+    }
+    header.basis_count = static_cast<std::uint16_t>(
+        header.record_count - fixed_records
+    );
+    if (header.basis_count > RESONITH_MAF_MAIN_MAX_BASES) {
+        return RESONITH_STATUS_PROFILE_BOUND;
     }
 
     std::uint64_t coefficient_elements = 0U;
@@ -277,6 +341,7 @@ resonith_status calculate_requirements(
     std::uint64_t planar_elements = 0U;
     std::uint64_t working_elements = 0U;
     std::uint64_t mix_elements = 0U;
+    std::uint64_t basis_elements = 0U;
     if (
         !checked_multiply(
             header.filter_count,
@@ -302,9 +367,37 @@ resonith_status calculate_requirements(
     ) {
         return RESONITH_STATUS_PROFILE_BOUND;
     }
+    std::size_t record_cursor = kHeaderBytes;
+    for (std::uint16_t index = 0U; index < header.record_count; ++index) {
+        Record record{};
+        const resonith_status status = next_record(
+            header,
+            data,
+            record_cursor,
+            record
+        );
+        if (status != RESONITH_STATUS_OK) {
+            return status;
+        }
+        if (record.type == RESONITH_MAF_TYPED_BASIS) {
+            if (record.payload_size < 4U) {
+                return RESONITH_STATUS_TRUNCATED;
+            }
+            if (
+                !checked_add(
+                    basis_elements,
+                    read_u16(record.payload + 2U),
+                    basis_elements
+                )
+                || basis_elements > limits.maximum_basis_elements
+            ) {
+                return RESONITH_STATUS_PROFILE_BOUND;
+            }
+        }
+    }
     const std::uint64_t persistent_bytes =
         coefficient_elements * sizeof(std::int32_t)
-        + history_elements * sizeof(std::int16_t);
+        + (history_elements + basis_elements) * sizeof(std::int16_t);
     const std::uint64_t scratch_bytes =
         (planar_elements + working_elements + mix_elements)
         * sizeof(std::int16_t);
@@ -318,6 +411,7 @@ resonith_status calculate_requirements(
         || planar_elements > std::numeric_limits<std::uint32_t>::max()
         || working_elements > std::numeric_limits<std::uint32_t>::max()
         || mix_elements > std::numeric_limits<std::uint32_t>::max()
+        || basis_elements > std::numeric_limits<std::uint32_t>::max()
     ) {
         return RESONITH_STATUS_MALFORMED;
     }
@@ -331,6 +425,7 @@ resonith_status calculate_requirements(
         static_cast<std::uint32_t>(planar_elements),
         static_cast<std::uint32_t>(working_elements),
         static_cast<std::uint32_t>(mix_elements),
+        static_cast<std::uint32_t>(basis_elements),
         header.declared_operations_per_frame,
         header.output_channels,
         header.emitter_count,
@@ -339,7 +434,7 @@ resonith_status calculate_requirements(
         header.source_count,
         header.transient_count,
         header.mix_count,
-        0U,
+        header.basis_count,
     };
     return RESONITH_STATUS_OK;
 }
@@ -353,7 +448,7 @@ resonith_status validate_records(
     std::array<std::int16_t, RESONITH_MAF_MAIN_MAX_FILTER_ORDER> reflection{};
     std::array<std::int32_t, RESONITH_MAF_MAIN_MAX_FILTER_ORDER> coefficients{};
     std::uint8_t previous_type = 0U;
-    std::uint16_t expected_id[6] = {};
+    std::uint16_t expected_id[7] = {};
     std::uint32_t mix_cursor = 0U;
     std::uint16_t previous_source_emitter = 0U;
     bool have_source = false;
@@ -367,7 +462,7 @@ resonith_status validate_records(
         }
         if (
             record.type < RESONITH_MAF_TYPED_FILTER
-            || record.type > RESONITH_MAF_TYPED_MIX
+            || record.type > RESONITH_MAF_TYPED_BASIS
             || record.type < previous_type
             || record.payload_size < 2U
         ) {
@@ -449,7 +544,6 @@ resonith_status validate_records(
                 read_u32(record.payload + 28U);
             if (
                 emitter >= header.emitter_count
-                || filter >= header.filter_count
                 || stochastic_emitter[emitter]
                 || record.payload[7U] != 0U
                 || read_u16(record.payload + 10U) != 0U
@@ -460,7 +554,15 @@ resonith_status validate_records(
                     excitation != RESONITH_MAF_TYPED_EXCITATION_IMPULSE
                     && excitation
                         != RESONITH_MAF_TYPED_EXCITATION_STOCHASTIC
+                    && excitation
+                        != RESONITH_MAF_TYPED_EXCITATION_PERIODIC_BASIS
                 )
+            ) {
+                return RESONITH_STATUS_MALFORMED;
+            }
+            if (
+                excitation != RESONITH_MAF_TYPED_EXCITATION_PERIODIC_BASIS
+                && filter >= header.filter_count
             ) {
                 return RESONITH_STATUS_MALFORMED;
             }
@@ -498,8 +600,26 @@ resonith_status validate_records(
                     || read_u16(field.payload + 2U) != kNoEmitter
                     || read_u32(field.payload + 4U) > start
                     || read_u32(field.payload + 8U) < end
-                    || gain != 32768
                     || phase_increment != 0U
+                ) {
+                    return RESONITH_STATUS_MALFORMED;
+                }
+            }
+            if (
+                excitation == RESONITH_MAF_TYPED_EXCITATION_PERIODIC_BASIS
+            ) {
+                Record basis{};
+                status = find_record(
+                    header,
+                    data,
+                    RESONITH_MAF_TYPED_BASIS,
+                    reference,
+                    basis
+                );
+                if (
+                    filter != kNoReference
+                    || status != RESONITH_STATUS_OK
+                    || phase_increment == 0U
                 ) {
                     return RESONITH_STATUS_MALFORMED;
                 }
@@ -529,7 +649,7 @@ resonith_status validate_records(
             ) {
                 return RESONITH_STATUS_MALFORMED;
             }
-        } else {
+        } else if (record.type == RESONITH_MAF_TYPED_MIX) {
             if (record.payload_size < 16U) {
                 return RESONITH_STATUS_TRUNCATED;
             }
@@ -571,6 +691,20 @@ resonith_status validate_records(
                 seen[emitter] = true;
             }
             mix_cursor = end;
+        } else {
+            if (record.payload_size < 8U) {
+                return RESONITH_STATUS_TRUNCATED;
+            }
+            const std::uint16_t sample_count =
+                read_u16(record.payload + 2U);
+            if (
+                sample_count < 2U
+                || sample_count > 8U * 2048U
+                || read_u32(record.payload + 4U) != 0U
+                || record.payload_size != 8U + 2U * sample_count
+            ) {
+                return RESONITH_STATUS_MALFORMED;
+            }
         }
     }
     if (
@@ -583,6 +717,7 @@ resonith_status validate_records(
         || expected_id[RESONITH_MAF_TYPED_TRANSIENT]
             != header.transient_count
         || expected_id[RESONITH_MAF_TYPED_MIX] != header.mix_count
+        || expected_id[RESONITH_MAF_TYPED_BASIS] != header.basis_count
         || mix_cursor != header.total_frames
     ) {
         return RESONITH_STATUS_MALFORMED;
@@ -600,7 +735,7 @@ resonith_status parse_and_validate(
     if (status != RESONITH_STATUS_OK) {
         return status;
     }
-    status = calculate_requirements(header, requirements);
+    status = calculate_requirements(header, data, requirements);
     if (status != RESONITH_STATUS_OK) {
         return status;
     }
@@ -691,6 +826,16 @@ std::uint64_t slice_operations(
             const std::uint32_t lifetime_end =
                 read_u32(record.payload + 16U);
             if (overlaps(start, end, lifetime_start, lifetime_end)) {
+                if (
+                    record.payload[6U]
+                    == RESONITH_MAF_TYPED_EXCITATION_PERIODIC_BASIS
+                ) {
+                    addition = 16U * frames;
+                    if (!checked_add(operations, addition, operations)) {
+                        return std::numeric_limits<std::uint64_t>::max();
+                    }
+                    continue;
+                }
                 Record filter{};
                 if (
                     find_record(
@@ -856,6 +1001,104 @@ resonith_status render_slice(
         }
         const std::uint16_t emitter = read_u16(source.payload + 2U);
         const std::uint16_t filter_id = read_u16(source.payload + 4U);
+        const std::uint8_t excitation_type = source.payload[6U];
+        if (
+            excitation_type
+            == RESONITH_MAF_TYPED_EXCITATION_PERIODIC_BASIS
+        ) {
+            Record basis_record{};
+            std::uint32_t basis_offset = 0U;
+            resonith_status status = find_basis(
+                header,
+                session.stream_data,
+                read_u16(source.payload + 8U),
+                basis_offset,
+                basis_record
+            );
+            if (status != RESONITH_STATUS_OK) {
+                return status;
+            }
+            const std::uint16_t basis_count =
+                read_u16(basis_record.payload + 2U);
+            const std::uint32_t local_start = start - lifetime_start;
+            const std::uint32_t phase_increment =
+                read_u32(source.payload + 28U);
+            const std::array<std::uint32_t, 2> positions = {
+                0U,
+                frames,
+            };
+            const std::array<std::uint32_t, 2> increments = {
+                phase_increment,
+                phase_increment,
+            };
+            std::array<std::uint32_t, 2> origins{};
+            const resonith_phase_trajectory phase_source = {
+                positions.data(),
+                increments.data(),
+                2U,
+                read_u32(source.payload + 24U)
+                    + local_start * phase_increment,
+            };
+            resonith_prepared_phase_trajectory phase{};
+            status = resonith_phase_prepare(
+                &phase_source,
+                origins.data(),
+                origins.size(),
+                &phase
+            );
+            if (status != RESONITH_STATUS_OK) {
+                return status;
+            }
+            status = resonith_maf_periodic_render(
+                session.workspace.bases + basis_offset,
+                basis_count,
+                &phase,
+                0U,
+                frames,
+                session.workspace.excitation,
+                session.workspace.excitation_capacity,
+                &budget
+            );
+            if (status != RESONITH_STATUS_OK) {
+                return status;
+            }
+            const std::array<std::uint32_t, 1> gain_positions = {0U};
+            const std::array<std::int32_t, 1> gains = {
+                read_i32(source.payload + 20U),
+            };
+            const resonith_gain_event_law gain_source = {
+                gain_positions.data(),
+                gains.data(),
+                1U,
+                frames,
+            };
+            resonith_prepared_gain_law gain{};
+            status = resonith_gain_prepare(&gain_source, &gain);
+            if (status != RESONITH_STATUS_OK) {
+                return status;
+            }
+            status = resonith_maf_compose_truth(
+                session.workspace.excitation,
+                nullptr,
+                1U,
+                &gain,
+                0U,
+                frames,
+                session.workspace.filtered,
+                session.workspace.filtered_capacity,
+                &budget
+            );
+            if (status != RESONITH_STATUS_OK) {
+                return status;
+            }
+            std::copy(
+                session.workspace.filtered,
+                session.workspace.filtered + frames,
+                session.workspace.planar_sources
+                    + static_cast<std::size_t>(emitter) * frames
+            );
+            continue;
+        }
         if (start == lifetime_start) {
             std::fill(
                 session.workspace.filter_histories
@@ -886,8 +1129,7 @@ resonith_status render_slice(
         };
         resonith_status status = RESONITH_STATUS_OK;
         if (
-            source.payload[6U]
-            == RESONITH_MAF_TYPED_EXCITATION_IMPULSE
+            excitation_type == RESONITH_MAF_TYPED_EXCITATION_IMPULSE
         ) {
             impulse_render(
                 lifetime_start,
@@ -917,7 +1159,10 @@ resonith_status render_slice(
                 read_u16(field.payload),
                 0U,
                 start,
-                read_i32(field.payload + 12U),
+                combine_gain_q15(
+                    read_i32(field.payload + 12U),
+                    read_i32(source.payload + 20U)
+                ),
                 frames,
                 session.workspace.excitation,
                 session.workspace.excitation_capacity,
@@ -1089,6 +1334,7 @@ extern "C" resonith_status resonith_maf_typed_open(
     }
     if (
         workspace->filter_coefficients_q15 == nullptr
+        || workspace->bases == nullptr
         || workspace->filter_histories == nullptr
         || workspace->planar_sources == nullptr
         || workspace->excitation == nullptr
@@ -1100,6 +1346,7 @@ extern "C" resonith_status resonith_maf_typed_open(
     if (
         workspace->filter_coefficient_capacity
             < requirements.filter_coefficient_elements
+        || workspace->basis_capacity < requirements.basis_elements
         || workspace->filter_history_capacity
             < requirements.filter_history_elements
         || workspace->planar_capacity < requirements.planar_elements
@@ -1112,11 +1359,23 @@ extern "C" resonith_status resonith_maf_typed_open(
     }
 
     std::array<std::int16_t, RESONITH_MAF_MAIN_MAX_FILTER_ORDER> reflection{};
+    std::size_t basis_offset = 0U;
     std::size_t cursor = kHeaderBytes;
     for (std::uint16_t index = 0U; index < header.record_count; ++index) {
         Record record{};
         (void)next_record(header, data, cursor, record);
         if (record.type != RESONITH_MAF_TYPED_FILTER) {
+            if (record.type == RESONITH_MAF_TYPED_BASIS) {
+                const std::uint16_t sample_count =
+                    read_u16(record.payload + 2U);
+                for (std::uint16_t sample = 0U; sample < sample_count;
+                     ++sample) {
+                    workspace->bases[basis_offset + sample] = read_i16(
+                        record.payload + 8U + 2U * sample
+                    );
+                }
+                basis_offset += sample_count;
+            }
             continue;
         }
         const std::uint16_t filter_id = read_u16(record.payload);
@@ -1165,7 +1424,6 @@ extern "C" resonith_status resonith_maf_typed_render(
     *frames_written = 0U;
     if (
         session->stream_data == nullptr
-        || session->requirements.reserved != 0U
         || requested_frames > session->requirements.render_quantum
     ) {
         return RESONITH_STATUS_PROFILE_BOUND;

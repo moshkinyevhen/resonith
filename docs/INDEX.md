@@ -32,6 +32,7 @@
 | [results/MOBILE_CORE_GATE_2026-07-27.md](results/MOBILE_CORE_GATE_2026-07-27.md) | R-116 Android ARM64/emulator and iOS device/simulator compile evidence |
 | [results/BOUNDED_MAF_DSP_2026-07-27.md](results/BOUNDED_MAF_DSP_2026-07-27.md) | R-122/R-127 bounded MAF DSP, transactional stream integration, and cross-platform evidence |
 | [results/GEMINI_SEMANTIC_ARBITER_2026-07-27.md](results/GEMINI_SEMANTIC_ARBITER_2026-07-27.md) | R-128/R-129 complete live Gemini change-ledger and local millisecond-alignment evidence |
+| [results/TYPED_MAF_LIFETIMES_2026-07-27.md](results/TYPED_MAF_LIFETIMES_2026-07-27.md) | R-130 typed source-filter/stochastic/transient/mix lifetime decoder and portability gate |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
 
 Normative draft:

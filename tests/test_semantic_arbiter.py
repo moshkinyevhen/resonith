@@ -124,7 +124,8 @@ class SemanticArbiterTests(unittest.TestCase):
     def test_coarse_event_is_aligned_to_millisecond_local_step(self) -> None:
         sample_rate = 16000
         samples = np.zeros(sample_rate, dtype=np.int16)
-        samples[sample_rate // 2 :] = 12000
+        exact_boundary = sample_rate // 2 + 7
+        samples[exact_boundary:] = 12000
         event = {
             "time_seconds": 0.460,
             "event_type": "source_start",
@@ -133,8 +134,39 @@ class SemanticArbiterTests(unittest.TestCase):
         }
         result = align_event_boundaries(samples, sample_rate, [event])
         aligned = result["events"][0]
-        self.assertLess(abs(aligned["aligned_time_seconds"] - 0.5), 0.006)
+        self.assertEqual(aligned["aligned_sample"], exact_boundary)
+        self.assertIn(exact_boundary, aligned["candidate_samples"])
+        self.assertLessEqual(aligned["candidate_count"], 256)
+        self.assertTrue(aligned["no_boundary_candidate"])
+        self.assertEqual(
+            result["summary"]["exact_candidate_resolution_samples"],
+            1,
+        )
         self.assertTrue(aligned["supported"])
+
+    def test_pitch_change_produces_exact_sample_rdo_neighborhood(self) -> None:
+        sample_rate = 48000
+        exact_boundary = sample_rate // 2 + 13
+        time = np.arange(sample_rate, dtype=np.float64) / sample_rate
+        samples = np.rint(np.sin(2.0 * np.pi * 220.0 * time) * 10000.0)
+        samples[exact_boundary:] = np.rint(
+            np.sin(2.0 * np.pi * 880.0 * time[exact_boundary:]) * 10000.0
+        )
+        event = {
+            "time_seconds": 0.487,
+            "event_type": "pitch_regime_change",
+            "source_id": "s0",
+            "primary_basis": "coherent",
+        }
+        result = align_event_boundaries(
+            samples.astype(np.int16),
+            sample_rate,
+            [event],
+        )
+        candidates = result["events"][0]["candidate_samples"]
+        self.assertTrue(
+            any(abs(candidate - exact_boundary) <= 1 for candidate in candidates)
+        )
 
     def test_none_specialist_placeholder_is_canonicalized_away(self) -> None:
         payload = _valid_payload()

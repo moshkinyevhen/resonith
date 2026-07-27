@@ -21,6 +21,8 @@ MAX_REGIONS = 32
 MAX_EVENTS = 64
 MAX_SPECIALIST_TASKS = 8
 MAX_OVERLAP_DEPTH = 8
+MAX_BOUNDARY_ANCHORS = 4
+MAX_EXACT_BOUNDARY_CANDIDATES = 256
 
 PRIMARY_CLASSES = frozenset(
     {
@@ -714,6 +716,131 @@ def audit_proposals(
     }
 
 
+def _rank_separated_anchors(
+    samples: np.ndarray,
+    scores: np.ndarray,
+    *,
+    maximum_count: int,
+    minimum_separation: int,
+) -> list[int]:
+    """Return deterministic high-score anchors without one peak monopolizing K."""
+
+    order = np.lexsort((samples, -scores))
+    selected: list[int] = []
+    for index in order:
+        candidate = int(samples[int(index)])
+        if all(
+            abs(candidate - previous) >= minimum_separation
+            for previous in selected
+        ):
+            selected.append(candidate)
+            if len(selected) == maximum_count:
+                break
+    return selected
+
+
+def _fine_change_anchors(
+    source: np.ndarray,
+    sample_rate: int,
+    event_type: str,
+    coarse_sample: int,
+) -> list[int]:
+    """Locate several sub-millisecond change anchors on original mono PCM."""
+
+    half_window = max(32, round(sample_rate * 0.006))
+    radius = max(half_window * 2, round(sample_rate * 0.020))
+    hop = max(1, round(sample_rate * 0.00025))
+    first = max(half_window, coarse_sample - radius)
+    last = min(source.size - half_window - 1, coarse_sample + radius)
+    if last < first:
+        return [min(max(coarse_sample, 0), source.size - 1)]
+
+    anchors = np.arange(first, last + 1, hop, dtype=np.int64)
+    window = np.hanning(half_window)
+    scores = np.empty(anchors.size, dtype=np.float64)
+    for index, anchor in enumerate(anchors):
+        position = int(anchor)
+        left = source[position - half_window : position] * window
+        right = source[position : position + half_window] * window
+        left_rms = math.sqrt(float(left @ left) / half_window + 1.0e-12)
+        right_rms = math.sqrt(float(right @ right) / half_window + 1.0e-12)
+        energy_delta = 20.0 * math.log10(
+            (right_rms + 1.0e-12) / (left_rms + 1.0e-12)
+        )
+        left_spectrum = np.abs(np.fft.rfft(left)) + 1.0e-12
+        right_spectrum = np.abs(np.fft.rfft(right)) + 1.0e-12
+        left_spectrum /= float(np.sum(left_spectrum))
+        right_spectrum /= float(np.sum(right_spectrum))
+        spectral_change = 0.5 * float(
+            np.sum(np.abs(right_spectrum - left_spectrum))
+        )
+        if event_type == "source_start":
+            scores[index] = max(energy_delta, 0.0) + 8.0 * spectral_change
+        elif event_type == "source_stop":
+            scores[index] = max(-energy_delta, 0.0) + 8.0 * spectral_change
+        elif event_type == "transient":
+            scores[index] = abs(energy_delta) + 10.0 * spectral_change
+        elif event_type in {
+            "pitch_regime_change",
+            "timbre_change",
+            "speech_state_change",
+        }:
+            scores[index] = 12.0 * spectral_change + 0.10 * abs(energy_delta)
+        else:
+            scores[index] = 8.0 * spectral_change + 0.25 * abs(energy_delta)
+
+    selected = _rank_separated_anchors(
+        anchors,
+        scores,
+        maximum_count=MAX_BOUNDARY_ANCHORS,
+        minimum_separation=max(1, round(sample_rate * 0.001)),
+    )
+    if event_type in {"source_start", "source_stop", "transient"}:
+        edge_radius = max(2, round(sample_rate * 0.010))
+        edge_start = max(0, selected[0] - edge_radius)
+        edge_end = min(source.size, selected[0] + edge_radius + 1)
+        absolute = np.abs(source[edge_start:edge_end])
+        if absolute.size > 1:
+            derivative = np.diff(absolute)
+            if event_type == "source_start":
+                edge_offset = int(np.argmax(derivative))
+            elif event_type == "source_stop":
+                edge_offset = int(np.argmin(derivative))
+            else:
+                edge_offset = int(np.argmax(np.abs(derivative)))
+            exact_edge = edge_start + edge_offset + 1
+            selected = [exact_edge] + [
+                anchor for anchor in selected if anchor != exact_edge
+            ]
+    return selected[:MAX_BOUNDARY_ANCHORS]
+
+
+def _expand_exact_candidates(
+    anchors: Sequence[int],
+    *,
+    provider_sample: int,
+    sample_count: int,
+    sample_rate: int,
+) -> list[int]:
+    """Expand fine anchors into a bounded, exact source-sample RDO lattice."""
+
+    radius = max(2, round(sample_rate * 0.0005))
+    ordered: list[int] = []
+    seen: set[int] = set()
+    for anchor in [*anchors, provider_sample]:
+        clamped = min(max(int(anchor), 0), sample_count - 1)
+        for delta in range(radius + 1):
+            offsets = (0,) if delta == 0 else (-delta, delta)
+            for offset in offsets:
+                candidate = clamped + offset
+                if 0 <= candidate < sample_count and candidate not in seen:
+                    seen.add(candidate)
+                    ordered.append(candidate)
+                    if len(ordered) == MAX_EXACT_BOUNDARY_CANDIDATES:
+                        return ordered
+    return ordered
+
+
 def align_event_boundaries(
     samples: np.ndarray,
     sample_rate: int,
@@ -725,9 +852,10 @@ def align_event_boundaries(
     """Snap coarse provider events to deterministic local PCM change evidence.
 
     The provider timestamp is only the center of a bounded search window.
-    Twenty-millisecond analysis frames advance by one millisecond; the final
-    candidate is represented as an exact source-sample index.  Exact encoder
-    RDO may later test neighboring samples or reject the event entirely.
+    Twenty-millisecond analysis frames advance by one millisecond. Each coarse
+    peak is then rescored with opposing six-millisecond PCM windows at a
+    quarter-millisecond hop and expanded into exact source-sample candidates.
+    Exact encoder RDO may test these samples or reject the event entirely.
     """
 
     source = np.asarray(samples, dtype=np.float64)
@@ -754,20 +882,24 @@ def align_event_boundaries(
         provider_time = float(event["time_seconds"])
         event_type = str(event["event_type"])
         center = int(round(provider_time * sample_rate))
+        fine_anchors = [min(max(center, 0), source.size - 1)]
         search_start = max(0, center - radius_samples - analysis_size)
         search_end = min(source.size, center + radius_samples + analysis_size)
         excerpt = source[search_start:search_end]
         if event_type == "source_start" and center <= hop_size * 2:
             aligned_sample = 0
+            fine_anchors = [aligned_sample]
             support = 1.0
         elif (
             event_type == "source_stop"
             and source.size - center <= hop_size * 2
         ):
             aligned_sample = source.size - 1
+            fine_anchors = [aligned_sample]
             support = 1.0
         elif excerpt.size < analysis_size * 2:
             aligned_sample = min(max(center, 0), source.size - 1)
+            fine_anchors = [aligned_sample]
             support = 0.0
         else:
             starts = np.arange(
@@ -817,6 +949,7 @@ def align_event_boundaries(
             allowed_indices = np.flatnonzero(allowed)
             if allowed_indices.size == 0:
                 aligned_sample = min(max(center, 0), source.size - 1)
+                fine_anchors = [aligned_sample]
                 support = 0.0
             else:
                 local_scores = score[allowed_indices]
@@ -833,31 +966,19 @@ def align_event_boundaries(
                     (float(local_scores[best_local]) - median) / deviation,
                 )
                 support = min(1.0, 0.5 * rank + 0.1 * prominence)
-                if event_type in {"source_start", "source_stop", "transient"}:
-                    # Remove the 20 ms frame-center bias with a final
-                    # millisecond-envelope edge search on original samples.
-                    fine_radius = analysis_size
-                    fine_start = max(0, aligned_sample - fine_radius)
-                    fine_end = min(source.size, aligned_sample + fine_radius + 1)
-                    fine = np.abs(source[fine_start:fine_end])
-                    smoothing = max(1, round(sample_rate * 0.001))
-                    if fine.size > smoothing + 1:
-                        envelope = np.convolve(
-                            fine,
-                            np.ones(smoothing, dtype=np.float64) / smoothing,
-                            mode="valid",
-                        )
-                        derivative = np.diff(envelope)
-                        if event_type == "source_stop":
-                            edge_index = int(np.argmin(derivative))
-                        elif event_type == "source_start":
-                            edge_index = int(np.argmax(derivative))
-                        else:
-                            edge_index = int(np.argmax(np.abs(derivative)))
-                        aligned_sample = min(
-                            source.size - 1,
-                            fine_start + edge_index + smoothing // 2,
-                        )
+                fine_anchors = _fine_change_anchors(
+                    source,
+                    sample_rate,
+                    event_type,
+                    aligned_sample,
+                )
+                aligned_sample = fine_anchors[0]
+        exact_candidates = _expand_exact_candidates(
+            fine_anchors,
+            provider_sample=center,
+            sample_count=source.size,
+            sample_rate=sample_rate,
+        )
         aligned_time = aligned_sample / sample_rate
         shift_ms = (aligned_time - provider_time) * 1000.0
         supported = support >= 0.70
@@ -869,6 +990,12 @@ def align_event_boundaries(
                 "provider_time_seconds": provider_time,
                 "aligned_sample": aligned_sample,
                 "aligned_time_seconds": aligned_time,
+                "candidate_samples": exact_candidates,
+                "candidate_times_seconds": [
+                    sample / sample_rate for sample in exact_candidates
+                ],
+                "candidate_count": len(exact_candidates),
+                "no_boundary_candidate": True,
                 "shift_ms": shift_ms,
                 "support": support,
                 "supported": supported,
@@ -888,6 +1015,11 @@ def align_event_boundaries(
             ),
             "maximum_absolute_shift_ms": max(shifts, default=0.0),
             "analysis_hop_ms": hop_size * 1000.0 / sample_rate,
+            "fine_analysis_hop_ms": (
+                max(1, round(sample_rate * 0.00025)) * 1000.0 / sample_rate
+            ),
+            "exact_candidate_resolution_samples": 1,
+            "maximum_candidates_per_event": MAX_EXACT_BOUNDARY_CANDIDATES,
             "search_radius_ms": search_radius_seconds * 1000.0,
         },
     }

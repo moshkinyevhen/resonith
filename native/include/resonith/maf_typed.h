@@ -21,12 +21,14 @@ typedef enum resonith_maf_typed_record_type {
     RESONITH_MAF_TYPED_STOCHASTIC = 2,
     RESONITH_MAF_TYPED_SOURCE_FILTER = 3,
     RESONITH_MAF_TYPED_TRANSIENT = 4,
-    RESONITH_MAF_TYPED_MIX = 5
+    RESONITH_MAF_TYPED_MIX = 5,
+    RESONITH_MAF_TYPED_BASIS = 6
 } resonith_maf_typed_record_type;
 
 typedef enum resonith_maf_typed_excitation {
     RESONITH_MAF_TYPED_EXCITATION_IMPULSE = 1,
-    RESONITH_MAF_TYPED_EXCITATION_STOCHASTIC = 2
+    RESONITH_MAF_TYPED_EXCITATION_STOCHASTIC = 2,
+    RESONITH_MAF_TYPED_EXCITATION_PERIODIC_BASIS = 3
 } resonith_maf_typed_excitation;
 
 /*
@@ -44,6 +46,7 @@ typedef struct resonith_maf_typed_requirements {
     uint32_t planar_elements;
     uint32_t working_elements;
     uint32_t mix_matrix_elements;
+    uint32_t basis_elements;
     uint32_t declared_operations_per_frame;
     uint16_t output_channels;
     uint16_t emitter_count;
@@ -52,7 +55,7 @@ typedef struct resonith_maf_typed_requirements {
     uint16_t source_filter_count;
     uint16_t transient_count;
     uint16_t mix_count;
-    uint16_t reserved;
+    uint16_t basis_count;
 } resonith_maf_typed_requirements;
 
 /*
@@ -62,6 +65,8 @@ typedef struct resonith_maf_typed_requirements {
 typedef struct resonith_maf_typed_workspace {
     int32_t* filter_coefficients_q15;
     size_t filter_coefficient_capacity;
+    int16_t* bases;
+    size_t basis_capacity;
     int16_t* filter_histories;
     size_t filter_history_capacity;
     int16_t* planar_sources;

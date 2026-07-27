@@ -397,12 +397,20 @@ service, handcrafted analyzer, or exhaustive GPU search may propose the same
 MAF states later, but none becomes a decoder dependency and none can bypass
 integer decoder-in-loop RDO.
 
+Provider event times are deliberately lossy hints. Foundry expands each hint
+into several local PCM change anchors, searches a bounded neighborhood of each
+anchor at individual-source-sample resolution, adds strong locally detected
+missed changes, and retains `NO_BOUNDARY` as a complete candidate. Thus a
+useful semantic hypothesis survives a poor cloud timestamp, while an
+unprofitable or false boundary costs no admitted stream bytes.
+
 ## 19. Typed lifetime execution
 
 The first executable prospective lifetime syntax is `MFT1` (R-130). It makes
-the memory-oriented claim testable: filters, stochastic fields, source
-excitations, transient shapes, and mix matrices exist over explicit half-open
-sample lifetimes instead of being repeated as transform-frame decisions.
+the memory-oriented claim testable: immutable periodic Basis, filters,
+stochastic fields, source excitations, transient shapes, and mix matrices
+exist over explicit half-open sample lifetimes instead of being repeated as
+transform-frame decisions.
 
 The decoder validates the complete immutable record graph once, prepares
 stable integer filters into caller-owned memory, and then renders sequentially

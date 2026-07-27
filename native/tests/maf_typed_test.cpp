@@ -155,7 +155,7 @@ std::vector<std::uint8_t> build_stream() {
     append_u16(noise_source, 0U);
     append_u32(noise_source, 16U);
     append_u32(noise_source, 32U);
-    append_i32(noise_source, 32768);
+    append_i32(noise_source, 16384);
     append_u32(noise_source, 0U);
     append_u32(noise_source, 0U);
     append_record(
@@ -229,6 +229,7 @@ bool expect(bool condition, const char* message) {
 
 struct Memory {
     std::array<std::int32_t, 16> coefficients{};
+    std::array<std::int16_t, 4> bases{};
     std::array<std::int16_t, 32> histories{};
     std::array<std::int16_t, 32> planar{};
     std::array<std::int16_t, 16> excitation{};
@@ -239,6 +240,8 @@ struct Memory {
         return {
             coefficients.data(),
             coefficients.size(),
+            bases.data(),
+            0U,
             histories.data(),
             histories.size(),
             planar.data(),
@@ -402,9 +405,9 @@ bool test_hostile_streams() {
         return false;
     }
 
-    // The second source starts at byte 172 in this canonical vector.
+    // The second source body begins at byte 188 in this canonical vector.
     std::vector<std::uint8_t> overlap = stream;
-    write_u32(overlap, 172U + 12U, 15U);
+    write_u32(overlap, 188U + 12U, 15U);
     write_u32(
         overlap,
         overlap.size() - 4U,

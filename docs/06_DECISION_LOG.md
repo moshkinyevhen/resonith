@@ -4401,3 +4401,118 @@ new oscillator opcode.
     affected output/state commit;
   - pass strict C++23, adversarial smoke, sanitizer, desktop, Android, and iOS
     compile/conformance gates before stream integration reaches Orkela.
+
+## R-131 — Decoder-in-loop lifetime candidate and complete Truth fallback
+
+- Status: **RESEARCH — ACTIVE GATE**
+- Date: 2026-07-27
+- Decision:
+  - the first encoder experiment after `MFT1` SHALL produce a real typed
+    predictor, decode it through the C++23 Core, compute Innovation from that
+    exact integer PCM, and code the remaining error through the existing
+    independently decodable lapped Truth path;
+  - the research candidate uses the existing authenticated `RSC1` container
+    with exactly one `CONF`, one `MFT1`, and one nested residual section. This
+    is an experiment envelope, not a frozen Main syntax;
+  - rate means the complete outer container bytes, including both section
+    integrity records and every nested residual byte. Predictor bytes cannot be
+    excluded merely because a long lifetime amortizes them;
+  - for each input, the unchanged preceding LPS6/Truth stream remains a
+    complete candidate. A typed MAF candidate is admitted only if actual
+    decode, layout, duration, metrics, full bytes, resource limits, and
+    robustness pass; otherwise the exact preceding stream is emitted;
+  - semantic events may narrow lifetime candidates only after R-130 local
+    sample alignment. A no-AI deterministic candidate lattice remains
+    complete, and the no-boundary/no-MAF candidate is always evaluated;
+  - the first fitting families are stable source-filter/phase excitation for
+    coherent mono regions, counter-addressed stochastic fields for locally
+    noise-like regions, bounded onset transients for sparse attacks, and
+    persistent identity or joint stereo mixes. No file-level semantic class
+    forces a representation.
+- Admission sequence:
+  1. add an independent Python builder and parser for `MFT1`;
+  2. add explicit ctypes bindings that inspect and render through the native
+     decoder with caller-owned memory;
+  3. prove Python-packed/native-decoded PCM and callback partition parity;
+  4. build the combined complete-byte candidate and run a fast diagnostic;
+  5. run every R-118 item before any default, version, or compression claim.
+
+## R-132 — Per-lifetime stochastic excitation gain
+
+- Status: **NORMATIVE-DRAFT**
+- Date: 2026-07-27
+- Decision:
+  - an excitation-only stochastic field owns the reusable counter sequence and
+    base field gain, while each consuming source-filter lifetime owns an
+    independent signed Q1.15 excitation gain;
+  - the decoder combines both gains once per lifetime slice using the R-127
+    signed quotient/remainder rule and passes the result to the unchanged
+    counter-addressed noise kernel;
+  - this permits one immutable stochastic field to serve changing breath,
+    frication, bow-noise, or ambience levels without retransmitting a field or
+    introducing per-sample parameter work;
+  - impulse excitation continues to interpret the same source gain field as
+    its signed PCM16 pulse amplitude.
+
+## R-133 — Immutable periodic Basis in the typed lifetime stream
+
+- Status: **NORMATIVE-DRAFT**
+- Date: 2026-07-27
+- Trigger:
+  - the first R-131 router correctly rejected every source-filter/noise
+    lifetime on the sustained-sine item: `MFT1` lacked a way to reference the
+    already implemented immutable periodic Basis operation, so a stable tone
+    could only be approximated by an impulse through a damped LPC filter;
+  - the complete fallback prevented regression, but this omission contradicted
+    the MAF premise that a stable waveform is paid once and advanced by phase.
+- Decision:
+  - add an immutable PCM16 periodic `BASIS` record and a
+    `PERIODIC_BASIS` source excitation family to prospective `MFT1`;
+  - a periodic source references one Basis, carries an absolute Q32 phase
+    origin and increment, a signed Q1.15 gain, an emitter, and a half-open
+    lifetime. It does not require or mutate source-filter history;
+  - rendering SHALL use the existing canonical Q16-interpolated periodic Basis
+    kernel followed by the existing gain-law composition kernel. Callback
+    partitions cannot change phase or PCM;
+  - Basis count is inferred from the canonical total record count in schema 1,
+    reported explicitly by inspection, bounded by Main, and included in every
+    parser/fuzz/resource gate;
+  - periodic Basis competes with impulse source-filter, stochastic
+    source-filter, transient, and `NO_MODEL` under exact residual-rate RDO. It
+    is never forced merely because a pitch detector reports a high score.
+
+## R-134 — Provider times expand into exact-sample boundary candidate sets
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Trigger:
+  - a cloud analyst can identify the correct acoustic change while placing its
+    timestamp several milliseconds, or substantially more, away from the
+    physical transition;
+  - selecting one one-millisecond analysis-frame center is not sample-accurate
+    and can move an onset, reset phase at the wrong point, or make an otherwise
+    useful lifetime lose exact RDO.
+- Decision:
+  - an AI timestamp is only the center of a bounded local search. It SHALL
+    expand into a bounded set of integer source-sample candidates derived from
+    original-channel PCM, never into a serialized boundary;
+  - local analysis SHALL retain multiple independently strong change peaks,
+    because the nearest or strongest spectral peak need not be the
+    rate-distortion optimum;
+  - source starts, stops, and transients SHALL contribute exact sample-domain
+    envelope and waveform-edge candidates. Pitch, timbre, speech-state, and
+    section changes SHALL contribute fine spectral/change candidates;
+  - each retained anchor SHALL be searched at individual-sample resolution in
+    a bounded neighborhood. At 48 kHz this gives a 20.833 microsecond candidate
+    lattice without claiming that the physical event itself is instantaneous;
+  - exact decoder-in-loop RDO SHALL compare the complete stream cost and
+    decoded error of the retained sample candidates, locally detected missed
+    changes, and the explicit no-boundary candidate;
+  - AI confidence, provider precision, and acoustic-score rank MAY order or
+    prune search work but MUST NOT force a boundary or defeat the complete
+    no-AI/no-boundary fallback.
+- Resource rule:
+  - Main encoder profiles SHALL declare bounds for the provider search radius,
+    local anchor count, exact samples per anchor, and full-RDO finalist count;
+  - candidate generation is encoder-only. It changes neither the bounded
+    integer decoder nor the normative stream syntax.
