@@ -18,6 +18,7 @@
 | [13_RSC1_CONTAINER.md](13_RSC1_CONTAINER.md) | Compact deterministic typed section container |
 | [14_MAIN0_NATIVE_MUSIC.md](14_MAIN0_NATIVE_MUSIC.md) | First Golden-Core-gated music and listening diagnostic |
 | [15_CONTINUOUS_EVIDENCE.md](15_CONTINUOUS_EVIDENCE.md) | Per-milestone benchmark, publication, versioning, and player-coupled release gate |
+| [results/EXTENDED_AUDIO_CORPUS_2026-07-27.md](results/EXTENDED_AUDIO_CORPUS_2026-07-27.md) | R-111 heterogeneous corpus acquisition, coverage, and preparation evidence |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
 
 Normative draft:

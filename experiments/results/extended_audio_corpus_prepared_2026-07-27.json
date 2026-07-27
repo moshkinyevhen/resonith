@@ -1,0 +1,325 @@
+{
+  "clips": [
+    {
+      "categories": [
+        "sustained-tone",
+        "deterministic",
+        "level-tracking"
+      ],
+      "channel_policy": "mono-average",
+      "channels": 1,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-sustained-sine",
+      "output_bytes": 1058444,
+      "output_file": "ebu-sustained-sine.wav",
+      "output_sha256": "78faec4d9b92b72cba0ae1d13ec16bfc520c6c31e1b6df5f4e97e89515557e57",
+      "sample_rate": 44100,
+      "source_file": "01.flac",
+      "source_sha256": "6974968d05ff490ba2c7718017dfaf09692c0c5c1813d03c8c3a8dd2b8c07cf2",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "stochastic",
+        "noise",
+        "stereo"
+      ],
+      "channel_policy": "preserve",
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-pink-noise",
+      "output_bytes": 2116844,
+      "output_file": "ebu-pink-noise.wav",
+      "output_sha256": "b3198d029a6ffd9ec43e9f5a863b8d8603a940ade4bb9ef90c8e184f643c295a",
+      "sample_rate": 44100,
+      "source_file": "02.flac",
+      "source_sha256": "9e673d42d303add6b0f8ebba3f566fefcd9f083e6b262f09c65ceb071f2f9238",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "resonant",
+        "vibrato",
+        "long-decay"
+      ],
+      "channel_policy": "mono-average",
+      "channels": 1,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-vibrato-gong",
+      "output_bytes": 1058444,
+      "output_file": "ebu-vibrato-gong.wav",
+      "output_sha256": "314210d30b03d67e4f923f1584d1bb30f548e39abecf717a63ce837e31b54187",
+      "sample_rate": 44100,
+      "source_file": "06.flac",
+      "source_sha256": "a377cefc13e6a4846b0a94225a3462013dd22bbf096b41b9ae6fe5328520b5b3",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "electronic",
+        "tonal",
+        "synthetic"
+      ],
+      "channel_policy": "mono-average",
+      "channels": 1,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-electronic-tune",
+      "output_bytes": 1058444,
+      "output_file": "ebu-electronic-tune.wav",
+      "output_sha256": "8e863d085c3cfec9d8b4998e70db5de5dc0df414c1bb4c42547cf64e7f8db01e",
+      "sample_rate": 44100,
+      "source_file": "07.flac",
+      "source_sha256": "dcfffa5d803603a1a19e5981569662bbe799d64771e7b69c71be462e0311494e",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "solo-instrument",
+        "tonal",
+        "bowed-string",
+        "stereo"
+      ],
+      "channel_policy": "preserve",
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-violin",
+      "output_bytes": 2116844,
+      "output_file": "ebu-violin.wav",
+      "output_sha256": "e0aadf5f82ab9c6ba9517d59e4266c9ad382e56de880096a9d2e5154f1135370",
+      "sample_rate": 44100,
+      "source_file": "08.flac",
+      "source_sha256": "e7e1a464f8b468cfff8ca2cfbf0e950db9ead9f59fb580afb87a5e8bc350fc42",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "transient",
+        "sparse",
+        "percussion",
+        "stereo"
+      ],
+      "channel_policy": "preserve",
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-claves",
+      "output_bytes": 2116844,
+      "output_file": "ebu-claves.wav",
+      "output_sha256": "9069b02a7bf39a67c36f634aef759d79ad63241b8b709d08b12f8a6a043959df",
+      "sample_rate": 44100,
+      "source_file": "26.flac",
+      "source_sha256": "90617038337d9830db987a58325f88751b3b223e6feb0ae896cb12fc69028cac",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "transient",
+        "drum",
+        "noise-like",
+        "stereo"
+      ],
+      "channel_policy": "preserve",
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-side-drum",
+      "output_bytes": 2116844,
+      "output_file": "ebu-side-drum.wav",
+      "output_sha256": "47ef7efbb69684d60f68191182b482c083bb7e118903f761764817b75e4b0a31",
+      "sample_rate": 44100,
+      "source_file": "28.flac",
+      "source_sha256": "0b021f2e8e8e70276b19e9d5435d2ee0856002d1fd92628ec7b5f9d8b5ce5f0a",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "transient",
+        "stochastic",
+        "long-decay",
+        "stereo"
+      ],
+      "channel_policy": "preserve",
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-cymbal",
+      "output_bytes": 2116844,
+      "output_file": "ebu-cymbal.wav",
+      "output_sha256": "4e5fed73eea73f72b9b227591a9a586dbd664d762497aa6a9457920571447b42",
+      "sample_rate": 44100,
+      "source_file": "31.flac",
+      "source_sha256": "e90309f1c60f76d6b0a05fe273c2be88b449bebaa2ec3fa91aa4edcefb256575",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "polyphonic",
+        "tonal",
+        "attack-decay",
+        "stereo"
+      ],
+      "channel_policy": "preserve",
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-grand-piano",
+      "output_bytes": 2116844,
+      "output_file": "ebu-grand-piano.wav",
+      "output_sha256": "7141951e68eac8533d3a78065cc3036cdd2f13025d6c0bcb98b79d804d31629c",
+      "sample_rate": 44100,
+      "source_file": "39.flac",
+      "source_sha256": "8d6b40ad1d1d76da20b4706c949fb020df8eec3cc466dc46465341d037e18fd8",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "solo-voice",
+        "harmonic",
+        "formant",
+        "stereo"
+      ],
+      "channel_policy": "preserve",
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-soprano",
+      "output_bytes": 2116844,
+      "output_file": "ebu-soprano.wav",
+      "output_sha256": "b56f2d5b1b4f5a7061fe3c55e86ddd924c865fc3beeceeee5da1e0044e8cc0e2",
+      "sample_rate": 44100,
+      "source_file": "44.flac",
+      "source_sha256": "7fc632e21c41ae1a941ecaf46c44dbd1a9813a4317ccfd5eee06027d33d5ffab",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "speech",
+        "female",
+        "english"
+      ],
+      "channel_policy": "mono-average",
+      "channels": 1,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-female-speech-en",
+      "output_bytes": 1058444,
+      "output_file": "ebu-female-speech-en.wav",
+      "output_sha256": "f88f9321b302f2bab62cf5aa2dab62721b105efc36b37921372651625c4c0a0e",
+      "sample_rate": 44100,
+      "source_file": "49.flac",
+      "source_sha256": "c5bfb443cb6b08d0e5664a52aa2ffb7d290cf3f4362e7c00065d67d5e1211c36",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "speech",
+        "male",
+        "english"
+      ],
+      "channel_policy": "mono-average",
+      "channels": 1,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-male-speech-en",
+      "output_bytes": 1058444,
+      "output_file": "ebu-male-speech-en.wav",
+      "output_sha256": "0b12c8ee0f3def4a525fbeb2f9362972285d114a30d959a6da2a53be6b09ffea",
+      "sample_rate": 44100,
+      "source_file": "50.flac",
+      "source_sha256": "6ac03efb51b6941d338fac56a2b322c36e8b52bb14dfe766c81e2253f2830fc9",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "dense-mix",
+        "orchestra",
+        "classical",
+        "stereo"
+      ],
+      "channel_policy": "preserve",
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-dense-orchestra",
+      "output_bytes": 2116844,
+      "output_file": "ebu-dense-orchestra.wav",
+      "output_sha256": "0b4a52d215937c541b3443fbbda3e45dd75909e3086d31d7c14dc0ca0885f134",
+      "sample_rate": 44100,
+      "source_file": "65.flac",
+      "source_sha256": "33513932ad1f196dae7ed316faf8d0d907c38a716f704936a9a0137314544f1a",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "dense-mix",
+        "popular-music",
+        "voice",
+        "stereo"
+      ],
+      "channel_policy": "preserve",
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "frames": 529200,
+      "id": "ebu-dense-pop",
+      "output_bytes": 2116844,
+      "output_file": "ebu-dense-pop.wav",
+      "output_sha256": "268d05e02aa746ffad10a7d4f1b9567334fcc9c784d42b56819ffafa2437436e",
+      "sample_rate": 44100,
+      "source_file": "69.flac",
+      "source_sha256": "35d3a289e00ffba0533acaa7d62b5af669b5a029bf071bc075fe5a434856d4f0",
+      "start_seconds": 0.0
+    },
+    {
+      "categories": [
+        "film-mix",
+        "dialogue",
+        "music",
+        "effects",
+        "ambience",
+        "stereo"
+      ],
+      "channel_policy": "preserve",
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "frames": 576000,
+      "id": "xiph-sintel-film-mix",
+      "output_bytes": 2304044,
+      "output_file": "xiph-sintel-film-mix.wav",
+      "output_sha256": "d4917c7b38fb9c409e29837d5907f5d932f75129c9e54ba2df6200fdb23416ca",
+      "sample_rate": 48000,
+      "source_file": "sintel-trailer-stereo.flac",
+      "source_sha256": "171d95acdb59882b4b8fb39cc1463920a859a78d3772bca532059c9ee02d48a6",
+      "start_seconds": 10.0
+    },
+    {
+      "categories": [
+        "film-mix",
+        "dialogue",
+        "music",
+        "effects",
+        "ambience",
+        "stereo"
+      ],
+      "channel_policy": "preserve",
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "frames": 576000,
+      "id": "xiph-elephants-dream-film-mix",
+      "output_bytes": 2304044,
+      "output_file": "xiph-elephants-dream-film-mix.wav",
+      "output_sha256": "d7992ab9edb34ba7fc5d750eb9cf76a843de7500110aa62b2d87b6f74de55af3",
+      "sample_rate": 48000,
+      "source_file": "elephants-dream-stereo.flac",
+      "source_sha256": "fc25f3658365529c599097954fa5342c3e20333cf55648e4cbbcaea95b360f18",
+      "start_seconds": 60.0
+    }
+  ],
+  "schema": "resonith-prepared-extended-audio-corpus-1",
+  "source_manifest": "extended_audio_corpus.json",
+  "source_manifest_sha256": "5d608a4fb313724e3928c90d3b3c557c2ae8251694f922ede3426ab84231033b"
+}

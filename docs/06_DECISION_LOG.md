@@ -3374,3 +3374,34 @@ new oscillator opcode.
     the expected speed of a production encoder;
   - native acceleration must preserve the same serialized bytes or declare a
     distinct encoder search level; it may never change normative decoding.
+
+## R-111 — Extended heterogeneous acoustic corpus
+
+- Date: 2026-07-27
+- Status: **ACCEPTED**
+- Decision:
+  - the three complete R-102 references remain the mandatory regression floor,
+    not the complete architecture corpus;
+  - add a pinned heterogeneous matrix covering sustained deterministic tone,
+    stochastic noise, vibrato/resonance, electronic material, solo tonal
+    instruments, sparse attacks, drums, cymbal-like stochastic transients,
+    polyphonic piano, solo voice, female speech, male speech, dense orchestra,
+    dense popular music, and mixed dialogue/music/effects/ambience;
+  - source the controlled material from the lossless EBU Tech 3253 SQAM
+    package and lossless Xiph test-media film mixes. Keep exact collection and
+    item URLs, byte counts, SHA-256 hashes, acquisition date, crop, channel
+    policy, and use restrictions in a machine-readable manifest;
+  - use deterministic PCM16 preparation and publish the prepared-file hashes.
+    Source audio that cannot be redistributed under clearly verified terms
+    remains local; the repository publishes acquisition instructions,
+    provenance, and evidence only;
+  - every material architecture change first passes the three complete
+    references, then the heterogeneous matrix. Content-specific modes must
+    report both the classes they improve and those they regress.
+- Initial bounded gate:
+  - use one pinned 12-second diagnostic crop per heterogeneous class so that
+    broad screening remains practical on a consumer workstation;
+  - any candidate promoted toward release must be rerun on the complete source
+    items for every class where the bounded crop shows a material win or loss;
+  - packet-loss tests apply deterministic loss patterns to the speech, dense
+    mix, and film-mix streams in addition to clean-channel measurements.

@@ -31,6 +31,13 @@ reproducible command and independent decode.
 - `opus_anchor.py` — run official external `opusenc/opusdec` on a supplied WAV.
 - `results/maf_p1_opus_2026-07-26.json` — raw first MAF-P1/Opus diagnostic.
 - `real_music_corpus.json` — pinned URLs, licenses, credits, hashes, and crops.
+- `extended_audio_corpus.json` — R-111 EBU SQAM and Xiph heterogeneous
+  acoustic matrix, exact source identities, crops, channel policies, and use
+  restrictions.
+- `prepare_extended_audio_corpus.py` — verified acquisition and deterministic
+  lossless-FLAC-to-PCM16 preparation for the R-111 matrix.
+- `results/extended_audio_corpus_prepared_2026-07-27.json` — exact hashes and
+  signal configurations of the first prepared 16-clip matrix.
 - `real_music_benchmark.py` — deterministic PCM downmix, LiftPack/zlib,
   fixed/adaptive/full-RDO, and Opus ablation.
 - `results/maf_p2_real_music_2026-07-26.json` — raw real-music phase report.

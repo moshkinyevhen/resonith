@@ -4,6 +4,12 @@ Last update: 2026-07-26.
 
 Numbers from papers are statements made by the authors prior to independent reproduction.
 
+## Evaluation corpora
+
+- [EBU Tech 3253 Sound Quality Assessment Material](https://tech.ebu.ch/publications/sqamcd)
+- [EBU QC lossless `TECH3253_SQAM_FLAC` package](https://qc.ebu.io/testmaterials/523/)
+- [Xiph.org lossless test media](https://media.xiph.org/)
+
 ## Standards and anchors
 
 - [RFC 6716 - Definition of the Opus Audio Codec](https://datatracker.ietf.org/doc/html/rfc6716)

@@ -69,6 +69,9 @@ The repository contains:
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
 - a pinned licensed real-music corpus and deterministic PCM downmix;
+- a pinned 16-class EBU SQAM/Xiph heterogeneous gate spanning speech, solo
+  voice, sustained tones, noise, electronic, transient, dense, stereo, and
+  film-mix material;
 - 147 pure reference/security/integration tests, fifteen native decoder-in-loop
   integration tests, ten native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
@@ -230,6 +233,9 @@ PYTHONPATH=reference python -m maf_p0 decode-lapped \
 See
 [Implementation Language and Runtime Architecture](docs/11_IMPLEMENTATION_LANGUAGE.md)
 for the portability and real-time contract.
+
+The permanent heterogeneous corpus is defined by
+[R-111 acquisition and preparation evidence](docs/results/EXTENDED_AUDIO_CORPUS_2026-07-27.md).
 
 ## GitHub synchronization
 

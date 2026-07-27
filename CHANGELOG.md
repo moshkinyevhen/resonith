@@ -15,6 +15,10 @@ version.
   and independent oracle, while scaling transform, PVQ, candidate
   reconstruction, synthesis, and decode work executes in C++20/SIMD or
   optional CUDA. Shipped artifacts have no Python runtime dependency.
+- Accepted and prepared the R-111 16-class heterogeneous corpus from lossless
+  EBU SQAM and Xiph sources. It adds male/female speech, solo voice, sustained
+  tone, noise, resonance, electronic, transient, dense, stereo, and mixed-film
+  gates; no codec improvement is claimed by corpus acquisition.
 - Closed R-103 after its active-band coefficient selector failed the speech
   fast gate. The negative machine report is published; no bitstream, decoder,
   or default-encoder behavior changed.

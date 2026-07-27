@@ -1,0 +1,252 @@
+{
+  "schema": "resonith-extended-audio-corpus-1",
+  "acquired_on": "2026-07-27",
+  "diagnostic_crop_seconds": 12.0,
+  "collections": {
+    "ebu-sqam-tech3253": {
+      "title": "EBU Tech 3253 Sound Quality Assessment Material",
+      "source_page": "https://qc.ebu.io/testmaterials/523/",
+      "download_url": "https://qc.ebu.io/testmaterials/523/1/download/",
+      "archive_name": "TECH3253_SQAM_FLAC.zip",
+      "archive_bytes": 175545976,
+      "archive_sha256": "7d6fcd0fc42354637291792534b61bf129612f221f8efef97b62e8942a8686aa",
+      "format": "lossless FLAC in ZIP",
+      "terms": "Non-commercial use other than as an R&D tool is prohibited by the download terms.",
+      "terms_url": "https://tech.ebu.ch/publications/sqamcd",
+      "redistribute_source_audio": false
+    },
+    "xiph-test-media": {
+      "title": "Xiph.org lossless test media",
+      "source_page": "https://media.xiph.org/",
+      "format": "lossless FLAC",
+      "terms": "Local codec R&D input; do not redistribute from this repository until the per-title audio license is independently recorded.",
+      "redistribute_source_audio": false
+    }
+  },
+  "clips": [
+    {
+      "id": "ebu-sustained-sine",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "01.flac",
+      "source_bytes": 1549180,
+      "source_sha256": "6974968d05ff490ba2c7718017dfaf09692c0c5c1813d03c8c3a8dd2b8c07cf2",
+      "title": "1 kHz sine-wave level sequence",
+      "categories": ["sustained-tone", "deterministic", "level-tracking"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "mono-average",
+      "output_file": "ebu-sustained-sine.wav"
+    },
+    {
+      "id": "ebu-pink-noise",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "02.flac",
+      "source_bytes": 3781793,
+      "source_sha256": "9e673d42d303add6b0f8ebba3f566fefcd9f083e6b262f09c65ceb071f2f9238",
+      "title": "Band-limited pink noise",
+      "categories": ["stochastic", "noise", "stereo"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "preserve",
+      "output_file": "ebu-pink-noise.wav"
+    },
+    {
+      "id": "ebu-vibrato-gong",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "06.flac",
+      "source_bytes": 179219,
+      "source_sha256": "a377cefc13e6a4846b0a94225a3462013dd22bbf096b41b9ae6fe5328520b5b3",
+      "title": "500 Hz electronic gong with vibrato",
+      "categories": ["resonant", "vibrato", "long-decay"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "mono-average",
+      "output_file": "ebu-vibrato-gong.wav"
+    },
+    {
+      "id": "ebu-electronic-tune",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "07.flac",
+      "source_bytes": 856185,
+      "source_sha256": "dcfffa5d803603a1a19e5981569662bbe799d64771e7b69c71be462e0311494e",
+      "title": "Electronic tune",
+      "categories": ["electronic", "tonal", "synthetic"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "mono-average",
+      "output_file": "ebu-electronic-tune.wav"
+    },
+    {
+      "id": "ebu-violin",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "08.flac",
+      "source_bytes": 5447787,
+      "source_sha256": "e7e1a464f8b468cfff8ca2cfbf0e950db9ead9f59fb580afb87a5e8bc350fc42",
+      "title": "Solo violin arpeggio and phrase",
+      "categories": ["solo-instrument", "tonal", "bowed-string", "stereo"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "preserve",
+      "output_file": "ebu-violin.wav"
+    },
+    {
+      "id": "ebu-claves",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "26.flac",
+      "source_bytes": 1284366,
+      "source_sha256": "90617038337d9830db987a58325f88751b3b223e6feb0ae896cb12fc69028cac",
+      "title": "Claves single attacks and rhythm",
+      "categories": ["transient", "sparse", "percussion", "stereo"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "preserve",
+      "output_file": "ebu-claves.wav"
+    },
+    {
+      "id": "ebu-side-drum",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "28.flac",
+      "source_bytes": 3373778,
+      "source_sha256": "0b021f2e8e8e70276b19e9d5435d2ee0856002d1fd92628ec7b5f9d8b5ce5f0a",
+      "title": "Side drum with and without snares",
+      "categories": ["transient", "drum", "noise-like", "stereo"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "preserve",
+      "output_file": "ebu-side-drum.wav"
+    },
+    {
+      "id": "ebu-cymbal",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "31.flac",
+      "source_bytes": 5464910,
+      "source_sha256": "e90309f1c60f76d6b0a05fe273c2be88b449bebaa2ec3fa91aa4edcefb256575",
+      "title": "Cymbal attacks and rolls",
+      "categories": ["transient", "stochastic", "long-decay", "stereo"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "preserve",
+      "output_file": "ebu-cymbal.wav"
+    },
+    {
+      "id": "ebu-grand-piano",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "39.flac",
+      "source_bytes": 5866789,
+      "source_sha256": "8d6b40ad1d1d76da20b4706c949fb020df8eec3cc466dc46465341d037e18fd8",
+      "title": "Grand piano dynamics and phrase",
+      "categories": ["polyphonic", "tonal", "attack-decay", "stereo"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "preserve",
+      "output_file": "ebu-grand-piano.wav"
+    },
+    {
+      "id": "ebu-soprano",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "44.flac",
+      "source_bytes": 1657499,
+      "source_sha256": "7fc632e21c41ae1a941ecaf46c44dbd1a9813a4317ccfd5eee06027d33d5ffab",
+      "title": "Solo soprano",
+      "categories": ["solo-voice", "harmonic", "formant", "stereo"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "preserve",
+      "output_file": "ebu-soprano.wav"
+    },
+    {
+      "id": "ebu-female-speech-en",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "49.flac",
+      "source_bytes": 1150762,
+      "source_sha256": "c5bfb443cb6b08d0e5664a52aa2ffb7d290cf3f4362e7c00065d67d5e1211c36",
+      "title": "Female English speech",
+      "categories": ["speech", "female", "english"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "mono-average",
+      "output_file": "ebu-female-speech-en.wav"
+    },
+    {
+      "id": "ebu-male-speech-en",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "50.flac",
+      "source_bytes": 1147663,
+      "source_sha256": "6ac03efb51b6941d338fac56a2b322c36e8b52bb14dfe766c81e2253f2830fc9",
+      "title": "Male English speech",
+      "categories": ["speech", "male", "english"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "mono-average",
+      "output_file": "ebu-male-speech-en.wav"
+    },
+    {
+      "id": "ebu-dense-orchestra",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "65.flac",
+      "source_bytes": 7239542,
+      "source_sha256": "33513932ad1f196dae7ed316faf8d0d907c38a716f704936a9a0137314544f1a",
+      "title": "Dense orchestra",
+      "categories": ["dense-mix", "orchestra", "classical", "stereo"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "preserve",
+      "output_file": "ebu-dense-orchestra.wav"
+    },
+    {
+      "id": "ebu-dense-pop",
+      "collection": "ebu-sqam-tech3253",
+      "source_file": "69.flac",
+      "source_bytes": 2382509,
+      "source_sha256": "35d3a289e00ffba0533acaa7d62b5af669b5a029bf071bc075fe5a434856d4f0",
+      "title": "Dense popular-music mix",
+      "categories": ["dense-mix", "popular-music", "voice", "stereo"],
+      "start_seconds": 0.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "preserve",
+      "output_file": "ebu-dense-pop.wav"
+    },
+    {
+      "id": "xiph-sintel-film-mix",
+      "collection": "xiph-test-media",
+      "source_file": "sintel-trailer-stereo.flac",
+      "download_url": "https://media.xiph.org/sintel/sintel_trailer-audio.flac",
+      "source_bytes": 4692805,
+      "source_sha256": "171d95acdb59882b4b8fb39cc1463920a859a78d3772bca532059c9ee02d48a6",
+      "title": "Sintel trailer stereo film mix",
+      "categories": ["film-mix", "dialogue", "music", "effects", "ambience", "stereo"],
+      "start_seconds": 10.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "preserve",
+      "output_file": "xiph-sintel-film-mix.wav"
+    },
+    {
+      "id": "xiph-elephants-dream-film-mix",
+      "collection": "xiph-test-media",
+      "source_file": "elephants-dream-stereo.flac",
+      "download_url": "https://media.xiph.org/ED/ED-CM-St-16bit.flac",
+      "source_bytes": 59166432,
+      "source_sha256": "fc25f3658365529c599097954fa5342c3e20333cf55648e4cbbcaea95b360f18",
+      "title": "Elephants Dream stereo film mix",
+      "categories": ["film-mix", "dialogue", "music", "effects", "ambience", "stereo"],
+      "start_seconds": 60.0,
+      "duration_seconds": 12.0,
+      "channel_policy": "preserve",
+      "output_file": "xiph-elephants-dream-film-mix.wav"
+    }
+  ],
+  "packet_loss_profiles": [
+    {
+      "id": "isolated-middle-packet",
+      "pattern": "drop one deterministic middle packet"
+    },
+    {
+      "id": "burst-two-packets",
+      "pattern": "drop two adjacent packets centered after one third of the stream"
+    },
+    {
+      "id": "periodic-five-percent",
+      "pattern": "drop every twentieth packet with a source-hash-derived phase"
+    }
+  ]
+}
