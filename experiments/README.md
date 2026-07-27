@@ -34,6 +34,9 @@ reproducible command and independent decode.
 - `extended_audio_corpus.json` — R-111 EBU SQAM and Xiph heterogeneous
   acoustic matrix, exact source identities, crops, channel policies, and use
   restrictions.
+- `gemini_semantic_arbiter_gate.py` — R-128 secret-safe Gemini Files API
+  adapter, strict proposal validation, upload deletion, and independent local
+  DSP audit across the complete R-118 union.
 - `prepare_extended_audio_corpus.py` — verified acquisition and deterministic
   lossless-FLAC-to-PCM16 preparation for the R-111 matrix.
 - `results/extended_audio_corpus_prepared_2026-07-27.json` — exact hashes and

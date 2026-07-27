@@ -4235,3 +4235,57 @@ new oscillator opcode.
   - preserve all existing x64 conformance vectors;
   - require the same positive and negative transient vector on Windows ARM64,
     Android ARM64, Linux ARM64, and desktop compilers.
+
+## R-128 — Live Gemini arbiter evidence before encoder admission
+
+- Status: **RESEARCH — ACTIVE GATE**
+- Date: 2026-07-27
+- Owner order:
+  - test the configured Gemini-first semantic layer on real audio, update
+    Orkela to the resulting bounded MAF Core revision, and then resume typed
+    MAF lifetime syntax without replacing the MAF-first roadmap;
+  - a provider result is useful only when it narrows local search without
+    changing Truth or degrading an admitted reconstruction.
+- Decision:
+  - the first live adapter consumes a bounded mono proxy and requests only
+    timestamped acoustic structure: source classes, coherent, source-filter,
+    stochastic, transient, resonant, and mix hypotheses, estimated lifetimes,
+    confidence, and specialist-routing needs;
+  - the adapter reads its API key from the operating-system credential store.
+    A key MUST NOT enter a repository file, command line, generated report,
+    prompt transcript, exception, ordinary log, or subprocess environment;
+  - uploaded Files API objects are deleted after the response is validated.
+    The public machine report records hashes, sizes, durations, timing, model
+    identifier, structural counts, and local validation only. It contains no
+    credentials, transcript, lyrics, or copyrighted audio;
+  - provider JSON is untrusted. A strict local schema, timestamp bounds,
+    finite-value checks, enum allowlists, count limits, and overlap limits
+    reject malformed or resource-amplifying proposals before Foundry can use
+    them;
+  - local DSP computes independent energy, onset, periodicity, and spectral
+    change evidence. A proposal is labelled supported, weak, or contradicted;
+    confidence alone can never admit a MAF representation;
+  - the material evidence floor is the complete R-118 union: complete speech,
+    complete emotional piano, complete Mozart, and all 16 heterogeneous
+    classes. Partial provider availability remains a diagnostic and cannot
+    support a codec version or compression claim;
+  - this gate changes no bitstream and therefore cannot itself improve bytes
+    or quality. Only a later exact decoder-in-loop RDO result may report an
+    AI-guided compression improvement, with the preceding non-AI search as a
+    complete fallback.
+- Execution boundary:
+  - Gemini is the only general arbiter called in this gate. OpenAI remains
+    disabled; ElevenLabs and Azure receive no audio unless the validated
+    routing plan requests their distinct specialist capability and the local
+    policy gate separately authorizes it;
+  - the research adapter is a thin Python control plane. Audio proxy creation,
+    exact feature analysis, candidate synthesis, serialization, decode, and
+    RDO remain local compiled or deterministic DSP work. No Python or provider
+    SDK is added to the shipped decoder, SDK, or player.
+- Promotion gate:
+  - pass offline parser and adversarial validation tests without a credential;
+  - complete the live 19-item evidence run without leaking audio or secrets
+    into Git;
+  - demonstrate at least one measured reduction in local candidate-search
+    work or one exact-RDO admission before describing the semantic layer as an
+    encoder improvement.
