@@ -139,7 +139,7 @@ class GainPhaseCudaFoundry:
         self._cpu.restype = ctypes.c_int
 
     def candidate_count(self, block_count: int, block_samples: int) -> int:
-        """Return `N * (N - 1) * L` with native overflow validation."""
+        """Return the full pair x phase x direction lattice cardinality."""
 
         output = ctypes.c_uint64()
         status = self._count(block_count, block_samples, ctypes.byref(output))

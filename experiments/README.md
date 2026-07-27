@@ -45,6 +45,9 @@ reproducible command and independent decode.
 - `openai_byte_pattern_gate.py` — R-153 identical PCM16LE-hex gate for
   `gpt-5.6-sol` with Responses API `reasoning.effort=max` and
   `reasoning.mode=pro`.
+- `score_blind_sol_byte_pattern.py` — R-154 scores a blind isolated
+  `gpt-5.6-sol` / `Ultra` Codex proposal with the unchanged local R-152 CUDA
+  authority, explicitly separate from the blocked Responses API gate.
 - `prepare_extended_audio_corpus.py` — verified acquisition and deterministic
   lossless-FLAC-to-PCM16 preparation for the R-111 matrix.
 - `results/extended_audio_corpus_prepared_2026-07-27.json` — exact hashes and

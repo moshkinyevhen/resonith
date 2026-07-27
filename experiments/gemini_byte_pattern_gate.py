@@ -266,6 +266,13 @@ def _native_results(
     blocks: np.ndarray,
     threshold: float,
 ) -> tuple[np.ndarray, float]:
+    """Return the exact forward transform language declared in the prompt.
+
+    The production Foundry may grow additional transform flags. R-152/R-154
+    remain frozen to circular offset plus constant/linear gain, so later
+    reverse candidates must not silently change the comparison authority.
+    """
+
     started = time.perf_counter()
     rows = np.concatenate(
         [
@@ -277,11 +284,18 @@ def _native_results(
         ]
     )
     elapsed = time.perf_counter() - started
+    rows = _prompt_language_rows(rows)
     eligible = rows[
         rows["squared_error"].astype(np.float64)
         <= np.maximum(rows["target_energy"], 1).astype(np.float64) * threshold
     ]
     return eligible, elapsed
+
+
+def _prompt_language_rows(rows: np.ndarray) -> np.ndarray:
+    """Freeze R-152/R-154 to the transforms named in their blind prompt."""
+
+    return rows[(rows["transform_flags"] & 2) == 0]
 
 
 def _score_case(

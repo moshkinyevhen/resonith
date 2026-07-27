@@ -5272,3 +5272,42 @@ new oscillator opcode.
     selected API project gains access;
   - available realtime models are not substituted because that would compare
     a different model class and invalidate the A/B.
+
+## R-154 — Blind Codex GPT-5.6 Sol Ultra proposer gate
+
+- Status: **MEASURED — HIGH-RECALL PROPOSER; NOT AN EXACT FITTER**
+- Date: 2026-07-27
+- Boundary:
+  - because the configured Responses API project cannot access
+    `gpt-5.6-sol`, an isolated Codex sub-agent using model `gpt-5.6-sol` and
+    product reasoning effort `Ultra` MAY be measured as a separate execution
+    surface;
+  - this result SHALL NOT be labelled a Responses API `max`/`pro` result.
+    R-153 remains blocked until the API project itself gains model access.
+- Blindness and fairness:
+  - the agent receives only the frozen R-152 provider-neutral prompt,
+    PCM16LE hexadecimal blocks, finite transform language, and threshold;
+  - it MUST NOT read Gemini output, CUDA/native results, the WAV source, or
+    any codec report;
+  - its structured candidates are scored after completion by the unchanged
+    local R-152 fixed-point CUDA authority;
+  - the report compares relation precision/recall, best-target recall, and
+    exact Q1.15 parameter rate. No self-reported explanation is evidence.
+- Integration rule:
+  - as with every learned provider, a positive result may add proposals or
+    scheduling hints but may never establish equality, prune Foundry, or
+    become required for encoding or decoding.
+- Measured result:
+  - on the synthetic exact-law case, Sol Ultra recalled `24/24` eligible
+    relations and every best target; Gemini recalled `8/24`;
+  - on the real EBU speech-byte case, Sol Ultra recalled `172/172` eligible
+    relations and every best target; Gemini recalled `3/172` and no best
+    target;
+  - Sol Ultra precision was `57.14%` on synthetic and `58.90%` on speech,
+    versus Gemini `66.67%` and `25.00%`;
+  - exact Q1.15 transform parameters remained weak: `0/24` on synthetic and
+    `18/172` on speech. Therefore Sol may propose relations, but the native
+    fixed-point fitter and complete CUDA search remain mandatory;
+  - the frozen R-152 authority explicitly excludes later reverse-transform
+    candidates because reverse was not described in the blind provider
+    prompt.

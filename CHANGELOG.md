@@ -25,6 +25,12 @@ version.
   deterministic Foundry. The frozen identical GPT-5.6 Sol `max`/`pro` gate
   reached the OpenAI API but the configured project lacks model access; no Sol
   quality result or winner is claimed.
+- Added the separate blind Codex `gpt-5.6-sol` / `Ultra` R-154 gate. Sol
+  recalled all `24/24` synthetic and `172/172` real-speech eligible relations,
+  versus Gemini `8/24` and `3/172`, but exact Q1.15 parameters remained
+  `0/24` and `18/172`. Sol is admitted only as an expensive high-recall
+  proposer/auditor; the native fitter, complete CUDA Foundry, and
+  decoder-in-loop RDO remain authoritative.
 - Added R-149/R-150 evidence-grade Foundry foundations: an optional native
   CUDA/NVRTC 13.3 C++23 backend exhaustively evaluates every declared
   block-pair, circular-phase, and signed constant/linear Q1.15 gain candidate

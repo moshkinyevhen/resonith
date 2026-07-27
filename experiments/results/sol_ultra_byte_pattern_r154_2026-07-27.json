@@ -1,0 +1,48 @@
+{
+  "blind_input_sha256": "1a60929b0dafed47bf2431d63073511cfcfb95fdb94ef13be2e53f085e494578",
+  "cases": [
+    {
+      "best_target_recall": 1.0,
+      "block_count": 6,
+      "block_samples": 16,
+      "case_id": "synthetic-known-laws",
+      "eligible_relation_precision": 0.5714285714285714,
+      "eligible_relation_recall": 1.0,
+      "exact_parameter_rate_on_eligible": 0.0,
+      "input_sha256": "99625d2ee92ef7418ab76c46f5e6b54d69636a4060b1b5e77a2717360c0daca9",
+      "maximum_normalized_error": 0.0,
+      "native_eligible_candidate_count": 24,
+      "native_foundry_seconds": 0.26543149998178706,
+      "native_target_count": 5,
+      "sol_ultra_eligible_relation_count": 24,
+      "sol_ultra_exact_parameter_count": 0,
+      "sol_ultra_proposal_count": 42,
+      "sol_ultra_valid_index_count": 42
+    },
+    {
+      "best_target_recall": 1.0,
+      "block_count": 12,
+      "block_samples": 64,
+      "case_id": "ebu-speech-bytes",
+      "eligible_relation_precision": 0.589041095890411,
+      "eligible_relation_recall": 1.0,
+      "exact_parameter_rate_on_eligible": 0.10465116279069768,
+      "input_sha256": "3d92951c7d9e448ad625e1b02d4321217d71b31c02da592b7382ddbc5390738c",
+      "maximum_normalized_error": 0.05,
+      "native_eligible_candidate_count": 172,
+      "native_foundry_seconds": 0.2114442999882158,
+      "native_target_count": 12,
+      "sol_ultra_eligible_relation_count": 172,
+      "sol_ultra_exact_parameter_count": 18,
+      "sol_ultra_proposal_count": 292,
+      "sol_ultra_valid_index_count": 292
+    }
+  ],
+  "execution_surface": "isolated Codex sub-agent",
+  "model": "gpt-5.6-sol",
+  "proposal_sha256": "7b6b18142aa5ad8af1d4f96c7be19fccbe4f1cf186ab2a9da60124dd9f5826d1",
+  "provider_input": "hexadecimal PCM16LE text; no audio MIME",
+  "reasoning_effort": "ultra",
+  "schema": "resonith-r154-sol-ultra-byte-pattern-gate-1",
+  "status": "measured blind Codex proposer evidence; not a Responses API or codec claim"
+}

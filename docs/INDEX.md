@@ -39,6 +39,7 @@
 | [results/MAF_TRUTH_FRONTIER_AND_ABLATION_2026-07-27.md](results/MAF_TRUTH_FRONTIER_AND_ABLATION_2026-07-27.md) | R-136–R-138 quality-constrained residual frontier and MAF family ablation |
 | [results/GEMINI_BYTE_PATTERN_2026-07-27.md](results/GEMINI_BYTE_PATTERN_2026-07-27.md) | R-152 Gemini-on-PCM16-hex precision/recall A/B gate against exact CUDA Foundry |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
+| [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
 
 Normative draft:
