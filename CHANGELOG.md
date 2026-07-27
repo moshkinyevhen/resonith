@@ -11,6 +11,10 @@ version.
 
 ### Research
 
+- Accepted R-110: Python remains the rapidly editable research control plane
+  and independent oracle, while scaling transform, PVQ, candidate
+  reconstruction, synthesis, and decode work executes in C++20/SIMD or
+  optional CUDA. Shipped artifacts have no Python runtime dependency.
 - Closed R-103 after its active-band coefficient selector failed the speech
   fast gate. The negative machine report is published; no bitstream, decoder,
   or default-encoder behavior changed.

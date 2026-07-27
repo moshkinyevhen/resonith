@@ -3177,3 +3177,200 @@ new oscillator opcode.
   - the strict gate therefore fails, no HBR1 syntax enters Main, and the next
     oracle must test continuous pitch, phase, and amplitude trajectories
     across voiced regions instead of restarting a static fit per block.
+
+## R-106 — Continuous harmonic trajectory oracle
+
+- Date: 2026-07-27
+- Status: **RESEARCH — FAST GATE IN PROGRESS**
+- Hypothesis:
+  - R-105 lost a small amount of speech intelligibility because every active
+    block restarted its harmonic phase and held pitch and amplitudes constant;
+  - preserve absolute Q32 phase across each voiced run, linearly interpolate
+    bounded pitch and sine/cosine amplitude knots, and code only the remaining
+    lapped Innovation;
+  - the continuous law should remove block-edge incoherence without copying
+    degraded PCM history or introducing a neural decoder.
+- Constraints:
+  - the prospective decoder uses the existing frozen Q15 sine ROM, unsigned
+    Q32 phase, bounded signed coefficients, integer linear interpolation,
+    bounded multiply-accumulate, signed rounding, and int16 saturation;
+  - every phase is derivable from a run origin and transmitted trajectory
+    knots, so decode output is independent of callback or render-block size;
+  - pitch analysis, voiced-run discovery, and least-squares fitting remain
+    encoder-only and may use floating point; transmitted state and synthesis
+    are deterministic integers;
+  - inactive regions remain ordinary lapped Truth, every parameter byte and
+    checksum participates in RDO, and malformed runs, knots, sizes, or
+    residual configurations are rejected before allocation or synthesis;
+  - no Main opcode or bitstream identifier is assigned unless the independent
+    parser/decoder and declared evidence gates pass.
+- Fast gate:
+  - compete bounded trajectory lifetimes and harmonic counts against the
+    unchanged 17,744-byte pinned speech anchor and current official Opus
+    reference;
+  - complete candidate bytes must match the preceding Resonith stream within
+    0.5%, STOI and ESTOI must both improve, SNR may not regress by more than
+    0.5 dB, and log-mel RMSE may not regress by more than 5%;
+  - selection is lexicographic: pass all hard bounds first, then maximize
+    STOI plus ESTOI, then SNR, then minimize complete bytes.
+- Promotion gate:
+  - a speech pass proceeds to Emotional piano as a false-positive guard and
+    then the complete Mozart, native-decoder, current-Opus, public-triplet,
+    changelog, and semantic-version gates required by R-101 and R-102;
+  - stereo evidence uses one independently bounded trajectory bank per
+    channel but a single joint lapped Innovation stream. A shared residual is
+    required so that the experiment does not gain or lose merely by replacing
+    the preceding stereo transform with two unrelated mono transforms;
+  - a failure closes this exact representation without changing the current
+    production syntax. The report must retain the closest candidate and guide
+    the next factorization experiment.
+
+## R-107 — Perceptual gain–shape and envelope-preserving compiler
+
+- Date: 2026-07-27
+- Status: **RESEARCH — BREAKTHROUGH GATE IN PROGRESS**
+- Problem:
+  - the current global selector minimizes absolute transform energy, producing
+    high waveform SNR while starving quiet frames and bands that carry speech
+    formants, consonants, ambience, and log-spectral structure;
+  - LPF1 already transmits one bounded power-of-two scale per critical band,
+    but dropping coefficients also drops most of that band's reconstructed
+    energy. The scale therefore does not yet act as a true spectral envelope;
+  - the public speech anchor consequently beats matched Opus in waveform SNR
+    but trails it materially in STOI, ESTOI, and log-mel error.
+- Hypothesis:
+  - compile each selected band as gain plus normalized sparse shape: preserve
+    the analyzed band energy by adjusting the existing scale and retained
+    int8 shape values, without adding metadata or a decoder operation;
+  - rank shape coefficients by a bounded continuum between raw energy,
+    frame-normalized energy, and band-normalized energy instead of imposing a
+    blind minimum on every frame or band;
+  - exact complete-byte RDO should discover the smallest amount of temporal
+    and spectral whitening that protects intelligibility while retaining the
+    waveform advantage.
+- Constraints:
+  - emitted streams remain ordinary LSE2/LPF1 and decode through the unchanged
+    fixed-integer Golden Core; this experiment is encoder-only;
+  - every selected position, signed value, modified existing band scale,
+    entropy byte, and container byte participates in RDO;
+  - normalization uses the original analyzed band energy, never decoded past
+    PCM, and zero-selection bands remain zero rather than receiving generated
+    content;
+  - R-100 remains closed: the compiler may continuously reweight candidates
+    but may not reserve a fixed coefficient floor per frame;
+  - the ordinary energy selector and the R-106 trajectory stream remain exact
+    fallbacks. A candidate is chosen only from actual decoder output.
+- Fast admission gate:
+  - on the pinned speech file at no more complete bytes than the official
+    Opus 1.6.1 anchor, STOI and ESTOI must both improve over the preceding
+    Resonith anchor, SNR may not regress by more than 0.5 dB, and log-mel RMSE
+    must improve;
+  - Emotional piano must then stay within 0.5 dB SNR and 3% log-mel RMSE of
+    the preceding complete-byte-matched Resonith point.
+- Breakthrough target:
+  - exceed the same complete-byte Opus anchor simultaneously in speech STOI
+    and ESTOI, then close the log-mel gap on the speech and complete Mozart
+    evidence without surrendering Resonith's waveform-SNR lead;
+  - this target is not a measured claim. Failure of the first oracle triggers
+    the next simplest gain–shape representation or predictive envelope law,
+    not threshold relaxation.
+- Promotion gate:
+  - native-decoder identity, all three R-102 references, current Opus decode,
+    public listening triplets, blinded listening, changelog, and semantic
+    version remain mandatory before this compiler becomes a released default.
+
+## R-108 — Compact integer PVQ with predictive log envelope
+
+- Date: 2026-07-27
+- Status: **RESEARCH — QUEUED AFTER R-107 MEASUREMENT**
+- Decision:
+  - after publishing the complete R-107 scalar gain–shape evidence, test a
+    bounded integer pyramid-vector shape and a time/frequency-predicted
+    quantized log-energy envelope;
+  - keep transform, envelope, pulse count, codebook index, arithmetic, memory,
+    and corruption bounds explicit; require an independent decoder and actual
+    serialized bytes before comparing quality;
+  - retain R-107 and the ordinary LPF1 path as complete fallbacks. No syntax is
+    promoted from an estimated-rate or encoder-reconstruction-only result.
+- Gate:
+  - first exceed R-107 at no more complete bytes on speech STOI, ESTOI, SNR,
+    and log-mel RMSE;
+  - the breakthrough target remains simultaneous STOI and ESTOI superiority
+    over the complete-byte-matched official Opus anchor;
+  - every passing speech point proceeds through the full cross-content gate
+    in R-109 before a normative opcode, changelog release entry, or version.
+
+## R-109 — Permanent cross-content architecture evidence gate
+
+- Date: 2026-07-27
+- Status: **ACCEPTED**
+- Decision:
+  - every material architecture change MUST be evaluated on the pinned speech,
+    Emotional piano, and complete Mozart references, regardless of the content
+    class that motivated the change;
+  - extend the permanent corpus with reproducibly acquired, redistribution-
+    compatible references covering at least male and female speech, solo
+    voice, tonal sustain, transient percussion, dense music mix, electronic
+    material, ambience/noise, stereo image, and packet loss;
+  - prefer official or primary corpus sources, pin source URL, version,
+    license, exact crop, PCM normalization procedure, SHA-256, and acquisition
+    date, and never silently replace a reference after results exist;
+  - evaluate complete files from actual decoders and report complete bytes,
+    bitrate, SNR, SI-SDR, segmental SNR, multi-resolution STFT, log-spectral,
+    log-mel, magnitude similarity, onset/pre-echo where applicable, STOI and
+    ESTOI for speech, hashes, tool versions, source commit, and wall time;
+  - negative and mixed results are first-class evidence. Perceptual
+    superiority still requires controlled blinded listening in addition to
+    objective diagnostics.
+- Publication:
+  - every completed architecture gate receives a detailed English Markdown
+    report, machine-readable JSON, listening artifacts where redistribution is
+    permitted, and a clearly separated conclusion, regressions, limitations,
+    and next action;
+  - every released improvement receives a semantic version and linked English
+    `CHANGELOG.md` entry. Experiments that do not change the released default
+    are recorded under the Unreleased research section without pretending to
+    be a product improvement;
+  - the repository index MUST make the latest benchmark, corpus manifest, and
+    changelog easy to find from the project front page.
+
+## R-110 — Research control plane and native execution boundary
+
+- Date: 2026-07-27
+- Status: **ACCEPTED**
+- Decision:
+  - retain Python as a thin research control plane for rapidly expressing
+    hypotheses, search spaces, RDO cost functions, experiment orchestration,
+    metrics, plots, reports, and independent conformance models;
+  - execute every material per-sample, per-coefficient, transform, PVQ search,
+    candidate reconstruction, synthesis, and decode workload in the shared
+    native C++20 Core, with portable SIMD and optional CUDA acceleration where
+    measurement proves a benefit;
+  - a successful experiment MUST migrate its bitstream-critical behavior into
+    the bounded native encoder/decoder path before promotion. A Python oracle
+    may describe or verify normative behavior but may never be its only
+    executable definition;
+  - the shipped Resonith codec, SDK, command-line tools, embedded library, and
+    Orkela playback path MUST have no Python runtime dependency;
+  - keep an independently structured Python conformance model where practical
+    so that exact native output is checked against a second implementation
+    rather than against itself.
+- Rationale:
+  - banning Python would lengthen hypothesis iteration through repeated
+    compile/link cycles without improving the shipped product;
+  - executing heavy DSP in Python would make full-track architecture gates
+    unnecessarily expensive and would obscure the performance of the intended
+    implementation;
+  - the split preserves interactive research speed, native throughput,
+    cross-platform product portability, and independent verification at the
+    same time.
+- Enforcement:
+  - profiling MUST identify any Python loop whose cost scales materially with
+    samples, coefficients, candidates, or PVQ pulses; such a loop is a native
+    migration candidate before a full-corpus gate;
+  - final RDO measurements MUST decode through the native Core and require
+    exact PCM equality with the independent model for every promoted syntax;
+  - Python-only throughput is research telemetry and MUST NOT be presented as
+    the expected speed of a production encoder;
+  - native acceleration must preserve the same serialized bytes or declare a
+    distinct encoder search level; it may never change normative decoding.

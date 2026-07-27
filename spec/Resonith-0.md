@@ -1136,6 +1136,26 @@ the complete resulting streams, including Basis, Atom, trajectory, gain,
 Innovation, checkpoint, and container cost. The canonical zero-Atom
 Innovation stream from clause 4.1.4 MUST remain an RDO candidate.
 
+### 14.1 Official research and product implementation boundary
+
+This subsection governs official Resonith project artifacts; it does not
+require an independent conforming implementation to use a particular
+programming language.
+
+The official Python research layer MAY define hypotheses, search spaces, RDO
+costs, training, metrics, experiments, and reports. Material work that scales
+with samples, transform coefficients, candidates, or PVQ pulses MUST execute
+through bounded native C++20, portable SIMD, or optional accelerator kernels
+before an experiment enters the full promotion gate in clause 16.
+
+The official shipped codec, SDK, command-line tools, embedded library, and
+Orkela playback path MUST NOT require a Python runtime. Bitstream-critical
+behavior promoted from an oracle MUST exist in the portable native Core and
+pass exact comparison against an independently structured model. Optional
+CUDA or other encoder acceleration MUST NOT change normative decoder output;
+if it changes search coverage, the encoder MUST identify the resulting search
+level in evidence reports.
+
 ## 15. Security
 
 Decoder MUST:

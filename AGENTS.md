@@ -39,6 +39,10 @@ Never present a **TARGET** or **HYPOTHESIS** as a measured result.
    the resulting Basis is immutable.
 10. CIBS forbids arbitrary graphs, floating-point normative behavior, and
     per-sample neural inference.
+11. Python is a thin research control plane and independent oracle only.
+    Scaling DSP/search kernels execute natively, and shipped codec, SDK,
+    embedded, command-line, and playback artifacts have no Python runtime
+    dependency.
 
 ## Repository language
 

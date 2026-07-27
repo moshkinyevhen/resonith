@@ -221,8 +221,10 @@ PYTHONPATH=reference python -m maf_p0 decode-lapped \
 - portable dependency-free C++20 bit-exact Golden Core;
 - stable C ABI for applications, bindings, and hardware test benches;
 - Rust for secure parsing, streaming, scheduling, and player services;
-- Python/PyTorch for encoder research, RDO, and CIBS training;
-- optional C++/CUDA acceleration for Studio and Foundry encoding;
+- Python/PyTorch as a thin research control plane for hypotheses, RDO policy,
+  metrics, and CIBS training, never as a shipped runtime dependency;
+- C++20/SIMD and optional CUDA kernels for scaling transform, search,
+  reconstruction, synthesis, and Studio/Foundry encoding work;
 - scalar, x86 SIMD, ARM NEON/SVE2, WASM SIMD, and vendor-DSP decode paths.
 
 See

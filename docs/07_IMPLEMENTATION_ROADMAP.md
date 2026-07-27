@@ -201,17 +201,24 @@ tests/
   corruption/listening/
 ```
 
-The first oracle MAY remain fast-moving Python research code, but normative
-arithmetic is isolated from the beginning in a small independently testable
-Core. The implementation sequence is:
+The first falsification oracle MAY remain fast-moving Python research code,
+but Python is only the research control plane. Normative arithmetic is
+isolated from the beginning in a small independently testable Core, and every
+material loop that scales with samples, coefficients, candidates, or PVQ
+pulses moves to native code before a full-corpus promotion gate. The
+implementation sequence is:
 
 1. keep MAF-P0 operational as the Python oracle;
 2. freeze the smallest useful P0 arithmetic and container subset;
 3. implement exact parity in the portable C++20 Golden Core and stable C ABI;
 4. call that Core from decoder-in-the-loop Python RDO;
 5. build the Rust parser, scheduler, and player services around the C ABI;
-6. move only measured encoder bottlenecks to C++/SIMD/CUDA;
+6. move measured transform, search, reconstruction, synthesis, and other
+   scaling encoder bottlenecks to C++/SIMD/CUDA while retaining Python for
+   rapidly editable search policy, metrics, and reporting;
 7. add an independent Rust decoder after Main-0 semantics stabilize.
 
 The complete language, portability, and real-time contract is defined in
 [11_IMPLEMENTATION_LANGUAGE.md](11_IMPLEMENTATION_LANGUAGE.md).
+Official codec, SDK, embedded, command-line, and Orkela deliverables have zero
+Python runtime dependency under R-110.

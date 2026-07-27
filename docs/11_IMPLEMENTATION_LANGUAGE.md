@@ -1,7 +1,7 @@
 # Implementation Language and Runtime Architecture
 
-Status: **ENGINEERING DECISION**
-Date: 2026-07-26
+Status: **ACCEPTED — R-110**
+Date: 2026-07-27
 
 ## 1. Decision
 
@@ -10,17 +10,21 @@ Resonith uses a deliberately split implementation stack:
 1. **Portable C++20** for the bit-exact Golden Core, reference decoder,
    real-time renderer, entropy layer, state machine, and production DSP.
 2. **A stable C ABI** around the decoder and conformance surface.
-3. **Python 3.12+** for research encoders, oracle search, corpus tooling,
-   visualization, training, and experiment orchestration.
+3. **Python 3.12+** as a thin research control plane for rapidly expressing
+   hypotheses, oracle search spaces, RDO cost functions, corpus tooling,
+   visualization, training, metrics, and experiment orchestration.
 4. **PyTorch** for non-normative teacher models and CIBS training/export.
-5. **CUDA C++** for optional Foundry/Studio encoder kernels. CUDA is never a
-   conformance dependency.
+5. **C++20, portable SIMD, and CUDA C++** for every measured encoder
+   bottleneck whose work scales materially with samples, coefficients,
+   candidates, or PVQ pulses. CUDA is never a conformance dependency.
 6. **Rust** for untrusted package parsing, streaming/network orchestration,
    capability negotiation, player runtime services, and an independent
    decoder once the native P0 semantics stabilize.
 
-This is not a compromise between two equivalent choices. Python and C++ solve
-different parts of the codec.
+This is not a compromise between two equivalent choices. Python is the
+laboratory control surface; native code is the computation engine and the
+product. Resonith libraries, tools, SDKs, embedded builds, and playback paths
+have no Python runtime dependency.
 
 ## 2. Why the current Python prototype is correct
 
@@ -33,8 +37,16 @@ MAF-P0 is an experimental oracle. Python minimizes the cost of changing:
 - benchmark accounting;
 - plots and corpus analysis.
 
-Rewriting these components in C++ before the representation is stable would
-slow research without improving the bitstream.
+The Python layer SHOULD describe candidate graphs and costs, invoke native
+kernels in batches, compare actual serialized streams, and publish evidence.
+It MUST NOT retain a material per-sample, per-coefficient, per-candidate, or
+per-pulse loop merely for implementation convenience. Profiling, rather than
+language preference, defines the next native migration.
+
+Rewriting the orchestration layer in C++ before the representation is stable
+would slow research without improving the bitstream. Conversely, leaving
+transform, PVQ search, synthesis, or decode loops in Python would make
+full-track gates unnecessarily slow without improving iteration quality.
 
 Python must not, however, become the only definition of decoding behavior.
 Interpreter overhead, the GIL, dependency weight, mobile/embedded deployment,
@@ -124,22 +136,35 @@ tests/fuzz/             parser/state-machine fuzz targets
 ```
 
 Python experiments MUST call the C++ decoder through the binding for final
-decoder-in-the-loop RDO. A separate Python renderer MAY remain only as an
-independent oracle and must never silently define the bitstream.
+decoder-in-the-loop RDO. Expensive forward analysis, transform, PVQ search,
+candidate reconstruction, synthesis, and decode MUST call shared native
+kernels before a full-corpus promotion gate. A separately structured Python
+renderer MAY remain as an independent oracle and must never silently define
+the bitstream.
 
 ## 7. Migration order
 
-1. Keep MAF-P0 Python operational as the research oracle.
+1. Keep MAF-P0 Python operational as the research control plane and
+   independent oracle.
 2. Freeze the smallest P0 container and arithmetic subset needed for parity.
 3. Implement C++20 container parsing, CIBS materialization, phase rendering,
    block-gain law, residual reconstruction, and WAV-independent sample API.
 4. Generate shared golden vectors and require byte/sample equality.
 5. Bind the C++ Core into Python.
-6. Move only measured encoder bottlenecks to C++/SIMD/CUDA.
+6. Move every measured sample-, coefficient-, candidate-, and pulse-scaling
+   encoder bottleneck to C++/SIMD/CUDA while its search policy remains rapidly
+   configurable from Python.
 7. Add a Rust independent decoder after Main-0 semantics stabilize.
 
 The first C++ parity target is deliberately small. It must not trigger a
 rewrite of the research encoder.
+
+A candidate may begin as an entirely Python oracle for a small falsification
+crop. Before the permanent three-reference or extended-corpus gate, its heavy
+kernels must expose a bounded native API, preserve exact serialized bytes or
+declare a distinct encoder search level, and pass native/independent equality.
+This keeps the first experiment cheap without allowing laboratory overhead to
+become product architecture.
 
 Steps 2 through 5 now have an executable mono periodic subset: RSC1, `CONF`,
 `ATOM`, `BRAW`/`BCIB`, and `RSL1`/`RSL2` decode through allocation-free whole
