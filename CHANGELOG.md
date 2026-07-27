@@ -11,6 +11,9 @@ version.
 
 ### Research
 
+- Added the R-126 strict GCC 16.1 C++23 compatibility gate and fixed one
+  GCC-only narrowing diagnostic in bounded MAF filter-history traversal
+  without changing fixed-point or PCM behavior.
 - Added R-124/R-125 optional AI semantic arbitration. Gemini is the active
   research default; OpenAI or automatic capability selection remain explicit
   alternatives. ElevenLabs

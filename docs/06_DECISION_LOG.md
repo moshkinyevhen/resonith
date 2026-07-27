@@ -4192,3 +4192,21 @@ new oscillator opcode.
   - R-124 only where it named OpenAI as the initial default;
   - R-123 only where its ordering implied that Gemini was not a first-class
     initial provider.
+
+## R-126 — Independent GCC C++23 compatibility gate
+
+- Status: **ACCEPTED**
+- Date: 2026-07-27
+- Decision:
+  - strict GCC is a required independent C++23 compatibility gate in addition
+    to the pinned Clang production baseline, MSVC, AppleClang, and Android NDK;
+  - the Windows research host uses checksum-verified portable GCC 16.1.0 to
+    reproduce GCC-only diagnostics before pushing;
+  - the GCC gate uses the same `-Wall -Wextra -Wconversion -Wpedantic
+    -Wshadow -Werror` contract as Linux CI;
+  - compiler-warning fixes MUST preserve bitstream, fixed-point, ABI, and PCM
+    behavior and rerun the complete native and Python/native suites.
+- Trigger:
+  - commit `9f4fc74` passed Clang, MSVC, AppleClang, Android NDK, sanitizer
+    fuzzing, Android, and iOS gates but exposed one GCC-only narrowing warning
+    in the MAF filter-history reverse index.

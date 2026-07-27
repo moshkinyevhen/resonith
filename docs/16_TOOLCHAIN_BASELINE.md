@@ -23,6 +23,7 @@ search kernels execute in C++23, portable SIMD, or optional CUDA.
 |---|---:|---|
 | Python | 3.14.6 | `artifacts/tools/python-3.14.6-amd64` |
 | LLVM/Clang | 22.1.8 | `artifacts/tools/llvm-mingw-20260616-ucrt-x86_64` |
+| GCC compatibility | 16.1.0 | `artifacts/tools/gcc-16.1.0-winlibs` |
 | CMake | 4.4.0 | `artifacts/tools/cmake-4.4.0-windows-x86_64` |
 | Ninja | 1.13.2 | `artifacts/tools/ninja-1.13.2-windows-x86_64` |
 | MinGit | 2.55.0.windows.3 | `artifacts/tools/mingit-2.55.0.3-64-bit` |
@@ -46,6 +47,7 @@ The local installer and archive hashes are:
 | `OpenJDK25U-jdk_x64_windows_hotspot_25.0.3_9.zip` | `709312cd0420296d9b9de917fe6e28a5b979e875ee5ab91783fb79bcd5857235` |
 | `commandlinetools-win-15859902_latest.zip` | `90ae805d20434428bffcb699c290860f19bb5f66a67e6b330067e3de801fb04a` |
 | installed `clang++.exe` | `a8b7a614eeadd9105f814be3701a7f312cda4cea51751b75b408c16100c94e85` |
+| `winlibs-x86_64-posix-seh-gcc-16.1.0-mingw-w64ucrt-14.0.0-r3.7z` | `69445c900db5237656bef65b41cc28123c7203e8ae17d69a284c4c2c841220f2` |
 
 Downloaded toolchains and build products are intentionally excluded from Git.
 The manifest records the reproducible baseline without committing third-party
@@ -79,6 +81,11 @@ The first strict C++23 admission gate passed:
 The complete evidence is recorded in
 [C++23 Production Toolchain Gate](results/CPP23_TOOLCHAIN_GATE_2026-07-27.md).
 
+GCC 16.1.0 is a secondary compatibility compiler, not a replacement for the
+pinned Clang production baseline. It reproduces the Linux warning contract
+locally and prevents GCC-only narrowing, shadowing, and conversion failures
+from reaching CI.
+
 ## 6. Mobile build baseline
 
 R-116 adds Android and iOS as mandatory compile targets:
@@ -94,6 +101,8 @@ R-116 adds Android and iOS as mandatory compile targets:
 
 - Python releases: <https://www.python.org/downloads/>
 - LLVM-MinGW releases: <https://github.com/mstorsjo/llvm-mingw/releases>
+- WinLibs GCC releases:
+  <https://github.com/brechtsanders/winlibs_mingw/releases>
 - CMake downloads: <https://cmake.org/download/>
 - Ninja releases: <https://github.com/ninja-build/ninja/releases>
 - Android NDK history:

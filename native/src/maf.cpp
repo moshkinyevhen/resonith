@@ -463,7 +463,8 @@ extern "C" resonith_status resonith_maf_filter_render(
                 - round_shift_q15(accumulator)
         );
         for (
-            std::uint16_t index = filter->order - 1U;
+            std::size_t index =
+                static_cast<std::size_t>(filter->order) - 1U;
             index > 0U;
             --index
         ) {
