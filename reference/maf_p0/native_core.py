@@ -735,6 +735,17 @@ class NativeMain0Decoder:
             ctypes.POINTER(ctypes.c_uint32),
         ]
         self._library.resonith_lapped_adaptive_encode.restype = ctypes.c_int
+        self._library.resonith_lapped_int16_entropy_encode.argtypes = [
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_size_t),
+            ctypes.POINTER(ctypes.c_uint32),
+        ]
+        self._library.resonith_lapped_int16_entropy_encode.restype = ctypes.c_int
         self._library.resonith_lapped_packet_open.argtypes = [
             byte_pointer,
             ctypes.c_size_t,
@@ -1173,6 +1184,47 @@ class NativeMain0Decoder:
             )
         )
         return output[: output_size.value].tobytes(), int(bit_count.value)
+
+    def encode_lapped_bounded(
+        self,
+        values: np.ndarray,
+    ) -> tuple[int, int, bytes, int]:
+        """Select and encode one LAR1 signed field in the bounded native Core."""
+
+        value_view = np.asarray(values)
+        if (
+            value_view.ndim != 1
+            or not np.issubdtype(value_view.dtype, np.integer)
+            or np.any(value_view < np.iinfo(np.int16).min)
+            or np.any(value_view > np.iinfo(np.int16).max)
+        ):
+            raise TypeError("invalid native bounded signed field")
+        source = np.ascontiguousarray(value_view, dtype=np.int16)
+        if source.size == 0:
+            return 0, 0, b"", 0
+        output = np.empty(source.size * 13 + 16, dtype=np.uint8)
+        mode = ctypes.c_uint8()
+        parameter = ctypes.c_uint8()
+        output_size = ctypes.c_size_t()
+        bit_count = ctypes.c_uint32()
+        self._check(
+            self._library.resonith_lapped_int16_entropy_encode(
+                source.ctypes.data_as(ctypes.POINTER(ctypes.c_int16)),
+                source.size,
+                ctypes.byref(mode),
+                ctypes.byref(parameter),
+                output.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)),
+                output.size,
+                ctypes.byref(output_size),
+                ctypes.byref(bit_count),
+            )
+        )
+        return (
+            int(mode.value),
+            int(parameter.value),
+            output[: output_size.value].tobytes(),
+            int(bit_count.value),
+        )
 
     def decode_lapped_packets(
         self,

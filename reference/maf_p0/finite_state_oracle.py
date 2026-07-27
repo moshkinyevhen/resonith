@@ -21,9 +21,12 @@ from .sparse_entropy import (
 
 
 MAGIC = b"LAF1"
+RICE_VALUE_MAGIC = b"LAR1"
 VERSION = 1
 HEADER = struct.Struct("<4s5BHIHH6I")
 COMPACT_HEADER = struct.Struct("<BBH6I")
+RICE_VALUE_HEADER = struct.Struct("<4s7BHIHH6I")
+RICE_VALUE_COMPACT_HEADER = struct.Struct("<BBBBH6I")
 _TOP = (1 << 32) - 1
 _HALF = 1 << 31
 _QUARTER = 1 << 30
@@ -157,6 +160,138 @@ def expand_compact_finite_state_lapped(
             value_bits,
         )
         + payload[COMPACT_HEADER.size :]
+    )
+
+
+def compact_rice_value_lapped(payload: bytes) -> bytes:
+    """Remove LAR1 shape fields inherited from an authenticated LPS6 packet."""
+
+    if (
+        not isinstance(payload, bytes)
+        or len(payload) < RICE_VALUE_HEADER.size
+        or len(payload) > MAX_PAYLOAD_BYTES
+    ):
+        raise ValueError("invalid LAR1 payload for compact transport")
+    (
+        magic,
+        version,
+        flags,
+        count_entropy,
+        count_parameter,
+        value_entropy,
+        value_parameter,
+        reserved,
+        gap_threshold,
+        _frame_count,
+        _channels,
+        _band_count,
+        coefficient_count,
+        scale_bits,
+        count_bits,
+        gap_bits,
+        raw_gap_bits,
+        value_bits,
+    ) = RICE_VALUE_HEADER.unpack_from(payload)
+    if (
+        magic != RICE_VALUE_MAGIC
+        or version != VERSION
+        or flags != 0
+        or reserved != 0
+    ):
+        raise ValueError("unsupported LAR1 compact source")
+    compact = (
+        RICE_VALUE_COMPACT_HEADER.pack(
+            count_entropy,
+            count_parameter,
+            value_entropy,
+            value_parameter,
+            gap_threshold,
+            coefficient_count,
+            scale_bits,
+            count_bits,
+            gap_bits,
+            raw_gap_bits,
+            value_bits,
+        )
+        + payload[RICE_VALUE_HEADER.size :]
+    )
+    if compact_rice_value_lapped_size(compact) != len(compact):
+        raise ValueError("LAR1 entropy fields are not exactly framed")
+    return compact
+
+
+def compact_rice_value_lapped_size(payload: bytes) -> int:
+    """Return one compact LAR1 record length from local entropy bit counts."""
+
+    if (
+        not isinstance(payload, bytes)
+        or len(payload) < RICE_VALUE_COMPACT_HEADER.size
+    ):
+        raise ValueError("truncated compact LAR1 descriptor")
+    fields = RICE_VALUE_COMPACT_HEADER.unpack_from(payload)
+    bit_counts = fields[-5:]
+    payload_bytes = sum((int(bits) + 7) // 8 for bits in bit_counts)
+    total = RICE_VALUE_COMPACT_HEADER.size + payload_bytes
+    if total > MAX_PAYLOAD_BYTES or total > len(payload):
+        raise ValueError("truncated compact LAR1 fields")
+    return total
+
+
+def expand_compact_rice_value_lapped(
+    payload: bytes,
+    *,
+    frame_count: int,
+    channels: int,
+    band_count: int,
+) -> bytes:
+    """Restore one canonical LAR1 header from authenticated inherited shape."""
+
+    size = compact_rice_value_lapped_size(payload)
+    if size != len(payload):
+        raise ValueError("trailing compact LAR1 bytes")
+    (
+        count_entropy,
+        count_parameter,
+        value_entropy,
+        value_parameter,
+        gap_threshold,
+        coefficient_count,
+        scale_bits,
+        count_bits,
+        gap_bits,
+        raw_gap_bits,
+        value_bits,
+    ) = RICE_VALUE_COMPACT_HEADER.unpack_from(payload)
+    if (
+        frame_count <= 0
+        or channels <= 0
+        or channels > 0xFFFF
+        or band_count <= 0
+        or band_count > 0xFFFF
+    ):
+        raise ValueError("compact LAR1 inherited shape is invalid")
+    return (
+        RICE_VALUE_HEADER.pack(
+            RICE_VALUE_MAGIC,
+            VERSION,
+            0,
+            count_entropy,
+            count_parameter,
+            value_entropy,
+            value_parameter,
+            0,
+            gap_threshold,
+            frame_count,
+            channels,
+            band_count,
+            coefficient_count,
+            scale_bits,
+            count_bits,
+            gap_bits,
+            raw_gap_bits,
+            value_bits,
+        )
+        + payload[RICE_VALUE_COMPACT_HEADER.size :]
     )
 
 
@@ -506,6 +641,219 @@ def encode_finite_state_lapped(
     if len(payload) > MAX_PAYLOAD_BYTES:
         raise ValueError("finite-state sparse payload exceeds the byte bound")
     return payload
+
+
+def encode_rice_value_lapped(
+    scales: np.ndarray,
+    counts: np.ndarray,
+    positions: np.ndarray,
+    values: np.ndarray,
+    *,
+    half_window: int,
+    native_encoder=None,
+) -> bytes:
+    """Encode LAF1 fields while selecting bounded Rice/packed value entropy."""
+
+    adaptive = encode_finite_state_lapped(
+        scales,
+        counts,
+        positions,
+        values,
+        half_window=half_window,
+        native_encoder=native_encoder,
+    )
+    (
+        _magic,
+        _version,
+        _flags,
+        count_entropy,
+        count_parameter,
+        _reserved,
+        gap_threshold,
+        frame_count,
+        channels,
+        band_count,
+        coefficient_count,
+        scale_bits,
+        count_bits,
+        gap_bits,
+        raw_gap_bits,
+        adaptive_value_bits,
+    ) = HEADER.unpack_from(adaptive)
+    old_sizes = [
+        (int(bits) + 7) // 8
+        for bits in (
+            scale_bits,
+            count_bits,
+            gap_bits,
+            raw_gap_bits,
+            adaptive_value_bits,
+        )
+    ]
+    common_end = HEADER.size + sum(old_sizes[:-1])
+    common_payload = adaptive[HEADER.size:common_end]
+    value_array = np.asarray(values)
+    if np.any(value_array == 0):
+        raise ValueError("LAR1 sparse values must be nonzero")
+    bounded_encode = (
+        _encode_entropy
+        if native_encoder is None
+        else native_encoder.encode_lapped_bounded
+    )
+    (
+        value_entropy,
+        value_parameter,
+        value_payload,
+        value_bits,
+    ) = bounded_encode(value_array.astype(np.int64))
+    payload = (
+        RICE_VALUE_HEADER.pack(
+            RICE_VALUE_MAGIC,
+            VERSION,
+            0,
+            count_entropy,
+            count_parameter,
+            value_entropy,
+            value_parameter,
+            0,
+            gap_threshold,
+            frame_count,
+            channels,
+            band_count,
+            coefficient_count,
+            scale_bits,
+            count_bits,
+            gap_bits,
+            raw_gap_bits,
+            value_bits,
+        )
+        + common_payload
+        + value_payload
+    )
+    if len(payload) > MAX_PAYLOAD_BYTES:
+        raise ValueError("rice-value lapped payload exceeds the byte bound")
+    return payload
+
+
+def decode_rice_value_lapped(
+    payload: bytes,
+    *,
+    half_window: int,
+    expected_channels: int,
+    expected_frames: int,
+    expected_bands: int,
+) -> FiniteStateSparseFields:
+    """Independently validate and decode one complete LAR1 sparse field."""
+
+    if (
+        not isinstance(payload, bytes)
+        or len(payload) < RICE_VALUE_HEADER.size
+        or len(payload) > MAX_PAYLOAD_BYTES
+    ):
+        raise ValueError("invalid rice-value lapped payload length")
+    (
+        magic,
+        version,
+        flags,
+        count_entropy,
+        count_parameter,
+        value_entropy,
+        value_parameter,
+        reserved,
+        gap_threshold,
+        frame_count,
+        channels,
+        band_count,
+        coefficient_count,
+        scale_bits,
+        count_bits,
+        gap_bits,
+        raw_gap_bits,
+        value_bits,
+    ) = RICE_VALUE_HEADER.unpack_from(payload)
+    if (
+        magic != RICE_VALUE_MAGIC
+        or version != VERSION
+        or flags != 0
+        or reserved != 0
+        or frame_count != expected_frames
+        or channels != expected_channels
+        or band_count != expected_bands
+    ):
+        raise ValueError("unsupported rice-value lapped header")
+    sizes = [
+        (int(bits) + 7) // 8
+        for bits in (
+            scale_bits,
+            count_bits,
+            gap_bits,
+            raw_gap_bits,
+            value_bits,
+        )
+    ]
+    if RICE_VALUE_HEADER.size + sum(sizes) != len(payload):
+        raise ValueError("rice-value lapped entropy length mismatch")
+    common_bytes = sum(sizes[:-1])
+    common_payload = payload[
+        RICE_VALUE_HEADER.size : RICE_VALUE_HEADER.size + common_bytes
+    ]
+    value_payload = payload[-sizes[-1] :] if sizes[-1] else b""
+    decoded_values = _decode_entropy(
+        value_payload,
+        value_bits,
+        coefficient_count,
+        value_entropy,
+        value_parameter,
+    )
+    if (
+        np.any(decoded_values < -128)
+        or np.any(decoded_values > 127)
+        or np.any(decoded_values == 0)
+    ):
+        raise ValueError("decoded LAR1 value exceeds the sparse profile")
+
+    dummy_payload, dummy_bits = _encode_adaptive(
+        np.full(coefficient_count, 129, dtype=np.uint16),
+        256,
+    )
+    laf1 = (
+        HEADER.pack(
+            MAGIC,
+            VERSION,
+            0,
+            count_entropy,
+            count_parameter,
+            0,
+            gap_threshold,
+            frame_count,
+            channels,
+            band_count,
+            coefficient_count,
+            scale_bits,
+            count_bits,
+            gap_bits,
+            raw_gap_bits,
+            dummy_bits,
+        )
+        + common_payload
+        + dummy_payload
+    )
+    common = decode_finite_state_lapped(
+        laf1,
+        half_window=half_window,
+        expected_channels=expected_channels,
+        expected_frames=expected_frames,
+        expected_bands=expected_bands,
+    )
+    values8 = decoded_values.astype(np.int8)
+    values8.flags.writeable = False
+    return FiniteStateSparseFields(
+        common.scales,
+        common.counts,
+        common.positions,
+        values8,
+        common.gap_threshold,
+    )
 
 
 def decode_finite_state_lapped(

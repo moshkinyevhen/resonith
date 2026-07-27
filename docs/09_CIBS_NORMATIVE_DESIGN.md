@@ -215,7 +215,7 @@ Syntax CIBS remains, but a specific model version is rejected if:
 ## 12. Executable native kernel
 
 The Golden Core now exposes the complete CIBS-0 synthesis envelope through a
-C99 ABI implemented in dependency-free C++20:
+C99 ABI implemented in dependency-free C++23:
 
 - immutable caller-owned model-registry descriptors;
 - int8 projection and optional rank-1 through rank-4 adapter;

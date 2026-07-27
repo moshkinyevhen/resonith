@@ -68,6 +68,22 @@ RESONITH_API resonith_status resonith_lapped_adaptive_encode(
     uint32_t* bit_count
 );
 
+/*
+ * Selects and serializes the exact bounded signed Rice/fixed-width entropy
+ * choice used by prospective LAR1 value fields. The encoder is deterministic,
+ * allocation-free, and reports its explicit syntax ID and parameter.
+ */
+RESONITH_API resonith_status resonith_lapped_int16_entropy_encode(
+    const int16_t* values,
+    size_t value_count,
+    uint8_t* entropy_mode,
+    uint8_t* entropy_parameter,
+    uint8_t* output,
+    size_t output_capacity,
+    size_t* output_size,
+    uint32_t* bit_count
+);
+
 #ifdef __cplusplus
 }
 #endif

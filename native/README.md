@@ -2,7 +2,7 @@
 
 Status: **EXECUTABLE MAIN-0 SUBSET**
 
-This directory contains the dependency-free portable C++20 implementation of
+This directory contains the dependency-free portable C++23 implementation of
 the first frozen Resonith decoder primitives. The current subset validates the
 compact `RSC1` section container and decodes complete mono model-bearing and
 one-through-eight-channel residual-only Main-0 streams through a stable C99
@@ -98,7 +98,7 @@ ctest --test-dir build/native --build-config Release --output-on-failure
 
 `RESONITH_WARNINGS_AS_ERRORS=ON` is the default. CI builds the same source
 with GCC, Clang, and MSVC. The C header is compiled by a C99 translation unit,
-while the implementation remains C++20.
+while the implementation remains C++23.
 
 The build also emits `resonith_core_shared` from the identical source set.
 Python RDO loads it only through an explicit `RESONITH_NATIVE_CORE` path:
@@ -130,10 +130,13 @@ The session borrows immutable input bytes and contains no hidden allocation or
 persistent transform state.
 
 `resonith_lapped_compact_open()` separately preflights prospective `LPS4`
-and `LPS5` single-owner records. It verifies the sequence SHA-256, derived
+`LPS5` adaptive single-owner records, and prospective `LPS6` bounded-value
+single-owner records. It verifies the sequence SHA-256, derived
 record lengths, every CRC-32, canonical padding, inherited shape, and maximum
 current plus one-record-lookahead resources without allocation. LPS4 decodes
-bounded LSE2 fields; LPS5 decodes independently reset compact LAF1 fields
+bounded LSE2 fields; LPS5 decodes independently reset compact LAF1 fields;
+LPS6 decodes compact LAR1 fields with explicit packet-local signed
+Rice/fixed-width value entropy
 through the same public ABI and synthesis path.
 `resonith_lapped_compact_decode_next()` then decodes both caller-owned field
 workspaces and renders the shared transform boundary transactionally. Frozen,

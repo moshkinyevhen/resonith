@@ -366,25 +366,58 @@ def _allocate_band_pulses(
 
 
 def _pulse_shape(target: np.ndarray, pulses: int) -> np.ndarray:
-    """Quantize one target direction to an exact-L1 signed pulse vector."""
+    """Greedily maximize squared target correlation per pulse-vector energy."""
 
     values = target.astype(np.int64)
     output = np.zeros(values.size, dtype=np.int16)
     if pulses == 0:
         return output
     magnitudes = np.abs(values)
-    total = int(np.sum(magnitudes, dtype=np.int64))
-    if total == 0:
+    if not np.any(magnitudes):
         raise ValueError("nonzero pulse count requires a nonzero target")
-    numerators = magnitudes * pulses
-    counts = numerators // total
-    missing = pulses - int(np.sum(counts, dtype=np.int64))
-    if missing:
-        remainders = numerators - counts * total
-        winners = np.argsort(remainders, kind="stable")[-missing:]
-        counts[winners] += 1
+    counts = np.zeros(values.size, dtype=np.int64)
+    correlation = 0
+    energy = 0
+    for _ in range(pulses):
+        best_index = 0
+        best_correlation = -1
+        best_energy = 1
+        for index, magnitude in enumerate(magnitudes):
+            candidate_correlation = correlation + int(magnitude)
+            candidate_energy = energy + 2 * int(counts[index]) + 1
+            if (
+                best_correlation < 0
+                or candidate_correlation
+                * candidate_correlation
+                * best_energy
+                > best_correlation
+                * best_correlation
+                * candidate_energy
+            ):
+                best_index = index
+                best_correlation = candidate_correlation
+                best_energy = candidate_energy
+        counts[best_index] += 1
+        correlation = best_correlation
+        energy = best_energy
     signed = np.where(values < 0, -counts, counts)
     return signed.astype(np.int16)
+
+
+def _projected_gain(target: np.ndarray, pulses: np.ndarray) -> int:
+    """Return the least-squares gain for the decoder's integer direction."""
+
+    target64 = target.astype(np.int64)
+    pulses64 = pulses.astype(np.int64)
+    norm_squared = int(pulses64 @ pulses64)
+    correlation = int(target64 @ pulses64)
+    if norm_squared == 0 or correlation <= 0:
+        return 0
+    norm_q15 = math.isqrt(norm_squared << 30)
+    return _round_divide_signed(
+        correlation * norm_q15,
+        norm_squared << 15,
+    )
 
 
 def _materialize_band(pulses: np.ndarray, qlog: int) -> np.ndarray:
@@ -474,9 +507,8 @@ def encode_pvq_envelope_analysis(
                     continue
                 active_band_count += 1
                 target = row[start:end]
-                gain = math.isqrt(
-                    int(target.astype(np.int64) @ target.astype(np.int64))
-                )
+                shape = _pulse_shape(target, pulses)
+                gain = _projected_gain(target, shape)
                 qlog = _quantize_log_gain(gain)
                 predictor = _predict_log_gain(
                     previous_qlog[channel],
@@ -489,7 +521,6 @@ def encode_pvq_envelope_analysis(
                 gain_bits += writer.bit_count - before
                 current_qlog[band] = qlog
 
-                shape = _pulse_shape(target, pulses)
                 rank, actual_pulses = _rank_pvq(shape)
                 if actual_pulses != pulses:
                     raise RuntimeError("PVQ pulse quantizer changed the budget")

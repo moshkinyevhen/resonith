@@ -1,9 +1,25 @@
 $ErrorActionPreference = "Stop"
 
 function Resolve-GitExecutable {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RepositoryRoot
+    )
+
     $command = Get-Command git -ErrorAction SilentlyContinue
     if ($null -ne $command) {
         return $command.Source
+    }
+
+    $projectToolsRoot = Join-Path $RepositoryRoot "artifacts\tools"
+    $candidate = Get-ChildItem -LiteralPath $projectToolsRoot -Directory -Filter "mingit-*" -ErrorAction SilentlyContinue |
+        Sort-Object Name -Descending |
+        ForEach-Object { Join-Path $_.FullName "cmd\git.exe" } |
+        Where-Object { Test-Path -LiteralPath $_ } |
+        Select-Object -First 1
+
+    if ($null -ne $candidate) {
+        return $candidate
     }
 
     $toolsRoot = Join-Path $env:USERPROFILE ".local\tools"
@@ -20,8 +36,8 @@ function Resolve-GitExecutable {
     return $candidate
 }
 
-$git = Resolve-GitExecutable
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
+$git = Resolve-GitExecutable -RepositoryRoot $repositoryRoot
 $branch = (& $git -C $repositoryRoot branch --show-current).Trim()
 
 if ([string]::IsNullOrWhiteSpace($branch)) {
@@ -42,4 +58,3 @@ if ($LASTEXITCODE -ne 0) {
 if ($LASTEXITCODE -ne 0) {
     throw "Push failed."
 }
-

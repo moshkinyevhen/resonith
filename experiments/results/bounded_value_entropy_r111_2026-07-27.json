@@ -1,0 +1,4534 @@
+{
+  "all_passed": true,
+  "clips": {
+    "ebu-claves": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "transient",
+        "sparse",
+        "percussion",
+        "stereo"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": 3,
+        "log_mel_rmse": -0.3976715694852391,
+        "snr_db": 8.925005073920772
+      },
+      "lps5_baseline": {
+        "budget": 71,
+        "bytes": 182000,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.029557972514050773,
+            "log_spectral_distance_db": 3.6574828909963366,
+            "magnitude_cosine_similarity": 0.9999741191456802,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.42244176792533666,
+                "spectral_convergence": 0.005742382484967454
+              },
+              "512": {
+                "log_magnitude_mae": 0.4967691779813284,
+                "spectral_convergence": 0.005783090288510571
+              },
+              "8192": {
+                "log_magnitude_mae": 0.300743358839607,
+                "spectral_convergence": 0.005771205666496548
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.005950927734375,
+            "rms_error": 0.0001940975598100116,
+            "segmental_snr_db": 34.996094933982874,
+            "si_sdr_db": 39.44232800069851,
+            "snr_db": 39.44101683149476
+          }
+        },
+        "sha256": "d2dc0ab19b176ff9541f6f7de571d9994fbcd1e9619406276e4242dd0d81fe8b"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 2.6856148130933724,
+          "budget": 71,
+          "bytes": 182834,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.468250600009924,
+          "sha256": "c0e226d8cea30ff1929f37a1c01da9dccf2446f3c5773538c83354fddc19064a",
+          "stream_file": "lps6-b71.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 71,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 195,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              10995,
+              7877,
+              5223,
+              3981,
+              2730,
+              1965,
+              1960,
+              1915,
+              1955,
+              10617,
+              8161,
+              5405,
+              3505,
+              2453,
+              2003,
+              1891,
+              1866,
+              1989,
+              10828,
+              7911,
+              5213,
+              3354,
+              2295,
+              2056,
+              1947,
+              1826,
+              806,
+              132,
+              246,
+              83,
+              1135,
+              12418,
+              6972,
+              4695,
+              3795,
+              2372,
+              2022,
+              1890,
+              1915,
+              2010,
+              12581,
+              7297,
+              4848,
+              3086,
+              2384
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 39.44101683160366,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 182834,
+            "stream_sha256": "c0e226d8cea30ff1929f37a1c01da9dccf2446f3c5773538c83354fddc19064a",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 2.5814978883358064,
+          "budget": 72,
+          "bytes": 185877,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.648463999998057,
+          "sha256": "042b31e20cb603994d308ce5129b57dd1e879ee117c1b53402d8f16f40ff61d6",
+          "stream_file": "lps6-b72.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 72,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 195,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              11046,
+              7919,
+              5292,
+              4062,
+              2816,
+              2029,
+              2026,
+              1968,
+              2051,
+              10671,
+              8226,
+              5480,
+              3555,
+              2546,
+              2095,
+              1965,
+              1959,
+              2071,
+              10892,
+              7959,
+              5304,
+              3437,
+              2380,
+              2138,
+              2035,
+              1894,
+              836,
+              132,
+              249,
+              83,
+              1135,
+              12486,
+              7048,
+              4766,
+              3878,
+              2438,
+              2108,
+              1970,
+              2010,
+              2097,
+              12646,
+              7385,
+              4899,
+              3165,
+              2504
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 39.44143284280932,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 185877,
+            "stream_sha256": "042b31e20cb603994d308ce5129b57dd1e879ee117c1b53402d8f16f40ff61d6",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 71,
+        "bytes": 182000,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-claves\\selected-decoded.wav",
+        "decoded_sha256": "35008b3e659441c569dd4eae169cdb2dedcdd1a73113516bbca5507286289809",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.029557972514050773,
+            "log_spectral_distance_db": 3.6574828909963366,
+            "magnitude_cosine_similarity": 0.9999741191456802,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.42244176792533666,
+                "spectral_convergence": 0.005742382484967454
+              },
+              "512": {
+                "log_magnitude_mae": 0.4967691779813284,
+                "spectral_convergence": 0.005783090288510571
+              },
+              "8192": {
+                "log_magnitude_mae": 0.300743358839607,
+                "spectral_convergence": 0.005771205666496548
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.005950927734375,
+            "rms_error": 0.0001940975598100116,
+            "segmental_snr_db": 34.996094933982874,
+            "si_sdr_db": 39.44232800069851,
+            "snr_db": 39.44101683149476
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "d2dc0ab19b176ff9541f6f7de571d9994fbcd1e9619406276e4242dd0d81fe8b",
+        "stream_file": "ebu-claves\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-claves.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "9069b02a7bf39a67c36f634aef759d79ad63241b8b709d08b12f8a6a043959df"
+      }
+    },
+    "ebu-cymbal": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "transient",
+        "stochastic",
+        "long-decay",
+        "stereo"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": -5,
+        "log_mel_rmse": 0.6836030165246061,
+        "snr_db": 15.310779653129277
+      },
+      "lps5_baseline": {
+        "budget": 71,
+        "bytes": 169405,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.1102035036241586,
+            "log_spectral_distance_db": 13.790010337130562,
+            "magnitude_cosine_similarity": 0.9996233130982094,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.9464366143667302,
+                "spectral_convergence": 0.022313761995863914
+              },
+              "512": {
+                "log_magnitude_mae": 1.0725067166215005,
+                "spectral_convergence": 0.02243792320261424
+              },
+              "8192": {
+                "log_magnitude_mae": 0.7667039201929673,
+                "spectral_convergence": 0.022705673106762397
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.0087890625,
+            "rms_error": 0.0008867208025015021,
+            "segmental_snr_db": 22.970212413726475,
+            "si_sdr_db": 29.165699838045413,
+            "snr_db": 29.11459089284312
+          }
+        },
+        "sha256": "d97a692dbbcb62a34b92d22c805f3a4dccd40519480fec20bade8b21c5c93db7"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 2.68290623850712,
+          "budget": 71,
+          "bytes": 170206,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.4727616000018315,
+          "sha256": "3660a5a522be49c354e619c9a907898263ec98e93bc214ed8344d34b2d002fc4",
+          "stream_file": "lps6-b71.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 71,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 288,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              5365,
+              10216,
+              9817,
+              9024,
+              7587,
+              6281,
+              5428,
+              4491,
+              3753,
+              3182,
+              4029,
+              12165,
+              12664,
+              11412,
+              10220,
+              8322,
+              6788,
+              5796,
+              4765,
+              3838,
+              3511,
+              2676,
+              2252,
+              1960,
+              1592,
+              1490,
+              1268,
+              1131,
+              1023,
+              909,
+              842,
+              730,
+              616,
+              569,
+              524,
+              482,
+              461,
+              388,
+              393,
+              379,
+              346,
+              347,
+              326,
+              316,
+              306
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 29.11459089284833,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 170206,
+            "stream_sha256": "3660a5a522be49c354e619c9a907898263ec98e93bc214ed8344d34b2d002fc4",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 2.782274242092144,
+          "budget": 72,
+          "bytes": 172150,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.313018400003784,
+          "sha256": "cded9e83ffd6c1ad7cab5c7709b40d8ae3b5651589040ecbf5c0ad2c39d0f18d",
+          "stream_file": "lps6-b72.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 72,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 291,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              5416,
+              10288,
+              9881,
+              9114,
+              7670,
+              6376,
+              5483,
+              4557,
+              3801,
+              3233,
+              4076,
+              12234,
+              12761,
+              11508,
+              10297,
+              8395,
+              6859,
+              5852,
+              4829,
+              3901,
+              3578,
+              2729,
+              2301,
+              2017,
+              1632,
+              1527,
+              1296,
+              1147,
+              1041,
+              922,
+              860,
+              758,
+              625,
+              586,
+              537,
+              503,
+              468,
+              407,
+              403,
+              389,
+              351,
+              355,
+              330,
+              321,
+              310
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 29.35239328417579,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 172150,
+            "stream_sha256": "cded9e83ffd6c1ad7cab5c7709b40d8ae3b5651589040ecbf5c0ad2c39d0f18d",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 71,
+        "bytes": 169405,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-cymbal\\selected-decoded.wav",
+        "decoded_sha256": "6f95d131eae764460b043d68cef5cf947ebe073e6c0fdb054c8a8bf2da72ee8e",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.1102035036241586,
+            "log_spectral_distance_db": 13.790010337130562,
+            "magnitude_cosine_similarity": 0.9996233130982094,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.9464366143667302,
+                "spectral_convergence": 0.022313761995863914
+              },
+              "512": {
+                "log_magnitude_mae": 1.0725067166215005,
+                "spectral_convergence": 0.02243792320261424
+              },
+              "8192": {
+                "log_magnitude_mae": 0.7667039201929673,
+                "spectral_convergence": 0.022705673106762397
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.0087890625,
+            "rms_error": 0.0008867208025015021,
+            "segmental_snr_db": 22.970212413726475,
+            "si_sdr_db": 29.165699838045413,
+            "snr_db": 29.11459089284312
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "d97a692dbbcb62a34b92d22c805f3a4dccd40519480fec20bade8b21c5c93db7",
+        "stream_file": "ebu-cymbal\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-cymbal.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "4e5fed73eea73f72b9b227591a9a586dbd664d762497aa6a9457920571447b42"
+      }
+    },
+    "ebu-dense-orchestra": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "dense-mix",
+        "orchestra",
+        "classical",
+        "stereo"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": 32,
+        "log_mel_rmse": -0.4199383282038857,
+        "snr_db": 24.637835341328323
+      },
+      "lps5_baseline": {
+        "budget": 71,
+        "bytes": 193566,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.015353560975283061,
+            "log_spectral_distance_db": 0.0,
+            "magnitude_cosine_similarity": 0.0,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.3923237962063882,
+                "spectral_convergence": 0.003057198180281647
+              },
+              "512": {
+                "log_magnitude_mae": 0.4603531541133237,
+                "spectral_convergence": 0.0030211700263357666
+              },
+              "8192": {
+                "log_magnitude_mae": 0.29539228417439506,
+                "spectral_convergence": 0.00278355933247645
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.00360107421875,
+            "rms_error": 4.853419087973591e-05,
+            "segmental_snr_db": 34.97704065672568,
+            "si_sdr_db": 44.88132818577459,
+            "snr_db": 44.88128903247929
+          }
+        },
+        "sha256": "5e1f7b733eff15dfec38bafb32ba9e87ea971da5379259946fb41c6fa810f970"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 2.4230768508524174,
+          "budget": 71,
+          "bytes": 198255,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.952381099996273,
+          "sha256": "ff51d8f9ebe73fe9f4bf758275a73ad34fb3881914dbb237a71fcfff37c98c87",
+          "stream_file": "lps6-b71.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 71,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 118,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              2755,
+              3963,
+              4059,
+              3966,
+              4412,
+              5801,
+              5038,
+              4148,
+              4087,
+              4221,
+              4144,
+              4136,
+              4182,
+              4122,
+              4336,
+              4173,
+              4129,
+              4277,
+              4278,
+              4347,
+              4280,
+              4227,
+              4249,
+              4335,
+              4342,
+              5468,
+              5649,
+              4590,
+              4336,
+              4154,
+              4673,
+              4447,
+              4602,
+              4596,
+              4465,
+              5089,
+              4987,
+              4171,
+              4469,
+              4338,
+              4411,
+              4555,
+              4251,
+              4095,
+              4676
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 44.88128903422119,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 198255,
+            "stream_sha256": "ff51d8f9ebe73fe9f4bf758275a73ad34fb3881914dbb237a71fcfff37c98c87",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 2.471088623469946,
+          "budget": 72,
+          "bytes": 200769,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.856159300004947,
+          "sha256": "04c44ee0c46ee3e546843a4d69edfd5ae7ddf6c3e3267a149ab52f9b4d5aa374",
+          "stream_file": "lps6-b72.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 72,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 118,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              2760,
+              4035,
+              4101,
+              4002,
+              4474,
+              5851,
+              5101,
+              4205,
+              4160,
+              4278,
+              4200,
+              4180,
+              4250,
+              4166,
+              4399,
+              4255,
+              4146,
+              4295,
+              4363,
+              4430,
+              4358,
+              4277,
+              4326,
+              4386,
+              4373,
+              5549,
+              5709,
+              4626,
+              4381,
+              4211,
+              4742,
+              4506,
+              4638,
+              4635,
+              4530,
+              5201,
+              5020,
+              4203,
+              4564,
+              4404,
+              4455,
+              4615,
+              4299,
+              4170,
+              4714
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 44.88610515481132,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 200769,
+            "stream_sha256": "04c44ee0c46ee3e546843a4d69edfd5ae7ddf6c3e3267a149ab52f9b4d5aa374",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 71,
+        "bytes": 193566,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-dense-orchestra\\selected-decoded.wav",
+        "decoded_sha256": "50c48c1267002845d2427ebb717b00b67ec40195558df835f9cab978ac126939",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.015353560975283061,
+            "log_spectral_distance_db": 0.0,
+            "magnitude_cosine_similarity": 0.0,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.3923237962063882,
+                "spectral_convergence": 0.003057198180281647
+              },
+              "512": {
+                "log_magnitude_mae": 0.4603531541133237,
+                "spectral_convergence": 0.0030211700263357666
+              },
+              "8192": {
+                "log_magnitude_mae": 0.29539228417439506,
+                "spectral_convergence": 0.00278355933247645
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.00360107421875,
+            "rms_error": 4.853419087973591e-05,
+            "segmental_snr_db": 34.97704065672568,
+            "si_sdr_db": 44.88132818577459,
+            "snr_db": 44.88128903247929
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "5e1f7b733eff15dfec38bafb32ba9e87ea971da5379259946fb41c6fa810f970",
+        "stream_file": "ebu-dense-orchestra\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-dense-orchestra.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "0b4a52d215937c541b3443fbbda3e45dd75909e3086d31d7c14dc0ca0885f134"
+      }
+    },
+    "ebu-dense-pop": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "dense-mix",
+        "popular-music",
+        "voice",
+        "stereo"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": -786,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": -789,
+        "log_mel_rmse": 0.8872245527911051,
+        "snr_db": 11.057562008425514
+      },
+      "lps5_baseline": {
+        "budget": 71,
+        "bytes": 183512,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.3076650019437086,
+            "log_spectral_distance_db": 17.367005226394458,
+            "magnitude_cosine_similarity": 0.9996497698692883,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.4832358809095993,
+                "spectral_convergence": 0.018664665406393156
+              },
+              "512": {
+                "log_magnitude_mae": 1.6403901170045094,
+                "spectral_convergence": 0.01866972849928629
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1043396802332888,
+                "spectral_convergence": 0.018642054156636837
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.06085205078125,
+            "rms_error": 0.0011442911088605037,
+            "segmental_snr_db": 27.796566913857728,
+            "si_sdr_db": 30.36078213868775,
+            "snr_db": 30.347421906810993
+          }
+        },
+        "sha256": "5cd267e69d1ad41014033217759ca40e937f49d01e524e9629685260f23b052c"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 2.6862091967312387,
+          "budget": 71,
+          "bytes": 182726,
+          "eligible_under_lps5_complete_bytes": true,
+          "encode_wall_seconds": 4.467261900004814,
+          "sha256": "608625ca401d3b8c928fd754cf04b303bb546d4dd87d567a8075ea7c94926c80",
+          "stream_file": "lps6-b71.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 71,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 1994,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              1125,
+              1631,
+              2111,
+              2282,
+              2323,
+              2202,
+              2617,
+              2076,
+              2328,
+              2401,
+              2506,
+              2465,
+              2383,
+              2268,
+              2312,
+              2144,
+              2302,
+              2262,
+              2271,
+              2515,
+              2373,
+              2497,
+              2423,
+              2198,
+              2470,
+              2707,
+              2743,
+              3185,
+              3615,
+              7486,
+              5184,
+              6685,
+              6400,
+              7975,
+              7166,
+              7666,
+              7230,
+              7925,
+              7078,
+              7064,
+              7147,
+              7317,
+              6958,
+              6900,
+              7584
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 30.347421906814127,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 182726,
+            "stream_sha256": "608625ca401d3b8c928fd754cf04b303bb546d4dd87d567a8075ea7c94926c80",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 2.62545386712873,
+          "budget": 72,
+          "bytes": 184745,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.570638300006976,
+          "sha256": "e5486d74b923ee4e957048fa93a8facf6d293066e7695843125a2566df31a379",
+          "stream_file": "lps6-b72.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 72,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 1988,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              1133,
+              1649,
+              2127,
+              2318,
+              2353,
+              2232,
+              2660,
+              2102,
+              2366,
+              2428,
+              2545,
+              2492,
+              2408,
+              2296,
+              2346,
+              2164,
+              2328,
+              2288,
+              2297,
+              2542,
+              2396,
+              2520,
+              2448,
+              2215,
+              2507,
+              2738,
+              2772,
+              3220,
+              3663,
+              7554,
+              5241,
+              6758,
+              6486,
+              8059,
+              7247,
+              7762,
+              7312,
+              7992,
+              7152,
+              7144,
+              7201,
+              7387,
+              7022,
+              6983,
+              7666
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 30.516325949889158,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 184745,
+            "stream_sha256": "e5486d74b923ee4e957048fa93a8facf6d293066e7695843125a2566df31a379",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS6 bounded values",
+        "budget": 71,
+        "bytes": 182726,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-dense-pop\\selected-decoded.wav",
+        "decoded_sha256": "06ea5960d8f6c6d926c009d3273565a0934a17399a0c22348c41998378041506",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.3076650019437086,
+            "log_spectral_distance_db": 17.367005226394458,
+            "magnitude_cosine_similarity": 0.9996497698692883,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.4832358809095993,
+                "spectral_convergence": 0.018664665406393156
+              },
+              "512": {
+                "log_magnitude_mae": 1.6403901170045094,
+                "spectral_convergence": 0.01866972849928629
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1043396802332888,
+                "spectral_convergence": 0.018642054156636837
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.06085205078125,
+            "rms_error": 0.0011442911088605037,
+            "segmental_snr_db": 27.796566913857728,
+            "si_sdr_db": 30.36078213868775,
+            "snr_db": 30.347421906810993
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "608625ca401d3b8c928fd754cf04b303bb546d4dd87d567a8075ea7c94926c80",
+        "stream_file": "ebu-dense-pop\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-dense-pop.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "268d05e02aa746ffad10a7d4f1b9567334fcc9c784d42b56819ffafa2437436e"
+      }
+    },
+    "ebu-electronic-tune": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "electronic",
+        "tonal",
+        "synthetic"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": -24,
+        "log_mel_rmse": -0.4592532045227332,
+        "snr_db": -7.202847129335133
+      },
+      "lps5_baseline": {
+        "budget": 67,
+        "bytes": 86387,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.45930225668492297,
+            "log_spectral_distance_db": 6.46698648213408,
+            "magnitude_cosine_similarity": 0.9999790597922865,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.5238338399793477,
+                "spectral_convergence": 0.006576980354771886
+              },
+              "512": {
+                "log_magnitude_mae": 0.5752641253058937,
+                "spectral_convergence": 0.006329142832952397
+              },
+              "8192": {
+                "log_magnitude_mae": 0.45825003383467466,
+                "spectral_convergence": 0.007539734065471818
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.333343505859375,
+            "rms_error": 0.0037957917229906445,
+            "segmental_snr_db": 34.93236263614021,
+            "si_sdr_db": 36.18102425279063,
+            "snr_db": 36.180923901978524
+          }
+        },
+        "sha256": "b0e6c7db08f9c3f4e178218dcffe9889c936507ddb8861a249a4a05147150296"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 5.819679274552862,
+          "budget": 67,
+          "bytes": 87092,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 2.061969300004421,
+          "sha256": "c0322bbc74bd41b256b065b9e898f5141aa7001543d903cb256be07bc6584e08",
+          "stream_file": "lps6-b67.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 1,
+            "coefficients_per_frame": 67,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 10923,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              73,
+              73,
+              2748,
+              2507,
+              862,
+              1485,
+              3652,
+              1162,
+              588,
+              4795,
+              2212,
+              839,
+              2774,
+              2746,
+              931,
+              965,
+              3944,
+              1268,
+              659,
+              3499,
+              2036,
+              768,
+              2527,
+              4048,
+              1223,
+              847,
+              4164,
+              1350,
+              681,
+              204,
+              73,
+              73,
+              760,
+              3848,
+              1222,
+              671,
+              3575,
+              1900,
+              743,
+              2817,
+              3904,
+              1149,
+              987,
+              4072,
+              1282,
+              665,
+              3661
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 36.18092390197909,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 87092,
+            "stream_sha256": "c0322bbc74bd41b256b065b9e898f5141aa7001543d903cb256be07bc6584e08",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 5.736344417009038,
+          "budget": 68,
+          "bytes": 88573,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 2.091924599997583,
+          "sha256": "e93213894afcc549d1f7fcc81b84faa974d519af367563026a8146f383448492",
+          "stream_file": "lps6-b68.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 1,
+            "coefficients_per_frame": 68,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 10923,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              73,
+              73,
+              2788,
+              2536,
+              872,
+              1496,
+              3725,
+              1192,
+              606,
+              4856,
+              2252,
+              856,
+              2821,
+              2794,
+              942,
+              1012,
+              4018,
+              1295,
+              669,
+              3555,
+              2064,
+              787,
+              2576,
+              4110,
+              1245,
+              861,
+              4246,
+              1371,
+              700,
+              217,
+              73,
+              73,
+              775,
+              3897,
+              1242,
+              691,
+              3627,
+              1933,
+              765,
+              2860,
+              3956,
+              1160,
+              1009,
+              4140,
+              1315,
+              684,
+              3705
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 36.18090171995182,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 88573,
+            "stream_sha256": "e93213894afcc549d1f7fcc81b84faa974d519af367563026a8146f383448492",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 67,
+        "bytes": 86387,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-electronic-tune\\selected-decoded.wav",
+        "decoded_sha256": "8414c6bbdf674ec968a5f38af0f3f625660f0d00acbbb64ee2726887f050763c",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.45930225668492297,
+            "log_spectral_distance_db": 6.46698648213408,
+            "magnitude_cosine_similarity": 0.9999790597922865,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.5238338399793477,
+                "spectral_convergence": 0.006576980354771886
+              },
+              "512": {
+                "log_magnitude_mae": 0.5752641253058937,
+                "spectral_convergence": 0.006329142832952397
+              },
+              "8192": {
+                "log_magnitude_mae": 0.45825003383467466,
+                "spectral_convergence": 0.007539734065471818
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.333343505859375,
+            "rms_error": 0.0037957917229906445,
+            "segmental_snr_db": 34.93236263614021,
+            "si_sdr_db": 36.18102425279063,
+            "snr_db": 36.180923901978524
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "b0e6c7db08f9c3f4e178218dcffe9889c936507ddb8861a249a4a05147150296",
+        "stream_file": "ebu-electronic-tune\\selected.resonith"
+      },
+      "source": {
+        "channels": 1,
+        "file": "ebu-electronic-tune.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "8e863d085c3cfec9d8b4998e70db5de5dc0df414c1bb4c42547cf64e7f8db01e"
+      }
+    },
+    "ebu-female-speech-en": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "speech",
+        "female",
+        "english"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": -642,
+        "estoi": 0.0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0,
+        "stoi": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": -685,
+        "estoi": -0.01051527321502177,
+        "log_mel_rmse": 1.6588698907815953,
+        "snr_db": 18.874187616739636,
+        "stoi": -0.0005084380681262823
+      },
+      "lps5_baseline": {
+        "budget": 67,
+        "bytes": 89069,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.5016626273593765,
+            "log_spectral_distance_db": 24.32137020104608,
+            "magnitude_cosine_similarity": 0.9972958592948107,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 2.031504356320375,
+                "spectral_convergence": 0.020105375222654296
+              },
+              "256": {
+                "log_magnitude_mae": 2.0814768210992876,
+                "spectral_convergence": 0.019542396852133027
+              },
+              "512": {
+                "log_magnitude_mae": 2.0985588635020167,
+                "spectral_convergence": 0.020137726277400594
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9855991812138017,
+            "stoi": 0.9975519545845195
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.059478759765625,
+            "rms_error": 0.002001974820915995,
+            "segmental_snr_db": 27.145842486124167,
+            "si_sdr_db": 31.41449594244863,
+            "snr_db": 31.40916968529814
+          }
+        },
+        "sha256": "46f62e5d78cb0230b2b9b56ff6e6f7fbe60ae63b918757a9602fa8be5490d01c"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 5.456494167042332,
+          "budget": 67,
+          "bytes": 88427,
+          "eligible_under_lps5_complete_bytes": true,
+          "encode_wall_seconds": 2.1992142999952193,
+          "sha256": "6de81cef21c8a3d0b620d384aa085ef58eecca067b5cc1393d1a3abd43ec7f84",
+          "stream_file": "lps6-b67.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 1,
+            "coefficients_per_frame": 67,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 1949,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              73,
+              73,
+              2140,
+              1434,
+              4136,
+              1571,
+              4305,
+              1894,
+              1484,
+              2260,
+              3589,
+              1337,
+              1874,
+              1546,
+              1864,
+              1067,
+              2446,
+              659,
+              607,
+              1094,
+              2550,
+              1945,
+              3256,
+              3561,
+              2714,
+              2266,
+              2715,
+              391,
+              187,
+              183,
+              205,
+              2727,
+              2746,
+              2414,
+              1737,
+              2690,
+              2755,
+              1786,
+              2724,
+              1013,
+              2609,
+              1057,
+              1270,
+              2121,
+              1247,
+              3273,
+              772
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 31.409169685300185,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 88427,
+            "stream_sha256": "6de81cef21c8a3d0b620d384aa085ef58eecca067b5cc1393d1a3abd43ec7f84",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 5.429943859828803,
+          "budget": 68,
+          "bytes": 89509,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 2.209967599992524,
+          "sha256": "ac7f44486b58b2a7a9ee5bfa830ea0f36132754d5080bc804d409444a76fa8ea",
+          "stream_file": "lps6-b68.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 1,
+            "coefficients_per_frame": 68,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 1892,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              73,
+              73,
+              2172,
+              1449,
+              4185,
+              1586,
+              4334,
+              1919,
+              1496,
+              2290,
+              3632,
+              1365,
+              1927,
+              1563,
+              1894,
+              1077,
+              2473,
+              663,
+              613,
+              1109,
+              2584,
+              1984,
+              3295,
+              3597,
+              2742,
+              2291,
+              2753,
+              391,
+              187,
+              183,
+              210,
+              2755,
+              2778,
+              2449,
+              1764,
+              2718,
+              2780,
+              1819,
+              2757,
+              1033,
+              2641,
+              1067,
+              1284,
+              2140,
+              1265,
+              3308,
+              781
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 31.588440595967807,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 89509,
+            "stream_sha256": "ac7f44486b58b2a7a9ee5bfa830ea0f36132754d5080bc804d409444a76fa8ea",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS6 bounded values",
+        "budget": 67,
+        "bytes": 88427,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-female-speech-en\\selected-decoded.wav",
+        "decoded_sha256": "a63c0bd2de459d9459e68d5c49a3be7794df90b2c384662fbef53d35e4e1f545",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.5016626273593765,
+            "log_spectral_distance_db": 24.32137020104608,
+            "magnitude_cosine_similarity": 0.9972958592948107,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 2.031504356320375,
+                "spectral_convergence": 0.020105375222654296
+              },
+              "256": {
+                "log_magnitude_mae": 2.0814768210992876,
+                "spectral_convergence": 0.019542396852133027
+              },
+              "512": {
+                "log_magnitude_mae": 2.0985588635020167,
+                "spectral_convergence": 0.020137726277400594
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9855991812138017,
+            "stoi": 0.9975519545845195
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.059478759765625,
+            "rms_error": 0.002001974820915995,
+            "segmental_snr_db": 27.145842486124167,
+            "si_sdr_db": 31.41449594244863,
+            "snr_db": 31.40916968529814
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "6de81cef21c8a3d0b620d384aa085ef58eecca067b5cc1393d1a3abd43ec7f84",
+        "stream_file": "ebu-female-speech-en\\selected.resonith"
+      },
+      "source": {
+        "channels": 1,
+        "file": "ebu-female-speech-en.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "f88f9321b302f2bab62cf5aa2dab62721b105efc36b37921372651625c4c0a0e"
+      }
+    },
+    "ebu-grand-piano": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "polyphonic",
+        "tonal",
+        "attack-decay",
+        "stereo"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": -923,
+        "log_mel_rmse": -0.2972079110201814,
+        "snr_db": 3.8685660953666385
+      },
+      "lps5_baseline": {
+        "budget": 71,
+        "bytes": 164309,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.13952767241764535,
+            "log_spectral_distance_db": 9.140073930674596,
+            "magnitude_cosine_similarity": 0.9999915300140153,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.7642663798014708,
+                "spectral_convergence": 0.004052549253996238
+              },
+              "512": {
+                "log_magnitude_mae": 0.8594297117575985,
+                "spectral_convergence": 0.0048061080751889765
+              },
+              "8192": {
+                "log_magnitude_mae": 0.6310885088474103,
+                "spectral_convergence": 0.004019391874137061
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.22100830078125,
+            "rms_error": 0.001540658093573368,
+            "segmental_snr_db": 34.939880810910445,
+            "si_sdr_db": 32.25061721534466,
+            "snr_db": 32.25310500524796
+          }
+        },
+        "sha256": "7db03bb38cbf54cfa7fe3a65251ea78966b4f41b6e793c604a9cfe7d8c7a53d2"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 2.881640990804349,
+          "budget": 71,
+          "bytes": 166916,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.164293900001212,
+          "sha256": "5cbb253adda94e836c854afc2a245fe40dc8e5403c4546d74c3a6cd813dbfdcf",
+          "stream_file": "lps6-b71.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 71,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 7242,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              3366,
+              3937,
+              3678,
+              4585,
+              3897,
+              5218,
+              4574,
+              5106,
+              4694,
+              4849,
+              5332,
+              4924,
+              5460,
+              4787,
+              5224,
+              4984,
+              4997,
+              4487,
+              4795,
+              3836,
+              3143,
+              2772,
+              2557,
+              2357,
+              2022,
+              1696,
+              1074,
+              696,
+              504,
+              419,
+              340,
+              261,
+              153,
+              4288,
+              3827,
+              3962,
+              4346,
+              4050,
+              5224,
+              4789,
+              4841,
+              4881,
+              4622,
+              5496,
+              5640
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 32.25310500524969,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 166916,
+            "stream_sha256": "5cbb253adda94e836c854afc2a245fe40dc8e5403c4546d74c3a6cd813dbfdcf",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 2.8693755516718444,
+          "budget": 72,
+          "bytes": 169165,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.182094599993434,
+          "sha256": "76e823cb17994beaaa4014017b16ecbbe0c8b3b38a238bb7acb5b70a8fb2b0e2",
+          "stream_file": "lps6-b72.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 72,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 7243,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              3420,
+              3999,
+              3739,
+              4652,
+              3960,
+              5288,
+              4625,
+              5165,
+              4746,
+              4944,
+              5400,
+              4986,
+              5519,
+              4834,
+              5267,
+              5048,
+              5063,
+              4538,
+              4855,
+              3880,
+              3184,
+              2805,
+              2598,
+              2382,
+              2061,
+              1731,
+              1092,
+              715,
+              508,
+              424,
+              345,
+              262,
+              157,
+              4382,
+              3895,
+              4018,
+              4408,
+              4114,
+              5281,
+              4840,
+              4893,
+              4975,
+              4682,
+              5580,
+              5679
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 32.253497701782564,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 169165,
+            "stream_sha256": "76e823cb17994beaaa4014017b16ecbbe0c8b3b38a238bb7acb5b70a8fb2b0e2",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 71,
+        "bytes": 164309,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-grand-piano\\selected-decoded.wav",
+        "decoded_sha256": "322a225f4f8985cad93e52bc049ff18badc6538d2035afc5cea7d92af9b8e91c",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.13952767241764535,
+            "log_spectral_distance_db": 9.140073930674596,
+            "magnitude_cosine_similarity": 0.9999915300140153,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.7642663798014708,
+                "spectral_convergence": 0.004052549253996238
+              },
+              "512": {
+                "log_magnitude_mae": 0.8594297117575985,
+                "spectral_convergence": 0.0048061080751889765
+              },
+              "8192": {
+                "log_magnitude_mae": 0.6310885088474103,
+                "spectral_convergence": 0.004019391874137061
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.22100830078125,
+            "rms_error": 0.001540658093573368,
+            "segmental_snr_db": 34.939880810910445,
+            "si_sdr_db": 32.25061721534466,
+            "snr_db": 32.25310500524796
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "7db03bb38cbf54cfa7fe3a65251ea78966b4f41b6e793c604a9cfe7d8c7a53d2",
+        "stream_file": "ebu-grand-piano\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-grand-piano.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "7141951e68eac8533d3a78065cc3036cdd2f13025d6c0bcb98b79d804d31629c"
+      }
+    },
+    "ebu-male-speech-en": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "speech",
+        "male",
+        "english"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": -172,
+        "estoi": 9.992007221626409e-16,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0,
+        "stoi": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": -218,
+        "estoi": -0.0623781859641066,
+        "log_mel_rmse": 1.3244697250673032,
+        "snr_db": 19.376279144994378,
+        "stoi": -0.028606308809383973
+      },
+      "lps5_baseline": {
+        "budget": 67,
+        "bytes": 90389,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.23583899654295,
+            "log_spectral_distance_db": 23.154701272776588,
+            "magnitude_cosine_similarity": 0.9979891874354455,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 1.9836965866599292,
+                "spectral_convergence": 0.014032683644060873
+              },
+              "256": {
+                "log_magnitude_mae": 1.9664532088317448,
+                "spectral_convergence": 0.013947931200652382
+              },
+              "512": {
+                "log_magnitude_mae": 2.024946690291403,
+                "spectral_convergence": 0.014072587752174858
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9298536876892453,
+            "stoi": 0.968698851513457
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.110137939453125,
+            "rms_error": 0.0017723210444557426,
+            "segmental_snr_db": 26.53624200009319,
+            "si_sdr_db": 33.61629135888382,
+            "snr_db": 33.61766575584816
+          }
+        },
+        "sha256": "febf8bc778d4d5a4fbd517c27be303cedb2bb68df732bcd0eae547628e50534e"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 5.553607679059545,
+          "budget": 67,
+          "bytes": 90217,
+          "eligible_under_lps5_complete_bytes": true,
+          "encode_wall_seconds": 2.160757600009674,
+          "sha256": "d7fc4cfd6614b31ead78e545fadd888b5ae941a5ff681b62126773cf572b5bbf",
+          "stream_file": "lps6-b67.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 1,
+            "coefficients_per_frame": 67,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 3609,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              73,
+              73,
+              1796,
+              2363,
+              2450,
+              4102,
+              1805,
+              2412,
+              1722,
+              1432,
+              2443,
+              787,
+              836,
+              2454,
+              2951,
+              2294,
+              2245,
+              2600,
+              2304,
+              1504,
+              1695,
+              2027,
+              2483,
+              1887,
+              1171,
+              2053,
+              1653,
+              3715,
+              1491,
+              2794,
+              1592,
+              220,
+              235,
+              241,
+              2227,
+              2505,
+              2085,
+              2704,
+              1180,
+              2236,
+              3069,
+              2444,
+              2087,
+              818,
+              842,
+              2790,
+              3267
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 33.61766575585077,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 90217,
+            "stream_sha256": "d7fc4cfd6614b31ead78e545fadd888b5ae941a5ff681b62126773cf572b5bbf",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 5.167352015446565,
+          "budget": 68,
+          "bytes": 91307,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 2.3222725999949034,
+          "sha256": "acdcdbe5ced79cf2ff65646a4e3f64cc52ad6bac282d64b006eec8a33620749b",
+          "stream_file": "lps6-b68.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 1,
+            "coefficients_per_frame": 68,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 3609,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              73,
+              73,
+              1809,
+              2402,
+              2478,
+              4146,
+              1821,
+              2433,
+              1743,
+              1449,
+              2472,
+              796,
+              853,
+              2481,
+              2985,
+              2318,
+              2265,
+              2632,
+              2319,
+              1526,
+              1716,
+              2053,
+              2528,
+              1928,
+              1192,
+              2082,
+              1671,
+              3764,
+              1515,
+              2812,
+              1620,
+              222,
+              238,
+              245,
+              2252,
+              2530,
+              2114,
+              2731,
+              1192,
+              2267,
+              3094,
+              2468,
+              2118,
+              830,
+              859,
+              2835,
+              3297
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 33.741146558756704,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 91307,
+            "stream_sha256": "acdcdbe5ced79cf2ff65646a4e3f64cc52ad6bac282d64b006eec8a33620749b",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS6 bounded values",
+        "budget": 67,
+        "bytes": 90217,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-male-speech-en\\selected-decoded.wav",
+        "decoded_sha256": "832df08d9bf95d9876cee210f55b15ae2d6c85df8db5ab040b11cc285d62ff91",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.23583899654295,
+            "log_spectral_distance_db": 23.154701272776588,
+            "magnitude_cosine_similarity": 0.9979891874354455,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 1.9836965866599292,
+                "spectral_convergence": 0.014032683644060873
+              },
+              "256": {
+                "log_magnitude_mae": 1.9664532088317448,
+                "spectral_convergence": 0.013947931200652382
+              },
+              "512": {
+                "log_magnitude_mae": 2.024946690291403,
+                "spectral_convergence": 0.014072587752174858
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9298536876892463,
+            "stoi": 0.968698851513457
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.110137939453125,
+            "rms_error": 0.0017723210444557426,
+            "segmental_snr_db": 26.53624200009319,
+            "si_sdr_db": 33.61629135888382,
+            "snr_db": 33.61766575584816
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "d7fc4cfd6614b31ead78e545fadd888b5ae941a5ff681b62126773cf572b5bbf",
+        "stream_file": "ebu-male-speech-en\\selected.resonith"
+      },
+      "source": {
+        "channels": 1,
+        "file": "ebu-male-speech-en.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "0b12c8ee0f3def4a525fbeb2f9362972285d114a30d959a6da2a53be6b09ffea"
+      }
+    },
+    "ebu-pink-noise": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "stochastic",
+        "noise",
+        "stereo"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": -8,
+        "log_mel_rmse": 0.7290067600559575,
+        "snr_db": -4.888118409726877
+      },
+      "lps5_baseline": {
+        "budget": 71,
+        "bytes": 206566,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.1087286339258742,
+            "log_spectral_distance_db": 0.0,
+            "magnitude_cosine_similarity": 0.0,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.3194116025479403,
+                "spectral_convergence": 0.3017283670171147
+              },
+              "512": {
+                "log_magnitude_mae": 1.3984874928238695,
+                "spectral_convergence": 0.29663857204109056
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1033635988771517,
+                "spectral_convergence": 0.2884260053050732
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.0074462890625,
+            "rms_error": 0.001502322964608213,
+            "segmental_snr_db": 7.393247693630483,
+            "si_sdr_db": 6.65832880963927,
+            "snr_db": 7.333828890814038
+          }
+        },
+        "sha256": "761c342b3bdf8459a9c68cb9632777fc91691fbcd2398ff738ee6de0e934383a"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 2.3005124084657687,
+          "budget": 71,
+          "bytes": 214893,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 5.216229199999361,
+          "sha256": "9867f98a9e7d7f3cd5fb59818cfa27c4155d01565adbbcf83cee800976477771",
+          "stream_file": "lps6-b71.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 71,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 244,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              91,
+              243,
+              591,
+              2215,
+              4474,
+              5183,
+              5116,
+              5045,
+              5158,
+              5163,
+              5164,
+              5131,
+              5128,
+              5284,
+              5137,
+              5128,
+              5230,
+              5055,
+              5261,
+              5106,
+              5187,
+              5232,
+              5149,
+              5191,
+              5171,
+              5235,
+              5205,
+              5323,
+              5164,
+              5190,
+              5126,
+              5181,
+              5187,
+              5245,
+              5104,
+              5233,
+              5191,
+              5262,
+              5196,
+              5174,
+              5114,
+              5180,
+              5163,
+              5208,
+              5153
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 7.3338288908155205,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 214893,
+            "stream_sha256": "9867f98a9e7d7f3cd5fb59818cfa27c4155d01565adbbcf83cee800976477771",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 2.245142591905043,
+          "budget": 72,
+          "bytes": 217279,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 5.344872100002249,
+          "sha256": "0a85d63acf9ce60ebf318f22e49d20e64b95d977f8854652c89deb8eeb634fe7",
+          "stream_file": "lps6-b72.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 72,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 244,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              91,
+              243,
+              599,
+              2248,
+              4519,
+              5242,
+              5186,
+              5099,
+              5202,
+              5230,
+              5218,
+              5180,
+              5198,
+              5342,
+              5184,
+              5193,
+              5300,
+              5128,
+              5323,
+              5163,
+              5252,
+              5290,
+              5204,
+              5259,
+              5236,
+              5283,
+              5250,
+              5367,
+              5218,
+              5240,
+              5189,
+              5254,
+              5230,
+              5298,
+              5165,
+              5292,
+              5250,
+              5313,
+              5242,
+              5224,
+              5172,
+              5236,
+              5225,
+              5265,
+              5211
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 7.4103614802237185,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 217279,
+            "stream_sha256": "0a85d63acf9ce60ebf318f22e49d20e64b95d977f8854652c89deb8eeb634fe7",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 71,
+        "bytes": 206566,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-pink-noise\\selected-decoded.wav",
+        "decoded_sha256": "3f7133c858244ec4b1e5a86b29dde10e08149359e5680762444cc2cda86f5614",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.1087286339258742,
+            "log_spectral_distance_db": 0.0,
+            "magnitude_cosine_similarity": 0.0,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.3194116025479403,
+                "spectral_convergence": 0.3017283670171147
+              },
+              "512": {
+                "log_magnitude_mae": 1.3984874928238695,
+                "spectral_convergence": 0.29663857204109056
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1033635988771517,
+                "spectral_convergence": 0.2884260053050732
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.0074462890625,
+            "rms_error": 0.001502322964608213,
+            "segmental_snr_db": 7.393247693630483,
+            "si_sdr_db": 6.65832880963927,
+            "snr_db": 7.333828890814038
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "761c342b3bdf8459a9c68cb9632777fc91691fbcd2398ff738ee6de0e934383a",
+        "stream_file": "ebu-pink-noise\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-pink-noise.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "b3198d029a6ffd9ec43e9f5a863b8d8603a940ade4bb9ef90c8e184f643c295a"
+      }
+    },
+    "ebu-side-drum": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "transient",
+        "drum",
+        "noise-like",
+        "stereo"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": 14,
+        "log_mel_rmse": -0.41524681334990954,
+        "snr_db": 13.397931097081184
+      },
+      "lps5_baseline": {
+        "budget": 71,
+        "bytes": 180465,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.017113049223191016,
+            "log_spectral_distance_db": 3.2399391502487958,
+            "magnitude_cosine_similarity": 0.9999956285934264,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.42395634429862084,
+                "spectral_convergence": 0.0030327310842279856
+              },
+              "512": {
+                "log_magnitude_mae": 0.5050169768168029,
+                "spectral_convergence": 0.002993034152538744
+              },
+              "8192": {
+                "log_magnitude_mae": 0.3042224633771969,
+                "spectral_convergence": 0.0030629821074759185
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.005401611328125,
+            "rms_error": 0.00015764220640062575,
+            "segmental_snr_db": 35.0,
+            "si_sdr_db": 44.36445312219445,
+            "snr_db": 44.287280428018505
+          }
+        },
+        "sha256": "53b363e5cf119b39fe2524d99f823f55430e354b08bbe672ccac9bd756f838e8"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 2.663743829356581,
+          "budget": 71,
+          "bytes": 181432,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.504937699995935,
+          "sha256": "381bc7f31e12777256ba92340badd6e5a4d4b5c8365fc9a37f8ef6209c78435d",
+          "stream_file": "lps6-b71.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 71,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 177,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              11159,
+              7989,
+              5220,
+              3662,
+              2473,
+              1946,
+              1600,
+              1579,
+              3354,
+              12033,
+              6783,
+              4518,
+              3058,
+              2116,
+              1796,
+              1544,
+              1470,
+              4871,
+              11471,
+              6767,
+              4604,
+              3086,
+              2207,
+              1761,
+              1498,
+              785,
+              418,
+              83,
+              83,
+              11474,
+              7739,
+              5164,
+              3521,
+              2437,
+              1914,
+              1648,
+              1551,
+              4812,
+              11406,
+              6601,
+              4508,
+              2985,
+              2064,
+              1725,
+              1723
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 44.28728042818362,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 181432,
+            "stream_sha256": "381bc7f31e12777256ba92340badd6e5a4d4b5c8365fc9a37f8ef6209c78435d",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 2.662545637700329,
+          "budget": 72,
+          "bytes": 184749,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.506964999993215,
+          "sha256": "364b817830f064f8a3c2576d1f9274776ab7b6987abac982f43f00397c4484fe",
+          "stream_file": "lps6-b72.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 72,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 176,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              11196,
+              8085,
+              5304,
+              3763,
+              2525,
+              2028,
+              1669,
+              1645,
+              3393,
+              12116,
+              6887,
+              4588,
+              3125,
+              2205,
+              1885,
+              1620,
+              1564,
+              4935,
+              11542,
+              6861,
+              4693,
+              3171,
+              2291,
+              1863,
+              1568,
+              814,
+              422,
+              83,
+              83,
+              11543,
+              7810,
+              5231,
+              3618,
+              2505,
+              1988,
+              1695,
+              1674,
+              4895,
+              11481,
+              6729,
+              4583,
+              3073,
+              2095,
+              1875,
+              1804
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 44.28733009823469,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 184749,
+            "stream_sha256": "364b817830f064f8a3c2576d1f9274776ab7b6987abac982f43f00397c4484fe",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 71,
+        "bytes": 180465,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-side-drum\\selected-decoded.wav",
+        "decoded_sha256": "24aa2a415c252b5258ca5b962cac0915a8e221587804eb8ecfcc23a7e8c1dc5e",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.017113049223191016,
+            "log_spectral_distance_db": 3.2399391502487958,
+            "magnitude_cosine_similarity": 0.9999956285934264,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.42395634429862084,
+                "spectral_convergence": 0.0030327310842279856
+              },
+              "512": {
+                "log_magnitude_mae": 0.5050169768168029,
+                "spectral_convergence": 0.002993034152538744
+              },
+              "8192": {
+                "log_magnitude_mae": 0.3042224633771969,
+                "spectral_convergence": 0.0030629821074759185
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.005401611328125,
+            "rms_error": 0.00015764220640062575,
+            "segmental_snr_db": 35.0,
+            "si_sdr_db": 44.36445312219445,
+            "snr_db": 44.287280428018505
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "53b363e5cf119b39fe2524d99f823f55430e354b08bbe672ccac9bd756f838e8",
+        "stream_file": "ebu-side-drum\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-side-drum.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "47ef7efbb69684d60f68191182b482c083bb7e118903f761764817b75e4b0a31"
+      }
+    },
+    "ebu-soprano": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "solo-voice",
+        "harmonic",
+        "formant",
+        "stereo"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": -13,
+        "log_mel_rmse": 0.22508902792428243,
+        "snr_db": 9.518298937462767
+      },
+      "lps5_baseline": {
+        "budget": 71,
+        "bytes": 175345,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.8686746554551349,
+            "log_spectral_distance_db": 15.540025408007477,
+            "magnitude_cosine_similarity": 0.9999719386762853,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.3335192274799839,
+                "spectral_convergence": 0.005645646607163552
+              },
+              "512": {
+                "log_magnitude_mae": 1.4466006057562468,
+                "spectral_convergence": 0.005630620950524576
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1203273268765026,
+                "spectral_convergence": 0.0056736230065675694
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.00799560546875,
+            "rms_error": 0.0007687541611277778,
+            "segmental_snr_db": 34.528361634078195,
+            "si_sdr_db": 39.86841812204165,
+            "snr_db": 39.86637007357753
+          }
+        },
+        "sha256": "1ca756fb918a0ff104b43fe28d2c3cc9993b403716c2cd4766efb53d613f9283"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 2.6629394981944867,
+          "budget": 71,
+          "bytes": 176408,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.5062983999960124,
+          "sha256": "84ec8a814527ceb9790e144dc97ec8a5a6d4f235fa44a3a30996ec9896720881",
+          "stream_file": "lps6-b71.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 71,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 262,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              1324,
+              2765,
+              4160,
+              4697,
+              4820,
+              4437,
+              4687,
+              3886,
+              4289,
+              5352,
+              5249,
+              4550,
+              4945,
+              4508,
+              3702,
+              4184,
+              4779,
+              3920,
+              3519,
+              2128,
+              2270,
+              3674,
+              5423,
+              7399,
+              3937,
+              5224,
+              4883,
+              4681,
+              4827,
+              4216,
+              4297,
+              4982,
+              4597,
+              4167,
+              3999,
+              6232,
+              3131,
+              4026,
+              4050,
+              3480,
+              2272,
+              1207,
+              647,
+              391,
+              269
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 39.86637007358447,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 176408,
+            "stream_sha256": "84ec8a814527ceb9790e144dc97ec8a5a6d4f235fa44a3a30996ec9896720881",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 2.689097082769132,
+          "budget": 72,
+          "bytes": 178705,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.46246439999959,
+          "sha256": "8a1895ab719affc8985185235e62b7d00a8f3b4b7bc567e72d7510d3d4cd3380",
+          "stream_file": "lps6-b72.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 72,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 266,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              1343,
+              2789,
+              4210,
+              4778,
+              4894,
+              4513,
+              4755,
+              3929,
+              4353,
+              5442,
+              5313,
+              4586,
+              5004,
+              4562,
+              3741,
+              4218,
+              4845,
+              3954,
+              3545,
+              2169,
+              2303,
+              3724,
+              5480,
+              7512,
+              3972,
+              5317,
+              4971,
+              4773,
+              4888,
+              4257,
+              4351,
+              5047,
+              4637,
+              4224,
+              4037,
+              6337,
+              3159,
+              4080,
+              4087,
+              3525,
+              2311,
+              1224,
+              656,
+              394,
+              270
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 39.92692399325621,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 178705,
+            "stream_sha256": "8a1895ab719affc8985185235e62b7d00a8f3b4b7bc567e72d7510d3d4cd3380",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 71,
+        "bytes": 175345,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-soprano\\selected-decoded.wav",
+        "decoded_sha256": "86233082d69d3ec0c089eec46291f6446a72637ffc9f742a5ffe3913e4e5c9ff",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.8686746554551349,
+            "log_spectral_distance_db": 15.540025408007477,
+            "magnitude_cosine_similarity": 0.9999719386762853,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.3335192274799839,
+                "spectral_convergence": 0.005645646607163552
+              },
+              "512": {
+                "log_magnitude_mae": 1.4466006057562468,
+                "spectral_convergence": 0.005630620950524576
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1203273268765026,
+                "spectral_convergence": 0.0056736230065675694
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.00799560546875,
+            "rms_error": 0.0007687541611277778,
+            "segmental_snr_db": 34.528361634078195,
+            "si_sdr_db": 39.86841812204165,
+            "snr_db": 39.86637007357753
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "1ca756fb918a0ff104b43fe28d2c3cc9993b403716c2cd4766efb53d613f9283",
+        "stream_file": "ebu-soprano\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-soprano.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "b56f2d5b1b4f5a7061fe3c55e86ddd924c865fc3beeceeee5da1e0044e8cc0e2"
+      }
+    },
+    "ebu-sustained-sine": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "sustained-tone",
+        "deterministic",
+        "level-tracking"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": 1,
+        "log_mel_rmse": 0.2494384473345499,
+        "snr_db": -5.562319247716772
+      },
+      "lps5_baseline": {
+        "budget": 67,
+        "bytes": 83061,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.8540548677248515,
+            "log_spectral_distance_db": 6.496420219075141,
+            "magnitude_cosine_similarity": 0.9999754730906352,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.5376373076906299,
+                "spectral_convergence": 0.007270741749766496
+              },
+              "512": {
+                "log_magnitude_mae": 0.5269721650233555,
+                "spectral_convergence": 0.00617335760999587
+              },
+              "8192": {
+                "log_magnitude_mae": 0.5015786485749575,
+                "spectral_convergence": 0.00813880798285828
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.071563720703125,
+            "rms_error": 0.0008851364597471051,
+            "segmental_snr_db": 34.961473582009965,
+            "si_sdr_db": 37.82788316916423,
+            "snr_db": 37.828589534493574
+          }
+        },
+        "sha256": "2e68ed0d45aafc3571530f1241d7457c914f3e3453b85ccaac1341bfc64cb546"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 6.035141724983465,
+          "budget": 67,
+          "bytes": 83180,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 1.988354300003266,
+          "sha256": "642ac1e46d9cb3091f2cf7c535127ee4b5ea418ff4a0dba741b0337cd3e4349c",
+          "stream_file": "lps6-b67.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 1,
+            "coefficients_per_frame": 67,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 2345,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              73,
+              73,
+              1415,
+              1852,
+              1852,
+              1847,
+              1866,
+              1844,
+              1829,
+              1852,
+              1844,
+              1830,
+              1862,
+              1841,
+              1839,
+              1836,
+              1846,
+              1864,
+              1830,
+              1827,
+              1850,
+              1855,
+              1821,
+              1854,
+              1850,
+              1836,
+              1847,
+              1845,
+              1834,
+              1845,
+              1841,
+              1833,
+              1863,
+              1861,
+              1834,
+              1845,
+              1842,
+              1839,
+              1858,
+              1851,
+              1822,
+              1846,
+              1821,
+              1845,
+              1858,
+              1833,
+              2269
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 37.82858953450405,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 83180,
+            "stream_sha256": "642ac1e46d9cb3091f2cf7c535127ee4b5ea418ff4a0dba741b0337cd3e4349c",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 6.1301579660109615,
+          "budget": 68,
+          "bytes": 84396,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 1.9575351999956183,
+          "sha256": "f2f5757079a98ce46efd5a11f67c84e6698c843f6d323f69b5fc15f851da4fb9",
+          "stream_file": "lps6-b68.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 1,
+            "coefficients_per_frame": 68,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 2345,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              73,
+              73,
+              1444,
+              1883,
+              1877,
+              1869,
+              1888,
+              1858,
+              1862,
+              1887,
+              1862,
+              1853,
+              1888,
+              1867,
+              1861,
+              1868,
+              1883,
+              1882,
+              1871,
+              1853,
+              1872,
+              1881,
+              1848,
+              1880,
+              1867,
+              1862,
+              1880,
+              1868,
+              1864,
+              1875,
+              1863,
+              1860,
+              1878,
+              1887,
+              1858,
+              1873,
+              1870,
+              1866,
+              1887,
+              1880,
+              1860,
+              1880,
+              1840,
+              1875,
+              1895,
+              1867,
+              2298
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 37.82860526995884,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 84396,
+            "stream_sha256": "f2f5757079a98ce46efd5a11f67c84e6698c843f6d323f69b5fc15f851da4fb9",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 67,
+        "bytes": 83061,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-sustained-sine\\selected-decoded.wav",
+        "decoded_sha256": "70ba3ba9883621404b38c7106766a86859988dccfb5e26142c3cca65097a4574",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.8540548677248515,
+            "log_spectral_distance_db": 6.496420219075141,
+            "magnitude_cosine_similarity": 0.9999754730906352,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.5376373076906299,
+                "spectral_convergence": 0.007270741749766496
+              },
+              "512": {
+                "log_magnitude_mae": 0.5269721650233555,
+                "spectral_convergence": 0.00617335760999587
+              },
+              "8192": {
+                "log_magnitude_mae": 0.5015786485749575,
+                "spectral_convergence": 0.00813880798285828
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.071563720703125,
+            "rms_error": 0.0008851364597471051,
+            "segmental_snr_db": 34.961473582009965,
+            "si_sdr_db": 37.82788316916423,
+            "snr_db": 37.828589534493574
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "2e68ed0d45aafc3571530f1241d7457c914f3e3453b85ccaac1341bfc64cb546",
+        "stream_file": "ebu-sustained-sine\\selected.resonith"
+      },
+      "source": {
+        "channels": 1,
+        "file": "ebu-sustained-sine.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "78faec4d9b92b72cba0ae1d13ec16bfc520c6c31e1b6df5f4e97e89515557e57"
+      }
+    },
+    "ebu-vibrato-gong": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "resonant",
+        "vibrato",
+        "long-decay"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": 0,
+        "log_mel_rmse": -0.41776629954133665,
+        "snr_db": -0.6104334073647877
+      },
+      "lps5_baseline": {
+        "budget": 67,
+        "bytes": 83341,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.20666092649664453,
+            "log_spectral_distance_db": 6.76101007749457,
+            "magnitude_cosine_similarity": 0.9999885000323037,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.2911972406642651,
+                "spectral_convergence": 0.0053589269510943855
+              },
+              "512": {
+                "log_magnitude_mae": 0.3085443991559574,
+                "spectral_convergence": 0.00533658825490672
+              },
+              "8192": {
+                "log_magnitude_mae": 0.2463696713187887,
+                "spectral_convergence": 0.00534037875449626
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.021514892578125,
+            "rms_error": 0.0015675799603862683,
+            "segmental_snr_db": 34.9172922137931,
+            "si_sdr_db": 42.41256461699608,
+            "snr_db": 42.4115232124705
+          }
+        },
+        "sha256": "8dd1596a56e7b6557ce29fcb6b338ff2fc2aa0f1c821a23cc76140662685e36f"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 6.300270911626312,
+          "budget": 67,
+          "bytes": 84983,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 1.9046800000069197,
+          "sha256": "dff3b01232a8a402f0436a3630b4734677896dece389c721e7996ff1a66da167",
+          "stream_file": "lps6-b67.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 1,
+            "coefficients_per_frame": 67,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 705,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              73,
+              73,
+              6194,
+              4999,
+              2697,
+              1567,
+              1006,
+              407,
+              73,
+              2808,
+              6711,
+              3596,
+              1943,
+              1208,
+              745,
+              83,
+              73,
+              73,
+              73,
+              73,
+              328,
+              6924,
+              5013,
+              2330,
+              1392,
+              887,
+              268,
+              73,
+              4547,
+              5968,
+              3243,
+              2037,
+              1121,
+              597,
+              73,
+              73,
+              73,
+              73,
+              73,
+              73,
+              73,
+              73,
+              73,
+              179,
+              6987,
+              5034,
+              2863
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 42.41152321247384,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 84983,
+            "stream_sha256": "dff3b01232a8a402f0436a3630b4734677896dece389c721e7996ff1a66da167",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 6.100984098914117,
+          "budget": 68,
+          "bytes": 86252,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 1.9668957999965642,
+          "sha256": "193a594a0c1afc001eb4ad8824ad41567e264d7eae22d4d5324eb50ecb554f32",
+          "stream_file": "lps6-b68.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 1,
+            "coefficients_per_frame": 68,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 705,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              73,
+              73,
+              6269,
+              5088,
+              2738,
+              1613,
+              1031,
+              414,
+              73,
+              2888,
+              6713,
+              3657,
+              1943,
+              1208,
+              760,
+              83,
+              73,
+              73,
+              73,
+              73,
+              332,
+              7049,
+              5100,
+              2358,
+              1421,
+              901,
+              268,
+              73,
+              4637,
+              6015,
+              3315,
+              2110,
+              1137,
+              603,
+              73,
+              73,
+              73,
+              73,
+              73,
+              73,
+              73,
+              73,
+              73,
+              179,
+              7118,
+              5086,
+              2917
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 42.41144273677624,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 86252,
+            "stream_sha256": "193a594a0c1afc001eb4ad8824ad41567e264d7eae22d4d5324eb50ecb554f32",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 67,
+        "bytes": 83341,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-vibrato-gong\\selected-decoded.wav",
+        "decoded_sha256": "eae3c9bd9ee0ac95093670ee1a4593b83c56096eff9298823de32403c2b38512",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.20666092649664453,
+            "log_spectral_distance_db": 6.76101007749457,
+            "magnitude_cosine_similarity": 0.9999885000323037,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.2911972406642651,
+                "spectral_convergence": 0.0053589269510943855
+              },
+              "512": {
+                "log_magnitude_mae": 0.3085443991559574,
+                "spectral_convergence": 0.00533658825490672
+              },
+              "8192": {
+                "log_magnitude_mae": 0.2463696713187887,
+                "spectral_convergence": 0.00534037875449626
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.021514892578125,
+            "rms_error": 0.0015675799603862683,
+            "segmental_snr_db": 34.9172922137931,
+            "si_sdr_db": 42.41256461699608,
+            "snr_db": 42.4115232124705
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "8dd1596a56e7b6557ce29fcb6b338ff2fc2aa0f1c821a23cc76140662685e36f",
+        "stream_file": "ebu-vibrato-gong\\selected.resonith"
+      },
+      "source": {
+        "channels": 1,
+        "file": "ebu-vibrato-gong.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "314210d30b03d67e4f923f1584d1bb30f548e39abecf717a63ce837e31b54187"
+      }
+    },
+    "ebu-violin": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "solo-instrument",
+        "tonal",
+        "bowed-string",
+        "stereo"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": 0,
+        "log_mel_rmse": 0.9654230159840783,
+        "snr_db": 7.629949866604104
+      },
+      "lps5_baseline": {
+        "budget": 71,
+        "bytes": 186405,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.5303970024467302,
+            "log_spectral_distance_db": 20.74988018417624,
+            "magnitude_cosine_similarity": 0.9997997343411275,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.7801809520165577,
+                "spectral_convergence": 0.011537165971024353
+              },
+              "512": {
+                "log_magnitude_mae": 1.7945862664592236,
+                "spectral_convergence": 0.01161864596805597
+              },
+              "8192": {
+                "log_magnitude_mae": 1.6123607013456036,
+                "spectral_convergence": 0.011500840881719291
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.010498046875,
+            "rms_error": 0.0013923305711585504,
+            "segmental_snr_db": 31.491006272374765,
+            "si_sdr_db": 34.269137344531494,
+            "snr_db": 34.247076184838214
+          }
+        },
+        "sha256": "c69acfeb5e0b104d57d7ada214738e390aa05199ff99ea962b156c5e7bedbb37"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 2.4861650611802966,
+          "budget": 71,
+          "bytes": 187795,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.826710900000762,
+          "sha256": "f011dcd092195ac235b96d24de3ea3c7db877b4ec205bda1d4d451e2412506d4",
+          "stream_file": "lps6-b71.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 71,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 344,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              2548,
+              4124,
+              4817,
+              4747,
+              4400,
+              4476,
+              4642,
+              4684,
+              4413,
+              4183,
+              4453,
+              4623,
+              4531,
+              4274,
+              4221,
+              4179,
+              3984,
+              4535,
+              4549,
+              4400,
+              4554,
+              4987,
+              5027,
+              4113,
+              3682,
+              3876,
+              4563,
+              4895,
+              4613,
+              4419,
+              4500,
+              3975,
+              3008,
+              3803,
+              4719,
+              5254,
+              4452,
+              3641,
+              3200,
+              3714,
+              4025,
+              4052,
+              3707,
+              2778,
+              1229
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 34.24707618484033,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 187795,
+            "stream_sha256": "f011dcd092195ac235b96d24de3ea3c7db877b4ec205bda1d4d451e2412506d4",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 2.417030444852529,
+          "budget": 72,
+          "bytes": 189983,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.964769900005194,
+          "sha256": "0e2d7f74b31d054b8f67167d1e012aae06a27340f79ca70c4850ec5e97b0c8cc",
+          "stream_file": "lps6-b72.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 72,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 529200,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 344,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 11264,
+            "packet_record_bytes": [
+              83,
+              83,
+              2564,
+              4158,
+              4856,
+              4777,
+              4432,
+              4499,
+              4669,
+              4729,
+              4447,
+              4223,
+              4485,
+              4660,
+              4578,
+              4312,
+              4259,
+              4227,
+              4033,
+              4592,
+              4592,
+              4446,
+              4606,
+              5052,
+              5087,
+              4187,
+              3741,
+              3929,
+              4622,
+              4978,
+              4679,
+              4484,
+              4554,
+              4037,
+              3061,
+              3862,
+              4780,
+              5323,
+              4513,
+              3699,
+              3243,
+              3769,
+              4073,
+              4120,
+              3763,
+              2812,
+              1245
+            ],
+            "sample_rate": 44100,
+            "selection_backend": "gain-shape",
+            "snr_db": 34.37024223445907,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 189983,
+            "stream_sha256": "0e2d7f74b31d054b8f67167d1e012aae06a27340f79ca70c4850ec5e97b0c8cc",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 71,
+        "bytes": 186405,
+        "complete_byte_non_regression": true,
+        "decoded_file": "ebu-violin\\selected-decoded.wav",
+        "decoded_sha256": "6829659a650c65921e17a4a2507bc7136b9d10fd93ecabf3c74e45dd5e4d45fb",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.5303970024467302,
+            "log_spectral_distance_db": 20.74988018417624,
+            "magnitude_cosine_similarity": 0.9997997343411275,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.7801809520165577,
+                "spectral_convergence": 0.011537165971024353
+              },
+              "512": {
+                "log_magnitude_mae": 1.7945862664592236,
+                "spectral_convergence": 0.01161864596805597
+              },
+              "8192": {
+                "log_magnitude_mae": 1.6123607013456036,
+                "spectral_convergence": 0.011500840881719291
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.010498046875,
+            "rms_error": 0.0013923305711585504,
+            "segmental_snr_db": 31.491006272374765,
+            "si_sdr_db": 34.269137344531494,
+            "snr_db": 34.247076184838214
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "c69acfeb5e0b104d57d7ada214738e390aa05199ff99ea962b156c5e7bedbb37",
+        "stream_file": "ebu-violin\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-violin.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "e0aadf5f82ab9c6ba9517d59e4266c9ad382e56de880096a9d2e5154f1135370"
+      }
+    },
+    "xiph-elephants-dream-film-mix": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "film-mix",
+        "dialogue",
+        "music",
+        "effects",
+        "ambience",
+        "stereo"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": -34,
+        "log_mel_rmse": 1.7211698871813848,
+        "snr_db": 6.772268401215825
+      },
+      "lps5_baseline": {
+        "budget": 71,
+        "bytes": 200211,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.0670049554169108,
+            "log_spectral_distance_db": 23.600136614942663,
+            "magnitude_cosine_similarity": 0.9992103128242584,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 2.28561785253894,
+                "spectral_convergence": 0.02739487112351287
+              },
+              "512": {
+                "log_magnitude_mae": 2.47713173655496,
+                "spectral_convergence": 0.026813065535117253
+              },
+              "8192": {
+                "log_magnitude_mae": 1.8987088672364612,
+                "spectral_convergence": 0.026632576767726582
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.011993408203125,
+            "rms_error": 0.001037536703840769,
+            "segmental_snr_db": 25.23743216650911,
+            "si_sdr_db": 28.34286998201754,
+            "snr_db": 28.337705161618644
+          }
+        },
+        "sha256": "ddcafedd075c14886c26d7d99bafb946061d751db7ea39516154e9ae68f587a3"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 2.379358588373455,
+          "budget": 71,
+          "bytes": 202345,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 5.0433760000014445,
+          "sha256": "91013f22e2d92337d8ac34cb49a253f0813e0792e63140dd0c8fdc9e413e0799",
+          "stream_file": "lps6-b71.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 71,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 576000,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 393,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 12288,
+            "packet_record_bytes": [
+              10271,
+              7673,
+              4109,
+              5789,
+              4912,
+              5080,
+              4550,
+              3789,
+              5967,
+              9752,
+              5937,
+              3885,
+              3543,
+              2644,
+              8313,
+              5774,
+              4943,
+              1828,
+              2106,
+              2922,
+              2763,
+              4708,
+              3289,
+              5431,
+              13070,
+              7510,
+              3611,
+              2200,
+              2165,
+              2120,
+              2707,
+              7564,
+              9771,
+              3457,
+              2507,
+              2536,
+              2611,
+              2394,
+              1901,
+              1744,
+              1886,
+              1965,
+              2256,
+              2048,
+              2158,
+              2277,
+              1849
+            ],
+            "sample_rate": 48000,
+            "selection_backend": "gain-shape",
+            "snr_db": 28.337705161622143,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 202345,
+            "stream_sha256": "91013f22e2d92337d8ac34cb49a253f0813e0792e63140dd0c8fdc9e413e0799",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 2.4567775039080013,
+          "budget": 72,
+          "bytes": 204736,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.884447200005525,
+          "sha256": "bb3ce9f07be8012e38558936104cb7c680469e24106377c4f21c95514d31c765",
+          "stream_file": "lps6-b72.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 72,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 576000,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 397,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 12288,
+            "packet_record_bytes": [
+              10342,
+              7774,
+              4165,
+              5861,
+              5009,
+              5140,
+              4611,
+              3838,
+              6056,
+              9850,
+              6023,
+              3940,
+              3588,
+              2681,
+              8391,
+              5847,
+              5031,
+              1840,
+              2128,
+              2973,
+              2793,
+              4772,
+              3328,
+              5490,
+              13157,
+              7593,
+              3667,
+              2222,
+              2184,
+              2139,
+              2741,
+              7650,
+              9874,
+              3507,
+              2542,
+              2558,
+              2643,
+              2414,
+              1920,
+              1761,
+              1911,
+              1991,
+              2282,
+              2077,
+              2190,
+              2310,
+              1872
+            ],
+            "sample_rate": 48000,
+            "selection_backend": "gain-shape",
+            "snr_db": 28.494910311911536,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 204736,
+            "stream_sha256": "bb3ce9f07be8012e38558936104cb7c680469e24106377c4f21c95514d31c765",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 71,
+        "bytes": 200211,
+        "complete_byte_non_regression": true,
+        "decoded_file": "xiph-elephants-dream-film-mix\\selected-decoded.wav",
+        "decoded_sha256": "82d24a87dd2ec4d47385e5c97e2bf4bce035c9a054151aa7d0a2307182e1ce8f",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.0670049554169108,
+            "log_spectral_distance_db": 23.600136614942663,
+            "magnitude_cosine_similarity": 0.9992103128242584,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 2.28561785253894,
+                "spectral_convergence": 0.02739487112351287
+              },
+              "512": {
+                "log_magnitude_mae": 2.47713173655496,
+                "spectral_convergence": 0.026813065535117253
+              },
+              "8192": {
+                "log_magnitude_mae": 1.8987088672364612,
+                "spectral_convergence": 0.026632576767726582
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.011993408203125,
+            "rms_error": 0.001037536703840769,
+            "segmental_snr_db": 25.23743216650911,
+            "si_sdr_db": 28.34286998201754,
+            "snr_db": 28.337705161618644
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "ddcafedd075c14886c26d7d99bafb946061d751db7ea39516154e9ae68f587a3",
+        "stream_file": "xiph-elephants-dream-film-mix\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "xiph-elephants-dream-film-mix.wav",
+        "frames": 576000,
+        "sample_rate": 48000,
+        "sha256": "d7992ab9edb34ba7fc5d750eb9cf76a843de7500110aa62b2d87b6f74de55af3"
+      }
+    },
+    "xiph-sintel-film-mix": {
+      "base_budget_pcm_identical_to_lps5": true,
+      "categories": [
+        "film-mix",
+        "dialogue",
+        "music",
+        "effects",
+        "ambience",
+        "stereo"
+      ],
+      "deltas_vs_lps5": {
+        "bytes": 0,
+        "log_mel_rmse": 0.0,
+        "snr_db": 0.0
+      },
+      "deltas_vs_opus": {
+        "bytes": -4,
+        "log_mel_rmse": 1.7090535902046875,
+        "snr_db": 15.592838124134463
+      },
+      "lps5_baseline": {
+        "budget": 71,
+        "bytes": 197037,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.0958637443999546,
+            "log_spectral_distance_db": 21.30637807376249,
+            "magnitude_cosine_similarity": 0.9997862800363372,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.9535915450591572,
+                "spectral_convergence": 0.009994807278754835
+              },
+              "512": {
+                "log_magnitude_mae": 2.122078486610017,
+                "spectral_convergence": 0.008894517536129656
+              },
+              "8192": {
+                "log_magnitude_mae": 1.6457786732335145,
+                "spectral_convergence": 0.009696502359138078
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.04339599609375,
+            "rms_error": 0.002215191881615117,
+            "segmental_snr_db": 32.35714105349251,
+            "si_sdr_db": 36.5595814258785,
+            "snr_db": 36.55673139150372
+          }
+        },
+        "sha256": "a86a18936ed356f7c98349c7ba16710a94f4c8cbe8f1d7dd81db111c5a593d48"
+      },
+      "lps6_candidates": [
+        {
+          "audio_seconds_per_wall_second": 2.52417640383793,
+          "budget": 71,
+          "bytes": 197860,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.7540258999943035,
+          "sha256": "8121d7998e31f3fdaf731b137dabbe406bf7fb1419853f939f6b33995df3b071",
+          "stream_file": "lps6-b71.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 71,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 576000,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 1422,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 12288,
+            "packet_record_bytes": [
+              7226,
+              4821,
+              3144,
+              2100,
+              1557,
+              1399,
+              1327,
+              1186,
+              1990,
+              3200,
+              5438,
+              4912,
+              4426,
+              3981,
+              5015,
+              4605,
+              4244,
+              1734,
+              1807,
+              1788,
+              1745,
+              1876,
+              2045,
+              1817,
+              1740,
+              6811,
+              9739,
+              13424,
+              8344,
+              5323,
+              3740,
+              2832,
+              2486,
+              4201,
+              10150,
+              7358,
+              8215,
+              6082,
+              4423,
+              3659,
+              4262,
+              3816,
+              4764,
+              3006,
+              2634,
+              3413,
+              3995
+            ],
+            "sample_rate": 48000,
+            "selection_backend": "gain-shape",
+            "snr_db": 36.556731391504485,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 197860,
+            "stream_sha256": "8121d7998e31f3fdaf731b137dabbe406bf7fb1419853f939f6b33995df3b071",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        },
+        {
+          "audio_seconds_per_wall_second": 2.523858666944965,
+          "budget": 72,
+          "bytes": 200219,
+          "eligible_under_lps5_complete_bytes": false,
+          "encode_wall_seconds": 4.754624399996828,
+          "sha256": "7dd5184582bc04253d0cc64a7ee30d921cea4c0aa9631e51ada91f60b9b5613a",
+          "stream_file": "lps6-b72.resonith",
+          "stream_report": {
+            "band_count": 24,
+            "band_whitening": 0.0,
+            "channel_count": 2,
+            "coefficients_per_frame": 72,
+            "density_backend": "adaptive-global",
+            "duplicated_boundary_transform_frames": 0,
+            "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+            "exact": false,
+            "exact_monolithic_reconstruction": null,
+            "format_profile": "prospective-LPS6",
+            "frame_count": 576000,
+            "frame_whitening": 0.0,
+            "half_window": 512,
+            "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+            "lookahead_frames": 512,
+            "max_abs_error": 1474,
+            "maximum_loss_extension_frames": 512,
+            "monolithic_conformance_checked": false,
+            "monolithic_stream_bytes": null,
+            "packet_byte_overhead_fraction": null,
+            "packet_count": 47,
+            "packet_frames": 12288,
+            "packet_record_bytes": [
+              7289,
+              4874,
+              3179,
+              2120,
+              1573,
+              1412,
+              1346,
+              1200,
+              2017,
+              3226,
+              5517,
+              5003,
+              4507,
+              4047,
+              5093,
+              4676,
+              4326,
+              1771,
+              1821,
+              1822,
+              1770,
+              1899,
+              2074,
+              1838,
+              1764,
+              6873,
+              9831,
+              13509,
+              8397,
+              5377,
+              3789,
+              2874,
+              2512,
+              4249,
+              10230,
+              7442,
+              8303,
+              6158,
+              4483,
+              3700,
+              4341,
+              3883,
+              4835,
+              3043,
+              2664,
+              3458,
+              4044
+            ],
+            "sample_rate": 48000,
+            "selection_backend": "gain-shape",
+            "snr_db": 36.73873237589349,
+            "status": "adaptive integer transport-framed research stream",
+            "stream_bytes": 200219,
+            "stream_sha256": "7dd5184582bc04253d0cc64a7ee30d921cea4c0aa9631e51ada91f60b9b5613a",
+            "value_entropy_backend": "bounded",
+            "verification_backend": "native Golden Core"
+          }
+        }
+      ],
+      "selected": {
+        "backend": "LPS5 fallback",
+        "budget": 71,
+        "bytes": 197037,
+        "complete_byte_non_regression": true,
+        "decoded_file": "xiph-sintel-film-mix\\selected-decoded.wav",
+        "decoded_sha256": "2f5092251ca1a3930a6465aa2e3e5dfa2dd8a1ef69ddc7288950b774e63505a7",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.0958637443999546,
+            "log_spectral_distance_db": 21.30637807376249,
+            "magnitude_cosine_similarity": 0.9997862800363372,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.9535915450591572,
+                "spectral_convergence": 0.009994807278754835
+              },
+              "512": {
+                "log_magnitude_mae": 2.122078486610017,
+                "spectral_convergence": 0.008894517536129656
+              },
+              "8192": {
+                "log_magnitude_mae": 1.6457786732335145,
+                "spectral_convergence": 0.009696502359138078
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.04339599609375,
+            "rms_error": 0.002215191881615117,
+            "segmental_snr_db": 32.35714105349251,
+            "si_sdr_db": 36.5595814258785,
+            "snr_db": 36.55673139150372
+          }
+        },
+        "quality_non_regression": true,
+        "sha256": "a86a18936ed356f7c98349c7ba16710a94f4c8cbe8f1d7dd81db111c5a593d48",
+        "stream_file": "xiph-sintel-film-mix\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "xiph-sintel-film-mix.wav",
+        "frames": 576000,
+        "sample_rate": 48000,
+        "sha256": "d4917c7b38fb9c409e29837d5907f5d932f75129c9e54ba2df6200fdb23416ca"
+      }
+    }
+  },
+  "decision": "R-113",
+  "native_core": {
+    "file": "resonith_core_shared.dll",
+    "sha256": "e0c95d18a40afecd9369c40f9244acf80f37bc66e8d9c751dd2b7c32b0310307"
+  },
+  "reference_report_sha256": "94c783955143c84e16303d32ff4292e323623b7d89fbf41eb4ce37df77eb8a31",
+  "schema": "resonith-bounded-value-entropy-gate-1",
+  "selected_clip_ids": [
+    "ebu-sustained-sine",
+    "ebu-pink-noise",
+    "ebu-vibrato-gong",
+    "ebu-electronic-tune",
+    "ebu-violin",
+    "ebu-claves",
+    "ebu-side-drum",
+    "ebu-cymbal",
+    "ebu-grand-piano",
+    "ebu-soprano",
+    "ebu-female-speech-en",
+    "ebu-male-speech-en",
+    "ebu-dense-orchestra",
+    "ebu-dense-pop",
+    "xiph-sintel-film-mix",
+    "xiph-elephants-dream-film-mix"
+  ],
+  "status": "passed selected-corpus non-regression gate",
+  "total_wall_seconds": 156.64081219999935
+}

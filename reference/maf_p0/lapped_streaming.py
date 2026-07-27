@@ -12,16 +12,23 @@ import numpy as np
 from .codec import _quality_report
 from .finite_state_oracle import (
     MAGIC as FINITE_STATE_MAGIC,
+    RICE_VALUE_MAGIC,
     compact_finite_state_lapped,
     compact_finite_state_lapped_size,
+    compact_rice_value_lapped,
+    compact_rice_value_lapped_size,
     decode_finite_state_lapped,
+    decode_rice_value_lapped,
     encode_finite_state_lapped,
+    encode_rice_value_lapped,
     expand_compact_finite_state_lapped,
+    expand_compact_rice_value_lapped,
 )
 from .lapped_oracle import (
     MAX_BANDS,
     MAX_CHANNELS,
     MAX_HALF_WINDOW,
+    LappedAnalysis,
     analyze_lapped_source,
     decode_lapped_stream,
     encode_lapped_analysis,
@@ -42,6 +49,7 @@ TRANSFORM_MAGIC = b"LPS2"
 CHAINED_MAGIC = b"LPS3"
 COMPACT_MAGIC = b"LPS4"
 FINITE_COMPACT_MAGIC = b"LPS5"
+RICE_VALUE_COMPACT_MAGIC = b"LPS6"
 VERSION = 1
 HEADER = struct.Struct("<4sBBHIIHHII")
 PACKET_HEADER = struct.Struct("<III")
@@ -187,6 +195,7 @@ def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
             CHAINED_MAGIC,
             COMPACT_MAGIC,
             FINITE_COMPACT_MAGIC,
+            RICE_VALUE_COMPACT_MAGIC,
         )
         or version != VERSION
         or flags != 0
@@ -204,18 +213,29 @@ def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
     cursor = HEADER.size + DIGEST_BYTES
     expected_start = 0
     packets: list[LappedPacketView] = []
-    if magic in (COMPACT_MAGIC, FINITE_COMPACT_MAGIC):
+    if magic in (
+        COMPACT_MAGIC,
+        FINITE_COMPACT_MAGIC,
+        RICE_VALUE_COMPACT_MAGIC,
+    ):
         for packet_index in range(packet_count):
             logical_start = packet_index * packet_frames
             logical_count = min(
                 packet_frames,
                 total_frames - logical_start,
             )
-            record_size = (
-                compact_variable_sparse_lapped_size(payload[cursor:])
-                if magic == COMPACT_MAGIC
-                else compact_finite_state_lapped_size(payload[cursor:])
-            )
+            if magic == COMPACT_MAGIC:
+                record_size = compact_variable_sparse_lapped_size(
+                    payload[cursor:]
+                )
+            elif magic == FINITE_COMPACT_MAGIC:
+                record_size = compact_finite_state_lapped_size(
+                    payload[cursor:]
+                )
+            else:
+                record_size = compact_rice_value_lapped_size(
+                    payload[cursor:]
+                )
             record_end = cursor + record_size
             if len(payload) - record_end < 4:
                 raise ValueError("truncated compact lapped packet CRC")
@@ -228,21 +248,27 @@ def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
                 logical_count // half_window
                 + (1 if final_packet else 0)
             )
-            child_payload = (
-                expand_compact_variable_sparse_lapped(
+            if magic == COMPACT_MAGIC:
+                child_payload = expand_compact_variable_sparse_lapped(
                     record,
                     frame_count=owned_frames,
                     channels=channels,
                     band_count=band_count,
                 )
-                if magic == COMPACT_MAGIC
-                else expand_compact_finite_state_lapped(
+            elif magic == FINITE_COMPACT_MAGIC:
+                child_payload = expand_compact_finite_state_lapped(
                     record,
                     frame_count=owned_frames,
                     channels=channels,
                     band_count=band_count,
                 )
-            )
+            else:
+                child_payload = expand_compact_rice_value_lapped(
+                    record,
+                    frame_count=owned_frames,
+                    channels=channels,
+                    band_count=band_count,
+                )
             packets.append(
                 LappedPacketView(
                     packet_index,
@@ -301,8 +327,17 @@ def index_lapped_packet_stream(payload: bytes) -> LappedPacketStreamInfo:
         band_count,
         packet_frames,
         magic == TRANSFORM_MAGIC,
-        magic in (CHAINED_MAGIC, COMPACT_MAGIC, FINITE_COMPACT_MAGIC),
-        magic in (COMPACT_MAGIC, FINITE_COMPACT_MAGIC),
+        magic in (
+            CHAINED_MAGIC,
+            COMPACT_MAGIC,
+            FINITE_COMPACT_MAGIC,
+            RICE_VALUE_COMPACT_MAGIC,
+        ),
+        magic in (
+            COMPACT_MAGIC,
+            FINITE_COMPACT_MAGIC,
+            RICE_VALUE_COMPACT_MAGIC,
+        ),
         tuple(packets),
     )
 
@@ -377,6 +412,17 @@ def _decode_selected_packet_fields(
 
     if packet.child_payload.startswith(FINITE_STATE_MAGIC):
         fields = decode_finite_state_lapped(
+            packet.child_payload,
+            half_window=info.half_window,
+            expected_channels=info.channels,
+            expected_frames=expected_frames,
+            expected_bands=info.band_count,
+        )
+        counts = fields.counts
+        positions = fields.positions
+        values = fields.values
+    elif packet.child_payload.startswith(RICE_VALUE_MAGIC):
+        fields = decode_rice_value_lapped(
             packet.child_payload,
             half_window=info.half_window,
             expected_channels=info.channels,
@@ -1000,6 +1046,8 @@ def encode_lapped_finite_packet_stream(
     band_whitening: float = 0.0,
     native_core=None,
     verify_monolithic: bool = False,
+    value_entropy_backend: str = "adaptive",
+    precomputed_analysis: LappedAnalysis | None = None,
 ) -> LappedPacketEncodeResult:
     """Packetize single-owner fields with independently reset LAF1 entropy."""
 
@@ -1010,6 +1058,8 @@ def encode_lapped_finite_packet_stream(
         or source_view.shape[0] == 0
     ):
         raise TypeError("LPS5 input must be frame-major PCM16")
+    if value_entropy_backend not in {"adaptive", "bounded"}:
+        raise ValueError("unknown finite-state value entropy backend")
     source = np.array(source_view, dtype=np.int16, copy=True)
     packet_count = (
         source.shape[0] + packet_frames - 1
@@ -1023,14 +1073,28 @@ def encode_lapped_finite_packet_stream(
         packet_frames,
         packet_count,
     )
-    analysis = analyze_lapped_source(
-        source,
-        sample_rate,
-        half_window=half_window,
-        band_count=band_count,
-        transform_backend="fixed",
-        native_analyzer=native_core,
-    )
+    if precomputed_analysis is None:
+        analysis = analyze_lapped_source(
+            source,
+            sample_rate,
+            half_window=half_window,
+            band_count=band_count,
+            transform_backend="fixed",
+            native_analyzer=native_core,
+        )
+    else:
+        analysis = precomputed_analysis
+        if (
+            not isinstance(analysis, LappedAnalysis)
+            or analysis.sample_rate != sample_rate
+            or analysis.half_window != half_window
+            or analysis.band_count != band_count
+            or not analysis.fixed_transform
+            or not np.array_equal(analysis.samples, source)
+        ):
+            raise ValueError(
+                "precomputed lapped analysis differs from the encode source"
+            )
     monolithic = encode_lapped_analysis(
         analysis,
         coefficients_per_frame=coefficients_per_frame,
@@ -1043,7 +1107,11 @@ def encode_lapped_finite_packet_stream(
         emit_stream=verify_monolithic,
     )
     header = HEADER.pack(
-        FINITE_COMPACT_MAGIC,
+        (
+            FINITE_COMPACT_MAGIC
+            if value_entropy_backend == "adaptive"
+            else RICE_VALUE_COMPACT_MAGIC
+        ),
         VERSION,
         0,
         source.shape[1],
@@ -1087,15 +1155,26 @@ def encode_lapped_finite_packet_stream(
                 value_parts.append(
                     coefficients[channel, frame, positions].astype(np.int8)
                 )
-        full_laf1 = encode_finite_state_lapped(
-            scales,
-            counts,
-            np.concatenate(position_parts),
-            np.concatenate(value_parts),
-            half_window=half_window,
-            native_encoder=native_core,
-        )
-        record = compact_finite_state_lapped(full_laf1)
+        if value_entropy_backend == "adaptive":
+            full_laf1 = encode_finite_state_lapped(
+                scales,
+                counts,
+                np.concatenate(position_parts),
+                np.concatenate(value_parts),
+                half_window=half_window,
+                native_encoder=native_core,
+            )
+            record = compact_finite_state_lapped(full_laf1)
+        else:
+            full_laf1 = encode_rice_value_lapped(
+                scales,
+                counts,
+                np.concatenate(position_parts),
+                np.concatenate(value_parts),
+                half_window=half_window,
+                native_encoder=native_core,
+            )
+            record = compact_rice_value_lapped(full_laf1)
         body += record
         body += struct.pack("<I", zlib.crc32(record) & 0xFFFF_FFFF)
         record_bytes.append(len(record) + 4)
@@ -1116,7 +1195,11 @@ def encode_lapped_finite_packet_stream(
         raise RuntimeError("LPS5 packet reconstruction differs from LPF1")
     report = {
         "status": "adaptive integer transport-framed research stream",
-        "format_profile": "prospective-LPS5",
+        "format_profile": (
+            "prospective-LPS5"
+            if value_entropy_backend == "adaptive"
+            else "prospective-LPS6"
+        ),
         "integrity": (
             "SHA-256 sequence header plus CRC-32 packet records; "
             "cryptographic packet authentication is a transport requirement"
@@ -1133,7 +1216,12 @@ def encode_lapped_finite_packet_stream(
         "selection_backend": selection_backend,
         "frame_whitening": frame_whitening,
         "band_whitening": band_whitening,
-        "entropy_backend": "bounded adaptive integer; reset per record",
+        "entropy_backend": (
+            "bounded adaptive integer; reset per record"
+            if value_entropy_backend == "adaptive"
+            else "bounded adaptive fields plus Rice/packed values; reset per record"
+        ),
+        "value_entropy_backend": value_entropy_backend,
         "verification_backend": verification_backend,
         "packet_frames": packet_frames,
         "packet_count": packet_count,

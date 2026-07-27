@@ -1145,7 +1145,7 @@ programming language.
 The official Python research layer MAY define hypotheses, search spaces, RDO
 costs, training, metrics, experiments, and reports. Material work that scales
 with samples, transform coefficients, candidates, or PVQ pulses MUST execute
-through bounded native C++20, portable SIMD, or optional accelerator kernels
+through bounded native C++23, portable SIMD, or optional accelerator kernels
 before an experiment enters the full promotion gate in clause 16.
 
 The official shipped codec, SDK, command-line tools, embedded library, and

@@ -15,9 +15,14 @@ from maf_p0.finite_state_oracle import (  # noqa: E402
     _encode_adaptive,
     compact_finite_state_lapped,
     compact_finite_state_lapped_size,
+    compact_rice_value_lapped,
+    compact_rice_value_lapped_size,
     decode_finite_state_lapped,
+    decode_rice_value_lapped,
     encode_finite_state_lapped,
+    encode_rice_value_lapped,
     expand_compact_finite_state_lapped,
+    expand_compact_rice_value_lapped,
 )
 
 
@@ -126,6 +131,50 @@ class FiniteStateOracleTests(unittest.TestCase):
                 channels=2,
                 band_count=3,
             )
+
+    def test_rice_value_fields_and_compact_transport_round_trip(self) -> None:
+        scales, counts, positions, values = self._fields()
+        payload = encode_rice_value_lapped(
+            scales,
+            counts,
+            positions,
+            values,
+            half_window=64,
+        )
+        compact = compact_rice_value_lapped(payload)
+        restored = expand_compact_rice_value_lapped(
+            compact,
+            frame_count=3,
+            channels=2,
+            band_count=3,
+        )
+        decoded = decode_rice_value_lapped(
+            restored,
+            half_window=64,
+            expected_channels=2,
+            expected_frames=3,
+            expected_bands=3,
+        )
+
+        self.assertEqual(restored, payload)
+        self.assertEqual(compact_rice_value_lapped_size(compact), len(compact))
+        np.testing.assert_array_equal(decoded.scales, scales)
+        np.testing.assert_array_equal(decoded.counts, counts)
+        np.testing.assert_array_equal(decoded.positions, positions)
+        np.testing.assert_array_equal(decoded.values, values)
+        with self.assertRaises(ValueError):
+            compact_rice_value_lapped_size(compact[:-1])
+        corrupted = bytearray(payload)
+        corrupted[0] ^= 1
+        for candidate in (bytes(corrupted), payload[:-1], payload + b"\0"):
+            with self.assertRaises(ValueError):
+                decode_rice_value_lapped(
+                    candidate,
+                    half_window=64,
+                    expected_channels=2,
+                    expected_frames=3,
+                    expected_bands=3,
+                )
 
     def test_corrupt_header_truncation_and_trailing_bytes_are_rejected(
         self,

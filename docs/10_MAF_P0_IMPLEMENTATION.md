@@ -51,7 +51,7 @@ Implemented invariants:
 - `residual_step=1` reconstructs exact PCM for RAW and CIBS Basis banks.
 
 The experimental container is self-describing and not the final binary syntax.
-The Python implementation is an oracle; the portable C++20 Golden Core remains
+The Python implementation is an oracle; the portable C++23 Golden Core remains
 the production target.
 
 ## 3. Real Opus anchor

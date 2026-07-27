@@ -94,7 +94,7 @@ skipped by the typed decoder.
 
 ## 6. Executable evidence
 
-The Python writer/parser and C++20 whole-stream decoder share one canonical
+The Python writer/parser and C++23 whole-stream decoder share one canonical
 557-byte Main-0 stream. It contains typed `CONF`, `ATOM`, `BRAW`, and `RSL1`
 sections and has SHA-256:
 

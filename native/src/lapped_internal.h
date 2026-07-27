@@ -40,6 +40,18 @@ resonith_status lapped_finite_compact_fields_decode(
 ) noexcept;
 
 /*
+ * Decodes one CRC-excluded LPS6 compact LAR1 record with explicitly selected
+ * bounded Rice/packed coefficient-value entropy.
+ */
+resonith_status lapped_rice_value_compact_fields_decode(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_lapped_requirements& shape,
+    const resonith_lapped_workspace& workspace,
+    resonith_lapped_requirements* requirements
+) noexcept;
+
+/*
  * Renders current single-owner transform fields plus, when non-null, the first
  * transform frame from the next record. Validation completes before PCM write.
  */

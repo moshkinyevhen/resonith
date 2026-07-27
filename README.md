@@ -42,7 +42,7 @@ The repository contains:
 - RAW and CIBS Basis banks plus bounded `LiftPack-1`/`LiftPack-2` objective
   residuals with exact block-local integer LPC;
 - the compact deterministic `RSC1` typed section-container candidate;
-- a dependency-free C++20 whole-RSC1 Golden Core behind a stable C99 ABI;
+- a dependency-free C++23 whole-RSC1 Golden Core behind a stable C99 ABI;
 - allocation-free block indexing, random block decode, linear residual
   cursors, and callback-oriented zero-Atom/model-bearing PCM playback;
 - registry-backed latent-only `BCIB` Basis transport with preflighted
@@ -62,12 +62,16 @@ The repository contains:
 - a bounded allocation-free native `LAF1` adaptive integer entropy candidate
   that preserves the selected lapped reconstruction while reducing complete
   three-second R-084 bytes by 5.34% to 7.67% on all three licensed clips;
-- an allocation-free C++20 LAF1 encoder that preserves every published R-107
+- an allocation-free C++23 LAF1 encoder that preserves every published R-107
   stream byte and improves complete-Mozart encode throughput by 2.476x to
   2.571x realtime on the measured Windows x64 host;
 - prospective `LPS5` independently reset adaptive records, which preserve LPS4
   loss containment and reduce complete 278.6 ms transport bytes by 3.43% to
   5.95% on the three R-084 clips;
+- prospective `LPS6` packet-local bounded Rice/fixed-width value entropy with
+  an exact LPS5 RDO fallback; it improved all four declared speech metrics
+  inside the previous complete-byte ceiling and retained LPS5 on 13 of 16
+  heterogeneous classes where the new representation was larger;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
@@ -75,7 +79,8 @@ The repository contains:
 - a pinned 16-class EBU SQAM/Xiph heterogeneous gate spanning speech, solo
   voice, sustained tones, noise, electronic, transient, dense, stereo, and
   film-mix material;
-- 165 pure reference/security/integration tests, fifteen native decoder-in-loop
+- 164 pure reference/security/integration tests, seventeen native
+  decoder-in-loop
   integration tests, ten native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1/LPF1/LAF1 mutation targets.
@@ -106,6 +111,11 @@ The first portable decoder subset is documented in
 - [LiftPack-1 and full-stream state RDO](docs/12_LIFTPACK_AND_STATE_RDO.md)
 - [RSC1 compact deterministic section container](docs/13_RSC1_CONTAINER.md)
 - [First native typed-stream music diagnostic](docs/14_MAIN0_NATIVE_MUSIC.md)
+- [Continuous evidence and immediate-improvement protocol](docs/15_CONTINUOUS_EVIDENCE.md)
+- [C++23 production toolchain baseline](docs/16_TOOLCHAIN_BASELINE.md)
+- [C++23 migration and exact regression evidence](docs/results/CPP23_TOOLCHAIN_GATE_2026-07-27.md)
+- [Latest bounded-value entropy result](docs/results/BOUNDED_VALUE_ENTROPY_2026-07-27.md)
+- [Corrected PVQ envelope fast gate](docs/results/PVQ_ENVELOPE_FAST_GATE_2026-07-27.md)
 - [Primary sources](docs/REFERENCES.md)
 - [Resonith-0 normative draft](spec/Resonith-0.md)
 
@@ -224,12 +234,12 @@ PYTHONPATH=reference python -m maf_p0 decode-lapped \
 
 ## Implementation stack
 
-- portable dependency-free C++20 bit-exact Golden Core;
+- portable dependency-free C++23 bit-exact Golden Core;
 - stable C ABI for applications, bindings, and hardware test benches;
 - Rust for secure parsing, streaming, scheduling, and player services;
 - Python/PyTorch as a thin research control plane for hypotheses, RDO policy,
   metrics, and CIBS training, never as a shipped runtime dependency;
-- C++20/SIMD and optional CUDA kernels for scaling transform, search,
+- C++23/SIMD and optional CUDA kernels for scaling transform, search,
   reconstruction, synthesis, and Studio/Foundry encoding work;
 - scalar, x86 SIMD, ARM NEON/SVE2, WASM SIMD, and vendor-DSP decode paths.
 

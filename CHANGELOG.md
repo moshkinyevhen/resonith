@@ -11,6 +11,30 @@ version.
 
 ### Research
 
+- Adopted C++23 as the production language baseline while retaining C++26 as
+  a non-blocking forward-compatibility check. Pinned the Windows research
+  workstation to stable Python 3.14.6, LLVM/Clang 22.1.8, CMake 4.4.0, and
+  Ninja 1.13.2; the repository-local sync client is MinGit
+  2.55.0.windows.3. Shipped artifacts remain independent of Python.
+- Made MinGW builds self-contained by statically linking the C++ runtime
+  through the Core target contract; strict C++23 compilation also exposed and
+  removed a transitive-include dependency.
+- Passed 10 native tests and the 185-test Python 3.14/native suite. All 16
+  heterogeneous R-111 streams remained byte-identical under the C++23 Core
+  across 192 seconds and 2,471,068 compressed bytes.
+- Added prospective LPS6 bounded signed Rice/fixed-width coefficient-value
+  entropy with an exact LPS5 RDO fallback. At the prior complete-byte ceiling,
+  speech moved from budget 67 to 68 and improved SNR, STOI, ESTOI, and log-mel
+  RMSE simultaneously; complete piano and Mozart saved 110 and 5,432 bytes
+  with identical PCM. The 16-class gate selected LPS6 for three classes and
+  retained LPS5 for the other 13.
+- Migrated accepted LPS6 value packing and decode to the allocation-free
+  C++20 Core, added Python/Core byte and PCM parity plus malformed-stream
+  tests, and reused immutable transform analysis across adjacent RDO budgets.
+- Corrected the R-108 PVQ compiler to use deterministic greedy integer
+  direction search and projection-optimal gain. The corrected candidate
+  improved speech-envelope metrics but failed the complete-stream universal
+  base gate, so no PVQ decoder syntax was promoted.
 - Accepted R-112 and moved the exact LAF1 adaptive arithmetic packer into the
   allocation-free C++20 Core. Complete Mozart encoding improved from 385.976
   to 155.866 seconds (2.476x) while retaining the exact 6,526,665-byte stream;

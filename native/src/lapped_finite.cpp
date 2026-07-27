@@ -1,5 +1,6 @@
 #include "resonith/lapped_finite.h"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -10,6 +11,7 @@ namespace {
 
 constexpr std::size_t kHeaderBytes = 43U;
 constexpr std::size_t kCompactHeaderBytes = 28U;
+constexpr std::size_t kRiceValueCompactHeaderBytes = 30U;
 constexpr std::uint8_t kVersion = 1U;
 constexpr std::uint8_t kEntropyRice = 0U;
 constexpr std::uint8_t kEntropyPacked = 1U;
@@ -142,6 +144,22 @@ public:
         }
         for (std::uint32_t index = 0U; index < pending; ++index) {
             if (!write_bit(1U - value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool write_bits(std::uint64_t value, std::uint32_t count) noexcept {
+        if (count > 64U) {
+            return false;
+        }
+        for (std::uint32_t offset = 0U; offset < count; ++offset) {
+            if (
+                !write_bit(
+                    static_cast<std::uint32_t>((value >> offset) & 1U)
+                )
+            ) {
                 return false;
             }
         }
@@ -341,6 +359,141 @@ resonith_status encode_adaptive(
     return RESONITH_STATUS_OK;
 }
 
+std::uint64_t zigzag_encode(std::int16_t value) noexcept {
+    const std::int64_t wide = value;
+    return wide >= 0
+        ? static_cast<std::uint64_t>(wide) * 2U
+        : static_cast<std::uint64_t>(-wide * 2 - 1);
+}
+
+std::uint8_t bit_width(std::uint64_t value) noexcept {
+    std::uint8_t width = 1U;
+    while (value > 1U) {
+        value >>= 1U;
+        ++width;
+    }
+    return width;
+}
+
+std::uint64_t bounded_rice_cost(
+    const std::int16_t* values,
+    std::size_t value_count,
+    std::uint8_t parameter
+) noexcept {
+    std::uint64_t total = 0U;
+    for (std::size_t index = 0U; index < value_count; ++index) {
+        const std::uint64_t value = zigzag_encode(values[index]);
+        const std::uint64_t quotient = value >> parameter;
+        total += quotient < kRiceEscapeQuotient
+            ? quotient + 1U + parameter
+            : kRiceEscapeQuotient + 1U + 64U;
+    }
+    return total;
+}
+
+resonith_status encode_int16_entropy(
+    const std::int16_t* values,
+    std::size_t value_count,
+    std::uint8_t* entropy_mode,
+    std::uint8_t* entropy_parameter,
+    std::uint8_t* output,
+    std::size_t output_capacity,
+    std::size_t* output_size,
+    std::uint32_t* bit_count
+) noexcept {
+    if (
+        entropy_mode == nullptr
+        || entropy_parameter == nullptr
+        || output_size == nullptr
+        || bit_count == nullptr
+        || value_count > kMaximumSymbols
+        || (value_count != 0U && (values == nullptr || output == nullptr))
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *entropy_mode = kEntropyRice;
+    *entropy_parameter = 0U;
+    *output_size = 0U;
+    *bit_count = 0U;
+    if (value_count == 0U) {
+        return RESONITH_STATUS_OK;
+    }
+
+    std::uint64_t maximum = 0U;
+    for (std::size_t index = 0U; index < value_count; ++index) {
+        maximum = std::max(maximum, zigzag_encode(values[index]));
+    }
+    const std::uint8_t packed_width = bit_width(maximum);
+    const std::uint64_t packed_bits =
+        static_cast<std::uint64_t>(value_count) * packed_width;
+
+    std::uint8_t rice_parameter = 0U;
+    std::uint64_t rice_bits = bounded_rice_cost(values, value_count, 0U);
+    for (
+        std::uint8_t candidate = 1U;
+        candidate <= kMaximumRiceParameter;
+        ++candidate
+    ) {
+        const std::uint64_t candidate_bits = bounded_rice_cost(
+            values,
+            value_count,
+            candidate
+        );
+        if (candidate_bits < rice_bits) {
+            rice_bits = candidate_bits;
+            rice_parameter = candidate;
+        }
+    }
+
+    const bool use_rice = rice_bits <= packed_bits;
+    const std::uint64_t selected_bits = use_rice ? rice_bits : packed_bits;
+    if (selected_bits > std::numeric_limits<std::uint32_t>::max()) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    *entropy_mode = use_rice ? kEntropyRice : kEntropyPacked;
+    *entropy_parameter = use_rice ? rice_parameter : packed_width;
+
+    bit_writer writer(output, output_capacity);
+    for (std::size_t index = 0U; index < value_count; ++index) {
+        const std::uint64_t value = zigzag_encode(values[index]);
+        if (!use_rice) {
+            if (!writer.write_bits(value, packed_width)) {
+                return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+            }
+            continue;
+        }
+        const std::uint64_t quotient = value >> rice_parameter;
+        const std::uint64_t prefix = std::min<std::uint64_t>(
+            quotient,
+            kRiceEscapeQuotient
+        );
+        for (std::uint64_t unary = 0U; unary < prefix; ++unary) {
+            if (!writer.write_bit(1U)) {
+                return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+            }
+        }
+        if (!writer.write_bit(0U)) {
+            return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+        }
+        if (quotient < kRiceEscapeQuotient) {
+            const std::uint64_t mask = rice_parameter == 0U
+                ? 0U
+                : (1ULL << rice_parameter) - 1U;
+            if (!writer.write_bits(value & mask, rice_parameter)) {
+                return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+            }
+        } else if (!writer.write_bits(value, 64U)) {
+            return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+        }
+    }
+    if (writer.bit_count() != selected_bits) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+    *output_size = writer.size();
+    *bit_count = writer.bit_count();
+    return RESONITH_STATUS_OK;
+}
+
 struct arithmetic_decoder {
     bit_reader* reader = nullptr;
     adaptive_model model{};
@@ -426,6 +579,9 @@ struct arithmetic_decoder {
 struct parsed_finite {
     std::uint8_t count_entropy = 0U;
     std::uint8_t count_parameter = 0U;
+    std::uint8_t value_entropy = 0U;
+    std::uint8_t value_parameter = 0U;
+    bool bounded_values = false;
     std::uint16_t gap_threshold = 0U;
     std::uint32_t frame_count = 0U;
     std::uint16_t channels = 0U;
@@ -736,6 +892,141 @@ resonith_status parse_compact_finite(
     return RESONITH_STATUS_OK;
 }
 
+resonith_status parse_compact_rice_value(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_lapped_requirements& shape,
+    parsed_finite* parsed,
+    resonith_lapped_finite_requirements* requirements
+) noexcept {
+    if (
+        data == nullptr
+        || parsed == nullptr
+        || requirements == nullptr
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *requirements = {};
+    if (data_size < kRiceValueCompactHeaderBytes) {
+        return RESONITH_STATUS_TRUNCATED;
+    }
+    if (data_size > kMaximumPayloadBytes) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+
+    parsed->count_entropy = data[0U];
+    parsed->count_parameter = data[1U];
+    parsed->value_entropy = data[2U];
+    parsed->value_parameter = data[3U];
+    parsed->bounded_values = true;
+    parsed->gap_threshold = read_u16(data + 4U);
+    parsed->frame_count = shape.transform_frame_count;
+    parsed->channels = shape.output_channels;
+    parsed->band_count = shape.band_count;
+    parsed->coefficient_count = read_u32(data + 6U);
+    parsed->scale_bits = read_u32(data + 10U);
+    parsed->count_bits = read_u32(data + 14U);
+    parsed->gap_bits = read_u32(data + 18U);
+    parsed->raw_gap_bits = read_u32(data + 22U);
+    parsed->value_bits = read_u32(data + 26U);
+    if (
+        !valid_entropy(
+            parsed->count_entropy,
+            parsed->count_parameter
+        )
+        || !valid_entropy(
+            parsed->value_entropy,
+            parsed->value_parameter
+        )
+        || shape.transform_frame_count == 0U
+        || shape.output_channels == 0U
+        || shape.output_channels > kMaximumChannels
+        || shape.band_count == 0U
+        || shape.band_count > kMaximumBands
+        || shape.half_window < 2U
+        || shape.half_window > kMaximumHalfWindow
+        || parsed->gap_threshold == 0U
+        || parsed->gap_threshold > shape.half_window
+        || parsed->coefficient_count > kMaximumSymbols
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+
+    std::size_t channel_frames = 0U;
+    std::size_t scale_elements = 0U;
+    std::size_t maximum_coefficients = 0U;
+    if (
+        !checked_product(
+            shape.output_channels,
+            shape.transform_frame_count,
+            &channel_frames
+        )
+        || !checked_product(
+            channel_frames,
+            shape.band_count,
+            &scale_elements
+        )
+        || !checked_product(
+            channel_frames,
+            shape.half_window,
+            &maximum_coefficients
+        )
+        || scale_elements > kMaximumSymbols
+        || parsed->coefficient_count > maximum_coefficients
+        || shape.scale_elements != scale_elements
+        || shape.count_elements != channel_frames
+        || shape.position_elements != parsed->coefficient_count
+        || shape.coefficient_elements != parsed->coefficient_count
+    ) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    if (
+        parsed->value_entropy == kEntropyPacked
+        && (
+            static_cast<std::uint64_t>(parsed->coefficient_count)
+                * parsed->value_parameter
+            != parsed->value_bits
+        )
+    ) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+
+    const std::size_t scale_bytes = bit_bytes(parsed->scale_bits);
+    const std::size_t count_bytes = bit_bytes(parsed->count_bits);
+    const std::size_t gap_bytes = bit_bytes(parsed->gap_bits);
+    const std::size_t raw_gap_bytes = bit_bytes(parsed->raw_gap_bits);
+    const std::size_t value_bytes = bit_bytes(parsed->value_bits);
+    std::size_t consumed = kRiceValueCompactHeaderBytes;
+    for (
+        const std::size_t field_bytes :
+        {scale_bytes, count_bytes, gap_bytes, raw_gap_bytes, value_bytes}
+    ) {
+        if (field_bytes > data_size - consumed) {
+            return RESONITH_STATUS_TRUNCATED;
+        }
+        consumed += field_bytes;
+    }
+    if (consumed != data_size) {
+        return RESONITH_STATUS_MALFORMED;
+    }
+
+    parsed->scale_payload = data + kRiceValueCompactHeaderBytes;
+    parsed->count_payload = parsed->scale_payload + scale_bytes;
+    parsed->gap_payload = parsed->count_payload + count_bytes;
+    parsed->raw_gap_payload = parsed->gap_payload + gap_bytes;
+    parsed->value_payload = parsed->raw_gap_payload + raw_gap_bytes;
+    requirements->transform_frame_count = shape.transform_frame_count;
+    requirements->channels = shape.output_channels;
+    requirements->band_count = shape.band_count;
+    requirements->half_window = shape.half_window;
+    requirements->gap_threshold = parsed->gap_threshold;
+    requirements->scale_elements = scale_elements;
+    requirements->count_elements = channel_frames;
+    requirements->position_elements = parsed->coefficient_count;
+    requirements->coefficient_elements = parsed->coefficient_count;
+    return RESONITH_STATUS_OK;
+}
+
 bool decode_unsigned(
     bit_reader* reader,
     std::uint8_t entropy,
@@ -994,6 +1285,39 @@ resonith_status decode_finite(
         bit_bytes(parsed.value_bits),
         parsed.value_bits
     );
+    if (parsed.bounded_values) {
+        if (!value_reader.valid_padding()) {
+            return RESONITH_STATUS_MALFORMED;
+        }
+        for (
+            std::size_t index = 0U;
+            index < requirements.coefficient_elements;
+            ++index
+        ) {
+            std::uint64_t unsigned_value = 0U;
+            std::int64_t value = 0;
+            if (
+                !decode_unsigned(
+                    &value_reader,
+                    parsed.value_entropy,
+                    parsed.value_parameter,
+                    &unsigned_value
+                )
+                || !zigzag_decode(unsigned_value, &value)
+            ) {
+                return RESONITH_STATUS_TRUNCATED;
+            }
+            if (value < -128 || value > 127 || value == 0) {
+                return RESONITH_STATUS_PROFILE_BOUND;
+            }
+            workspace.coefficients[index] =
+                static_cast<std::int8_t>(value);
+        }
+        return value_reader.position() == parsed.value_bits
+            ? RESONITH_STATUS_OK
+            : RESONITH_STATUS_MALFORMED;
+    }
+
     arithmetic_decoder value_decoder{};
     if (
         requirements.coefficient_elements != 0U
@@ -1041,6 +1365,43 @@ resonith_status lapped_finite_compact_fields_decode(
     parsed_finite parsed{};
     resonith_lapped_finite_requirements finite_requirements{};
     const resonith_status status = parse_compact_finite(
+        data,
+        data_size,
+        shape,
+        &parsed,
+        &finite_requirements
+    );
+    if (status != RESONITH_STATUS_OK) {
+        return status;
+    }
+    if (!valid_workspace(finite_requirements, workspace)) {
+        return RESONITH_STATUS_SCRATCH_TOO_SMALL;
+    }
+    const resonith_status decode_status = decode_finite(
+        parsed,
+        finite_requirements,
+        workspace
+    );
+    if (decode_status == RESONITH_STATUS_OK) {
+        *requirements = shape;
+    }
+    return decode_status;
+}
+
+resonith_status lapped_rice_value_compact_fields_decode(
+    const std::uint8_t* data,
+    std::size_t data_size,
+    const resonith_lapped_requirements& shape,
+    const resonith_lapped_workspace& workspace,
+    resonith_lapped_requirements* requirements
+) noexcept {
+    if (requirements == nullptr) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *requirements = {};
+    parsed_finite parsed{};
+    resonith_lapped_finite_requirements finite_requirements{};
+    const resonith_status status = parse_compact_rice_value(
         data,
         data_size,
         shape,
@@ -1125,6 +1486,28 @@ extern "C" resonith_status resonith_lapped_adaptive_encode(
         symbols,
         symbol_count,
         alphabet_size,
+        output,
+        output_capacity,
+        output_size,
+        bit_count
+    );
+}
+
+extern "C" resonith_status resonith_lapped_int16_entropy_encode(
+    const std::int16_t* values,
+    std::size_t value_count,
+    std::uint8_t* entropy_mode,
+    std::uint8_t* entropy_parameter,
+    std::uint8_t* output,
+    std::size_t output_capacity,
+    std::size_t* output_size,
+    std::uint32_t* bit_count
+) {
+    return encode_int16_entropy(
+        values,
+        value_count,
+        entropy_mode,
+        entropy_parameter,
         output,
         output_capacity,
         output_size,

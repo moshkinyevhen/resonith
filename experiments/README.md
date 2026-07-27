@@ -47,6 +47,18 @@ reproducible command and independent decode.
 - `results/perceptual_gain_shape_2026-07-27.json` — selected complete-file
   budget-72 report.
 - `results/perceptual_gain_shape_b71_2026-07-27.json` — retained lower-rate
+  complete-reference R-107 point.
+- `bounded_value_entropy_gate.py` — R-113 complete-byte-constrained
+  LPS5/LPS6 RDO with shared immutable analysis, native decoder verification,
+  objective metrics, and exact fallback.
+- `results/bounded_value_entropy_mandatory_2026-07-27.json` — speech,
+  complete piano, and complete Mozart LPS6 gate.
+- `results/bounded_value_entropy_r111_2026-07-27.json` — all 16 heterogeneous
+  classes with per-class LPS5 fallback.
+- `pvq_envelope_fast_gate.py` — R-108 integer PVQ envelope compiler and
+  speech/sustained-tone fast gate.
+- `results/pvq_envelope_greedy_projection_2026-07-27.json` — corrected greedy
+  direction and projected-gain negative universal-base result.
   full-Mozart frontier point.
 - `real_music_benchmark.py` — deterministic PCM downmix, LiftPack/zlib,
   fixed/adaptive/full-RDO, and Opus ablation.

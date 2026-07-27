@@ -183,7 +183,7 @@ phase laws plus multiple sparse gain-event granularities. Every candidate is:
 
 1. packed as complete `CONF`/`ATOM`/`BRAW`/`RSL1` bytes;
 2. decoded by the independent Python reference;
-3. decoded by the shared C++20 Golden Core through the stable C ABI;
+3. decoded by the shared C++23 Golden Core through the stable C ABI;
 4. rejected unless sample rate and every PCM sample match;
 5. ranked by complete stream bytes only after that acceptance gate.
 
@@ -205,7 +205,7 @@ listening set, not yet a MUSHRA result.
 
 ## 10. Next gates
 
-1. ~~Port LiftPack-1 and whole typed-stream decode to the portable C++20
+1. ~~Port LiftPack-1 and whole typed-stream decode to the portable C++23
    Golden Core, then bind it into final candidate RDO.~~ Implemented.
 2. Add stereo decorrelation and independently coded channel residuals.
 3. Add multi-Atom overlap so a state boundary does not require replacing the

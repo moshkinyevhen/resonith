@@ -1,0 +1,450 @@
+{
+  "active_power_ratio_q20": 10,
+  "all_fast_gates_passed": false,
+  "budgets": [
+    64,
+    96,
+    128,
+    160,
+    192,
+    224
+  ],
+  "clips": {
+    "ebu-sustained-sine": {
+      "baseline": {
+        "bytes": 83061,
+        "decoded_sha256": "70ba3ba9883621404b38c7106766a86859988dccfb5e26142c3cca65097a4574",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.8540548677248515,
+            "log_spectral_distance_db": 6.496420219075141,
+            "magnitude_cosine_similarity": 0.9999754730906352,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.5376373076906299,
+                "spectral_convergence": 0.007270741749766496
+              },
+              "512": {
+                "log_magnitude_mae": 0.5269721650233555,
+                "spectral_convergence": 0.00617335760999587
+              },
+              "8192": {
+                "log_magnitude_mae": 0.5015786485749575,
+                "spectral_convergence": 0.00813880798285828
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.071563720703125,
+            "rms_error": 0.0008851364597471051,
+            "segmental_snr_db": 34.961473582009965,
+            "si_sdr_db": 37.82788316916423,
+            "snr_db": 37.828589534493574
+          }
+        },
+        "stream_sha256": "2e68ed0d45aafc3571530f1241d7457c914f3e3453b85ccaac1341bfc64cb546"
+      },
+      "frontier": [
+        {
+          "budget": 64,
+          "bytes": 19666,
+          "count_bits": 40102,
+          "encode_wall_seconds": 4.823814100003801,
+          "gain_bits": 54703,
+          "logical_bits": 155422,
+          "shape_bits": 60617,
+          "snr_db": 30.917883892656096
+        },
+        {
+          "budget": 96,
+          "bytes": 20974,
+          "count_bits": 42768,
+          "encode_wall_seconds": 5.007162800000515,
+          "gain_bits": 54687,
+          "logical_bits": 165881,
+          "shape_bits": 68426,
+          "snr_db": 33.342469132128926
+        },
+        {
+          "budget": 128,
+          "bytes": 21948,
+          "count_bits": 43678,
+          "encode_wall_seconds": 5.217196000012336,
+          "gain_bits": 54689,
+          "logical_bits": 173675,
+          "shape_bits": 75308,
+          "snr_db": 34.84297100985229
+        },
+        {
+          "budget": 160,
+          "bytes": 22932,
+          "count_bits": 46088,
+          "encode_wall_seconds": 5.422913000002154,
+          "gain_bits": 54675,
+          "logical_bits": 181547,
+          "shape_bits": 80784,
+          "snr_db": 35.769609122977656
+        },
+        {
+          "budget": 192,
+          "bytes": 23451,
+          "count_bits": 46100,
+          "encode_wall_seconds": 5.90376090000791,
+          "gain_bits": 54655,
+          "logical_bits": 185701,
+          "shape_bits": 84946,
+          "snr_db": 35.87019962844614
+        },
+        {
+          "budget": 224,
+          "bytes": 23926,
+          "count_bits": 46292,
+          "encode_wall_seconds": 6.220949599999585,
+          "gain_bits": 54651,
+          "logical_bits": 189502,
+          "shape_bits": 88559,
+          "snr_db": 36.10291325554453
+        }
+      ],
+      "hard_gate_passed": false,
+      "opus": {
+        "bytes": 83060,
+        "decoded_sha256": "f367993f1b46ee0ddaddbb4d235e0d7d0541274697b7e8176a12117938072125",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.6046164203903016,
+            "log_spectral_distance_db": 12.100649290611473,
+            "magnitude_cosine_similarity": 0.9999952702731055,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.0182063758692128,
+                "spectral_convergence": 0.00449437987519251
+              },
+              "512": {
+                "log_magnitude_mae": 1.091418958729998,
+                "spectral_convergence": 0.004608137024940712
+              },
+              "8192": {
+                "log_magnitude_mae": 0.9302421027794182,
+                "spectral_convergence": 0.004863282626699569
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.002166748046875,
+            "rms_error": 0.000466545782467595,
+            "segmental_snr_db": 35.0,
+            "si_sdr_db": 43.44233514719502,
+            "snr_db": 43.390908782210346
+          }
+        },
+        "stream_sha256": "d65b873234e8fbe1dce30510e12d55fb871d12c0ecf65565833ebff2d92208df"
+      },
+      "selected": {
+        "active_band_count": 2701,
+        "analysis_backend": "native C99 fixed Q15/Q14",
+        "analysis_wall_seconds": 1.2371970000094734,
+        "band_count": 24,
+        "budget": 224,
+        "bytes": 23926,
+        "channel_count": 1,
+        "count_bits": 46292,
+        "decoded_sha256": "10c79bd16596d42618daee0eef266bd240f1040a2c24c13af8f2a23e6edd2b02",
+        "encode_wall_seconds": 6.220949599999585,
+        "exact": false,
+        "fixed_log2_fraction_multipliers_q31": [
+          3037000500,
+          2553802834,
+          2341847524,
+          2242560872,
+          2194507417,
+          2170868212,
+          2159144272,
+          2153306067
+        ],
+        "format_profile": "prospective-PVE1-RSC1-level-5",
+        "frame_count": 529200,
+        "gain_bits": 54651,
+        "half_window": 512,
+        "log_mel_ratio_vs_r107": 2.3824990398371546,
+        "logical_bits": 189502,
+        "max_abs_error": 2365,
+        "maximum_pulses_per_frame": 224,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.034784902322707,
+            "log_spectral_distance_db": 10.764332322830999,
+            "magnitude_cosine_similarity": 0.9999446316791375,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.7887463234030593,
+                "spectral_convergence": 0.010726616629882791
+              },
+              "512": {
+                "log_magnitude_mae": 0.6054654422263203,
+                "spectral_convergence": 0.008329657289947256
+              },
+              "8192": {
+                "log_magnitude_mae": 0.6528161258807417,
+                "spectral_convergence": 0.011917304456931158
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.072174072265625,
+            "rms_error": 0.0010796774830226503,
+            "segmental_snr_db": 34.96148436759961,
+            "si_sdr_db": 36.10215610224766,
+            "snr_db": 36.10291325553749
+          }
+        },
+        "minimum_active_power_ratio_q20": 10,
+        "padding_bits": 2,
+        "reconstruction_backend": "independent Python integer PVE1 decoder",
+        "sample_rate": 44100,
+        "shape_bits": 88559,
+        "snr_db": 36.10291325554453,
+        "snr_delta_db_vs_r107": -1.7256762789560867,
+        "status": "R-108 prospective integer PVQ; non-normative",
+        "stream_bytes": 23926,
+        "stream_sha256": "98d8007f91eeeea3278f7ffbb91b348c6eec454df0720570fe919e6a1be1f8ac",
+        "transform_frame_count": 1034
+      },
+      "source": {
+        "channels": 1,
+        "frames": 529200,
+        "path": "ebu-sustained-sine.wav",
+        "sample_rate": 44100,
+        "sha256": "78faec4d9b92b72cba0ae1d13ec16bfc520c6c31e1b6df5f4e97e89515557e57"
+      }
+    },
+    "libri-speech": {
+      "baseline": {
+        "bytes": 17924,
+        "decoded_sha256": "c8271d7b76ffa2535fc749964665f2fbd426a5a4d3002e9b3000ebb3988bc473",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 3.6902718411579674,
+            "log_spectral_distance_db": 29.17625542830728,
+            "magnitude_cosine_similarity": 0.9845961158107325,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 2.6174558222970825,
+                "spectral_convergence": 0.07948111532399948
+              },
+              "256": {
+                "log_magnitude_mae": 2.815863650960818,
+                "spectral_convergence": 0.07935589257523983
+              },
+              "512": {
+                "log_magnitude_mae": 2.803342041372136,
+                "spectral_convergence": 0.08001774078424122
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9059072428427807,
+            "stoi": 0.9535794518494183
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.06097412109375,
+            "rms_error": 0.006481961912616454,
+            "segmental_snr_db": 17.55728482092076,
+            "si_sdr_db": 19.59199788898037,
+            "snr_db": 19.605025884035694
+          }
+        },
+        "stream_sha256": "a25435922af489adf4e5aedccc308c23a82f7261b47162af5e97ef021515c91f"
+      },
+      "frontier": [
+        {
+          "budget": 64,
+          "bytes": 16811,
+          "count_bits": 16430,
+          "encode_wall_seconds": 1.8063480000128038,
+          "gain_bits": 72345,
+          "logical_bits": 132578,
+          "shape_bits": 43803,
+          "snr_db": 10.16017831255647
+        },
+        {
+          "budget": 96,
+          "bytes": 18580,
+          "count_bits": 18670,
+          "encode_wall_seconds": 1.9451313000026857,
+          "gain_bits": 72359,
+          "logical_bits": 146729,
+          "shape_bits": 55700,
+          "snr_db": 12.13425158257444
+        },
+        {
+          "budget": 128,
+          "bytes": 20063,
+          "count_bits": 20598,
+          "encode_wall_seconds": 2.106866899994202,
+          "gain_bits": 72429,
+          "logical_bits": 158597,
+          "shape_bits": 65570,
+          "snr_db": 13.678966491764255
+        },
+        {
+          "budget": 160,
+          "bytes": 21358,
+          "count_bits": 22240,
+          "encode_wall_seconds": 2.2820363999926485,
+          "gain_bits": 72449,
+          "logical_bits": 168958,
+          "shape_bits": 74269,
+          "snr_db": 14.873682107512305
+        },
+        {
+          "budget": 192,
+          "bytes": 22500,
+          "count_bits": 23566,
+          "encode_wall_seconds": 2.417410199996084,
+          "gain_bits": 72361,
+          "logical_bits": 178096,
+          "shape_bits": 82169,
+          "snr_db": 15.8839327927792
+        },
+        {
+          "budget": 224,
+          "bytes": 23534,
+          "count_bits": 24808,
+          "encode_wall_seconds": 2.479914199997438,
+          "gain_bits": 72199,
+          "logical_bits": 186361,
+          "shape_bits": 89354,
+          "snr_db": 16.731414022388233
+        }
+      ],
+      "hard_gate_passed": false,
+      "opus": {
+        "bytes": 17942,
+        "decoded_sha256": "8125700a4ceab5a34f4259e7168a38a8aac8c8b83bfe1230c2fe2e37e0c72b6a",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.6011680709866213,
+            "log_spectral_distance_db": 11.196922123954055,
+            "magnitude_cosine_similarity": 0.9735693750921546,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 0.6829298187302947,
+                "spectral_convergence": 0.18836846108465527
+              },
+              "256": {
+                "log_magnitude_mae": 0.6798483111021106,
+                "spectral_convergence": 0.1907094170946533
+              },
+              "512": {
+                "log_magnitude_mae": 0.6834620321838313,
+                "spectral_convergence": 0.18927212274118627
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9880461884303828,
+            "stoi": 0.9931723093721826
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.34344482421875,
+            "rms_error": 0.021236646592585128,
+            "segmental_snr_db": 12.625698682303828,
+            "si_sdr_db": 8.755288247642131,
+            "snr_db": 9.297436583803522
+          }
+        },
+        "stream_sha256": "cbfdd8da42cb28a90a336bb162adbf72d3d6129b62ecc1e452a6da10220d67e6"
+      },
+      "selected": {
+        "active_band_count": 4271,
+        "analysis_backend": "native C99 fixed Q15/Q14",
+        "analysis_wall_seconds": 0.22300240000186022,
+        "band_count": 24,
+        "budget": 96,
+        "bytes": 18580,
+        "channel_count": 1,
+        "count_bits": 18670,
+        "decoded_sha256": "3b35c3d8c1ef6a09e3997ee013de5f6e01f50417381850feadaaecbb05c6cee0",
+        "encode_wall_seconds": 1.9451313000026857,
+        "exact": false,
+        "fixed_log2_fraction_multipliers_q31": [
+          3037000500,
+          2553802834,
+          2341847524,
+          2242560872,
+          2194507417,
+          2170868212,
+          2159144272,
+          2153306067
+        ],
+        "format_profile": "prospective-PVE1-RSC1-level-5",
+        "frame_count": 93680,
+        "gain_bits": 72359,
+        "half_window": 512,
+        "log_mel_ratio_vs_r107": 0.3969758156129011,
+        "logical_bits": 146729,
+        "max_abs_error": 5268,
+        "maximum_pulses_per_frame": 96,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.4649486739770061,
+            "log_spectral_distance_db": 20.945008328072007,
+            "magnitude_cosine_similarity": 0.9691768385070455,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 1.6902113243554273,
+                "spectral_convergence": 0.1808744048681071
+              },
+              "256": {
+                "log_magnitude_mae": 1.2837277704193915,
+                "spectral_convergence": 0.1787338336303393
+              },
+              "512": {
+                "log_magnitude_mae": 1.6020744914964067,
+                "spectral_convergence": 0.18079685926818262
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9289514500200424,
+            "stoi": 0.9619995384650896
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.1607666015625,
+            "rms_error": 0.015319521127326525,
+            "segmental_snr_db": 12.42274658435225,
+            "si_sdr_db": 11.860104892598164,
+            "snr_db": 12.134251582574256
+          }
+        },
+        "minimum_active_power_ratio_q20": 10,
+        "padding_bits": 7,
+        "reconstruction_backend": "independent Python integer PVE1 decoder",
+        "sample_rate": 16000,
+        "shape_bits": 55700,
+        "snr_db": 12.13425158257444,
+        "snr_delta_db_vs_r107": -7.470774301461438,
+        "status": "R-108 prospective integer PVQ; non-normative",
+        "stream_bytes": 18580,
+        "stream_sha256": "080e30f8bc1e41897d97e0fc415ba1e2013612cf2e15625cbba4029934ae0258",
+        "transform_frame_count": 183
+      },
+      "source": {
+        "channels": 1,
+        "frames": 93680,
+        "path": "01-original.wav",
+        "sample_rate": 16000,
+        "sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46"
+      }
+    }
+  },
+  "decision": "R-108",
+  "native_core": {
+    "path": "resonith_core_shared.dll",
+    "sha256": "fba0805a8038e006440d4285ca870171423f5ddc2dfd4e1fd1682728962f20bb"
+  },
+  "schema": "resonith-pvq-envelope-fast-gate-1",
+  "status": "one or more fast gates failed; PVE1 remains an oracle",
+  "total_wall_seconds": 49.50942159999977
+}

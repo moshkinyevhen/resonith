@@ -7,14 +7,14 @@ Date: 2026-07-27
 
 Resonith uses a deliberately split implementation stack:
 
-1. **Portable C++20** for the bit-exact Golden Core, reference decoder,
+1. **Portable C++23** for the bit-exact Golden Core, reference decoder,
    real-time renderer, entropy layer, state machine, and production DSP.
 2. **A stable C ABI** around the decoder and conformance surface.
-3. **Python 3.12+** as a thin research control plane for rapidly expressing
+3. **Python 3.14.6** as a thin research control plane for rapidly expressing
    hypotheses, oracle search spaces, RDO cost functions, corpus tooling,
    visualization, training, metrics, and experiment orchestration.
 4. **PyTorch** for non-normative teacher models and CIBS training/export.
-5. **C++20, portable SIMD, and CUDA C++** for every measured encoder
+5. **C++23, portable SIMD, and CUDA C++** for every measured encoder
    bottleneck whose work scales materially with samples, coefficients,
    candidates, or PVQ pulses. CUDA is never a conformance dependency.
 6. **Rust** for untrusted package parsing, streaming/network orchestration,
@@ -54,7 +54,7 @@ real-time scheduling, SIMD control, and reproducible integer semantics make a
 Python-only production decoder the wrong foundation for a hardware-targeted
 standard.
 
-## 3. Why the Golden Core is C++20 rather than Python
+## 3. Why the Golden Core is C++23 rather than Python
 
 The normative path needs:
 
@@ -67,9 +67,15 @@ The normative path needs:
 - direct reuse of kernels in CUDA and hardware-model code;
 - sanitizers, fuzzers, coverage, and conformance-vector tooling.
 
-C++20 adds stronger types, RAII, `constexpr` tables, templates for checked
+C++23 adds stronger types, RAII, `constexpr` tables, templates for checked
 fixed-point arithmetic, and safer ownership than a large C codebase while
 retaining the deployment ecosystem required by codec and chip vendors.
+
+C++23 is the production ceiling, not a license to use every new library
+facility. Decoder-critical code uses only features that pass the project's
+current Clang, GCC, MSVC, Apple Clang, Android NDK, iOS, WASM, and embedded
+compile gates. C++26 remains a non-blocking forward-compatibility experiment
+until those targets support it without reducing coverage.
 
 The public boundary remains C-compatible so that browsers, operating systems,
 game engines, FFmpeg-like frameworks, Rust, Swift, Java/Kotlin, and hardware
@@ -82,7 +88,7 @@ test benches do not depend on a C++ ABI.
 C remains an excellent portability baseline, and major deployed codecs prove
 it. For Resonith, however, persistent atom state, immutable Basis objects,
 multiple bounded payload schemas, checked fixed-point types, and CUDA sharing
-make a carefully restricted C++20 core more maintainable.
+make a carefully restricted C++23 core more maintainable.
 
 A small C99 conformance decoder MAY be added later, but maintaining it before
 the syntax stabilizes would duplicate effort.
@@ -126,7 +132,7 @@ the executable reference used to expose ambiguity.
 
 ```text
 spec/                   language-independent bitstream and decoder semantics
-reference/cpp/          portable C++20 Golden Core
+reference/cpp/          portable C++23 Golden Core
 include/resonith/       stable public C API
 bindings/python/        thin bindings to the exact C++ Core
 research/python/        oracle encoder, RDO, training, and experiments
@@ -147,7 +153,7 @@ the bitstream.
 1. Keep MAF-P0 Python operational as the research control plane and
    independent oracle.
 2. Freeze the smallest P0 container and arithmetic subset needed for parity.
-3. Implement C++20 container parsing, CIBS materialization, phase rendering,
+3. Implement C++23 container parsing, CIBS materialization, phase rendering,
    block-gain law, residual reconstruction, and WAV-independent sample API.
 4. Generate shared golden vectors and require byte/sample equality.
 5. Bind the C++ Core into Python.
@@ -183,7 +189,7 @@ Rust player runtime and secure stream/package parser
         |
 stable versioned C ABI
         |
-C++20 Resonith Golden Core
+C++23 Resonith Golden Core
         |
 platform audio and compute adapters
 ```

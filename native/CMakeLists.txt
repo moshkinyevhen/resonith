@@ -29,7 +29,7 @@ add_library(resonith_core STATIC
 )
 add_library(Resonith::Core ALIAS resonith_core)
 
-target_compile_features(resonith_core PUBLIC cxx_std_20)
+target_compile_features(resonith_core PUBLIC cxx_std_23)
 target_include_directories(resonith_core
     PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -40,11 +40,17 @@ set_target_properties(resonith_core PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
 
+# Keep the public C ABI deployable on a stock Windows installation. Consumers
+# of the static Core inherit the same self-contained runtime contract.
+if(MINGW)
+    target_link_options(resonith_core INTERFACE -static)
+endif()
+
 add_library(resonith_core_shared SHARED
     ${RESONITH_CORE_SOURCES}
 )
 add_library(Resonith::CoreShared ALIAS resonith_core_shared)
-target_compile_features(resonith_core_shared PUBLIC cxx_std_20)
+target_compile_features(resonith_core_shared PUBLIC cxx_std_23)
 target_include_directories(resonith_core_shared
     PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -58,6 +64,9 @@ set_target_properties(resonith_core_shared PROPERTIES
     CXX_EXTENSIONS OFF
     POSITION_INDEPENDENT_CODE ON
 )
+if(MINGW)
+    target_link_options(resonith_core_shared PRIVATE -static)
+endif()
 
 function(resonith_enable_warnings target)
     if(MSVC)
@@ -90,7 +99,7 @@ if(RESONITH_BUILD_TOOLS)
     add_executable(resonith_decode
         tools/decode.cpp
     )
-    target_compile_features(resonith_decode PRIVATE cxx_std_20)
+    target_compile_features(resonith_decode PRIVATE cxx_std_23)
     target_link_libraries(resonith_decode PRIVATE Resonith::Core)
     set_target_properties(resonith_decode PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_decode)
@@ -100,7 +109,7 @@ if(RESONITH_BUILD_TOOLS)
     )
     target_compile_features(
         resonith_lapped_device_bench
-        PRIVATE cxx_std_20
+        PRIVATE cxx_std_23
     )
     target_link_libraries(
         resonith_lapped_device_bench
@@ -117,7 +126,7 @@ if(RESONITH_BUILD_TOOLS)
     )
     target_compile_features(
         resonith_lapped_finite_bench
-        PRIVATE cxx_std_20
+        PRIVATE cxx_std_23
     )
     target_link_libraries(
         resonith_lapped_finite_bench
@@ -138,7 +147,7 @@ if(RESONITH_BUILD_FUZZERS)
         ${RESONITH_CORE_SOURCES}
         fuzz/liftpack_fuzz.cpp
     )
-    target_compile_features(resonith_liftpack_fuzz PRIVATE cxx_std_20)
+    target_compile_features(resonith_liftpack_fuzz PRIVATE cxx_std_23)
     target_include_directories(resonith_liftpack_fuzz
         PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
     )
@@ -158,7 +167,7 @@ if(RESONITH_BUILD_FUZZERS)
         ${RESONITH_CORE_SOURCES}
         fuzz/main0_fuzz.cpp
     )
-    target_compile_features(resonith_main0_fuzz PRIVATE cxx_std_20)
+    target_compile_features(resonith_main0_fuzz PRIVATE cxx_std_23)
     target_include_directories(resonith_main0_fuzz
         PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
     )
@@ -178,7 +187,7 @@ if(RESONITH_BUILD_FUZZERS)
         ${RESONITH_CORE_SOURCES}
         fuzz/seek_fuzz.cpp
     )
-    target_compile_features(resonith_seek_fuzz PRIVATE cxx_std_20)
+    target_compile_features(resonith_seek_fuzz PRIVATE cxx_std_23)
     target_include_directories(resonith_seek_fuzz
         PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
     )
@@ -198,7 +207,7 @@ if(RESONITH_BUILD_FUZZERS)
         ${RESONITH_CORE_SOURCES}
         fuzz/lapped_fuzz.cpp
     )
-    target_compile_features(resonith_lapped_fuzz PRIVATE cxx_std_20)
+    target_compile_features(resonith_lapped_fuzz PRIVATE cxx_std_23)
     target_include_directories(resonith_lapped_fuzz
         PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
     )
@@ -218,7 +227,7 @@ if(RESONITH_BUILD_FUZZERS)
         ${RESONITH_CORE_SOURCES}
         fuzz/lapped_packet_fuzz.cpp
     )
-    target_compile_features(resonith_lapped_packet_fuzz PRIVATE cxx_std_20)
+    target_compile_features(resonith_lapped_packet_fuzz PRIVATE cxx_std_23)
     target_include_directories(resonith_lapped_packet_fuzz
         PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
     )
@@ -238,7 +247,7 @@ if(RESONITH_BUILD_FUZZERS)
         ${RESONITH_CORE_SOURCES}
         fuzz/lapped_compact_fuzz.cpp
     )
-    target_compile_features(resonith_lapped_compact_fuzz PRIVATE cxx_std_20)
+    target_compile_features(resonith_lapped_compact_fuzz PRIVATE cxx_std_23)
     target_include_directories(resonith_lapped_compact_fuzz
         PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
     )
@@ -258,7 +267,7 @@ if(RESONITH_BUILD_FUZZERS)
         ${RESONITH_CORE_SOURCES}
         fuzz/lapped_finite_fuzz.cpp
     )
-    target_compile_features(resonith_lapped_finite_fuzz PRIVATE cxx_std_20)
+    target_compile_features(resonith_lapped_finite_fuzz PRIVATE cxx_std_23)
     target_include_directories(resonith_lapped_finite_fuzz
         PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
     )
@@ -280,7 +289,7 @@ if(BUILD_TESTING)
     add_executable(resonith_liftpack_test
         tests/liftpack_test.cpp
     )
-    target_compile_features(resonith_liftpack_test PRIVATE cxx_std_20)
+    target_compile_features(resonith_liftpack_test PRIVATE cxx_std_23)
     target_link_libraries(resonith_liftpack_test PRIVATE Resonith::Core)
     set_target_properties(resonith_liftpack_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_liftpack_test)
@@ -298,7 +307,7 @@ if(BUILD_TESTING)
     add_executable(resonith_cibs_test
         tests/cibs_test.cpp
     )
-    target_compile_features(resonith_cibs_test PRIVATE cxx_std_20)
+    target_compile_features(resonith_cibs_test PRIVATE cxx_std_23)
     target_link_libraries(resonith_cibs_test PRIVATE Resonith::Core)
     set_target_properties(resonith_cibs_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_cibs_test)
@@ -307,7 +316,7 @@ if(BUILD_TESTING)
     add_executable(resonith_trajectory_test
         tests/trajectory_test.cpp
     )
-    target_compile_features(resonith_trajectory_test PRIVATE cxx_std_20)
+    target_compile_features(resonith_trajectory_test PRIVATE cxx_std_23)
     target_link_libraries(resonith_trajectory_test PRIVATE Resonith::Core)
     set_target_properties(
         resonith_trajectory_test
@@ -319,7 +328,7 @@ if(BUILD_TESTING)
     add_executable(resonith_composition_test
         tests/composition_test.cpp
     )
-    target_compile_features(resonith_composition_test PRIVATE cxx_std_20)
+    target_compile_features(resonith_composition_test PRIVATE cxx_std_23)
     target_link_libraries(resonith_composition_test PRIVATE Resonith::Core)
     set_target_properties(
         resonith_composition_test
@@ -331,7 +340,7 @@ if(BUILD_TESTING)
     add_executable(resonith_basis_test
         tests/basis_test.cpp
     )
-    target_compile_features(resonith_basis_test PRIVATE cxx_std_20)
+    target_compile_features(resonith_basis_test PRIVATE cxx_std_23)
     target_link_libraries(resonith_basis_test PRIVATE Resonith::Core)
     set_target_properties(resonith_basis_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_basis_test)
@@ -340,7 +349,7 @@ if(BUILD_TESTING)
     add_executable(resonith_pipeline_test
         tests/pipeline_test.cpp
     )
-    target_compile_features(resonith_pipeline_test PRIVATE cxx_std_20)
+    target_compile_features(resonith_pipeline_test PRIVATE cxx_std_23)
     target_link_libraries(resonith_pipeline_test PRIVATE Resonith::Core)
     set_target_properties(resonith_pipeline_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_pipeline_test)
@@ -349,7 +358,7 @@ if(BUILD_TESTING)
     add_executable(resonith_player_test
         tests/player_test.cpp
     )
-    target_compile_features(resonith_player_test PRIVATE cxx_std_20)
+    target_compile_features(resonith_player_test PRIVATE cxx_std_23)
     target_link_libraries(resonith_player_test PRIVATE Resonith::Core)
     set_target_properties(resonith_player_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_player_test)
@@ -358,7 +367,7 @@ if(BUILD_TESTING)
     add_executable(resonith_seek_test
         tests/seek_test.cpp
     )
-    target_compile_features(resonith_seek_test PRIVATE cxx_std_20)
+    target_compile_features(resonith_seek_test PRIVATE cxx_std_23)
     target_link_libraries(resonith_seek_test PRIVATE Resonith::Core)
     set_target_properties(resonith_seek_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_seek_test)
@@ -367,7 +376,7 @@ if(BUILD_TESTING)
     add_executable(resonith_lapped_test
         tests/lapped_test.cpp
     )
-    target_compile_features(resonith_lapped_test PRIVATE cxx_std_20)
+    target_compile_features(resonith_lapped_test PRIVATE cxx_std_23)
     target_link_libraries(resonith_lapped_test PRIVATE Resonith::Core)
     set_target_properties(resonith_lapped_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_lapped_test)

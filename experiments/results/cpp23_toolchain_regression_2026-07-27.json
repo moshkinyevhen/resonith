@@ -1,0 +1,53 @@
+{
+  "schema": "resonith-cpp23-toolchain-regression-summary-1",
+  "decision": "R-114/R-115",
+  "date": "2026-07-27",
+  "language": "C++23",
+  "toolchain": {
+    "python": "3.14.6",
+    "numpy": "2.5.1",
+    "scipy": "1.18.0",
+    "soundfile": "0.14.0",
+    "clang": "22.1.8",
+    "cmake": "4.4.0",
+    "ninja": "1.13.2"
+  },
+  "native_core": {
+    "file": "libresonith_core_shared.dll",
+    "sha256": "a801f0192c81c57b2c97465efa637d0ea4612c6194f9f146a4c93cde6408fab0",
+    "compiler_runtime_dependency": false
+  },
+  "verification": {
+    "strict_warning_as_error_build": "passed",
+    "native_tests_passed": 10,
+    "python_native_tests_run": 185,
+    "python_native_tests_passed": 181,
+    "external_integrations_skipped": 4,
+    "r111_clip_count": 16,
+    "r111_audio_seconds": 192.0,
+    "r111_total_bytes": 2471068,
+    "r111_all_streams_byte_identical": true,
+    "r111_total_wall_seconds": 60.222362400003476,
+    "r111_minimum_audio_seconds_per_wall_second": 2.311016749731831,
+    "r111_maximum_audio_seconds_per_wall_second": 6.2735188339910595
+  },
+  "r111_clip_ids": [
+    "ebu-claves",
+    "ebu-cymbal",
+    "ebu-dense-orchestra",
+    "ebu-dense-pop",
+    "ebu-electronic-tune",
+    "ebu-female-speech-en",
+    "ebu-grand-piano",
+    "ebu-male-speech-en",
+    "ebu-pink-noise",
+    "ebu-side-drum",
+    "ebu-soprano",
+    "ebu-sustained-sine",
+    "ebu-vibrato-gong",
+    "ebu-violin",
+    "xiph-elephants-dream-film-mix",
+    "xiph-sintel-film-mix"
+  ],
+  "status": "passed"
+}

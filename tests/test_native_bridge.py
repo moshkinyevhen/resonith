@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import struct
 import sys
 import unittest
+import zlib
 
 import numpy as np
 
@@ -14,6 +16,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 from maf_p0.composition import GainEventLaw  # noqa: E402
 from maf_p0.finite_state_oracle import (  # noqa: E402
     _encode_adaptive,
+    compact_rice_value_lapped_size,
     decode_finite_state_lapped,
     encode_finite_state_lapped,
 )
@@ -47,6 +50,7 @@ from maf_p0.multichannel import (  # noqa: E402
     encode_main0_independent_rdo,
 )
 from maf_p0.periodic import constant_phase_trajectory  # noqa: E402
+from maf_p0.residual import _encode_entropy  # noqa: E402
 
 
 class NativeBridgeTests(unittest.TestCase):
@@ -395,6 +399,20 @@ class NativeBridgeTests(unittest.TestCase):
             self.assertEqual(actual_payload, expected_payload)
             self.assertEqual(actual_bits, expected_bits)
 
+    def test_native_bounded_encoder_is_byte_identical(self) -> None:
+        fields = (
+            np.asarray([], dtype=np.int64),
+            np.asarray([0, 1, -1, 127, -128], dtype=np.int64),
+            np.tile(
+                np.asarray([-7, -3, -1, 1, 2, 9], dtype=np.int64),
+                200,
+            ),
+        )
+        for values in fields:
+            expected = _encode_entropy(values)
+            actual = self.decoder.encode_lapped_bounded(values)
+            self.assertEqual(actual, expected)
+
     def test_fixed_lapped_analysis_matches_native_core(self) -> None:
         right = np.roll(self.samples, 37)
         stereo = np.stack((self.samples, right), axis=1)
@@ -496,6 +514,14 @@ class NativeBridgeTests(unittest.TestCase):
             native.samples,
             encoded.reconstruction,
         )
+        with self.assertRaises(NativeCoreError):
+            self.decoder.decode_lapped_compact_packets(
+                encoded.payload[:-1]
+            )
+        corrupted = bytearray(encoded.payload)
+        corrupted[-1] ^= 0x80
+        with self.assertRaises(NativeCoreError):
+            self.decoder.decode_lapped_compact_packets(bytes(corrupted))
 
     def test_lapped_compact_pull_matches_monolithic(self) -> None:
         right = np.roll(self.samples, 37)
@@ -540,6 +566,93 @@ class NativeBridgeTests(unittest.TestCase):
             native.samples,
             encoded.reconstruction,
         )
+
+    def test_lapped_bounded_value_pull_matches_python(self) -> None:
+        right = np.roll(self.samples, 37)
+        stereo = np.stack((self.samples, right), axis=1)
+        encoded = encode_lapped_finite_packet_stream(
+            stereo,
+            48_000,
+            coefficients_per_frame=48,
+            packet_frames=3072,
+            half_window=256,
+            band_count=16,
+            value_entropy_backend="bounded",
+        )
+        reference = decode_lapped_packet_stream(encoded.payload)
+        native = self.decoder.decode_lapped_compact_packets(encoded.payload)
+
+        self.assertEqual(native.packet_count, 3)
+        self.assertLess(native.workspace_bytes, 1 << 20)
+        np.testing.assert_array_equal(native.samples, reference.samples)
+        np.testing.assert_array_equal(
+            native.samples,
+            encoded.reconstruction,
+        )
+        with self.assertRaises(NativeCoreError):
+            self.decoder.decode_lapped_compact_packets(
+                encoded.payload[:-1]
+            )
+        corrupted = bytearray(encoded.payload)
+        corrupted[-1] ^= 0x80
+        with self.assertRaises(NativeCoreError):
+            self.decoder.decode_lapped_compact_packets(bytes(corrupted))
+
+        record_start = 28 + 32
+        record_size = compact_rice_value_lapped_size(
+            encoded.payload[record_start:]
+        )
+        invalid_parameter = bytearray(encoded.payload)
+        invalid_parameter[record_start + 3] = 0xFF
+        struct.pack_into(
+            "<I",
+            invalid_parameter,
+            record_start + record_size,
+            zlib.crc32(
+                invalid_parameter[
+                    record_start : record_start + record_size
+                ]
+            )
+            & 0xFFFF_FFFF,
+        )
+        with self.assertRaises(NativeCoreError):
+            self.decoder.decode_lapped_compact_packets(
+                bytes(invalid_parameter)
+            )
+
+        noncanonical_padding = bytearray(encoded.payload)
+        bit_counts = struct.unpack_from(
+            "<5I",
+            noncanonical_padding,
+            record_start + 10,
+        )
+        field_cursor = record_start + 30
+        padding_corrupted = False
+        for field_bits in bit_counts:
+            field_bytes = (field_bits + 7) // 8
+            if field_bits % 8:
+                noncanonical_padding[field_cursor + field_bytes - 1] |= (
+                    1 << (field_bits % 8)
+                )
+                padding_corrupted = True
+                break
+            field_cursor += field_bytes
+        self.assertTrue(padding_corrupted)
+        struct.pack_into(
+            "<I",
+            noncanonical_padding,
+            record_start + record_size,
+            zlib.crc32(
+                noncanonical_padding[
+                    record_start : record_start + record_size
+                ]
+            )
+            & 0xFFFF_FFFF,
+        )
+        with self.assertRaises(NativeCoreError):
+            self.decoder.decode_lapped_compact_packets(
+                bytes(noncanonical_padding)
+            )
 
 
 if __name__ == "__main__":

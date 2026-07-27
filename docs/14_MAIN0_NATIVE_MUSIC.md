@@ -6,7 +6,7 @@ Date: 2026-07-26
 ## 1. What changed
 
 This is the first real-music experiment in which every Resonith candidate was
-a complete typed RSC1 stream and had to pass the shared C++20 Golden Core
+a complete typed RSC1 stream and had to pass the shared C++23 Golden Core
 before RDO. The earlier MAF-P1 report used the generic Python `MAF0` container;
 this run uses only `CONF`, `ATOM`, `BRAW`, and `RSL1`.
 
@@ -656,7 +656,7 @@ mandatory because the SNR deltas are only waveform sanity diagnostics.
 ## 27. Native fixed/bounded lapped decoder
 
 The prospective LPF1 path now has a separate C99 ABI and dependency-free
-C++20 implementation. Inspection validates complete RSC1/CONF/LPF1 integrity,
+C++23 implementation. Inspection validates complete RSC1/CONF/LPF1 integrity,
 entropy lengths, canonical padding, cross-section dimensions, and exact
 caller-owned storage requirements. Decode reconstructs scale deltas, sorted
 position gaps, and signed values before its first PCM write.

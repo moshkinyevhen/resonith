@@ -10,7 +10,10 @@ import numpy as np
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPOSITORY_ROOT / "reference"))
 
-from maf_p0.lapped_oracle import encode_lapped_stream  # noqa: E402
+from maf_p0.lapped_oracle import (  # noqa: E402
+    analyze_lapped_source,
+    encode_lapped_stream,
+)
 from maf_p0.lapped_streaming import (  # noqa: E402
     decode_lapped_chained_packet_view,
     decode_lapped_packet_stream,
@@ -282,6 +285,88 @@ class LappedStreamingTests(unittest.TestCase):
             decode_lapped_packet_stream(bytes(corrupted))
         with self.assertRaises(ValueError):
             decode_lapped_packet_stream(finite.payload + b"\0")
+
+    def test_rice_value_packets_round_trip_and_are_independently_bounded(
+        self,
+    ) -> None:
+        source = self._stereo(4096)
+        adaptive = encode_lapped_finite_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+        )
+        rice_value = encode_lapped_finite_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+            value_entropy_backend="bounded",
+        )
+        decoded = decode_lapped_packet_stream(rice_value.payload)
+
+        self.assertEqual(
+            rice_value.report["format_profile"],
+            "prospective-LPS6",
+        )
+        np.testing.assert_array_equal(
+            decoded.samples,
+            adaptive.reconstruction,
+        )
+        corrupted = bytearray(rice_value.payload)
+        corrupted[-1] ^= 1
+        with self.assertRaises(ValueError):
+            decode_lapped_packet_stream(bytes(corrupted))
+
+    def test_finite_packet_frontier_reuses_exact_analysis(self) -> None:
+        source = self._stereo(4096)
+        analysis = analyze_lapped_source(
+            source,
+            48000,
+            half_window=128,
+            band_count=12,
+            transform_backend="fixed",
+        )
+        direct = encode_lapped_finite_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+            value_entropy_backend="bounded",
+        )
+        reused = encode_lapped_finite_packet_stream(
+            source,
+            48000,
+            coefficients_per_frame=28,
+            packet_frames=1024,
+            half_window=128,
+            band_count=12,
+            value_entropy_backend="bounded",
+            precomputed_analysis=analysis,
+        )
+
+        self.assertEqual(reused.payload, direct.payload)
+        np.testing.assert_array_equal(
+            reused.reconstruction,
+            direct.reconstruction,
+        )
+        with self.assertRaises(ValueError):
+            encode_lapped_finite_packet_stream(
+                source[:-1],
+                48000,
+                coefficients_per_frame=28,
+                packet_frames=1024,
+                half_window=128,
+                band_count=12,
+                value_entropy_backend="bounded",
+                precomputed_analysis=analysis,
+            )
 
 
 if __name__ == "__main__":

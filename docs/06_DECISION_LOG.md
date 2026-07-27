@@ -3357,6 +3357,33 @@ new oscillator opcode.
     budgets. PVE2 passes the fast gate only if one point is no larger than
     R-107 and simultaneously improves speech SNR, STOI, ESTOI, and log-mel
     RMSE; otherwise retain the negative result and change the factorization.
+- PVQ compiler correction:
+  - the initial PVE1 encoder proportionally rounded coefficient magnitudes to
+    pulses and transmitted the unprojected source-band norm. That construction
+    is deterministic but does not minimize squared error for the decoded PVQ
+    direction and therefore is not a valid quality verdict on the syntax;
+  - replace it with a bounded greedy integer search that maximizes squared
+    target correlation per candidate pulse energy, followed by the
+    projection-optimal gain for the selected direction. Ties are resolved by
+    coefficient index, the bitstream and decoder remain unchanged, and the
+    old proportional quantizer is not retained as an encoder candidate unless
+    actual RDO finds a smaller complete stream at equal distortion;
+  - rerun the same speech and sustained-sine frontier before changing entropy
+    or adding more TruthInnovation so that directional-search gain is measured
+    independently.
+- Corrected fast-gate result:
+  - the greedy direction plus projected gain improved the selected speech
+    point from 11.494 to 12.134 dB SNR, but it still required 18,580 bytes and
+    remained 7.471 dB below the 17,924-byte LPS5 baseline. Speech log-mel RMSE
+    improved to 1.465 and STOI/ESTOI reached 0.961999/0.928951, demonstrating
+    useful envelope structure without an acceptable Truth reconstruction;
+  - the sustained-sine point was 23,926 bytes with 36.103 dB SNR and 2.035
+    log-mel RMSE. LPS5 remained better in both SNR and log-mel at 83,061
+    bytes, while PVQ retained its large rate advantage;
+  - therefore neither proportional nor greedy pure PVQ becomes a universal
+    base path. Both remain band-local RDO candidates only, and PVE2 sparse
+    TruthInnovation must prove a complete-stream Pareto win before any decoder
+    promotion.
 
 ## R-109 — Permanent cross-content architecture evidence gate
 
@@ -3516,3 +3543,159 @@ new oscillator opcode.
   - because every compressed byte is identical, all previously published
     objective quality and decoded-PCM results remain exactly unchanged. R-112
     changes implementation throughput, not bitstream syntax or codec quality.
+
+## R-113 — RDO-selectable bounded value entropy
+
+- Date: 2026-07-27
+- Status: **RESEARCH — PASSED AS AN RDO-SELECTABLE MODE**
+- Observation:
+  - in the 17,924-byte R-107 speech stream, coefficient values consume 91,320
+    of 136,640 entropy bits (66.8%), while scales consume 13.0%, position gaps
+    19.2%, and counts 0.9%;
+  - a packet-local bounded signed Rice/packed search reduces the budget-68
+    value field by 2,179 bits. Budget 68 already improves SNR, STOI, ESTOI, and
+    log-mel RMSE over budget 67, and the prospective descriptor extension
+    costs 46 complete bytes across 23 packets;
+  - this is only a measured field-cost opportunity. It is not a complete-file
+    result until serialized and independently decoded.
+- Decision:
+  - add a distinct prospective LPS6/LAR1 research syntax that preserves all
+    LPS5 packet, reset, transform, scale, count, gap, integrity, and bounded-
+    allocation rules but permits the value field to select bounded signed
+    Rice or fixed-width entropy per packet;
+  - carry the value entropy ID and parameter explicitly. Never infer them from
+    content, and retain ordinary LPS5 adaptive values as an exact complete
+    fallback in encoder RDO;
+  - first implement an independently bounded Python oracle, then migrate the
+    accepted parser and decoder to the allocation-free C++20 Core before any
+    release or player claim.
+- Fast gate:
+  - one actual LPS6 speech stream at no more than 17,924 complete bytes must
+    exceed the published R-107 speech point simultaneously in SNR, STOI,
+    ESTOI, and log-mel RMSE;
+  - corruption, truncation, noncanonical padding, entropy parameter, packet
+    reset, and exact reconstruction tests are mandatory;
+  - a passing speech point proceeds to complete piano, complete Mozart, and
+    all 16 R-111 classes. Per-class RDO may retain LPS5, and the chosen stream
+    must be compared by complete bytes and actual decoder output.
+- Preliminary measured result and immediate performance action:
+  - the independently serialized budget-68 speech point is 17,904 complete
+    bytes and improves all four required metrics over the 17,924-byte
+    budget-67 LPS5 point: SNR 19.728 versus 19.605 dB, STOI 0.953871 versus
+    0.953579, ESTOI 0.907409 versus 0.905907, and log-mel RMSE 3.6510 versus
+    3.6903. This passes the first fast gate but is not yet a corpus result;
+  - the first Python-oracle run required 1.897 seconds because bounded value
+    serialization and independent decoding remained Python loops. Before the
+    full corpus gate, migrate both accepted paths to allocation-free C++20,
+    require exact Python/Core entropy bytes and PCM parity, then report the
+    new wall time. This applies R-109 and R-112 rather than accepting an
+    avoidable research-only throughput regression.
+  - the complete-reference gate exposed a second avoidable cost: adjacent RDO
+    budgets independently repeat identical fixed transform analysis. Preserve
+    one immutable authenticated `LappedAnalysis` per source/configuration and
+    reuse it across entropy modes and coefficient budgets. Apply this only
+    after the already-running gate is captured, then require exact stream and
+    PCM identity for every candidate plus a multi-budget wall-time result.
+- Complete measured result:
+  - speech selected budget 68 at 17,904 bytes, 20 bytes below the prior
+    budget-67 LPS5 point, and improved SNR by 0.1234 dB, STOI by 0.000292,
+    ESTOI by 0.001502, and log-mel RMSE by 0.03925;
+  - complete Emotional piano saved 110 bytes and complete Mozart saved 5,432
+    bytes at identical budgets and exact decoded PCM;
+  - all 16 heterogeneous base-budget reconstructions were PCM-identical.
+    RDO selected LPS6 for female speech, male speech, and dense pop, saving
+    1,600 bytes across the matrix, and retained LPS5 for the other 13 classes;
+  - native value entropy is byte-identical to the independent oracle, native
+    LPS6 decode is PCM-identical, and parameter, padding, truncation, and CRC
+    rejection gates pass;
+  - native packing reduced the speech candidate from 1.897 to 0.415 seconds.
+    Shared immutable analysis then reduced the measured two-budget speech
+    encode phase from 0.852 to 0.622 seconds with identical candidate hashes;
+  - LPS6 is not a universal replacement and does not close the Opus
+    speech-intelligibility or spectral-envelope gap. It remains a prospective
+    encoder-selected mode with exact LPS5 fallback.
+
+## R-114 — Latest stable language and build-tool baseline
+
+- Date: 2026-07-27
+- Status: **ACCEPTED**
+- Decision:
+  - use the latest stable production releases for active development:
+    Python 3.14.6 for the research control plane, C++23 for native source,
+    LLVM/Clang 22.1.8 through llvm-mingw 20260616 on Windows, CMake 4.4.0,
+    and Ninja 1.13.2;
+  - pin downloads, versions, and hashes. Never replace a stable project
+    baseline with a release candidate, nightly, or unverified binary merely
+    because its version number is newer;
+  - LLVM 23.1.0 RC1 and the unfinished C++26 publication cycle are therefore
+    not production baselines. They may run non-blocking forward-compatibility
+    jobs only;
+  - use C++23 as the declared language mode but limit decoder-critical source
+    to features supported by the current Clang, GCC, MSVC, Apple Clang, and
+    Android NDK gates. A new library feature is not accepted until all target
+    toolchains pass;
+  - Python remains absent from shipped codec, SDK, embedded, CLI, and Orkela
+    runtime artifacts. Updating Python affects only research orchestration,
+    independent oracles, metrics, and reports;
+  - every language or toolchain upgrade must pass the strict native build,
+    the complete Python/native suite, and at least one exact compressed-stream
+    and decoded-PCM regression before becoming the documented default.
+- Owner amendment:
+  - C++26 is the active native language mode now, despite the standard and
+    newest LLVM line still being pre-final at this date;
+  - install llvm-mingw 20260721 with LLVM 23.1.0 RC1 as the primary Windows
+    C++26 toolchain and pin it separately from the retained stable LLVM 22.1.8
+    baseline;
+  - the primary build and CI request C++26. A secondary C++23 compatibility
+    build remains mandatory for current Android, Apple, and embedded
+    toolchains until their C++26 modes pass;
+  - C++26-only source features require a measurable correctness, safety,
+    performance, or maintainability benefit. Version novelty alone is not a
+    reason to enlarge the decoder or reduce platform coverage;
+  - this amendment explicitly supersedes the earlier R-114 choice to keep
+    C++26 only in a non-blocking forward-compatibility job.
+- Final owner amendment:
+  - restore C++23 as the primary production language mode to preserve current
+    mobile and embedded compatibility;
+  - cancel the LLVM 23 RC toolchain adoption and retain stable llvm-mingw
+    20260616 with LLVM/Clang 22.1.8;
+  - C++26 returns to a non-blocking forward-compatibility gate until the
+    mobile, Apple, and embedded toolchains support it without reducing target
+    coverage;
+  - this final amendment supersedes the immediately preceding C++26/LLVM 23 RC
+    amendment. The historical record remains explicit rather than silently
+    rewriting the decision sequence.
+- Final evidence:
+  - strict C++23 compilation completed with extensions disabled and warnings
+    treated as errors; 10 of 10 native tests passed;
+  - Python 3.14.6 completed 185 tests: 181 passed and four external device or
+    Opus integrations were skipped;
+  - all 16 R-111 streams, covering 192 seconds and 2,471,068 bytes, remained
+    byte-identical. Native/Python decoder parity tests remained exact;
+  - the accepted C++23 Core DLL SHA-256 is
+    `a801f0192c81c57b2c97465efa637d0ea4612c6194f9f146a4c93cde6408fab0`.
+
+## R-115 — Self-contained MinGW production artifacts
+
+- Date: 2026-07-27
+- Status: **ACCEPTED**
+- Decision:
+  - MinGW production libraries, tools, and tests statically link their C++
+    runtime through the Resonith Core target contract;
+  - a released Resonith DLL or executable must not depend on a compiler-local
+    `libc++.dll`, `libstdc++-6.dll`, or equivalent C++ runtime that is absent
+    from a stock target system;
+  - the stable C ABI remains the integration boundary. Static runtime linkage
+    does not expose a C++ ABI or permit allocation in the audio callback;
+  - CI must inspect Windows binary dependencies and run tests without adding
+    the compiler directory to `PATH`. A missing runtime must fail directly,
+    never wait on an interactive system dialog.
+- Evidence:
+  - the first strict C++23 CMake/Ninja gate linked test executables against
+    compiler-local `libc++.dll`; CTest consequently waited on the Windows
+    loader dialog when the toolchain directory was not on `PATH`;
+  - the prior direct release DLL was self-contained. The CMake contract now
+    makes that property explicit and reproducible;
+  - post-fix dependency inspection found only Windows system runtime imports
+    in both the Core DLL and the C-header test executable; all 10 native tests
+    then passed without adding the compiler directory to `PATH`.
