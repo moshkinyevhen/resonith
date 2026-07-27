@@ -42,6 +42,12 @@ reproducible command and independent decode.
   complete-byte comparison across all prepared R-111 classes.
 - `results/heterogeneous_gain_shape_2026-07-27.json` — complete machine report
   and per-artifact identities for the first 16-class architecture gate.
+- `perceptual_gain_shape_gate.py` — complete speech, Emotional piano, and
+  full-Mozart R-107 admission/breakthrough gate through the native Core.
+- `results/perceptual_gain_shape_2026-07-27.json` — selected complete-file
+  budget-72 report.
+- `results/perceptual_gain_shape_b71_2026-07-27.json` — retained lower-rate
+  full-Mozart frontier point.
 - `real_music_benchmark.py` — deterministic PCM downmix, LiftPack/zlib,
   fixed/adaptive/full-RDO, and Opus ablation.
 - `results/maf_p2_real_music_2026-07-26.json` — raw real-music phase report.

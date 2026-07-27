@@ -23,6 +23,10 @@ version.
   sizes. Resonith led waveform SNR on 12 classes and log-mel error on six, but
   failed the universal gate on sustained tone, noise, speech envelope, and
   several mixed classes. No decoder syntax or released default changed.
+- Completed the R-107 native-backed full-reference gate. Speech, Emotional
+  piano, and complete Mozart improved over the preceding Resonith evidence and
+  passed the admission bounds; Opus still led speech STOI/ESTOI and most
+  spectral-envelope diagnostics, so R-107 remains a research fallback.
 - Closed R-103 after its active-band coefficient selector failed the speech
   fast gate. The negative machine report is published; no bitstream, decoder,
   or default-encoder behavior changed.

@@ -3228,7 +3228,7 @@ new oscillator opcode.
 ## R-107 — Perceptual gain–shape and envelope-preserving compiler
 
 - Date: 2026-07-27
-- Status: **RESEARCH — HETEROGENEOUS GATE FAILED; COMPLETE GATE IN PROGRESS**
+- Status: **RESEARCH — COMPLETE ADMISSION PASSED; BREAKTHROUGH AND HETEROGENEOUS GATES FAILED**
 - Problem:
   - the current global selector minimizes absolute transform energy, producing
     high waveform SNR while starving quiet frames and bands that carry speech
@@ -3292,11 +3292,29 @@ new oscillator opcode.
     STOI/ESTOI, confirming that the formant/envelope problem is structural;
   - the universal R-107 gate therefore fails. Gain-shape remains a fallback
     candidate and adds no syntax or released-default claim.
+- Complete R-102 result:
+  - speech produced 17,924 complete bytes against 17,942 Opus bytes, improved
+    the preceding Resonith STOI, ESTOI, and log-mel result, and retained
+    19.605 dB SNR, but Opus still led STOI 0.993172 to 0.953579 and ESTOI
+    0.988045 to 0.905907;
+  - Emotional piano produced 117,225 bytes against 117,091 Opus bytes and
+    improved the preceding Resonith SNR from 40.4330 to 40.5364 dB and log-mel
+    RMSE from 1.05526 to 0.96367;
+  - complete Mozart at budget 71 produced 6,452,284 bytes, 0.8895% below the
+    Opus target, so it was retained as a frontier point but failed the declared
+    rate-match bound;
+  - complete Mozart at budget 72 produced 6,526,665 bytes against 6,510,191
+    Opus bytes, a 0.2530% difference, improved the preceding Resonith SNR from
+    34.5878 to 34.8509 dB and log-mel RMSE from 2.02804 to 1.89211, and encoded
+    400.773 seconds in 385.976 seconds through the native-backed research path;
+  - the three-complete-file admission gate passes, but the speech breakthrough
+    target and R-111 universal gate fail. R-107 remains an RDO fallback and is
+    not a released universal default.
 
 ## R-108 — Compact integer PVQ with predictive log envelope
 
 - Date: 2026-07-27
-- Status: **RESEARCH — QUEUED AFTER R-107 MEASUREMENT**
+- Status: **RESEARCH — NEXT ACTIVE ARCHITECTURE GATE**
 - Decision:
   - after publishing the complete R-107 scalar gain–shape evidence, test a
     bounded integer pyramid-vector shape and a time/frequency-predicted
