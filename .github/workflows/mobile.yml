@@ -24,10 +24,13 @@ jobs:
       - name: Select stable NDK r29
         shell: bash
         run: |
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
-            "ndk;29.0.14206865" >/dev/null
-          echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/29.0.14206865" \
-            >> "$GITHUB_ENV"
+          ndk="$ANDROID_HOME/ndk/29.0.14206865"
+          if [[ ! -d "$ndk" ]]; then
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+              "ndk;29.0.14206865"
+          fi
+          test -x "$ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
+          echo "ANDROID_NDK_ROOT=$ndk" >> "$GITHUB_ENV"
 
       - name: Record toolchain
         shell: bash
@@ -48,11 +51,15 @@ jobs:
       - name: Verify artifacts
         shell: bash
         run: |
-          test -s "build/${{ matrix.preset }}/libresonith_core.a"
-          test -s "build/${{ matrix.preset }}/libresonith_core_shared.so"
+          static="build/${{ matrix.preset }}/libresonith_core.a"
+          shared="build/${{ matrix.preset }}/libresonith_core_shared.so"
+          test -s "$static"
+          test -s "$shared"
           ! "$ANDROID_HOME/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf" \
-            -d "build/${{ matrix.preset }}/libresonith_core_shared.so" \
+            -d "$shared" \
             | grep -q 'libc++_shared'
+          stat --printf='%n %s bytes\n' "$static" "$shared"
+          sha256sum "$static" "$shared"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -98,6 +105,8 @@ jobs:
           test -n "$artifact"
           test -s "$artifact"
           xcrun lipo -info "$artifact"
+          stat -f '%N %z bytes' "$artifact"
+          shasum -a 256 "$artifact"
 
       - uses: actions/upload-artifact@v4
         with:
