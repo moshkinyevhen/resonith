@@ -178,8 +178,23 @@ def _request(
         except urllib.error.HTTPError as error:
             retryable = error.code == 429 or 500 <= error.code < 600
             if not retryable or attempt + 1 == MAX_RETRIES:
+                status = "unknown"
+                message = "provider rejected the request"
+                try:
+                    error_payload = json.loads(error.read(1 << 16))
+                    error_object = error_payload.get("error", {})
+                    if isinstance(error_object, Mapping):
+                        if isinstance(error_object.get("status"), str):
+                            status = error_object["status"]
+                        if isinstance(error_object.get("message"), str):
+                            message = " ".join(
+                                error_object["message"].split()
+                            )[:800]
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    pass
                 raise RuntimeError(
-                    f"{operation} failed with HTTP {error.code}"
+                    f"{operation} failed with HTTP {error.code} "
+                    f"({status}): {message}"
                 ) from None
             retry_after = error.headers.get("Retry-After")
             delay = float(retry_after) if retry_after else min(60.0, 2.0**attempt)
@@ -255,7 +270,35 @@ class GeminiFilesClient:
         if not all(isinstance(file_data.get(key), str) for key in ("name", "uri")):
             raise RuntimeError("Gemini upload omitted file identity")
         file_data.setdefault("mimeType", mime_type)
-        return file_data
+        return self._wait_until_active(file_data)
+
+    def _wait_until_active(self, file_data: dict[str, Any]) -> dict[str, Any]:
+        """Do not reference media while Gemini still reports PROCESSING."""
+
+        deadline = time.monotonic() + HTTP_TIMEOUT_SECONDS
+        current = file_data
+        while True:
+            state = current.get("state")
+            if state == "ACTIVE":
+                return current
+            if state == "FAILED":
+                raise RuntimeError("Gemini reported failed audio processing")
+            if time.monotonic() >= deadline:
+                raise RuntimeError("Gemini audio processing timed out")
+            time.sleep(1.0)
+            body, _ = _request(
+                urllib.request.Request(
+                    f"{API_ROOT}/v1beta/{current['name']}",
+                    headers=self._headers(),
+                    method="GET",
+                ),
+                operation="Gemini file readiness",
+            )
+            refreshed = json.loads(body)
+            if not isinstance(refreshed, dict):
+                raise RuntimeError("Gemini file readiness returned malformed metadata")
+            refreshed.setdefault("mimeType", current.get("mimeType", "audio/wav"))
+            current = refreshed
 
     def delete(self, name: str) -> None:
         _request(
@@ -329,16 +372,31 @@ class GeminiFilesClient:
             operation="Gemini semantic analysis",
         )
         response = json.loads(body)
-        outputs = response.get("outputs")
-        if not isinstance(outputs, list):
-            raise RuntimeError("Gemini interaction returned no outputs")
-        text_parts = [
-            output.get("text")
-            for output in outputs
-            if isinstance(output, dict)
-            and output.get("type") == "text"
-            and isinstance(output.get("text"), str)
-        ]
+        text_parts: list[str] = []
+        outputs = response.get("outputs", [])
+        if isinstance(outputs, list):
+            text_parts.extend(
+                output["text"]
+                for output in outputs
+                if isinstance(output, dict)
+                and output.get("type") == "text"
+                and isinstance(output.get("text"), str)
+            )
+        steps = response.get("steps", [])
+        if isinstance(steps, list):
+            for step in steps:
+                if not isinstance(step, Mapping):
+                    continue
+                content = step.get("content", [])
+                if not isinstance(content, list):
+                    continue
+                text_parts.extend(
+                    part["text"]
+                    for part in content
+                    if isinstance(part, Mapping)
+                    and part.get("type") == "text"
+                    and isinstance(part.get("text"), str)
+                )
         if len(text_parts) != 1:
             raise RuntimeError("Gemini interaction returned ambiguous text output")
         return {
@@ -377,8 +435,7 @@ def _response_schema(clip_count: int) -> dict[str, Any]:
             "schema_version": {"type": "string", "enum": [SCHEMA_VERSION]},
             "clips": {
                 "type": "array",
-                "minItems": clip_count,
-                "maxItems": clip_count,
+                "description": f"Exactly {clip_count} clips, one per labelled input.",
                 "items": {
                     "type": "object",
                     "additionalProperties": False,
@@ -391,7 +448,6 @@ def _response_schema(clip_count: int) -> dict[str, Any]:
                         },
                         "sources": {
                             "type": "array",
-                            "maxItems": 12,
                             "items": {
                                 "type": "object",
                                 "additionalProperties": False,
@@ -414,8 +470,6 @@ def _response_schema(clip_count: int) -> dict[str, Any]:
                         },
                         "regions": {
                             "type": "array",
-                            "minItems": 1,
-                            "maxItems": 32,
                             "items": {
                                 "type": "object",
                                 "additionalProperties": False,
@@ -452,7 +506,6 @@ def _response_schema(clip_count: int) -> dict[str, Any]:
                         },
                         "specialist_tasks": {
                             "type": "array",
-                            "maxItems": 8,
                             "items": {
                                 "type": "object",
                                 "additionalProperties": False,
