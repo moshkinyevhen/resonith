@@ -11,6 +11,17 @@ version.
 
 ### Research
 
+- Added the R-120 independently decodable unified MAF research streams:
+  event-driven MFC1 cells, corrected causal SFT1 source-filter state, cached
+  integer filter Basis, and EPV1 adaptive/stochastic algebraic excitation.
+  The pinned speech fast diagnostic reached the 10,765-byte rate checkpoint
+  but failed Opus quality, so no default or release syntax changed.
+- Added exact event-ledger reporting, PVQ-default maps, persistent gain state,
+  band-local Basis/stochastic/transient/Truth competition, causal channel
+  reuse, closed-loop adaptive excitation, corruption tests, and the
+  single-item diagnostic driver. The complete R-118 gate remains pending.
+- Passed the 194-test Python 3.14 regression suite after R-120 integration;
+  four optional external-tool/device tests were skipped on the Windows host.
 - Completed the mandatory 19-item R-117 temporal score companding gate.
   The 17,904-byte pinned speech point improved SNR, STOI, ESTOI, and log-mel
   error without syntax changes; the other 18 items retained exact R-113

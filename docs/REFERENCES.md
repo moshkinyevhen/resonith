@@ -1,6 +1,6 @@
 # Resonith Primary Sources
 
-Last update: 2026-07-26.
+Last update: 2026-07-27.
 
 Numbers from papers are statements made by the authors prior to independent reproduction.
 
@@ -34,6 +34,9 @@ Numbers from papers are statements made by the authors prior to independent repr
 
 ## Modern learned codecs
 
+- [SoundStream: An End-to-End Neural Audio Codec](https://arxiv.org/abs/2107.03312)
+- [High Fidelity Neural Audio Compression / EnCodec](https://arxiv.org/abs/2210.13438)
+- [A Real-Time Wideband Neural Vocoder at 1.6 kb/s Using LPCNet](https://arxiv.org/abs/1903.12087)
 - [Google: Neural Speech and Audio Coding](https://research.google/pubs/neural-speech-and-audio-coding-2/)
 - [FocalCodec](https://openreview.net/forum?id=7Z3wQSu3mH)
 - [MUFFIN: Multi-scale Feature Fusion for Neural Audio Coding](https://proceedings.mlr.press/v267/ng25b.html)

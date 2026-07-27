@@ -1156,6 +1156,65 @@ CUDA or other encoder acceleration MUST NOT change normative decoder output;
 if it changes search coverage, the encoder MUST identify the resulting search
 level in evidence reports.
 
+### 14.2 Unified memory-oriented representation competition
+
+A Foundry or Studio encoder SHOULD evaluate acoustic state over bounded
+`packet × channel-group × band × lifetime` cells. For every cell it SHOULD
+select exactly one primary representation:
+
+- `HOLD`: no state mutation; the previous bounded state remains live;
+- `COHERENT`: an immutable periodic or cached Basis plus continuous
+  phase/pitch/gain laws;
+- `SOURCE_FILTER`: separately lived excitation and stable filter/envelope
+  state;
+- `STOCHASTIC`: a counter-addressable generator plus spectral/temporal law;
+- `TRANSIENT`: an onset-addressed bounded short-support event;
+- `PVQ`: a bounded gain/shape vector for otherwise unmodelled structured
+  detail;
+- `TRUTH`: sparse or dense deterministic Innovation.
+
+The encoder MUST account for the complete cost of the selected state,
+mutation, mode, correction, checkpoint, model package, dictionary, index, and
+container records. It MUST NOT count savings from two mutually exclusive
+primary representations in the same cell. A Truth correction MAY accompany a
+modelled primary representation only when complete-stream RDO shows that the
+combination is preferable to a Truth primary.
+
+State persists until explicit mutation, termination, reset, or expiry. A
+conforming stream MUST NOT require periodic retransmission of unchanged
+excitation, filter, Basis, stochastic seed law, gain trajectory, routing, or
+lifetime state. The decoder MAY render such state in bounded internal quanta,
+but those quanta do not create implicit bitstream events.
+
+For a `SOURCE_FILTER` cell, the causal synthesis order MUST be:
+
+1. reconstruct adaptive/coherent and fixed/stochastic excitation from the
+   decoder's previously reconstructed excitation state;
+2. add bounded excitation Innovation;
+3. apply the stable vocal-tract or resonator synthesis filter;
+4. apply output mixing and clipping at the declared mix boundary.
+
+The encoder MUST evaluate excitation against the decoder's actual quantized
+history. Fitting pitch against the original unquantized history and then
+encoding an open-loop residual is insufficient for promotion. Pitch/phase,
+adaptive gain, filter envelope, fixed excitation, and stochastic envelope MAY
+have independent lifetimes. A render subframe MUST NOT force an implicit
+mutation of any of them.
+
+A learned or clustered source-filter state MAY be materialized as an immutable
+integer Basis. Its complete dictionary cost counts once, every reference is
+bounded, and the exact Innovation is recomputed against the materialized
+integer state. Per-sample neural inference and a semantic phoneme dependency
+remain prohibited. An algebraic fixed-codebook event, counter-based
+stochastic excitation, and bounded transient event compete under the same
+complete-rate RDO; they are not parallel full-rate layers.
+
+Independent-channel Innovation and the zero-Atom Innovation stream remain
+valid complete candidates. An official encoder MUST retain an admitted
+preceding stream whenever the new candidate fails its declared complete-byte,
+decoder, objective, perceptual, resource, or robustness gate. File-level
+fallback is not evidence that the new representation improved that file.
+
 ## 15. Security
 
 Decoder MUST:

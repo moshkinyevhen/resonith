@@ -19,12 +19,14 @@
 | [14_MAIN0_NATIVE_MUSIC.md](14_MAIN0_NATIVE_MUSIC.md) | First Golden-Core-gated music and listening diagnostic |
 | [15_CONTINUOUS_EVIDENCE.md](15_CONTINUOUS_EVIDENCE.md) | Per-milestone benchmark, publication, versioning, and player-coupled release gate |
 | [16_TOOLCHAIN_BASELINE.md](16_TOOLCHAIN_BASELINE.md) | C++23 production language, stable tool versions, hashes, and upgrade gates |
+| [17_MAF_RATE_DISTORTION_FRONTIER.md](17_MAF_RATE_DISTORTION_FRONTIER.md) | Unified MAF cell, theoretical-limit definitions, target budgets, and admission frontier |
 | [results/EXTENDED_AUDIO_CORPUS_2026-07-27.md](results/EXTENDED_AUDIO_CORPUS_2026-07-27.md) | R-111 heterogeneous corpus acquisition, coverage, and preparation evidence |
 | [results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md](results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md) | R-107 gain-shape results against Opus across all 16 R-111 classes |
 | [results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md](results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md) | R-107 complete speech, piano, and full-Mozart admission result |
 | [results/NATIVE_PACKING_OPTIMIZATION_2026-07-27.md](results/NATIVE_PACKING_OPTIMIZATION_2026-07-27.md) | R-112 byte-identical native packing and full-corpus throughput result |
 | [results/BOUNDED_VALUE_ENTROPY_2026-07-27.md](results/BOUNDED_VALUE_ENTROPY_2026-07-27.md) | R-113 RDO-selectable LPS6 result across complete references and all 16 heterogeneous classes |
 | [results/TEMPORAL_SCORE_COMPANDING_2026-07-27.md](results/TEMPORAL_SCORE_COMPANDING_2026-07-27.md) | R-117 complete 19-item temporal score companding gate and exact fallback evidence |
+| [results/R120_UNIFIED_MAF_SPEECH_FAST_2026-07-27.md](results/R120_UNIFIED_MAF_SPEECH_FAST_2026-07-27.md) | R-120 unified MAF cell and source-filter speech fast diagnostic |
 | [results/PVQ_ENVELOPE_FAST_GATE_2026-07-27.md](results/PVQ_ENVELOPE_FAST_GATE_2026-07-27.md) | R-108 corrected integer PVQ envelope fast-gate result |
 | [results/CPP23_TOOLCHAIN_GATE_2026-07-27.md](results/CPP23_TOOLCHAIN_GATE_2026-07-27.md) | R-114/R-115 strict C++23, Python 3.14, self-contained runtime, and exact 16-class regression |
 | [results/MOBILE_CORE_GATE_2026-07-27.md](results/MOBILE_CORE_GATE_2026-07-27.md) | R-116 Android ARM64/emulator and iOS device/simulator compile evidence |

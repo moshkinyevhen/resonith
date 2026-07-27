@@ -1,0 +1,77 @@
+{
+  "schema": "resonith-r120-unified-maf-speech-fast-1",
+  "decision": "R-120",
+  "status": "one-item fast diagnostic; no R-118 milestone or general codec claim",
+  "source": {
+    "id": "LibriSpeech-1272-128104-0000",
+    "sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46",
+    "sample_rate": 16000,
+    "sample_count": 93680,
+    "channels": 1
+  },
+  "opus_1_6_1_anchor": {
+    "bytes": 17942,
+    "stream_sha256": "cbfdd8da42cb28a90a336bb162adbf72d3d6129b62ecc1e452a6da10220d67e6",
+    "decoded_sha256": "8125700a4ceab5a34f4259e7168a38a8aac8c8b83bfe1230c2fe2e37e0c72b6a",
+    "snr_db": 9.297436583803522,
+    "stoi": 0.9931723093721826,
+    "estoi": 0.9880461884303828,
+    "log_mel_rmse": 0.6011680709866213
+  },
+  "points": [
+    {
+      "id": "mfc1-pvq-default-v3",
+      "bytes": 19277,
+      "stream_sha256": "dc5931cc01180e82a592e8acd1b4b14287c8cc38878e1a3569aca31ad5cf511e",
+      "decoded_sha256": "94c25b8a1e02ff23ae0a74f642f55758791499045be78c1e020d9f1df888530d",
+      "analysis_wall_seconds": 0.23146429998450913,
+      "encode_wall_seconds": 16.046064299996942,
+      "snr_db": 15.847947142090097,
+      "stoi": 0.9796989936917118,
+      "estoi": 0.954469019543031,
+      "log_mel_rmse": 1.1178390437198977,
+      "event_bits": {
+        "map": 3066,
+        "mode": 2849,
+        "command_payload": 146380,
+        "unclassified": 0
+      },
+      "result": "rejected versus Opus"
+    },
+    {
+      "id": "sft1-epv1-adaptive-held-b128-k5",
+      "bytes": 10294,
+      "saving_fraction_vs_opus": 0.4263738713632817,
+      "stream_sha256": "3034dbc2b9f07cbdc462944509c5b8618fb90ba4bbe0240baf0468c28ea0dbfe",
+      "decoded_sha256": "15ed41a22803954370eb3871e8d9c895c8fe47287ac5b540313cf30582c71f83",
+      "analysis_wall_seconds": 14.089456699992297,
+      "encode_wall_seconds": 8.753595899994252,
+      "snr_db": 5.568253738762214,
+      "stoi": 0.8781530937517694,
+      "estoi": 0.7958817684796385,
+      "log_mel_rmse": 1.3133132890965045,
+      "parameter_envelope_bytes": 606,
+      "excitation_bytes": 9688,
+      "pitch_updates": 1118,
+      "subframes": 1464,
+      "result": "byte checkpoint passed; rejected on quality"
+    },
+    {
+      "id": "sft1-epv1-adaptive-held-b128-k8",
+      "bytes": 12548,
+      "stream_sha256": "8fb84a3a3724578385aa5a19a9bfe628ae8b1a0194057b95e318f4b503dca5d0",
+      "decoded_sha256": "b105da972c12a373c826a1fee4a6911a1dc63cb08bcfe4b87851b7d3da50d873",
+      "analysis_wall_seconds": 14.527934999990975,
+      "encode_wall_seconds": 9.923067499999888,
+      "snr_db": 7.21195879903274,
+      "stoi": 0.9089761507087447,
+      "estoi": 0.8461120530159963,
+      "log_mel_rmse": 1.1905108962882007,
+      "parameter_envelope_bytes": 606,
+      "excitation_bytes": 11942,
+      "pitch_updates": 1134,
+      "subframes": 1464,
+      "result": "rejected on quality and pitch-state churn"
+    }
+  ]
+}

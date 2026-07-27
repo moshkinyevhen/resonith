@@ -3865,3 +3865,147 @@ new oscillator opcode.
   - a candidate proceeds to band-local RDO only if gain bits fall materially
     and at least one complete-stream Pareto point improves on PVE1. It does not
     become a Resonith default without the full R-118 gate.
+- Fast-gate result:
+  - persistent gain prediction alone was rejected: it increased the pinned
+    speech candidate at both Q8 and Q4 precision. Persistence remains a state
+    concept, not a mandatory gain predictor;
+  - explicit Q4 log-gain precision reduced the budget-96 speech candidate from
+    18,580 to 14,455 complete bytes with nearly unchanged SNR, STOI, ESTOI,
+    and improved log-mel RMSE;
+  - reinvesting part of the saved rate at Q4 produced a 18,376-byte
+    budget-192 candidate. Relative to PVE1 it improved speech SNR by
+    3.724788 dB, STOI by 0.017447, ESTOI by 0.025355, and log-mel RMSE by
+    0.288789 while saving 204 complete bytes;
+  - the same Q4/reinvestment search selected a complete-stream Pareto point
+    on grand piano, pink noise, side drum, and sustained sine. This is a
+    five-class fast gate only, not an R-118 milestone or an Opus victory;
+  - the selected speech stream still spends 82,169 logical bits on PVQ shape,
+    39,367 on gain, and 23,566 on pulse counts. Shape alone is therefore
+    approximately the complete 10,765-byte budget required for a 40% saving
+    against the pinned 17,942-byte Opus file.
+
+## R-120 — Unified event-driven MAF representation competition
+
+- Date: 2026-07-27
+- Status: **NORMATIVE-DRAFT ARCHITECTURE / RESEARCH IMPLEMENTATION**
+- Owner direction:
+  - implement the defining MAF idea now rather than continuing to improve a
+    transform-only codec under the MAF name;
+  - develop the long-lived source/filter, band-local RDO, persistent state,
+    stochastic, cached Basis/motif, transient, and channel-reuse mechanisms as
+    one coordinated architecture;
+  - exploit the full memory-oriented model without degrading accepted tracks.
+- Decision:
+  - the fundamental encoder decision unit is a bounded
+    `packet × channel-group × band × lifetime` cell, not a complete frame and
+    not a complete parallel substream;
+  - every cell selects exactly one primary representation from `HOLD`,
+    `COHERENT`, `SOURCE_FILTER`, `STOCHASTIC`, `TRANSIENT`, `PVQ`, and
+    `TRUTH`. A sparse Truth correction is optional only when its complete
+    incremental rate-distortion cost beats replacing the primary
+    representation with Truth;
+  - `HOLD` is the zero-update event: an immutable Basis, excitation law,
+    filter law, seed law, gain trajectory, routing, and lifetime remain in
+    force until an explicit mutation or end. The bitstream MUST NOT resend
+    unchanged state merely because another transform interval elapsed;
+  - source excitation and the stable filter/timbre envelope are independent
+    long-lived state. Pitch/phase, gain, and sparse filter control points may
+    update at different times. A block-local harmonic fit is not sufficient
+    evidence for this mode;
+  - stochastic state carries a deterministic counter-based generator,
+    spectral/temporal envelope, and lifetime. Its realization is objective
+    decoder state, but a stochastic candidate MUST NOT become a predictor for
+    unrelated future Truth;
+  - transient state has bounded short support and an explicit onset. It MUST
+    NOT force a higher coefficient budget over an entire long window;
+  - CIBS materializes an immutable Basis once. Motif reuse is a bounded,
+    declarative instance sequence over existing Basis/Atom operations; neither
+    mechanism adds per-sample neural inference or an unbounded program;
+  - joint-channel or spatial reuse represents a common emitter once and
+    transmits bounded channel differences. Independent-channel Truth remains a
+    complete RDO fallback;
+  - mode flags, state payloads, checkpoints, dictionaries, model packages,
+    motif definitions, corrections, and container overhead all count toward
+    rate. Savings from interacting mechanisms MUST NOT be added as if they
+    were independent.
+- Non-regression contract:
+  - the current complete LPS5/LPS6 stream remains an ordinary candidate in
+    every file-level RDO search;
+  - a MAF candidate is admitted per item only after actual serialization,
+    independent decoding, complete-byte comparison, and all applicable
+    quality gates. Failure selects the exact preceding stream; a fallback is
+    never reported as an improvement;
+  - no track may be degraded to make an aggregate result appear better. A
+    claimed milestone still requires the complete R-118 19-item gate plus
+    affected transient, stochastic, stereo, loss, seek, resource, and
+    subjective gates.
+- Frontier contract:
+  - there is no content-independent percentage called “the theoretical
+    limit”. A limit is defined only for a pinned source distribution,
+    decoder/profile/resource envelope, latency, and distortion contract;
+  - Resonith measures three separate frontiers: exact PCM, objectively
+    transparent Truth, and perceptual/generative detail. Generative results
+    MUST NOT be counted as Truth compression;
+  - the 40% Opus saving is a checkpoint, not an assumed ceiling. On the pinned
+    speech item it means no more than 10,765 complete bytes versus the current
+    17,942-byte official Opus anchor, at independently demonstrated
+    non-inferior perceived quality;
+  - the initial 10,765-byte engineering budget is a **TARGET**, not evidence:
+    state/mode 0.60 KiB, filter/envelope 1.20 KiB, coherent excitation
+    3.00 KiB, stochastic/transient 1.80 KiB, Truth 3.70 KiB, and
+    container/checkpoints 0.45 KiB. The complete serialized sum, rather than
+    any isolated field, decides feasibility;
+  - a universal 40% saving is not required and cannot be assumed for
+    entropy-like input. The primary structured-content target is at least 40%
+    versus byte-matched Opus at MUSHRA non-inferiority; hostile stochastic
+    material requires an honest smaller saving or exact fallback.
+- Implementation order inside one architecture:
+  - build one independently decodable research stream containing the complete
+    mode/state competition and exact bit accounting;
+  - first activate the representations already supported by measured kernels:
+    Q4 PVQ, sparse Truth, persistent Basis hold/trajectory, deterministic
+    stochastic fill, bounded transient events, and joint-channel lifting;
+  - add the continuous source-filter analyzer and cached Basis/motif proposals
+    to the same RDO, never as separately stacked full streams;
+  - migrate scaling search/synthesis/decode loops to C++23 while retaining
+    Python only as the replaceable oracle and experiment controller;
+  - publish an ablation frontier in which each mechanism is disabled in turn.
+    Only the joint candidate and its real predecessor/Opus anchors determine
+    the headline result.
+- Fast diagnostic implementation result:
+  - prospective `MFC1` now serializes one independently decodable event field
+    with `HOLD`, cached Basis set/reference/update, deterministic stochastic
+    state, bounded transient, Q4 PVQ, sparse Truth, and causal channel reuse.
+    A PVQ-default map and a separate coarse gain trajectory replace repeated
+    per-band signalling;
+  - on the pinned speech diagnostic, gain memory reduced the prospective
+    complete stream from 21,483 to 19,932 bytes. PVQ-default syntax reduced it
+    to 19,277 bytes at SNR 15.847947 dB, STOI 0.979699, ESTOI 0.954469, and
+    log-mel RMSE 1.117839. The official Opus anchor remains smaller at 17,942
+    bytes and better on STOI, ESTOI, and log-mel, so this is not a win;
+  - the event ledger closes exactly: 3,066 map bits, 2,849 mode bits, 146,380
+    command-payload bits, and zero unclassified bits. Packing alone therefore
+    cannot reach the 10,765-byte checkpoint;
+  - prospective `SFT1` corrects the causal source-filter order: the adaptive
+    excitation is reconstructed before the stable LPC synthesis filter.
+    Integer exact analysis/synthesis remains bit-identical before lossy
+    excitation coding;
+  - an immutable learned 16-entry filter Basis reduced the measured
+    source-filter parameter envelope from 2,577 to 701 bytes. The Innovation
+    became more expensive under the transform fallback, so the complete
+    candidate did not win;
+  - prospective `EPV1` adds a short algebraic PVQ excitation, counter-based
+    stochastic candidate, zero event, and causal adaptive pitch state. At
+    10,294 complete bytes it exceeded the 40%-saving byte checkpoint but
+    produced only STOI 0.878153 and ESTOI 0.795882, so the point is rejected
+    on quality;
+  - closed-loop adaptive excitation improved the eight-pulse point to
+    12,548 bytes, STOI 0.908976, ESTOI 0.846112, SNR 7.211959 dB, and log-mel
+    RMSE 1.190511. Its pitch state still mutated in 1,134 of 1,464 subframes;
+    it is therefore neither competitive with Opus nor evidence of a
+    long-lived pitch law;
+  - all figures above are one-item **FAST DIAGNOSTICS**. No default, release,
+    bitstream promotion, R-118 milestone, or general compression claim follows.
+    The next source-filter gate requires a compact continuous pitch/phase
+    trajectory and perceptually weighted closed-loop multi-pulse search, with
+    MFC1/LPS6 retained as complete fallbacks.

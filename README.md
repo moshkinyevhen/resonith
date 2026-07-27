@@ -72,6 +72,10 @@ The repository contains:
   an exact LPS5 RDO fallback; it improved all four declared speech metrics
   inside the previous complete-byte ceiling and retained LPS5 on 13 of 16
   heterogeneous classes where the new representation was larger;
+- prospective R-120 unified MAF research streams with event-driven band cells,
+  cached integer vocal-tract Basis, causal source-filter order, and
+  independently decoded adaptive/stochastic algebraic excitation; the first
+  speech byte-checkpoint point failed Opus quality and remains rejected;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
@@ -79,9 +83,8 @@ The repository contains:
 - a pinned 16-class EBU SQAM/Xiph heterogeneous gate spanning speech, solo
   voice, sustained tones, noise, electronic, transient, dense, stereo, and
   film-mix material;
-- 164 pure reference/security/integration tests, seventeen native
-  decoder-in-loop
-  integration tests, ten native conformance targets, native x64/ARM64
+- 194 Python reference/security/integration tests, including native
+  decoder-in-loop coverage, ten native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1/LPF1/LAF1 mutation targets.
 
@@ -113,6 +116,8 @@ The first portable decoder subset is documented in
 - [First native typed-stream music diagnostic](docs/14_MAIN0_NATIVE_MUSIC.md)
 - [Continuous evidence and immediate-improvement protocol](docs/15_CONTINUOUS_EVIDENCE.md)
 - [C++23 production toolchain baseline](docs/16_TOOLCHAIN_BASELINE.md)
+- [Unified MAF rate-distortion frontier](docs/17_MAF_RATE_DISTORTION_FRONTIER.md)
+- [R-120 unified MAF speech fast diagnostic](docs/results/R120_UNIFIED_MAF_SPEECH_FAST_2026-07-27.md)
 - [C++23 migration and exact regression evidence](docs/results/CPP23_TOOLCHAIN_GATE_2026-07-27.md)
 - [Android and iOS Core portability evidence](docs/results/MOBILE_CORE_GATE_2026-07-27.md)
 - [Latest bounded-value entropy result](docs/results/BOUNDED_VALUE_ENTROPY_2026-07-27.md)

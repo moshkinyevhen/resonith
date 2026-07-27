@@ -274,3 +274,96 @@ mandatory regime.
 
 Repeated motif programs and shared package dictionaries remain **RESEARCH** and
 must be compiled into the same ISA. CIBS adopted decision R-014.
+
+## 15. The operational MAF cell
+
+MAF is not a transform codec followed by optional side models. Its encoder
+compiles a bounded acoustic cell:
+
+```text
+packet × channel-group × band × lifetime
+```
+
+into exactly one primary representation:
+
+```text
+HOLD | COHERENT | SOURCE_FILTER | STOCHASTIC
+     | TRANSIENT | PVQ | TRUTH
+```
+
+`HOLD` is the crucial zero-update event. A Basis, excitation law, filter law,
+counter seed law, gain trajectory, routing, and lifetime continue without
+being resent merely because another transform interval elapsed. Mutations are
+events; render quanta are an implementation detail.
+
+`PVQ` and `TRUTH` are universal exits, not parallel full-rate layers. A model
+may receive a bounded Truth correction only when the combined complete cost is
+lower than replacing it with Truth. This avoids the failed global PVE
+factorization in which the stream paid for both a basis and a complete sparse
+correction.
+
+The encoder jointly evaluates:
+
+\[
+J_c =
+R_{\mathrm{complete},c}
++ \lambda D_c
++ \mu C_{\mathrm{decode},c}
++ \nu M_{\mathrm{state},c}
++ \rho L_c
++ \kappa P_c
++ \eta S_c .
+\]
+
+Costs and distortion are conditional on the state left by earlier cells.
+Therefore, gains from persistence, source-filter factorization, stochastic
+fill, CIBS, motifs, transients, and channel reuse are not independently
+additive. The project publishes disable-one ablations and an actual jointly
+serialized winner.
+
+## 16. Non-regression and hostile content
+
+The current admitted LPS5/LPS6 stream remains a complete RDO candidate. A MAF
+candidate is retained only after serialization, independent decode, and all
+applicable objective and subjective gates. A fallback is reported as a
+fallback, never as an improvement.
+
+Structured speech and music may contain long-lived causes that MAF can amortize.
+Entropy-like noise may contain almost none. A revolutionary structured-content
+gain and an honest transform/Truth fallback are therefore compatible parts of
+one codec; the latter is not hidden by an aggregate score.
+
+## 17. Source-filter execution contract
+
+The source-filter path is causal and decoder-closed:
+
+```text
+adaptive/coherent excitation state
+        + fixed/stochastic excitation
+        + bounded Innovation
+        -> stable synthesis filter
+        -> output
+```
+
+The encoder searches against reconstructed excitation history, not the
+unquantized source history. Excitation pitch/phase, adaptive gain, filter
+envelope, stochastic envelope, and fixed-codebook events have separate
+lifetimes. A short search subframe is not a mandatory state-update interval.
+
+Filter/timbre vectors may be learned encoder-side, quantized into an immutable
+integer Basis bank, and referenced until mutation. The encoder recomputes exact
+Innovation after Basis materialization, so the cached state changes rate but
+cannot silently change Truth.
+
+The first R-120 diagnostic proved two useful pieces but rejected the complete
+candidate. Cached filter Basis reduced the speech parameter envelope from
+2,577 to 701 bytes. A 10,294-byte sparse-excitation point was 42.6% smaller
+than the 17,942-byte Opus anchor, but its STOI was only 0.878153 and therefore
+failed quality. Closed-loop adaptive excitation improved STOI to 0.908976 at
+12,548 bytes, but still mutated pitch in 1,134 of 1,464 subframes and remained
+well behind Opus. These are one-item fast diagnostics, not admitted results.
+
+The next source-filter experiment must jointly search a compact continuous
+pitch/phase trajectory, adaptive gain, and perceptually weighted multi-pulse
+Innovation. It must retain MFC1 and the admitted LPS5/LPS6 path as complete
+fallbacks and pass R-118 before any promotion.
