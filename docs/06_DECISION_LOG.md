@@ -4345,3 +4345,59 @@ new oscillator opcode.
   - the next gate uses per-clip and long-form chunk analysis plus dense local
     change proposals. It retains the exact non-AI search and stream as the
     complete fallback.
+
+## R-130 — Sample-verified boundaries and typed MAF lifetimes
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED**
+- Date: 2026-07-27
+- Boundary decision:
+  - provider timestamps are approximate search hints only. They MUST NOT be
+    copied into a normative Resonith stream;
+  - for every proposed acoustic change, deterministic local analysis SHALL
+    inspect the original-channel PCM in a bounded neighborhood, generate exact
+    source-sample candidates, and include strong locally detected candidates
+    that the provider missed;
+  - exact decoder-in-loop RDO SHALL test the aligned candidate and a bounded
+    neighborhood, including the no-boundary alternative. It SHALL serialize a
+    boundary only when its complete stream cost repays its record, state-reset,
+    checkpoint, and residual consequences;
+  - source starts, stops, and transients require a final sample-domain
+    envelope/onset refinement after coarse spectral-change localization.
+    Pitch, timbre, speech-state, spatial, and section changes use the matching
+    local physical evidence. Unsupported or ambiguous provider events are
+    removed;
+  - the admitted boundary is therefore a property of local PCM and exact RDO,
+    not the precision, confidence, wording, or availability of an AI service.
+- Typed lifetime decision:
+  - introduce prospective `MFT1`, an allocation-free typed MAF lifetime stream
+    for stable filters, stochastic fields, source-filter emitters, bounded
+    transients, and output mixes;
+  - a record installs immutable parameters over an explicit half-open sample
+    lifetime. Render callback partitioning does not create state changes or
+    require repeated signalling;
+  - every source-filter lifetime selects exactly one excitation family:
+    phase-continuous impulse excitation or a referenced counter-addressed
+    stochastic field. A filter and its excitation may be reused for the
+    lifetime rather than retransmitted per transform frame;
+  - mix matrices also have explicit lifetimes and refer to emitter identifiers.
+    They are not frame headers. Transients are finite onset-addressed events;
+  - canonical order, unique identifiers, resolved references, non-overlapping
+    source lifetimes, full mix coverage, filter stability, exact resource
+    declarations, CRC integrity, and operation budgets are validated before
+    playback state or PCM can be committed;
+  - the decoder executes a fixed integer ISA with caller-owned persistent and
+    scratch memory. The stream contains no code, loops, recursion, shaders,
+    model discovery, file access, or network references;
+  - deterministic Truth Innovation remains the complete fallback. `MFT1`
+    cannot be promoted merely because it renders: its encoded candidate must
+    win exact complete-byte RDO without worsening an admitted reconstruction.
+- First implementation gate:
+  - inspect and prepare a hostile `MFT1` stream without allocation;
+  - render source-filter, stochastic, transient, and mix lifetimes identically
+    under different callback partitions;
+  - reject truncation, checksum errors, undefined or expired references,
+    overlapping lifetimes, resource amplification, unstable filters, and
+    insufficient output, scratch, persistent, or operation budgets before
+    affected output/state commit;
+  - pass strict C++23, adversarial smoke, sanitizer, desktop, Android, and iOS
+    compile/conformance gates before stream integration reaches Orkela.

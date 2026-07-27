@@ -396,3 +396,21 @@ This substrate precedes Foundry intelligence. A local model, Gemini-like cloud
 service, handcrafted analyzer, or exhaustive GPU search may propose the same
 MAF states later, but none becomes a decoder dependency and none can bypass
 integer decoder-in-loop RDO.
+
+## 19. Typed lifetime execution
+
+The first executable prospective lifetime syntax is `MFT1` (R-130). It makes
+the memory-oriented claim testable: filters, stochastic fields, source
+excitations, transient shapes, and mix matrices exist over explicit half-open
+sample lifetimes instead of being repeated as transform-frame decisions.
+
+The decoder validates the complete immutable record graph once, prepares
+stable integer filters into caller-owned memory, and then renders sequentially
+without allocation, file access, network access, logging, or locks. Internal
+render slices occur only at a real lifetime boundary. Arbitrary application
+callback boundaries do not change PCM or acoustic state.
+
+`MFT1` is deliberately narrow. It does not add semantic labels, arbitrary
+graphs, bytecode, decoder-side AI, or a second residual. Deterministic Truth
+remains the complete fallback until a typed lifetime candidate wins exact
+complete-byte RDO on real evidence.

@@ -79,6 +79,9 @@ The repository contains:
 - the R-122 portable bounded MAF DSP substrate: explicit stream-resource and
   operation budgets plus allocation-free integer Basis, noise, source-filter,
   Innovation, transient, and channel-mix primitives behind the stable C ABI;
+- prospective `MFT1`, the first allocation-free typed MAF execution path for
+  long-lived source-filter, stochastic, transient, and mix records, with exact
+  lifetime splitting and callback-partition-invariant PCM;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;

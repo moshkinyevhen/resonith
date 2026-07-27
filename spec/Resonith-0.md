@@ -1296,6 +1296,96 @@ MUST NOT define Truth, bypass exact decoder-in-loop RDO, become a bitstream
 dependency, or prevent fully offline encode/decode. Provider identity and API
 syntax are implementation details and are not part of this specification.
 
+Provider timestamps SHALL be treated as centers of bounded local search
+windows, never as normative boundaries. The encoder SHALL inspect original
+PCM around each proposed change, generate exact source-sample candidates, add
+strong locally detected candidates that the provider missed, and evaluate the
+candidate neighborhood together with the no-boundary alternative through the
+actual integer decoder. Starts, stops, and transients require final
+sample-domain envelope or onset refinement after coarse time-frequency
+localization. A boundary is serialized only when complete decoder-in-loop RDO
+repays its record, reset, checkpoint, and residual consequences.
+
+### 14.5 Prospective typed MAF lifetime stream
+
+`MFT1` schema 1 is the prospective allocation-free executable syntax for the
+source-filter, stochastic, transient, and mix portions of the MAF ISA. It is
+not yet a frozen Main bitstream requirement. All integers are little-endian.
+Every lifetime is half-open in absolute PCM sample frames.
+
+The fixed 64-byte header is:
+
+| Offset | Type | Meaning |
+|---:|---|---|
+| 0 | `char[4]` | `MFT1` |
+| 4 | `u8` | schema version, `1` |
+| 5 | `u8` | flags, zero |
+| 6 | `u16` | header bytes, `64` |
+| 8 | `u32` | sample rate |
+| 12 | `u32` | total sample frames |
+| 16 | `u32` | maximum render quantum |
+| 20 | `u16` | output channels |
+| 22 | `u16` | emitter count |
+| 24 | `u16` | filter record count |
+| 26 | `u16` | stochastic record count |
+| 28 | `u16` | source-filter lifetime count |
+| 30 | `u16` | transient record count |
+| 32 | `u16` | mix lifetime count |
+| 34 | `u16` | total record count |
+| 36 | `u64` | counter-field stream seed |
+| 44 | `u32` | declared maximum integer operations per frame |
+| 48 | `u32` | record payload bytes |
+| 52 | `u32` | exact logical persistent bytes |
+| 56 | `u32` | exact logical scratch bytes |
+| 60 | `u32` | reserved, zero |
+
+The header is followed by canonical records and one CRC-32 over the header and
+all record bytes. Each record begins with `type:u8`, `version:u8`,
+`flags:u16`, and `payload_bytes:u32`. Version is one and flags are zero.
+Records are ordered by type and use consecutive identifiers from zero:
+
+1. `FILTER`: identifier, order, reserved zero, then signed Q1.15 reflection
+   coefficients. The decoder converts them to a stable prepared filter before
+   playback.
+2. `STOCHASTIC`: field identifier, direct emitter identifier or `0xffff`,
+   start, end, signed Q1.15 gain, and reserved zero. `0xffff` creates a field
+   used only as source-filter excitation.
+3. `SOURCE_FILTER`: lifetime identifier, emitter, filter, excitation family,
+   flags, field reference or `0xffff`, reserved zero, start, end, excitation
+   gain, phase origin, and phase increment. Schema 1 permits exactly one of a
+   phase-continuous impulse excitation or a referenced counter-addressed
+   stochastic field.
+4. `TRANSIENT`: identifier, emitter, onset, bounded sample count, reserved
+   zero, signed Q1.15 gain, and the immutable PCM16 transient shape.
+5. `MIX`: identifier, source count, start, end, output channels, reserved
+   zero, canonical emitter identifiers, then an output-major signed Q1.15
+   matrix. Schema 1 lists every declared emitter in canonical order.
+
+Source-filter lifetimes on one emitter SHALL NOT overlap. A directly rendered
+stochastic emitter and a source-filter emitter SHALL NOT share an emitter in
+schema 1. A referenced stochastic lifetime SHALL cover its complete consumer
+lifetime. Mix lifetimes SHALL be contiguous and cover the complete stream.
+Transient support SHALL lie within the complete stream.
+
+Inspection SHALL verify the checksum, exact total size, canonical order,
+identifier uniqueness, every reference and lifetime, filter stability,
+declared persistent and scratch memory, output dimensions, and Main profile
+limits. Open SHALL prepare filters and clear caller-owned history before the
+session becomes visible. Render SHALL preflight every internal lifetime slice
+crossed by one public call before the first state or PCM write.
+
+The sequential result SHALL be invariant under all caller callback
+partitions up to the declared quantum. A source history resets exactly at its
+lifetime start; render-block boundaries do not reset or mutate it. Counter
+fields depend only on the stream seed, field identifier, channel identifier,
+and absolute sample index. End of stream is reported as a successful render
+with zero frames.
+
+`MFT1` does not remove deterministic Truth Innovation. The official encoder
+SHALL retain the preceding complete Truth candidate whenever the typed MAF
+candidate fails complete-byte decoder-in-loop RDO or any reconstruction,
+resource, robustness, or listening gate.
+
 ## 15. Security
 
 Decoder MUST:

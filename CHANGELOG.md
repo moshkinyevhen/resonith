@@ -11,6 +11,20 @@ version.
 
 ### Research
 
+- Added R-130 prospective `MFT1`, the first executable typed MAF lifetime
+  stream for stable source filters, counter-addressed stochastic fields,
+  phase-continuous impulse or stochastic excitation, bounded transients, and
+  persistent output mixes. The allocation-free C++23 decoder validates CRC,
+  canonical records, references, lifetimes, stable filters, exact memory, and
+  operation budgets before playback. Clang 22, GCC 16.1, Android NDK r29,
+  C99-ABI, callback-partition, transactional-failure, and 20,003-input
+  adversarial smoke gates pass. This is a decoder/syntax milestone only:
+  complete R-118 encoder evidence remains pending, so no compression or
+  quality improvement is claimed.
+- Strengthened R-129 boundary handling: cloud timestamps are search-window
+  centers only. Local original-PCM analysis produces exact sample candidates,
+  and exact decoder-in-loop RDO must test their neighborhood together with the
+  no-boundary alternative before any timestamp can enter a stream.
 - Replaced magnitude-based Q15 rounding with the R-127 signed
   quotient/remainder rule after Windows ARM64 exposed positive saturation for
   negative transient samples. The rule retains exact ties-away-from-zero and

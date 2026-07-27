@@ -8,6 +8,7 @@
 #include "resonith/lapped_finite.h"
 #include "resonith/lapped_packet.h"
 #include "resonith/maf.h"
+#include "resonith/maf_typed.h"
 #include "resonith/multichannel.h"
 #include "resonith/seek.h"
 #include "resonith/stream.h"
@@ -50,6 +51,7 @@ int main(void) {
     resonith_lapped_packet_session packet_session = {0};
     resonith_maf_limits maf_limits = {0};
     resonith_maf_requirements maf_requirements = {0};
+    resonith_maf_typed_requirements maf_typed_requirements = {0};
     resonith_cibs_info cibs_info = {0U, 0U, 0U, 0U};
     resonith_cibs_registry cibs_registry = {NULL, 0U};
     resonith_cibs_basis_info cibs_basis_info = {
@@ -92,6 +94,15 @@ int main(void) {
             &maf_limits,
             NULL,
             &maf_requirements
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
+    if (
+        resonith_maf_typed_inspect(
+            NULL,
+            0U,
+            &maf_typed_requirements
         ) != RESONITH_STATUS_INVALID_ARGUMENT
     ) {
         return 1;

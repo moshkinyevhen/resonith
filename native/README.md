@@ -349,3 +349,9 @@ Python decoder to produce identical frames.
 This is not yet the full Resonith decoder. Promoted transient rendering,
 gated source-specific models, and spatial/object synthesis remain subsequent
 parity stages.
+The prospective `MFT1` path in `resonith/maf_typed.h` executes explicit
+source-filter, stochastic, transient, and mix lifetimes through the bounded
+integer MAF primitives. Inspection verifies the complete hostile stream before
+open; playback uses caller-owned coefficients, histories, planar sources, and
+working buffers. `maf_typed_conformance` proves callback-partition invariance
+and transactional failure for insufficient operation declarations.
