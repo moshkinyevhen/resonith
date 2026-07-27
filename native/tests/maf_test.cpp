@@ -367,7 +367,7 @@ bool test_innovation_transient_and_mix() {
     if (!transient_ok) {
         std::fprintf(
             stderr,
-            "transient status=%d budget=%llu pcm="
+            "FAIL: bounded transient injection status=%d budget=%llu pcm="
             "%d,%d,%d,%d,%d,%d,%d,%d\n",
             static_cast<int>(transient_status),
             static_cast<unsigned long long>(transient_budget.remaining),
@@ -380,8 +380,6 @@ bool test_innovation_transient_and_mix() {
             static_cast<int>(transient_output[6]),
             static_cast<int>(transient_output[7])
         );
-    }
-    if (!expect(transient_ok, "bounded transient injection")) {
         return false;
     }
 
