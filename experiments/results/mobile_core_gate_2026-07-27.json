@@ -26,14 +26,38 @@
     }
   },
   "ios": {
-    "status": "pending first macOS/Xcode CI run",
+    "status": "passed GitHub macOS/Xcode CI",
     "deployment_target": "15.0",
     "device_architecture": "arm64",
-    "simulator_architecture": "x86_64"
+    "simulator_architecture": "x86_64",
+    "xcode": "26.4.1"
+  },
+  "github_ci": {
+    "status": "passed",
+    "run_id": 30236232478,
+    "commit": "cc917c41e4d848c4c18e847fb5ddc0f448da70d4",
+    "artifact_archives": {
+      "android-arm64": {
+        "bytes": 969149,
+        "sha256": "ba815c6f3a24c7716c4c7db60fc1c0c5b811e12bb07bbf3e741f3cf7838ed596"
+      },
+      "android-x86_64": {
+        "bytes": 951841,
+        "sha256": "391e36fca5645a080545323ba69d89c74fc3430447c96fd3b1b81e4075907f82"
+      },
+      "ios-device-arm64": {
+        "bytes": 67804,
+        "sha256": "53486594eaa627f4aabf17b589230cc79d82ad50e647f60519eca889fffda618"
+      },
+      "ios-simulator-x86_64": {
+        "bytes": 66887,
+        "sha256": "0cd5f3011ba9d9c650e5bc465a0d17bc1a1e0552111839294146c9d2c9d46b11"
+      }
+    }
   },
   "windows_regression": {
     "native_tests_passed": 10,
     "native_tests_total": 10
   },
-  "status": "android passed; iOS pending CI"
+  "status": "passed"
 }

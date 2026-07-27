@@ -1,7 +1,7 @@
 # R-116 Mobile Core Gate
 
 Date: **2026-07-27**
-Status: **ANDROID PASSED; IOS CI PENDING**
+Status: **PASSED**
 
 ## Scope
 
@@ -40,9 +40,12 @@ Dynamic dependency inspection found Android system `libm`, `libdl`, and
 The unchanged Windows C++23 build also passed 10 of 10 native tests after the
 mobile CMake changes.
 
-## iOS gate
+## GitHub four-target gate
 
-The checked-in presets request:
+GitHub Actions run
+[`30236232478`](https://github.com/moshkinyevhen/resonith/actions/runs/30236232478)
+passed from commit `cc917c41e4d848c4c18e847fb5ddc0f448da70d4`.
+The checked-in presets exercised:
 
 - stable Xcode 26.4.1 on a `macos-26` runner;
 - device ARM64 with `iphoneos`;
@@ -50,9 +53,20 @@ The checked-in presets request:
 - iOS 15 deployment target;
 - static Core only, with code signing disabled for the library compile gate.
 
-Windows cannot execute this gate because it has no Apple SDK or linker. The
-first GitHub macOS run remains pending at this commit and must update this
-report with artifact hashes before the R-116 gate is considered complete.
+Both Android jobs and both iOS jobs passed. The GitHub artifact service
+reported the following immutable archive evidence:
+
+| Target | Archive bytes | Archive SHA-256 |
+|---|---:|---|
+| Android ARM64 | 969,149 | `ba815c6f3a24c7716c4c7db60fc1c0c5b811e12bb07bbf3e741f3cf7838ed596` |
+| Android x86-64 | 951,841 | `391e36fca5645a080545323ba69d89c74fc3430447c96fd3b1b81e4075907f82` |
+| iOS device ARM64 | 67,804 | `53486594eaa627f4aabf17b589230cc79d82ad50e647f60519eca889fffda618` |
+| iOS simulator x86-64 | 66,887 | `0cd5f3011ba9d9c650e5bc465a0d17bc1a1e0552111839294146c9d2c9d46b11` |
+
+These hashes identify GitHub's ZIP artifacts, not the enclosed libraries.
+The workflow separately verifies that every enclosed library is non-empty,
+that Xcode reports the requested iOS architecture, and that Android shared
+libraries do not depend on `libc++_shared.so`.
 
 ## Machine result
 
