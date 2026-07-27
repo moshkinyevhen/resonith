@@ -90,6 +90,61 @@ class PvqEnvelopeOracleTests(unittest.TestCase):
                 maximum_pulses_per_frame=0,
             )
 
+    def test_persistent_coarse_gain_is_explicit_and_deterministic(self) -> None:
+        sample_rate = 16000
+        frame = np.arange(8192, dtype=np.float64)
+        envelope = np.where((frame // 512) % 3 == 1, 0.0, 1.0)
+        signal = envelope * (
+            10000.0 * np.sin(2.0 * np.pi * 211.0 * frame / sample_rate)
+        )
+        source = np.rint(signal).astype(np.int16)[:, None]
+        analysis = analyze_lapped_source(
+            source,
+            sample_rate,
+            half_window=64,
+            band_count=8,
+        )
+        legacy = encode_pvq_envelope_analysis(
+            analysis,
+            maximum_pulses_per_frame=12,
+        )
+        explicit_legacy = encode_pvq_envelope_analysis(
+            analysis,
+            maximum_pulses_per_frame=12,
+            gain_fraction_bits=8,
+            persistent_gain_memory=False,
+        )
+        compact = encode_pvq_envelope_analysis(
+            analysis,
+            maximum_pulses_per_frame=12,
+            gain_fraction_bits=4,
+            persistent_gain_memory=True,
+        )
+        repeated = encode_pvq_envelope_analysis(
+            analysis,
+            maximum_pulses_per_frame=12,
+            gain_fraction_bits=4,
+            persistent_gain_memory=True,
+        )
+        decoded = decode_pvq_envelope_stream(compact.payload)
+
+        self.assertEqual(legacy.payload, explicit_legacy.payload)
+        self.assertEqual(compact.payload, repeated.payload)
+        self.assertEqual(compact.report["stream_version"], 2)
+        self.assertEqual(compact.report["gain_fraction_bits"], 4)
+        self.assertTrue(compact.report["persistent_gain_memory"])
+        np.testing.assert_array_equal(compact.reconstruction, decoded.samples)
+        self.assertLess(
+            compact.report["gain_bits"],
+            legacy.report["gain_bits"],
+        )
+        with self.assertRaises(ValueError):
+            encode_pvq_envelope_analysis(
+                analysis,
+                maximum_pulses_per_frame=12,
+                gain_fraction_bits=9,
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

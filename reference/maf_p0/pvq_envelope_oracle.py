@@ -25,11 +25,15 @@ from .stream_sections import StreamConfig, pack_conf, unpack_conf
 
 MAGIC = b"PVE1"
 VERSION = 1
+PERSISTENT_GAIN_VERSION = 2
 HEADER = struct.Struct("<4sBBHIIHHIHI")
 MAX_PAYLOAD_BYTES = 512 << 20
 MAX_PULSES_PER_BAND = 255
 MAX_LOG_GAIN_Q8 = 256 * 47 + 255 + 1
 LOG_GAIN_FRACTION_BITS = 8
+FLAG_PERSISTENT_GAIN = 0x01
+FLAG_GAIN_FRACTION_SHIFT = 1
+FLAG_GAIN_FRACTION_MASK = 0x1E
 LOG2_FRACTION_MULTIPLIERS_Q31 = (
     3037000500,
     2553802834,
@@ -292,6 +296,38 @@ def _quantize_log_gain(gain: int) -> int:
     )
 
 
+def _maximum_gain_code(fraction_bits: int) -> int:
+    """Bound the compact code that expands into the frozen Q8 log grid."""
+
+    if not 0 <= fraction_bits <= LOG_GAIN_FRACTION_BITS:
+        raise ValueError("PVE1 gain precision exceeds the profile")
+    step = 1 << (LOG_GAIN_FRACTION_BITS - fraction_bits)
+    return 1 + (MAX_LOG_GAIN_Q8 - 1) // step
+
+
+def _quantize_gain_code(gain: int, fraction_bits: int) -> int:
+    """Quantize one gain to an explicitly signalled coarse log2 grid."""
+
+    qlog = _quantize_log_gain(gain)
+    if qlog == 0:
+        return 0
+    step = 1 << (LOG_GAIN_FRACTION_BITS - fraction_bits)
+    coarse = ((qlog - 1) + step // 2) // step
+    coarse = min(coarse, _maximum_gain_code(fraction_bits) - 1)
+    return coarse + 1
+
+
+def _gain_code_to_qlog(code: int, fraction_bits: int) -> int:
+    """Expand a bounded coarse code to the normative frozen Q8 grid."""
+
+    if code == 0:
+        return 0
+    if not 1 <= code <= _maximum_gain_code(fraction_bits):
+        raise ValueError("PVE1 compact gain code exceeds the profile")
+    step = 1 << (LOG_GAIN_FRACTION_BITS - fraction_bits)
+    return 1 + (code - 1) * step
+
+
 def _round_divide_signed(numerator: int, denominator: int) -> int:
     if denominator <= 0:
         raise ValueError("signed division requires a positive denominator")
@@ -461,6 +497,8 @@ def encode_pvq_envelope_analysis(
     *,
     maximum_pulses_per_frame: int,
     minimum_active_power_ratio_q20: int = 10,
+    gain_fraction_bits: int = LOG_GAIN_FRACTION_BITS,
+    persistent_gain_memory: bool = False,
 ) -> PvqEnvelopeEncodeResult:
     """Serialize and independently decode one complete prospective PVE1."""
 
@@ -470,6 +508,19 @@ def encode_pvq_envelope_analysis(
         raise ValueError("PVE1 pulse budget exceeds the transform window")
     if not 0 <= minimum_active_power_ratio_q20 <= (1 << 20):
         raise ValueError("PVE1 active-power ratio exceeds Q20")
+    if not 0 <= gain_fraction_bits <= LOG_GAIN_FRACTION_BITS:
+        raise ValueError("PVE1 gain precision exceeds the profile")
+    extended_gain = (
+        persistent_gain_memory
+        or gain_fraction_bits != LOG_GAIN_FRACTION_BITS
+    )
+    stream_version = PERSISTENT_GAIN_VERSION if extended_gain else VERSION
+    flags = (
+        (FLAG_PERSISTENT_GAIN if persistent_gain_memory else 0)
+        | (gain_fraction_bits << FLAG_GAIN_FRACTION_SHIFT)
+        if extended_gain
+        else 0
+    )
     edges = _band_edges(analysis.half_window, analysis.band_count)
     writer = _BitWriter()
     count_bits = 0
@@ -477,7 +528,7 @@ def encode_pvq_envelope_analysis(
     shape_bits = 0
     active_band_count = 0
 
-    previous_qlog = np.zeros(
+    previous_gain_code = np.zeros(
         (analysis.samples.shape[1], analysis.band_count),
         dtype=np.int16,
     )
@@ -495,7 +546,10 @@ def encode_pvq_envelope_analysis(
                 maximum_pulses_per_frame,
                 minimum_active_power_ratio_q20,
             )
-            current_qlog = np.zeros(analysis.band_count, dtype=np.int16)
+            current_gain_code = np.zeros(
+                analysis.band_count,
+                dtype=np.int16,
+            )
             for band, (start, end) in enumerate(
                 zip(edges[:-1], edges[1:], strict=True)
             ):
@@ -509,17 +563,26 @@ def encode_pvq_envelope_analysis(
                 target = row[start:end]
                 shape = _pulse_shape(target, pulses)
                 gain = _projected_gain(target, shape)
-                qlog = _quantize_log_gain(gain)
-                predictor = _predict_log_gain(
-                    previous_qlog[channel],
-                    current_qlog,
-                    frame,
-                    band,
+                gain_code = _quantize_gain_code(
+                    gain,
+                    gain_fraction_bits,
+                )
+                predictor = (
+                    int(previous_gain_code[channel, band])
+                    if persistent_gain_memory
+                    else _predict_log_gain(
+                        previous_gain_code[channel],
+                        current_gain_code,
+                        frame,
+                        band,
+                    )
                 )
                 before = writer.bit_count
-                writer.write_signed_exp_golomb(qlog - predictor)
+                writer.write_signed_exp_golomb(gain_code - predictor)
                 gain_bits += writer.bit_count - before
-                current_qlog[band] = qlog
+                current_gain_code[band] = gain_code
+                if persistent_gain_memory:
+                    previous_gain_code[channel, band] = gain_code
 
                 rank, actual_pulses = _rank_pvq(shape)
                 if actual_pulses != pulses:
@@ -529,7 +592,8 @@ def encode_pvq_envelope_analysis(
                 before = writer.bit_count
                 writer.write_bits(rank, width)
                 shape_bits += writer.bit_count - before
-            previous_qlog[channel] = current_qlog
+            if not persistent_gain_memory:
+                previous_gain_code[channel] = current_gain_code
 
     bit_count = writer.bit_count
     bit_payload = writer.finish()
@@ -538,8 +602,8 @@ def encode_pvq_envelope_analysis(
     body = (
         HEADER.pack(
             MAGIC,
-            VERSION,
-            0,
+            stream_version,
+            flags,
             analysis.samples.shape[1],
             analysis.sample_rate,
             analysis.samples.shape[0],
@@ -578,6 +642,7 @@ def encode_pvq_envelope_analysis(
         **quality,
         "status": "R-108 prospective integer PVQ; non-normative",
         "format_profile": "prospective-PVE1-RSC1-level-5",
+        "stream_version": stream_version,
         "stream_bytes": len(payload),
         "stream_sha256": hashlib.sha256(payload).hexdigest(),
         "sample_rate": analysis.sample_rate,
@@ -587,6 +652,8 @@ def encode_pvq_envelope_analysis(
         "half_window": analysis.half_window,
         "band_count": analysis.band_count,
         "maximum_pulses_per_frame": maximum_pulses_per_frame,
+        "gain_fraction_bits": gain_fraction_bits,
+        "persistent_gain_memory": persistent_gain_memory,
         "minimum_active_power_ratio_q20": (
             minimum_active_power_ratio_q20
         ),
@@ -647,7 +714,21 @@ def decode_pvq_envelope_stream(payload: bytes) -> PvqEnvelopeDecodeResult:
         maximum_pulses_per_frame,
         bit_count,
     ) = HEADER.unpack_from(body)
-    if magic != MAGIC or version != VERSION or flags != 0:
+    if magic != MAGIC:
+        raise ValueError("unsupported PVE1 stream")
+    if version == VERSION:
+        if flags != 0:
+            raise ValueError("unsupported PVE1 version-1 flags")
+        gain_fraction_bits = LOG_GAIN_FRACTION_BITS
+        persistent_gain_memory = False
+    elif version == PERSISTENT_GAIN_VERSION:
+        if flags & ~(FLAG_PERSISTENT_GAIN | FLAG_GAIN_FRACTION_MASK):
+            raise ValueError("unsupported PVE1 extended flags")
+        gain_fraction_bits = (
+            flags & FLAG_GAIN_FRACTION_MASK
+        ) >> FLAG_GAIN_FRACTION_SHIFT
+        persistent_gain_memory = bool(flags & FLAG_PERSISTENT_GAIN)
+    else:
         raise ValueError("unsupported PVE1 stream")
     if (
         not 1 <= channels <= MAX_CHANNELS
@@ -676,10 +757,10 @@ def decode_pvq_envelope_stream(payload: bytes) -> PvqEnvelopeDecodeResult:
         (channels, frame_count, band_count),
         dtype=np.uint8,
     )
-    previous_qlog = np.zeros((channels, band_count), dtype=np.int16)
+    previous_gain_code = np.zeros((channels, band_count), dtype=np.int16)
     for channel in range(channels):
         for frame in range(frame_count):
-            current_qlog = np.zeros(band_count, dtype=np.int16)
+            current_gain_code = np.zeros(band_count, dtype=np.int16)
             frame_pulses = 0
             for band, (start, end) in enumerate(
                 zip(edges[:-1], edges[1:], strict=True)
@@ -692,17 +773,24 @@ def decode_pvq_envelope_stream(payload: bytes) -> PvqEnvelopeDecodeResult:
                     raise ValueError("PVE1 frame pulse budget exceeded")
                 if pulses == 0:
                     continue
-                predictor = _predict_log_gain(
-                    previous_qlog[channel],
-                    current_qlog,
-                    frame,
-                    band,
+                predictor = (
+                    int(previous_gain_code[channel, band])
+                    if persistent_gain_memory
+                    else _predict_log_gain(
+                        previous_gain_code[channel],
+                        current_gain_code,
+                        frame,
+                        band,
+                    )
                 )
-                residual = reader.read_signed_exp_golomb(MAX_LOG_GAIN_Q8)
-                qlog = predictor + residual
-                if not 1 <= qlog <= MAX_LOG_GAIN_Q8:
+                maximum_gain_code = _maximum_gain_code(gain_fraction_bits)
+                residual = reader.read_signed_exp_golomb(maximum_gain_code)
+                gain_code = predictor + residual
+                if not 1 <= gain_code <= maximum_gain_code:
                     raise ValueError("PVE1 predicted gain exceeds the profile")
-                current_qlog[band] = qlog
+                current_gain_code[band] = gain_code
+                if persistent_gain_memory:
+                    previous_gain_code[channel, band] = gain_code
                 codebook = _pvq_codebook_size(end - start, pulses)
                 width = (codebook - 1).bit_length()
                 rank = reader.read_bits(width)
@@ -710,9 +798,16 @@ def decode_pvq_envelope_stream(payload: bytes) -> PvqEnvelopeDecodeResult:
                     raise ValueError("PVE1 PVQ index exceeds the codebook")
                 shape = _unrank_pvq(end - start, pulses, rank)
                 coefficient_grid[channel, frame, start:end] = (
-                    _materialize_band(shape, qlog)
+                    _materialize_band(
+                        shape,
+                        _gain_code_to_qlog(
+                            gain_code,
+                            gain_fraction_bits,
+                        ),
+                    )
                 )
-            previous_qlog[channel] = current_qlog
+            if not persistent_gain_memory:
+                previous_gain_code[channel] = current_gain_code
     reader.require_canonical_end()
     coefficient_grid.flags.writeable = False
     scale_grid.flags.writeable = False

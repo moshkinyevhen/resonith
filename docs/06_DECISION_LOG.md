@@ -3826,3 +3826,42 @@ new oscillator opcode.
     that a speech/piano/orchestra trio cannot represent;
   - requiring their union prevents either long-form evidence or breadth from
     being treated as optional in later development.
+
+## R-119 — Persistent coarse log-gain memory before adding band modes
+
+- Date: 2026-07-27
+- Status: **RESEARCH — ACTIVE FAST GATE**
+- Observation:
+  - the corrected PVE1 speech stream spends 72,359 of 146,729 logical bits
+    on gain residuals, more than its 55,700 PVQ shape bits;
+  - the current predictor resets an inactive band's gain to zero every frame
+    and transmits Q8 fractional log gain. Both choices contradict the MAF
+    principle that stable acoustic state should persist until changed;
+  - global PVE2 cannot repair this inefficiency because adding sparse Truth
+    after an overpriced base duplicates representation cost.
+- Decision:
+  - extend the research PVE envelope with explicit, bounded persistent
+    per-channel/per-band gain memory. A zero-pulse band emits no gain and does
+    not erase its remembered state;
+  - make log-gain fractional precision explicit in the stream and test Q3,
+    Q4, Q5, and Q8. The decoder expands the transmitted code through the
+    existing frozen integer Q31 log-gain materializer;
+  - preserve PVE1 version 1 byte-for-byte as the fallback. The new semantics
+    use an explicit research version and flags; they are never inferred from
+    content;
+  - test this isolated envelope change before implementing a band-mode map.
+    If it does not materially reduce complete bytes without unacceptable
+    quality loss, persistent gain memory remains an encoder model rather than
+    decoder syntax;
+  - only after the gain overhead is measured may R-108 compare one primary
+    PVQ or sparse-Truth representation per band. This prevents a mode-map
+    experiment from hiding a defective envelope coder.
+- Fast gate:
+  - serialize and independently decode the pinned speech, sustained-sine,
+    pink-noise, side-drum, and grand-piano representatives;
+  - report complete bytes, count/gain/shape bits, SNR, log-mel, STOI/ESTOI
+    where valid, deterministic hashes, malformed-stream rejection, and
+    version-1 regression identity;
+  - a candidate proceeds to band-local RDO only if gain bits fall materially
+    and at least one complete-stream Pareto point improves on PVE1. It does not
+    become a Resonith default without the full R-118 gate.
