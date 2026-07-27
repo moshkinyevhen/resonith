@@ -348,23 +348,40 @@ bool test_innovation_transient_and_mix() {
     const std::array<std::int16_t, 8> base{};
     std::array<std::int16_t, 8> transient_output{};
     resonith_maf_operation_budget transient_budget{100U};
-    if (!expect(
-            resonith_maf_transients_add(
-                base.data(),
-                0U,
-                base.size(),
-                &transient,
-                1U,
-                transient_output.data(),
-                transient_output.size(),
-                &transient_budget
-            ) == RESONITH_STATUS_OK
-                && transient_output[3] == 1000
-                && transient_output[4] == 2000
-                && transient_output[5] == -1000
-                && transient_output[6] == -500,
-            "bounded transient injection"
-        )) {
+    const resonith_status transient_status = resonith_maf_transients_add(
+        base.data(),
+        0U,
+        base.size(),
+        &transient,
+        1U,
+        transient_output.data(),
+        transient_output.size(),
+        &transient_budget
+    );
+    const bool transient_ok =
+        transient_status == RESONITH_STATUS_OK
+        && transient_output[3] == 1000
+        && transient_output[4] == 2000
+        && transient_output[5] == -1000
+        && transient_output[6] == -500;
+    if (!transient_ok) {
+        std::fprintf(
+            stderr,
+            "transient status=%d budget=%llu pcm="
+            "%d,%d,%d,%d,%d,%d,%d,%d\n",
+            static_cast<int>(transient_status),
+            static_cast<unsigned long long>(transient_budget.remaining),
+            static_cast<int>(transient_output[0]),
+            static_cast<int>(transient_output[1]),
+            static_cast<int>(transient_output[2]),
+            static_cast<int>(transient_output[3]),
+            static_cast<int>(transient_output[4]),
+            static_cast<int>(transient_output[5]),
+            static_cast<int>(transient_output[6]),
+            static_cast<int>(transient_output[7])
+        );
+    }
+    if (!expect(transient_ok, "bounded transient injection")) {
         return false;
     }
 
