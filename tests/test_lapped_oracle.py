@@ -206,6 +206,26 @@ class LappedOracleTests(unittest.TestCase):
         np.testing.assert_array_equal(decoded.samples, encoded.reconstruction)
         self.assertEqual(encoded.report["selection_backend"], "active-band")
 
+    def test_gain_shape_compiler_uses_existing_scale_value_syntax(self) -> None:
+        source = self._stereo(2048)
+        encoded = encode_lapped_stream(
+            source,
+            48000,
+            coefficients_per_frame=24,
+            half_window=128,
+            band_count=12,
+            density_backend="adaptive",
+            selection_backend="gain-shape",
+            frame_whitening=0.1,
+            band_whitening=0.25,
+        )
+        decoded = decode_lapped_stream(encoded.payload)
+
+        np.testing.assert_array_equal(decoded.samples, encoded.reconstruction)
+        self.assertEqual(encoded.report["selection_backend"], "gain-shape")
+        self.assertEqual(encoded.report["frame_whitening"], 0.1)
+        self.assertEqual(encoded.report["band_whitening"], 0.25)
+
     def test_corruption_and_bounds_are_rejected(self) -> None:
         source = self._stereo(1024)
         encoded = encode_lapped_stream(
@@ -235,6 +255,16 @@ class LappedOracleTests(unittest.TestCase):
                 half_window=128,
                 band_count=12,
                 selection_backend="unknown",
+            )
+        with self.assertRaisesRegex(ValueError, "whitening"):
+            encode_lapped_stream(
+                source,
+                48000,
+                coefficients_per_frame=16,
+                half_window=128,
+                band_count=12,
+                selection_backend="gain-shape",
+                band_whitening=1.1,
             )
 
 

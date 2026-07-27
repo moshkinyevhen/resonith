@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import lru_cache
 import hashlib
+import math
 import struct
 import zlib
 
@@ -194,6 +195,101 @@ def _fixed_band_preserving_selection(
         fill = np.argpartition(fill_scores, -remaining)[-remaining:]
         selected_mask[fill] = True
     return np.flatnonzero(selected_mask)
+
+
+def _gain_shape_score_grid(
+    scores: np.ndarray,
+    edges: tuple[int, ...],
+    *,
+    frame_whitening: float,
+    band_whitening: float,
+) -> np.ndarray:
+    """Build an encoder-only continuum from waveform to normalized shape RDO."""
+
+    if (
+        not math.isfinite(frame_whitening)
+        or not math.isfinite(band_whitening)
+        or not 0.0 <= frame_whitening <= 1.0
+        or not 0.0 <= band_whitening <= 1.0
+    ):
+        raise ValueError("gain-shape whitening must be finite and in [0, 1]")
+    weighted = np.array(scores, dtype=np.float64, copy=True)
+    positive = weighted[weighted > 0.0]
+    floor = (
+        max(float(np.median(positive)) * 1.0e-6, 1.0)
+        if positive.size
+        else 1.0
+    )
+    if frame_whitening:
+        frame_energy = np.sum(weighted, axis=2, keepdims=True)
+        weighted /= np.maximum(frame_energy, floor) ** frame_whitening
+    if band_whitening:
+        for start, end in zip(edges[:-1], edges[1:], strict=True):
+            mean_energy = np.mean(
+                scores[:, :, start:end],
+                axis=2,
+                keepdims=True,
+            )
+            weighted[:, :, start:end] /= (
+                np.maximum(mean_energy, floor) ** band_whitening
+            )
+    return weighted
+
+
+def _normalize_sparse_band_shapes(
+    scales: np.ndarray,
+    coefficients: np.ndarray,
+    quantized_grid: np.ndarray,
+    edges: tuple[int, ...],
+) -> tuple[np.ndarray, np.ndarray]:
+    """Preserve analyzed band energy through existing scale/value fields."""
+
+    selected_scales = np.array(scales, dtype=np.uint8, copy=True)
+    selected_coefficients = np.array(
+        coefficients,
+        dtype=np.int8,
+        copy=True,
+    )
+    channels, frame_count, _coefficient_count = coefficients.shape
+    for channel in range(channels):
+        for frame in range(frame_count):
+            for band, (start, end) in enumerate(
+                zip(edges[:-1], edges[1:], strict=True)
+            ):
+                local = selected_coefficients[
+                    channel,
+                    frame,
+                    start:end,
+                ]
+                positions = np.flatnonzero(local)
+                if positions.size == 0:
+                    continue
+                original = quantized_grid[
+                    channel,
+                    frame,
+                    start:end,
+                ].astype(np.int64)
+                chosen = local[positions].astype(np.int64)
+                target_energy = int(original @ original)
+                chosen_energy = int(chosen @ chosen)
+                if target_energy <= chosen_energy or chosen_energy <= 0:
+                    continue
+                gain = math.sqrt(target_energy / chosen_energy)
+                exponent_delta = max(0, int(math.ceil(math.log2(gain))))
+                exponent_delta = min(
+                    exponent_delta,
+                    31 - int(selected_scales[channel, frame, band]),
+                )
+                divisor = 1 << exponent_delta
+                adjusted = np.rint(
+                    chosen.astype(np.float64) * gain / divisor
+                )
+                adjusted = np.clip(adjusted, -127, 127).astype(np.int8)
+                local[positions] = adjusted
+                selected_scales[channel, frame, band] += exponent_delta
+    selected_scales.flags.writeable = False
+    selected_coefficients.flags.writeable = False
+    return selected_scales, selected_coefficients
 
 
 def _decompress_exact(compressed: bytes, expected_bytes: int) -> bytes:
@@ -601,6 +697,8 @@ def encode_lapped_analysis(
     entropy_backend: str = "bounded",
     density_backend: str = "fixed",
     selection_backend: str = "energy",
+    frame_whitening: float = 0.0,
+    band_whitening: float = 0.0,
     native_decoder=None,
 ) -> LappedEncodeResult:
     """Select, pack, and verify one stream from reusable source analysis."""
@@ -620,8 +718,18 @@ def encode_lapped_analysis(
     edges = _band_edges(half_window, band_count)
     if not 1 <= coefficients_per_frame <= half_window:
         raise ValueError("lapped coefficient budget exceeds the window")
-    if selection_backend not in {"energy", "active-band"}:
+    if selection_backend not in {"energy", "active-band", "gain-shape"}:
         raise ValueError("unknown lapped selection backend")
+    selection_scores = (
+        _gain_shape_score_grid(
+            score_grid,
+            edges,
+            frame_whitening=frame_whitening,
+            band_whitening=band_whitening,
+        )
+        if selection_backend == "gain-shape"
+        else score_grid
+    )
     coefficients = np.zeros(
         (source.shape[1], frame_count, half_window),
         dtype=np.int8,
@@ -643,10 +751,10 @@ def encode_lapped_analysis(
         )
         for channel in range(source.shape[1]):
             for frame in range(frame_count):
-                if selection_backend == "energy":
+                if selection_backend in {"energy", "gain-shape"}:
                     selected = np.sort(
                         np.argpartition(
-                            score_grid[channel, frame],
+                            selection_scores[channel, frame],
                             -coefficients_per_frame,
                         )[-coefficients_per_frame:]
                     )
@@ -678,11 +786,11 @@ def encode_lapped_analysis(
         flat_quantized = quantized_grid.reshape(-1)
         valid_indices = np.flatnonzero(flat_quantized)
         selected_total = min(total_budget, int(valid_indices.size))
-        if selection_backend == "energy":
+        if selection_backend in {"energy", "gain-shape"}:
             if selected_total == valid_indices.size:
                 selected_global = valid_indices
             else:
-                valid_scores = score_grid.reshape(-1)[valid_indices]
+                valid_scores = selection_scores.reshape(-1)[valid_indices]
                 selected_global = valid_indices[
                     np.argpartition(valid_scores, -selected_total)[
                         -selected_total:
@@ -757,12 +865,44 @@ def encode_lapped_analysis(
         selected_count_max = int(np.max(variable_counts))
     else:
         raise ValueError("unknown lapped density backend")
+    selected_scales = scales
+    if selection_backend == "gain-shape":
+        selected_scales, coefficients = _normalize_sparse_band_shapes(
+            scales,
+            coefficients,
+            quantized_grid,
+            edges,
+        )
+        if density_backend == "fixed":
+            for channel in range(source.shape[1]):
+                for frame in range(frame_count):
+                    selected_values_grid[channel, frame] = coefficients[
+                        channel,
+                        frame,
+                        selected_positions[channel, frame],
+                    ]
+        else:
+            value_parts = []
+            cursor = 0
+            for channel in range(source.shape[1]):
+                for frame in range(frame_count):
+                    count = int(variable_counts[channel, frame])
+                    end = cursor + count
+                    value_parts.append(
+                        coefficients[
+                            channel,
+                            frame,
+                            variable_positions[cursor:end],
+                        ].astype(np.int8)
+                    )
+                    cursor = end
+            variable_values = np.concatenate(value_parts)
     nonzero_count = int(np.count_nonzero(coefficients))
 
     raw = bytearray()
     for channel in range(source.shape[1]):
         for frame in range(frame_count):
-            raw += scales[channel, frame].tobytes()
+            raw += selected_scales[channel, frame].tobytes()
             raw += coefficients[channel, frame].tobytes()
     if entropy_backend == "zlib":
         entropy_id = ENTROPY_ZLIB
@@ -772,7 +912,7 @@ def encode_lapped_analysis(
         entropy_id = ENTROPY_BOUNDED_SPARSE
         if density_backend == "adaptive":
             entropy_payload = encode_variable_sparse_lapped(
-                scales,
+                selected_scales,
                 variable_counts,
                 variable_positions,
                 variable_values,
@@ -783,7 +923,7 @@ def encode_lapped_analysis(
             )
         else:
             entropy_payload = encode_sparse_lapped(
-                scales,
+                selected_scales,
                 selected_positions,
                 selected_values_grid,
                 half_window=half_window,
@@ -854,6 +994,8 @@ def encode_lapped_analysis(
         "reconstruction_backend": reconstruction_backend,
         "density_backend": density_backend,
         "selection_backend": selection_backend,
+        "frame_whitening": frame_whitening,
+        "band_whitening": band_whitening,
         "stream_bytes": len(payload),
         "stream_sha256": hashlib.sha256(payload).hexdigest(),
         "sample_rate": sample_rate,
@@ -879,7 +1021,7 @@ def encode_lapped_analysis(
         payload,
         reconstruction,
         report,
-        scales,
+        selected_scales,
         coefficients,
     )
 
@@ -1039,6 +1181,8 @@ def encode_lapped_stream(
     transform_backend: str = "fixed",
     density_backend: str = "fixed",
     selection_backend: str = "energy",
+    frame_whitening: float = 0.0,
+    band_whitening: float = 0.0,
     native_analyzer=None,
     native_decoder=None,
 ) -> LappedEncodeResult:
@@ -1058,5 +1202,7 @@ def encode_lapped_stream(
         entropy_backend=entropy_backend,
         density_backend=density_backend,
         selection_backend=selection_backend,
+        frame_whitening=frame_whitening,
+        band_whitening=band_whitening,
         native_decoder=native_decoder,
     )

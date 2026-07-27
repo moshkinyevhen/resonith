@@ -3228,7 +3228,7 @@ new oscillator opcode.
 ## R-107 — Perceptual gain–shape and envelope-preserving compiler
 
 - Date: 2026-07-27
-- Status: **RESEARCH — BREAKTHROUGH GATE IN PROGRESS**
+- Status: **RESEARCH — HETEROGENEOUS GATE FAILED; COMPLETE GATE IN PROGRESS**
 - Problem:
   - the current global selector minimizes absolute transform energy, producing
     high waveform SNR while starving quiet frames and bands that carry speech
@@ -3278,6 +3278,20 @@ new oscillator opcode.
   - native-decoder identity, all three R-102 references, current Opus decode,
     public listening triplets, blinded listening, changelog, and semantic
     version remain mandatory before this compiler becomes a released default.
+- R-111 result:
+  - the release C++20 Core completed energy and gain-shape encode/decode on all
+    16 heterogeneous 12-second clips, with actual Opus 1.6.1 Ogg files selected
+    by complete bytes;
+  - gain-shape emitted fewer bytes than the same-budget energy path on 15 of 16
+    clips, Resonith beat Opus waveform SNR on 12 of 16, and beat Opus log-mel
+    error on 6 of 16;
+  - sparse attacks, side drum, grand piano, and dense orchestra were strong
+    simultaneous wins, while sustained sine and pink noise lost both headline
+    diagnostics;
+  - male/female speech retained large waveform-SNR leads but did not beat Opus
+    STOI/ESTOI, confirming that the formant/envelope problem is structural;
+  - the universal R-107 gate therefore fails. Gain-shape remains a fallback
+    candidate and adds no syntax or released-default claim.
 
 ## R-108 — Compact integer PVQ with predictive log envelope
 
@@ -3292,6 +3306,11 @@ new oscillator opcode.
     serialized bytes before comparing quality;
   - retain R-107 and the ordinary LPF1 path as complete fallbacks. No syntax is
     promoted from an estimated-rate or encoder-reconstruction-only result.
+  - R-111 requires one band-local RDO competition among coherent integer PVQ,
+    transmitted-envelope counter-based stochastic detail, sparse transient
+    pulses, R-107 scalar gain-shape, and ordinary energy selection;
+  - these are bounded operands of one acoustic ISA and entropy layer, not
+    independently framed codecs. No class label is trusted by the decoder.
 - Gate:
   - first exceed R-107 at no more complete bytes on speech STOI, ESTOI, SNR,
     and log-mel RMSE;

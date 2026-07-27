@@ -995,6 +995,9 @@ def encode_lapped_finite_packet_stream(
     packet_frames: int,
     half_window: int = 512,
     band_count: int = 24,
+    selection_backend: str = "energy",
+    frame_whitening: float = 0.0,
+    band_whitening: float = 0.0,
     native_core=None,
 ) -> LappedPacketEncodeResult:
     """Packetize single-owner fields with independently reset LAF1 entropy."""
@@ -1032,6 +1035,9 @@ def encode_lapped_finite_packet_stream(
         coefficients_per_frame=coefficients_per_frame,
         entropy_backend="bounded",
         density_backend="adaptive",
+        selection_backend=selection_backend,
+        frame_whitening=frame_whitening,
+        band_whitening=band_whitening,
         native_decoder=native_core,
     )
     header = HEADER.pack(
@@ -1118,6 +1124,9 @@ def encode_lapped_finite_packet_stream(
         "band_count": band_count,
         "coefficients_per_frame": coefficients_per_frame,
         "density_backend": "adaptive-global",
+        "selection_backend": selection_backend,
+        "frame_whitening": frame_whitening,
+        "band_whitening": band_whitening,
         "entropy_backend": "bounded adaptive integer; reset per record",
         "verification_backend": verification_backend,
         "packet_frames": packet_frames,

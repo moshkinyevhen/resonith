@@ -19,6 +19,7 @@
 | [14_MAIN0_NATIVE_MUSIC.md](14_MAIN0_NATIVE_MUSIC.md) | First Golden-Core-gated music and listening diagnostic |
 | [15_CONTINUOUS_EVIDENCE.md](15_CONTINUOUS_EVIDENCE.md) | Per-milestone benchmark, publication, versioning, and player-coupled release gate |
 | [results/EXTENDED_AUDIO_CORPUS_2026-07-27.md](results/EXTENDED_AUDIO_CORPUS_2026-07-27.md) | R-111 heterogeneous corpus acquisition, coverage, and preparation evidence |
+| [results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md](results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md) | R-107 gain-shape results against Opus across all 16 R-111 classes |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
 
 Normative draft:

@@ -38,6 +38,10 @@ reproducible command and independent decode.
   lossless-FLAC-to-PCM16 preparation for the R-111 matrix.
 - `results/extended_audio_corpus_prepared_2026-07-27.json` — exact hashes and
   signal configurations of the first prepared 16-clip matrix.
+- `heterogeneous_gain_shape_gate.py` — R-107 energy/gain-shape/Opus
+  complete-byte comparison across all prepared R-111 classes.
+- `results/heterogeneous_gain_shape_2026-07-27.json` — complete machine report
+  and per-artifact identities for the first 16-class architecture gate.
 - `real_music_benchmark.py` — deterministic PCM downmix, LiftPack/zlib,
   fixed/adaptive/full-RDO, and Opus ablation.
 - `results/maf_p2_real_music_2026-07-26.json` — raw real-music phase report.

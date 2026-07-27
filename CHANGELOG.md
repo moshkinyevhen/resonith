@@ -19,6 +19,10 @@ version.
   EBU SQAM and Xiph sources. It adds male/female speech, solo voice, sustained
   tone, noise, resonance, electronic, transient, dense, stereo, and mixed-film
   gates; no codec improvement is claimed by corpus acquisition.
+- Measured R-107 on all 16 R-111 classes at nearly complete-byte-matched Opus
+  sizes. Resonith led waveform SNR on 12 classes and log-mel error on six, but
+  failed the universal gate on sustained tone, noise, speech envelope, and
+  several mixed classes. No decoder syntax or released default changed.
 - Closed R-103 after its active-band coefficient selector failed the speech
   fast gate. The negative machine report is published; no bitstream, decoder,
   or default-encoder behavior changed.
