@@ -76,6 +76,9 @@ The repository contains:
   cached integer vocal-tract Basis, causal source-filter order, and
   independently decoded adaptive/stochastic algebraic excitation; the first
   speech byte-checkpoint point failed Opus quality and remains rejected;
+- the R-122 portable bounded MAF DSP substrate: explicit stream-resource and
+  operation budgets plus allocation-free integer Basis, noise, source-filter,
+  Innovation, transient, and channel-mix primitives behind the stable C ABI;
 - acoustic change-point proposals guarded by complete-stream boundary RDO;
 - a reproducible external Opus anchor with full Ogg byte accounting and tool
   provenance;
@@ -83,8 +86,8 @@ The repository contains:
 - a pinned 16-class EBU SQAM/Xiph heterogeneous gate spanning speech, solo
   voice, sustained tones, noise, electronic, transient, dense, stereo, and
   film-mix material;
-- 194 Python reference/security/integration tests, including native
-  decoder-in-loop coverage, ten native conformance targets, native x64/ARM64
+- 195 Python reference/security/integration tests, including native
+  decoder-in-loop coverage, twelve native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1/LPF1/LAF1 mutation targets.
 

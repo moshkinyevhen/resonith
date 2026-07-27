@@ -367,3 +367,32 @@ The next source-filter experiment must jointly search a compact continuous
 pitch/phase trajectory, adaptive gain, and perceptually weighted multi-pulse
 Innovation. It must retain MFC1 and the admitted LPS5/LPS6 path as complete
 fallbacks and pass R-118 before any promotion.
+
+## 18. Bounded decoder substrate
+
+MAF is a small state machine over a fixed integer DSP, not a program shipped
+inside every track. Orkela, the SDK, or a future hardware decoder installs the
+operation set once. A stream supplies only bounded Basis data, references,
+trajectory and gain events, filter parameters, stochastic seeds, transients,
+Innovation, routing, and lifetime mutations.
+
+The portable CPU Core is the semantic reference. Its ordinary mono/stereo
+render loop is intentionally small enough for one desktop or mobile CPU thread.
+Optional GPU or fixed-function backends target large immersive source counts
+and convolution; they cannot change Truth output.
+
+Preparation and rendering are separate:
+
+- preparation verifies the container, hashes, operation identifiers, stable
+  filters, references, lifetime ordering, memory requirements, and total
+  operation budget, then materializes immutable CIBS Basis outside the callback;
+- rendering reads only prepared caller-owned state, absolute time, and a
+  bounded command view. It allocates nothing and performs no I/O, discovery,
+  logging, locking, or global mutation;
+- each output transaction is staged and committed only after every operation
+  and budget check succeeds.
+
+This substrate precedes Foundry intelligence. A local model, Gemini-like cloud
+service, handcrafted analyzer, or exhaustive GPU search may propose the same
+MAF states later, but none becomes a decoder dependency and none can bypass
+integer decoder-in-loop RDO.

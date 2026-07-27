@@ -100,6 +100,9 @@ class MafSourceFilterOracleTests(unittest.TestCase):
             excitation_backend="epvq",
             excitation_subframe_size=64,
             excitation_pulses=4,
+            excitation_basis_count=4,
+            excitation_basis_pulses=8,
+            excitation_basis_correction_pulses=2,
         )
         decoded_rate, decoded = decode_maf_source_filter_stream(
             encoded.payload
@@ -110,6 +113,10 @@ class MafSourceFilterOracleTests(unittest.TestCase):
         self.assertEqual(encoded.report["excitation_backend"], "epvq")
         self.assertGreater(
             encoded.report["maf_cell"]["pitch_update_count"],
+            0,
+        )
+        self.assertGreater(
+            encoded.report["maf_cell"]["basis_count"],
             0,
         )
 

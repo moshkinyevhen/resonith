@@ -86,9 +86,11 @@ Innovation and can make decomposition unprofitable.
 - Pareto search and distillation in Consumer/Studio router;
 - the same bitstream and decoder.
 
-## 5. Consumer practicality**TARGET:** the first encoder must be run on a regular PC without the required
-clouds. The main working set is tiled by source hypotheses, frequency bands
-and temporary sections; long-term bases are unloaded into RAM.
+## 5. Consumer practicality
+
+**TARGET:** the first encoder must be run on a regular PC without required
+cloud services. The main working set is tiled by source hypotheses, frequency
+bands and temporary sections; long-term bases are unloaded into RAM.
 
 Audio is significantly lighter in size than video. GPU is useful for neural analysis
 and batched RDO, but the Core prototype must have a CPU path. Productivity
@@ -132,3 +134,39 @@ Foundry saves not only the winner, but also the Pareto-set:
 
 The compact router learns to offer top-K. Exact RDO retains the latest
 word. The benefit is transferred to encoder/data, not to the private decoder.
+
+## 8. Optional AI semantic arbitration
+
+Cloud analysis is a routed proposal service, not an ensemble vote and not a
+codec dependency.
+
+1. A selected AI arbiter analyzes a bounded audio proxy or local feature
+   summary and returns timestamped source regions, capabilities required, and
+   confidence.
+2. A deterministic local policy gate removes tasks without explicit upload
+   permission and enforces provider, byte, cost, duration, and privacy limits.
+3. The capability router sends each region only to the best enabled
+   specialist.
+4. Provider results are normalized to timestamp/source IDs and added to the
+   local top-K candidate pool.
+5. The native analyzer measures the original PCM, and the exact decoder-in-loop
+   RDO either admits or rejects every resulting MAF representation.
+
+The initial provider roles are:
+
+| Adapter | Assigned work |
+|---|---|
+| OpenAI or Gemini | User-selectable global analyst and AI arbiter: source types, musical sections, motifs, causal structure, and top-K MAF hypotheses |
+| ElevenLabs | Speech regions, speaker identity and lifetime, word/phoneme timing, voiced/unvoiced proposals, and optional voice-isolation masks |
+| Azure | Long-form and domain speech, custom vocabulary, diarization, speaker roles, segmentation, and enterprise metadata |
+
+`OpenAI`, `Gemini`, and `Auto` are the global-analyst choices. `OpenAI` is the
+initial default. `Auto` selects by declared capability and policy; it MUST NOT
+send the same audio to both merely to compare answers. ElevenLabs and Azure
+remain independently enabled specialists.
+
+Every adapter starts disabled until credentials and per-provider data
+permission exist. Credentials remain in the operating-system credential store.
+The provider interface accepts structured, time-bounded proposals only; no
+provider output can define Truth, enter the decoder, or make offline encoding
+unavailable.

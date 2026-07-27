@@ -4009,3 +4009,164 @@ new oscillator opcode.
     The next source-filter gate requires a compact continuous pitch/phase
     trajectory and perceptually weighted closed-loop multi-pulse search, with
     MFC1/LPS6 retained as complete fallbacks.
+
+## R-121 — Cached excitation Basis before higher per-subframe pulse rate
+
+- Status: **RESEARCH**
+- Date: 2026-07-27
+- Decision:
+  - test the defining MAF lifetime claim directly: materialize a bounded bank
+    of immutable integer excitation shapes once, then encode each eligible
+    subframe as a Basis reference plus a quantized gain and optional local
+    correction;
+  - train or cluster the bank only in the encoder. The prospective decoder
+    receives explicit bounded integer Basis vectors and performs no semantic
+    classification, floating-point inference, or per-sample neural work;
+  - charge dictionary definition, references, gain events, corrections,
+    checkpoints, and container bytes to the complete stream ledger;
+  - make cached Basis, algebraic PVQ, stochastic, transient, zero/HOLD, and
+    Truth mutually exclusive primary excitation candidates under one
+    decoder-in-loop RDO decision. Do not stack a Basis stream over a complete
+    PVQ stream;
+  - retain EPV1, MFC1, LPS6, and the official complete-byte Opus anchor as
+    honest fallbacks. No cached-Basis syntax is promoted unless independent
+    decoding and the R-118 evidence gate show non-regression.
+- Evidence motivating the experiment:
+  - increasing the learned filter bank from 16 to 64 entries improved the
+    eight-pulse speech diagnostic from STOI 0.908976 and log-mel RMSE 1.190511
+    to STOI 0.920973 and log-mel RMSE 1.104564, but enlarged the complete
+    stream to 13,102 bytes;
+  - increasing algebraic excitation to 12 pulses reached 15,852 bytes,
+    STOI 0.942890, ESTOI 0.898446, and log-mel RMSE 0.984754. This remains
+    materially behind the 17,942-byte Opus anchor at STOI 0.993172,
+    ESTOI 0.988046, and log-mel RMSE 0.601168;
+  - a direct synthesis-weighted pulse search produced no candidate that beat
+    the ordinary target-domain candidate under a strict time and
+    log-spectral non-regression guard. The dead search is removed rather than
+    retained as unproductive complexity.
+- Kill condition:
+  - reject the cached excitation Basis as a Main-path mechanism if its
+    complete dictionary and reference cost does not improve the measured
+    rate-quality frontier against direct EPV1 on the affected classes;
+  - a one-item result remains a fast diagnostic and cannot authorize a
+    default, bitstream promotion, version, or general claim.
+
+## R-122 — Bounded MAF Decoder ISA before Foundry intelligence
+
+- Status: **NORMATIVE-DRAFT**
+- Date: 2026-07-27
+- Owner direction:
+  - finish the deterministic MAF execution substrate before expanding the
+    smart, neural, or GPU-assisted encoder;
+  - make ordinary desktop and mobile decode independent of a GPU, cloud
+    service, Python runtime, or per-sample neural model.
+- Decision:
+  - the portable C++23 Core exposes a fixed allocation-free integer DSP ISA.
+    The initial operation set is periodic/cached Basis render, sparse gain,
+    stable source/resonator filter, counter-addressed stochastic field,
+    bounded transient injection, quantized Innovation add, channel matrix mix,
+    and saturating output commit;
+  - a `.resonith` stream carries only validated operation identifiers,
+    immutable data, state mutations, references, and numeric parameters. It
+    never carries executable native code, bytecode loops, shaders, scripts, or
+    dynamically loaded decoder models;
+  - the parser resolves stream IDs to prepared caller-owned state before the
+    audio callback. The render path performs no allocation, file access,
+    network access, logging, locking, model discovery, or global mutation;
+  - every profile declares hard maxima for sample rate, output channels,
+    active emitters, Basis count/elements, trajectory and gain events, filter
+    order, stochastic fields, transients, PVQ/Innovation work, state bytes,
+    scratch bytes, and integer operations per rendered frame;
+  - preparation rejects a stream before PCM commit when a declaration,
+    reference, lifetime, stable-filter domain, arithmetic bound, workspace, or
+    operation budget exceeds the selected profile. Render consumes a
+    monotonically decreasing operation budget and fails transactionally;
+  - counter-based stochastic output is a pure function of stream seed, field
+    ID, channel, and absolute sample index. Callback size, thread scheduling,
+    CPU SIMD width, and seek order cannot change output;
+  - the ordinary mono/stereo decoder targets one CPU thread. Optional GPU
+    execution is permitted only for high-count immersive rendering,
+    convolution, or non-Truth enhancement and MUST match the integer CPU Core
+    for every Truth operation;
+  - CIBS runs only while materializing an immutable Basis outside the callback.
+    A materialized Basis is ordinary decoder memory; no neural work is
+    performed for each rendered sample.
+- Encoder boundary:
+  - cloud or local AI may propose sources, lifetimes, Basis, trajectories, and
+    top-K candidates only after this ISA is fixed enough to evaluate them;
+  - exact serialization, independent integer decode, complete-byte cost, and
+    distortion decide admission. Semantic confidence never overrides RDO;
+  - an external AI service is optional and replaceable. Offline encoding and
+    decoding MUST remain available without credentials or network access.
+- Promotion gate:
+  - publish C and C++ API conformance vectors for every operation and one
+    composed causal pipeline;
+  - pass malformed input, resource exhaustion, arithmetic edge, callback
+    partition, random access, and deterministic replay tests;
+  - pass Windows C++23 immediately and Android NDK/iOS compile gates before a
+    mobile compatibility claim;
+  - integrate stream syntax only after operation-level tests pass. The
+    existing Main-0/LPS6 decoder remains the complete fallback throughout.
+
+## R-123 — Default optional Foundry provider adapters
+
+- Status: **ACCEPTED**
+- Date: 2026-07-27
+- Decision:
+  - the future Foundry provider layer presents OpenAI, ElevenLabs, and Azure
+    as the three first-class adapters by default;
+  - OpenAI supplies general audio-semantic and structured hypothesis
+    proposals; ElevenLabs supplies speech, speaker, timing, and optional
+    isolation proposals; Azure supplies speech, custom-domain, diarization,
+    long-form segmentation, and structured-content proposals;
+  - Gemini, Anthropic, and local/open-weight providers remain supported by the
+    same capability interface but are not the initial default cloud trio;
+  - every cloud adapter is installed in the disabled state. It cannot upload
+    audio until the user supplies credentials and grants a per-provider data
+    permission;
+  - credentials live only in the operating-system credential store. They MUST
+    NOT enter a `.resonith` file, repository, project configuration, report,
+    command line, telemetry event, crash dump, or ordinary log;
+  - permissions distinguish metadata-only, speech upload, full-audio upload,
+    and private-audio-denied operation. Providers receive the minimum data
+    required for the selected task;
+  - provider output is an untrusted time-bounded proposal. It cannot define
+    Truth, bypass local decoder-in-loop RDO, become a decoding dependency, or
+    prevent fully offline encode/decode.
+- Order:
+  - implement the adapter interface only after the R-122 bounded MAF Decoder
+    ISA and its native stream integration gates are complete.
+
+## R-124 — AI semantic arbiter and selectable generalist
+
+- Status: **ACCEPTED**
+- Date: 2026-07-27
+- Decision:
+  - an optional AI semantic arbiter SHALL analyze a bounded representation of
+    the recording before specialist cloud calls and produce a timestamped
+    routing plan;
+  - the user MAY select OpenAI, Gemini, or automatic capability selection as
+    the global analyst and arbiter. OpenAI remains the initial default; this
+    supersedes R-123 only where it described Gemini as a non-default-class
+    integration;
+  - the arbiter assigns global structure, source-type, musical-section, motif,
+    and causal-hypothesis work to the selected OpenAI/Gemini adapter; speech,
+    speaker-lifetime, word/phoneme-timing, voiced/unvoiced, and isolation
+    proposals to ElevenLabs; and long-form, domain-vocabulary, diarization,
+    speaker-role, and enterprise-metadata work to Azure;
+  - one recording or segment MUST NOT be uploaded to multiple providers merely
+    to vote. The router sends only the minimum time span, channels, resolution,
+    and metadata required by the assigned capability;
+  - a deterministic local policy gate enforces user consent, private-audio
+    denial, task allowlists, byte/cost/time budgets, and provider availability
+    before executing the AI routing plan;
+  - the arbiter and every specialist are untrusted proposal generators. Their
+    timestamp/source IDs MAY seed local search, but only exact decoder-in-loop
+    MAF RDO can admit a representation;
+  - unavailable, rejected, contradictory, or malformed provider output falls
+    back to local analysis and cannot prevent offline encoding or decoding.
+- Boundary:
+  - provider names and APIs are non-normative encoder integrations, not
+    `.resonith` syntax or decoder dependencies;
+  - the arbiter SHOULD consume a local feature summary or the least revealing
+    bounded audio proxy that satisfies the selected provider capability.

@@ -26,6 +26,14 @@ The native Core:
   slices with callback-size-independent Q16 interpolation;
 - applies sparse absolute Q17.15 gain events and objective Innovation in one
   bounded saturating Truth-composition pass;
+- exposes the R-122 MAF DSP substrate through a stable C ABI: hard profile
+  resource preflight, monotonically decreasing operation budgets, periodic
+  Basis render, callback-invariant counter noise, stable all-pole source
+  filtering, quantized Innovation, bounded transient injection, and Q1.15
+  channel-matrix mixing;
+- validates every MAF operation before its first output write; ordinary render
+  calls allocate no memory and depend on no Python, GPU, network, model
+  discovery, logging, locking, or mutable global state;
 - decodes bounded LiftPack-1 and LiftPack-2 residuals, including Main-0 Q12
   LPC with an order-16 ceiling;
 - independently inspects and decodes the prospective fixed/bounded LPF1
@@ -257,7 +265,8 @@ cmake -S native -B build/fuzz \
   -DBUILD_TESTING=OFF \
   -DRESONITH_BUILD_FUZZERS=ON
 cmake --build build/fuzz \
-  --target resonith_liftpack_fuzz resonith_main0_fuzz resonith_seek_fuzz \
+  --target resonith_liftpack_fuzz resonith_main0_fuzz resonith_maf_fuzz \
+  resonith_seek_fuzz \
   resonith_lapped_fuzz resonith_lapped_packet_fuzz \
   resonith_lapped_compact_fuzz resonith_lapped_finite_fuzz
 python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
@@ -265,6 +274,7 @@ build/fuzz/resonith_liftpack_fuzz \
   artifacts/fuzz_corpus/liftpack -runs=5000
 build/fuzz/resonith_main0_fuzz \
   artifacts/fuzz_corpus/main0 -runs=5000
+build/fuzz/resonith_maf_fuzz -runs=5000
 build/fuzz/resonith_seek_fuzz \
   artifacts/fuzz_corpus/seek -runs=5000
 build/fuzz/resonith_lapped_fuzz \
@@ -284,6 +294,12 @@ adaptive-density LPF1, LPS1, LPS2, compact LPS4, and adaptive LAF1 seeds.
 Mutations therefore reach container, typed-section, seek, block, entropy,
 model-render, and inverse-DSP paths rather than stopping only at an outer
 checksum.
+
+Hosts without libFuzzer support still build and run
+`maf_adversarial_smoke`. It replays three edge corpora and 20,000
+deterministic pseudo-random MAF inputs through the same
+`LLVMFuzzerTestOneInput` entry point. This is a portable crash/regression
+gate, not a substitute for ASan/UBSan/libFuzzer CI.
 
 ## Conformance anchor
 

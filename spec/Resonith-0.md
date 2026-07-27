@@ -1215,6 +1215,80 @@ preceding stream whenever the new candidate fails its declared complete-byte,
 decoder, objective, perceptual, resource, or robustness gate. File-level
 fallback is not evidence that the new representation improved that file.
 
+### 14.3 Bounded MAF Decoder ISA
+
+The Main decoder SHALL expose a fixed deterministic integer operation set. Its
+semantic operations are:
+
+1. materialize or reference an immutable raw or CIBS Basis;
+2. render a periodic Basis under an absolute phase trajectory;
+3. apply a sparse piecewise gain law;
+4. render a counter-addressed stochastic field;
+5. inject a bounded onset-addressed transient;
+6. add quantized deterministic Innovation;
+7. apply a stable causal source or resonator filter;
+8. apply a bounded channel matrix and saturating output mix.
+
+Profiles MAY omit operations, reduce limits, or fuse operations without
+changing their integer result. A conforming Truth decoder MUST NOT substitute
+floating-point, generative, or implementation-dependent output for a declared
+integer operation.
+
+A stream contains data and operation parameters only. It MUST NOT contain
+native code, general bytecode, loops, recursion, shaders, scripts, dynamic
+library references, network locations, or an unbounded graph. CIBS model
+execution is permitted only during validated immutable Basis materialization
+before the Basis becomes visible to rendering.
+
+Before PCM commit, preparation MUST validate a profile resource declaration
+covering at least:
+
+- sample rate, duration, output channels, and render quantum;
+- active emitters and live state records;
+- Basis count and total Basis elements;
+- phase knots and gain events;
+- filter instances and maximum order;
+- stochastic fields and transient events;
+- Innovation/PVQ dimensions and pulses;
+- persistent state, scratch, and output memory;
+- maximum integer operations per output frame.
+
+The render callback MUST be allocation-free and MUST NOT perform file or
+network access, model discovery, logging, locking, or global mutation. It SHALL
+consume caller-owned prepared state and a monotonically decreasing operation
+budget. Exceeding a resource, arithmetic, reference, lifetime, stability, or
+operation bound MUST fail before committing output for the affected
+transaction.
+
+Stochastic output SHALL be a pure function of the normative stream seed,
+field identifier, channel identifier, and absolute sample index. Output from
+every Truth operation SHALL be invariant under callback partitioning, seek
+order, scheduling, SIMD width, and CPU architecture.
+
+The required desktop and mobile path is a portable C++23 CPU implementation.
+An implementation MAY use a GPU or dedicated hardware, but Truth output MUST
+equal the portable integer Core. GPU availability, a Python runtime, an AI
+service, and network credentials MUST NOT be decoding requirements.
+
+### 14.4 Optional encoder-side semantic arbitration
+
+An encoder MAY use an AI semantic arbiter to propose a timestamped capability
+routing plan before specialist analysis. The arbiter and specialists are
+non-normative, replaceable, and never visible to the decoder.
+
+Before any remote request, a deterministic local policy gate SHALL enforce
+explicit user permission, data-category restrictions, provider allowlists,
+and bounded byte, duration, cost, and time budgets. An encoder SHOULD send the
+least revealing bounded audio proxy, feature summary, time span, channel set,
+and metadata sufficient for the assigned capability. It SHOULD NOT upload the
+same PCM to multiple providers merely to vote.
+
+Remote output SHALL be treated as an untrusted, time-bounded candidate. It MAY
+seed source, section, motif, speaker, or representation hypotheses, but it
+MUST NOT define Truth, bypass exact decoder-in-loop RDO, become a bitstream
+dependency, or prevent fully offline encode/decode. Provider identity and API
+syntax are implementation details and are not part of this specification.
+
 ## 15. Security
 
 Decoder MUST:

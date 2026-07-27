@@ -4,6 +4,7 @@
 #include "resonith/composition.h"
 #include "resonith/container.h"
 #include "resonith/liftpack.h"
+#include "resonith/maf.h"
 #include "resonith/trajectory.h"
 
 #include <algorithm>
@@ -1070,14 +1071,18 @@ extern "C" resonith_status resonith_main0_decode_with_registry(
         if (status != RESONITH_STATUS_OK) {
             return status;
         }
-        status = resonith_periodic_render(
+        resonith_maf_operation_budget budget = {
+            static_cast<std::uint64_t>(atom.duration_samples) * 16U,
+        };
+        status = resonith_maf_periodic_render(
             workspace->basis,
             cached_basis_elements,
             &phase,
             0U,
             atom.duration_samples,
             workspace->unity_prediction,
-            workspace->unity_capacity
+            workspace->unity_capacity,
+            &budget
         );
         if (status != RESONITH_STATUS_OK) {
             return status;
@@ -1094,7 +1099,7 @@ extern "C" resonith_status resonith_main0_decode_with_registry(
         if (status != RESONITH_STATUS_OK) {
             return status;
         }
-        status = resonith_compose_truth(
+        status = resonith_maf_compose_truth(
             workspace->unity_prediction,
             workspace->innovation_q + output_cursor,
             parsed.stream_config.innovation_step,
@@ -1102,7 +1107,8 @@ extern "C" resonith_status resonith_main0_decode_with_registry(
             0U,
             atom.duration_samples,
             output + output_cursor,
-            output_capacity - output_cursor
+            output_capacity - output_cursor,
+            &budget
         );
         if (status != RESONITH_STATUS_OK) {
             return status;
@@ -1546,19 +1552,23 @@ extern "C" resonith_status resonith_main0_player_stream_complete_with_registry(
                     block_samples - block_cursor,
                     state.end_sample - absolute_sample
                 );
-                status = resonith_periodic_render(
+                resonith_maf_operation_budget budget = {
+                    static_cast<std::uint64_t>(segment_samples) * 16U,
+                };
+                status = resonith_maf_periodic_render(
                     workspace->basis,
                     state.basis_elements,
                     &state.phase,
                     local_sample,
                     segment_samples,
                     workspace->unity_prediction,
-                    workspace->unity_capacity
+                    workspace->unity_capacity,
+                    &budget
                 );
                 if (status != RESONITH_STATUS_OK) {
                     return status;
                 }
-                status = resonith_compose_truth(
+                status = resonith_maf_compose_truth(
                     workspace->unity_prediction,
                     workspace->innovation_q + block_cursor,
                     parsed.stream_config.innovation_step,
@@ -1566,7 +1576,8 @@ extern "C" resonith_status resonith_main0_player_stream_complete_with_registry(
                     local_sample,
                     segment_samples,
                     output + block_cursor,
-                    output_capacity - block_cursor
+                    output_capacity - block_cursor,
+                    &budget
                 );
                 if (status != RESONITH_STATUS_OK) {
                     return status;

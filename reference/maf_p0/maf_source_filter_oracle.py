@@ -53,11 +53,12 @@ MIN_PITCH_HZ = 60
 MAX_PITCH_HZ = 400
 MAX_RESIDUAL_BYTES = 512 << 20
 EXCITATION_MAGIC = b"EPV1"
-EXCITATION_VERSION = 2
-EXCITATION_HEADER = struct.Struct("<4sBHHIII")
+EXCITATION_VERSION = 3
+EXCITATION_HEADER = struct.Struct("<4sBHHIIIHHH")
 EXCITATION_GAIN_FRACTION_BITS = 4
 MAX_EXCITATION_SUBFRAME = 512
 MAX_EXCITATION_PULSES = 64
+MAX_EXCITATION_BASIS_COUNT = 256
 
 
 @dataclass(frozen=True)
@@ -1089,6 +1090,222 @@ def _search_adaptive_state(
     )[2:]
 
 
+def _canonical_excitation_vector(vector: np.ndarray) -> np.ndarray:
+    """Remove circular phase and polarity before encoder-side clustering."""
+
+    aligned = np.asarray(vector, dtype=np.float64).copy()
+    anchor = int(np.argmax(np.abs(aligned)))
+    aligned = np.roll(aligned, -anchor)
+    if aligned[0] < 0.0:
+        aligned *= -1.0
+    norm = float(np.linalg.norm(aligned))
+    if norm > 0.0:
+        aligned /= norm
+    return aligned
+
+
+def _canonical_excitation_shape(shape: np.ndarray) -> np.ndarray:
+    """Canonicalize one integer PVQ shape without changing its pulse count."""
+
+    canonical = np.asarray(shape, dtype=np.int64).copy()
+    anchor = int(np.argmax(np.abs(canonical)))
+    canonical = np.roll(canonical, -anchor)
+    if canonical[0] < 0:
+        canonical *= -1
+    return canonical
+
+
+def _learn_excitation_bases(
+    source: np.ndarray,
+    *,
+    subframe_size: int,
+    requested_count: int,
+    basis_pulses: int,
+    iterations: int,
+) -> tuple[np.ndarray, ...]:
+    """Cluster phase-invariant excitation shapes into an explicit Basis bank."""
+
+    if requested_count == 0:
+        return ()
+    vectors = []
+    energies = []
+    full_count = source.size // subframe_size
+    for index in range(full_count):
+        start = index * subframe_size
+        vector = source[start : start + subframe_size].astype(np.float64)
+        energy = float(vector @ vector)
+        if energy <= 0.0:
+            continue
+        vectors.append(_canonical_excitation_vector(vector))
+        energies.append(energy)
+    if not vectors:
+        return ()
+
+    matrix = np.stack(vectors)
+    basis_count = min(requested_count, matrix.shape[0])
+    first = int(np.argmax(np.asarray(energies, dtype=np.float64)))
+    selected = [first]
+    similarity = np.abs(matrix @ matrix[first])
+    while len(selected) < basis_count:
+        candidate = int(np.argmin(similarity))
+        if candidate in selected:
+            break
+        selected.append(candidate)
+        similarity = np.maximum(
+            similarity,
+            np.abs(matrix @ matrix[candidate]),
+        )
+    centroids = matrix[np.asarray(selected, dtype=np.int64)].copy()
+
+    for _ in range(iterations):
+        assignments = np.argmax(matrix @ centroids.T, axis=1)
+        updated = centroids.copy()
+        for index in range(centroids.shape[0]):
+            members = matrix[assignments == index]
+            if members.size:
+                updated[index] = _canonical_excitation_vector(
+                    np.mean(members, axis=0)
+                )
+        if np.allclose(updated, centroids, rtol=0.0, atol=1.0e-12):
+            break
+        centroids = updated
+
+    bases = []
+    seen = set()
+    for centroid in centroids:
+        shape = _canonical_excitation_shape(
+            _pulse_shape(
+                np.rint(centroid * 32767.0).astype(np.int64),
+                basis_pulses,
+            )
+        )
+        key = tuple(int(value) for value in shape)
+        if key in seen:
+            continue
+        seen.add(key)
+        shape.flags.writeable = False
+        bases.append(shape)
+    return tuple(bases)
+
+
+def _collect_closed_loop_excitation_targets(
+    analysis: MafSourceFilterAnalysis,
+    *,
+    subframe_size: int,
+    pulses: int,
+    adaptive_quality_guard_q12: int,
+) -> np.ndarray:
+    """Capture fixed-codebook targets from a direct-PVQ decoder history."""
+
+    targets = np.zeros(analysis.source.size, dtype=np.int64)
+    history = np.zeros(analysis.source.size, dtype=np.int64)
+    previous_lag = 0
+    previous_gain_q7 = 0
+    subframe_count = (
+        analysis.source.size + subframe_size - 1
+    ) // subframe_size
+    for subframe in range(subframe_count):
+        start = subframe * subframe_size
+        stop = min(analysis.source.size, start + subframe_size)
+        desired = _desired_short_excitation_target(analysis, start, stop)
+        lag, gain_q7, adaptive = _search_adaptive_state(
+            desired,
+            history,
+            start=start,
+            stop=stop,
+            sample_rate=analysis.sample_rate,
+            previous_lag=previous_lag,
+            previous_gain_q7=previous_gain_q7,
+            quality_guard_q12=adaptive_quality_guard_q12,
+        )
+        target = desired - adaptive
+        targets[start:stop] = target
+        active_pulses = min(pulses, target.size)
+        if np.any(target):
+            shape = _pulse_shape(target, active_pulses)
+            gain_code = _quantize_gain_code(
+                _projected_gain(target, shape),
+                EXCITATION_GAIN_FRACTION_BITS,
+            )
+            decoded = (
+                _materialize_band(
+                    shape,
+                    _gain_code_to_qlog(
+                        gain_code,
+                        EXCITATION_GAIN_FRACTION_BITS,
+                    ),
+                )
+                if gain_code
+                else np.zeros(target.size, dtype=np.int64)
+            )
+        else:
+            decoded = np.zeros(target.size, dtype=np.int64)
+        history[start:stop] = np.clip(
+            adaptive + decoded,
+            -32768,
+            32767,
+        )
+        previous_lag = lag
+        previous_gain_q7 = gain_q7
+    return targets
+
+
+def _excitation_basis_rotations(
+    bases: tuple[np.ndarray, ...],
+    dimension: int,
+) -> np.ndarray:
+    if not bases:
+        return np.empty((0, dimension), dtype=np.float64)
+    return np.concatenate(
+        [
+            np.stack(
+                [np.roll(basis, shift) for shift in range(dimension)]
+            )
+            for basis in bases
+        ],
+        axis=0,
+    ).astype(np.float64)
+
+
+def _excitation_basis_candidates(
+    target: np.ndarray,
+    rotations: np.ndarray,
+    *,
+    basis_count: int,
+    search_limit: int,
+) -> tuple[tuple[int, int, np.ndarray], ...]:
+    """Shortlist Basis ID, phase code, and direction by circular correlation."""
+
+    if basis_count == 0:
+        return ()
+    dimension = target.size
+    correlations = rotations @ target.astype(np.float64)
+    limit = min(search_limit, correlations.size)
+    if limit == correlations.size:
+        indices = np.argsort(-np.abs(correlations), kind="stable")
+    else:
+        partition = np.argpartition(-np.abs(correlations), limit - 1)[:limit]
+        indices = partition[
+            np.argsort(-np.abs(correlations[partition]), kind="stable")
+        ]
+
+    candidates = []
+    seen = set()
+    for flat_index in indices:
+        basis_id, shift = divmod(int(flat_index), dimension)
+        polarity = int(correlations[flat_index] < 0.0)
+        phase_code = 2 * shift + polarity
+        key = (basis_id, phase_code)
+        if key in seen:
+            continue
+        seen.add(key)
+        direction = rotations[flat_index].astype(np.int64)
+        if polarity:
+            direction *= -1
+        candidates.append((basis_id, phase_code, direction))
+    return tuple(candidates)
+
+
 def _encode_excitation_pvq(
     innovation: np.ndarray,
     *,
@@ -1099,6 +1316,11 @@ def _encode_excitation_pvq(
     stream_seed: int,
     source_filter_analysis: MafSourceFilterAnalysis | None = None,
     adaptive_quality_guard_q12: int = 4608,
+    basis_count: int = 0,
+    basis_pulses: int = 16,
+    basis_iterations: int = 4,
+    basis_search_limit: int = 8,
+    basis_correction_pulses: int = 0,
 ) -> _ExcitationResult:
     """Encode bounded adaptive/stochastic excitation without an MDCT layer."""
 
@@ -1106,6 +1328,16 @@ def _encode_excitation_pvq(
         raise ValueError("EPV1 subframe size exceeds the profile")
     if not 1 <= pulses <= MAX_EXCITATION_PULSES:
         raise ValueError("EPV1 pulse count exceeds the profile")
+    if not 0 <= basis_count <= MAX_EXCITATION_BASIS_COUNT:
+        raise ValueError("EPV1 excitation Basis count exceeds the profile")
+    if basis_count and not 1 <= basis_pulses <= MAX_EXCITATION_PULSES:
+        raise ValueError("EPV1 excitation Basis pulses exceed the profile")
+    if not 0 <= basis_correction_pulses <= MAX_EXCITATION_PULSES:
+        raise ValueError("EPV1 Basis correction exceeds the profile")
+    if not 1 <= basis_iterations <= 32:
+        raise ValueError("EPV1 excitation Basis iterations exceed the profile")
+    if not 1 <= basis_search_limit <= 64:
+        raise ValueError("EPV1 excitation Basis search exceeds the profile")
     if rate_lambda_q20 < 0:
         raise ValueError("EPV1 rate lambda must be nonnegative")
     if quality_guard_q12 is not None and not 4096 <= quality_guard_q12 <= 8192:
@@ -1114,14 +1346,57 @@ def _encode_excitation_pvq(
         raise ValueError("EPV1 adaptive quality guard exceeds the profile")
 
     source = np.asarray(innovation, dtype=np.int16)
+    basis_training_source = (
+        _collect_closed_loop_excitation_targets(
+            source_filter_analysis,
+            subframe_size=subframe_size,
+            pulses=pulses,
+            adaptive_quality_guard_q12=adaptive_quality_guard_q12,
+        )
+        if basis_count and source_filter_analysis is not None
+        else source
+    )
+    excitation_bases = _learn_excitation_bases(
+        basis_training_source,
+        subframe_size=subframe_size,
+        requested_count=basis_count,
+        basis_pulses=basis_pulses,
+        iterations=basis_iterations,
+    )
+    basis_rotations = _excitation_basis_rotations(
+        excitation_bases,
+        subframe_size,
+    )
+    basis_width = max(1, (len(excitation_bases) - 1).bit_length())
     writer = _BitWriter()
+    dictionary_width = 0
+    if excitation_bases:
+        dictionary_codebook = _pvq_codebook_size(
+            subframe_size,
+            basis_pulses,
+        )
+        dictionary_width = (dictionary_codebook - 1).bit_length()
+        for basis in excitation_bases:
+            rank, actual_pulses = _rank_pvq(basis)
+            if actual_pulses != basis_pulses:
+                raise RuntimeError("EPV1 Basis changed its pulse budget")
+            writer.write_bits(rank, dictionary_width)
     reconstruction = np.zeros(source.size, dtype=np.int16)
     decoded_excitation = np.zeros(source.size, dtype=np.int64)
     previous_gain = 0
     previous_pitch_lag = 0
     previous_pitch_gain_q7 = 0
+    previous_basis_id = -1
+    previous_basis_phase = 0
     pitch_updates = 0
-    mode_counts = {"PVQ": 0, "STOCHASTIC": 0, "ZERO": 0}
+    basis_updates = 0
+    basis_corrections = 0
+    mode_counts = {
+        "PVQ": 0,
+        "BASIS": 0,
+        "STOCHASTIC": 0,
+        "ZERO": 0,
+    }
     subframe_count = (source.size + subframe_size - 1) // subframe_size
     for subframe in range(subframe_count):
         start = subframe * subframe_size
@@ -1203,6 +1478,112 @@ def _encode_excitation_pvq(
                     )
                 )
 
+            if excitation_bases and dimension == subframe_size:
+                for basis_id, phase_code, direction in (
+                    _excitation_basis_candidates(
+                        target,
+                        basis_rotations,
+                        basis_count=len(excitation_bases),
+                        search_limit=basis_search_limit,
+                    )
+                ):
+                    gain_code = _quantize_gain_code(
+                        _projected_gain(target, direction),
+                        EXCITATION_GAIN_FRACTION_BITS,
+                    )
+                    if gain_code == 0:
+                        continue
+                    decoded = _materialize_band(
+                        direction,
+                        _gain_code_to_qlog(
+                            gain_code,
+                            EXCITATION_GAIN_FRACTION_BITS,
+                        ),
+                    )
+                    basis_changed = basis_id != previous_basis_id
+                    base_bits = (
+                        3
+                        + 1
+                        + (basis_width if basis_changed else 0)
+                        + _signed_exp_golomb_bits(
+                            phase_code - previous_basis_phase
+                        )
+                        + _signed_exp_golomb_bits(
+                            gain_code - previous_gain
+                        )
+                    )
+                    candidates.append(
+                        (
+                            _distortion_q20(target, decoded),
+                            base_bits + 1,
+                            "BASIS",
+                            decoded,
+                            (basis_id, phase_code, gain_code, 0, 0, 0),
+                        )
+                    )
+                    correction_pulses = min(
+                        basis_correction_pulses,
+                        dimension,
+                    )
+                    correction_target = target - decoded
+                    if correction_pulses and np.any(correction_target):
+                        correction_shape = _pulse_shape(
+                            correction_target,
+                            correction_pulses,
+                        )
+                        correction_gain = _quantize_gain_code(
+                            _projected_gain(
+                                correction_target,
+                                correction_shape,
+                            ),
+                            EXCITATION_GAIN_FRACTION_BITS,
+                        )
+                        if correction_gain:
+                            correction_rank, actual_pulses = _rank_pvq(
+                                correction_shape
+                            )
+                            if actual_pulses != correction_pulses:
+                                raise RuntimeError(
+                                    "EPV1 Basis correction changed its "
+                                    "pulse budget"
+                                )
+                            correction_codebook = _pvq_codebook_size(
+                                dimension,
+                                correction_pulses,
+                            )
+                            correction_width = (
+                                correction_codebook - 1
+                            ).bit_length()
+                            correction = _materialize_band(
+                                correction_shape,
+                                _gain_code_to_qlog(
+                                    correction_gain,
+                                    EXCITATION_GAIN_FRACTION_BITS,
+                                ),
+                            )
+                            corrected = decoded + correction
+                            candidates.append(
+                                (
+                                    _distortion_q20(target, corrected),
+                                    base_bits
+                                    + 1
+                                    + _unsigned_exp_golomb_bits(
+                                        correction_gain - 1
+                                    )
+                                    + correction_width,
+                                    "BASIS",
+                                    corrected,
+                                    (
+                                        basis_id,
+                                        phase_code,
+                                        gain_code,
+                                        correction_gain,
+                                        correction_rank,
+                                        correction_width,
+                                    ),
+                                )
+                            )
+
             for seed in range(8):
                 direction = _stochastic_direction(
                     dimension,
@@ -1242,7 +1623,7 @@ def _encode_excitation_pvq(
         candidates.append(
             (
                 _distortion_q20(target, zero),
-                2,
+                3,
                 "ZERO",
                 zero,
                 (),
@@ -1279,6 +1660,33 @@ def _encode_excitation_pvq(
             writer.write_signed_exp_golomb(gain_code - previous_gain)
             writer.write_bits(rank, width)
             previous_gain = gain_code
+        elif mode == "BASIS":
+            writer.write_bits(0b111, 3)
+            (
+                basis_id,
+                phase_code,
+                gain_code,
+                correction_gain,
+                correction_rank,
+                correction_width,
+            ) = fields
+            basis_changed = basis_id != previous_basis_id
+            writer.write_bit(int(basis_changed))
+            if basis_changed:
+                writer.write_bits(basis_id, basis_width)
+                previous_basis_id = basis_id
+                basis_updates += 1
+            writer.write_signed_exp_golomb(
+                phase_code - previous_basis_phase
+            )
+            writer.write_signed_exp_golomb(gain_code - previous_gain)
+            writer.write_bit(int(correction_gain != 0))
+            if correction_gain:
+                writer.write_unsigned_exp_golomb(correction_gain - 1)
+                writer.write_bits(correction_rank, correction_width)
+                basis_corrections += 1
+            previous_basis_phase = phase_code
+            previous_gain = gain_code
         elif mode == "STOCHASTIC":
             writer.write_bits(0b10, 2)
             seed, gain_code = fields
@@ -1286,7 +1694,7 @@ def _encode_excitation_pvq(
             writer.write_signed_exp_golomb(gain_code - previous_gain)
             previous_gain = gain_code
         else:
-            writer.write_bits(0b11, 2)
+            writer.write_bits(0b110, 3)
         reconstruction[start:stop] = np.clip(
             adaptive + decoded,
             -32768,
@@ -1305,6 +1713,9 @@ def _encode_excitation_pvq(
         source.size,
         logical_bits,
         stream_seed & 0xFFFF_FFFF,
+        len(excitation_bases),
+        basis_pulses if excitation_bases else 0,
+        basis_correction_pulses if excitation_bases else 0,
     ) + event_payload
     decoded = _decode_excitation_pvq(payload)
     if not np.array_equal(decoded, reconstruction):
@@ -1319,6 +1730,18 @@ def _encode_excitation_pvq(
             "subframe_size": subframe_size,
             "subframe_count": subframe_count,
             "pulses": pulses,
+            "basis_count": len(excitation_bases),
+            "basis_pulses": basis_pulses if excitation_bases else 0,
+            "basis_dictionary_bits": (
+                len(excitation_bases) * dictionary_width
+            ),
+            "basis_update_count": basis_updates,
+            "basis_correction_count": basis_corrections,
+            "basis_hold_count": (
+                mode_counts["BASIS"] - basis_updates
+            ),
+            "basis_iterations": basis_iterations,
+            "basis_search_limit": basis_search_limit,
             "mode_counts": mode_counts,
             "pitch_update_count": pitch_updates,
             "quality_guard_q12": quality_guard_q12,
@@ -1340,6 +1763,9 @@ def _decode_excitation_pvq(
         sample_count,
         logical_bits,
         stream_seed,
+        basis_count,
+        basis_pulses,
+        basis_correction_pulses,
     ) = EXCITATION_HEADER.unpack_from(payload)
     if (
         magic != EXCITATION_MAGIC
@@ -1347,12 +1773,47 @@ def _decode_excitation_pvq(
         or not 16 <= subframe_size <= MAX_EXCITATION_SUBFRAME
         or not 1 <= pulses <= MAX_EXCITATION_PULSES
         or sample_count > MAX_SAMPLE_COUNT
+        or basis_count > MAX_EXCITATION_BASIS_COUNT
+        or (
+            basis_count
+            and not 1 <= basis_pulses <= MAX_EXCITATION_PULSES
+        )
+        or basis_correction_pulses > MAX_EXCITATION_PULSES
+        or (
+            not basis_count
+            and (basis_pulses != 0 or basis_correction_pulses != 0)
+        )
         or (logical_bits + 7) // 8 != len(payload) - EXCITATION_HEADER.size
     ):
         raise ValueError("EPV1 header exceeds the profile")
     reader = _BitReader(payload[EXCITATION_HEADER.size :], logical_bits)
+    excitation_bases = []
+    basis_width = max(1, (basis_count - 1).bit_length())
+    if basis_count:
+        dictionary_codebook = _pvq_codebook_size(
+            subframe_size,
+            basis_pulses,
+        )
+        dictionary_width = (dictionary_codebook - 1).bit_length()
+        seen = set()
+        for _ in range(basis_count):
+            rank = reader.read_bits(dictionary_width)
+            if rank >= dictionary_codebook:
+                raise ValueError("EPV1 Basis rank exceeds its codebook")
+            basis = _unrank_pvq(
+                subframe_size,
+                basis_pulses,
+                rank,
+            )
+            key = tuple(int(value) for value in basis)
+            if key in seen:
+                raise ValueError("EPV1 excitation Basis contains duplicates")
+            seen.add(key)
+            excitation_bases.append(basis)
     reconstruction = np.zeros(sample_count, dtype=np.int16)
     previous_gain = 0
+    basis_id = -1
+    basis_phase = 0
     pitch_lag = 0
     pitch_gain_q7 = 0
     maximum_gain = _maximum_gain_code(EXCITATION_GAIN_FRACTION_BITS)
@@ -1387,8 +1848,10 @@ def _decode_excitation_pvq(
             mode = "PVQ"
         elif reader.read_bit() == 0:
             mode = "STOCHASTIC"
-        else:
+        elif reader.read_bit() == 0:
             mode = "ZERO"
+        else:
+            mode = "BASIS"
         if mode == "PVQ":
             gain_code = previous_gain + reader.read_signed_exp_golomb(
                 maximum_gain
@@ -1418,9 +1881,83 @@ def _decode_excitation_pvq(
                 subframe,
             )
             previous_gain = gain_code
+        elif mode == "BASIS":
+            if not basis_count or dimension != subframe_size:
+                raise ValueError("EPV1 Basis reference exceeds the profile")
+            if reader.read_bit():
+                basis_id = reader.read_bits(basis_width)
+                if basis_id >= basis_count:
+                    raise ValueError("EPV1 Basis ID exceeds the bank")
+            elif basis_id < 0:
+                raise ValueError("EPV1 Basis HOLD precedes its definition")
+            basis_phase += reader.read_signed_exp_golomb(
+                2 * subframe_size
+            )
+            if not 0 <= basis_phase < 2 * subframe_size:
+                raise ValueError("EPV1 Basis phase exceeds the profile")
+            gain_code = previous_gain + reader.read_signed_exp_golomb(
+                maximum_gain
+            )
+            if not 1 <= gain_code <= maximum_gain:
+                raise ValueError("EPV1 Basis gain exceeds the profile")
+            shift, polarity = divmod(basis_phase, 2)
+            direction = np.roll(excitation_bases[basis_id], shift)
+            if polarity:
+                direction = -direction
+            previous_gain = gain_code
+            if reader.read_bit():
+                correction_gain = (
+                    reader.read_unsigned_exp_golomb(maximum_gain - 1) + 1
+                )
+                correction_pulses = min(
+                    basis_correction_pulses,
+                    dimension,
+                )
+                if correction_pulses == 0:
+                    raise ValueError(
+                        "EPV1 Basis correction is not configured"
+                    )
+                correction_codebook = _pvq_codebook_size(
+                    dimension,
+                    correction_pulses,
+                )
+                correction_rank = reader.read_bits(
+                    (correction_codebook - 1).bit_length()
+                )
+                if correction_rank >= correction_codebook:
+                    raise ValueError(
+                        "EPV1 Basis correction rank exceeds its codebook"
+                    )
+                correction_shape = _unrank_pvq(
+                    dimension,
+                    correction_pulses,
+                    correction_rank,
+                )
+                correction = _materialize_band(
+                    correction_shape,
+                    _gain_code_to_qlog(
+                        correction_gain,
+                        EXCITATION_GAIN_FRACTION_BITS,
+                    ),
+                )
+                decoded = _materialize_band(
+                    direction,
+                    _gain_code_to_qlog(
+                        gain_code,
+                        EXCITATION_GAIN_FRACTION_BITS,
+                    ),
+                ) + correction
+            else:
+                decoded = _materialize_band(
+                    direction,
+                    _gain_code_to_qlog(
+                        gain_code,
+                        EXCITATION_GAIN_FRACTION_BITS,
+                    ),
+                )
         else:
             decoded = np.zeros(dimension, dtype=np.int64)
-        if mode != "ZERO":
+        if mode not in ("ZERO", "BASIS"):
             decoded = _materialize_band(
                 direction,
                 _gain_code_to_qlog(
@@ -1454,6 +1991,11 @@ def encode_maf_source_filter_analysis(
     excitation_pulses: int = 8,
     excitation_quality_guard_q12: int | None = 4096,
     adaptive_quality_guard_q12: int = 4608,
+    excitation_basis_count: int = 0,
+    excitation_basis_pulses: int = 16,
+    excitation_basis_iterations: int = 4,
+    excitation_basis_search_limit: int = 8,
+    excitation_basis_correction_pulses: int = 0,
 ) -> MafSourceFilterResult:
     """Encode one complete source-filter plus unified MFC1 candidate."""
 
@@ -1492,6 +2034,13 @@ def encode_maf_source_filter_analysis(
             stream_seed=stream_seed,
             source_filter_analysis=coded_analysis,
             adaptive_quality_guard_q12=adaptive_quality_guard_q12,
+            basis_count=excitation_basis_count,
+            basis_pulses=excitation_basis_pulses,
+            basis_iterations=excitation_basis_iterations,
+            basis_search_limit=excitation_basis_search_limit,
+            basis_correction_pulses=(
+                excitation_basis_correction_pulses
+            ),
         )
         residual_kind = 1
     else:
@@ -1554,6 +2103,11 @@ def encode_maf_source_filter_analysis(
         "synthesis_aware_rdo": synthesis_aware_rdo,
         "pvq_guard_q12": pvq_guard_q12,
         "excitation_backend": excitation_backend,
+        "excitation_basis_count": excitation_basis_count,
+        "excitation_basis_pulses": excitation_basis_pulses,
+        "excitation_basis_correction_pulses": (
+            excitation_basis_correction_pulses
+        ),
         "maf_cell": residual.report,
         "reconstruction_backend": (
             "independent Python integer SFT1 plus "

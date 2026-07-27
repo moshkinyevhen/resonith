@@ -7,6 +7,7 @@
 #include "resonith/lapped_compact.h"
 #include "resonith/lapped_finite.h"
 #include "resonith/lapped_packet.h"
+#include "resonith/maf.h"
 #include "resonith/multichannel.h"
 #include "resonith/seek.h"
 #include "resonith/stream.h"
@@ -47,6 +48,8 @@ int main(void) {
     resonith_lapped_finite_requirements finite_requirements = {0};
     resonith_lapped_packet_requirements packet_requirements = {0};
     resonith_lapped_packet_session packet_session = {0};
+    resonith_maf_limits maf_limits = {0};
+    resonith_maf_requirements maf_requirements = {0};
     resonith_cibs_info cibs_info = {0U, 0U, 0U, 0U};
     resonith_cibs_registry cibs_registry = {NULL, 0U};
     resonith_cibs_basis_info cibs_basis_info = {
@@ -83,6 +86,16 @@ int main(void) {
         0U,
         0U
     };
+    if (
+        resonith_maf_main_limits(&maf_limits) != RESONITH_STATUS_OK
+        || resonith_maf_resources_validate(
+            &maf_limits,
+            NULL,
+            &maf_requirements
+        ) != RESONITH_STATUS_INVALID_ARGUMENT
+    ) {
+        return 1;
+    }
     if (
         resonith_cibs_inspect_model(NULL, NULL, &cibs_info)
         != RESONITH_STATUS_INVALID_ARGUMENT

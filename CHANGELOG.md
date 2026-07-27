@@ -11,6 +11,23 @@ version.
 
 ### Research
 
+- Added R-124 optional AI semantic arbitration. OpenAI, Gemini, or automatic
+  capability selection can provide the global analyst and arbiter; ElevenLabs
+  receives speech/speaker/timing/isolation tasks and Azure receives long-form,
+  domain, diarization, role, and enterprise-metadata tasks. A deterministic
+  local policy gate minimizes uploads and exact local MAF RDO remains the only
+  admission authority.
+- Added the R-122 bounded MAF Decoder ISA substrate before further Foundry
+  encoder expansion. The portable C++23 Core now exposes hard resource
+  preflight, transactional operation budgets, periodic Basis rendering,
+  callback-invariant counter noise, stable source filtering, quantized
+  Innovation, bounded transient injection, and Q1.15 channel-matrix mixing
+  through the stable C ABI. Main-0 whole-stream and callback decoding now route
+  Basis render and Truth composition through one exact transactional budget.
+  Twelve native tests, a deterministic 20,003-input adversarial MAF smoke
+  gate, the complete 195-test Python/native integration suite, and Android
+  ARM64/x86-64 compile gates pass. The complete R-118 evidence gate remains
+  pending before MAF syntax promotion.
 - Added the R-120 independently decodable unified MAF research streams:
   event-driven MFC1 cells, corrected causal SFT1 source-filter state, cached
   integer filter Basis, and EPV1 adaptive/stochastic algebraic excitation.

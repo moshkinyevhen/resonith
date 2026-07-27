@@ -18,6 +18,7 @@ set(RESONITH_CORE_SOURCES
     src/lapped_finite.cpp
     src/lapped_packet.cpp
     src/liftpack.cpp
+    src/maf.cpp
     src/multichannel.cpp
     src/seek.cpp
     src/status.cpp
@@ -189,6 +190,26 @@ if(RESONITH_BUILD_FUZZERS)
         PROPERTIES CXX_EXTENSIONS OFF
     )
     resonith_enable_warnings(resonith_main0_fuzz)
+
+    add_executable(resonith_maf_fuzz
+        ${RESONITH_CORE_SOURCES}
+        fuzz/maf_fuzz.cpp
+    )
+    target_compile_features(resonith_maf_fuzz PRIVATE cxx_std_23)
+    target_include_directories(resonith_maf_fuzz
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    )
+    target_compile_options(resonith_maf_fuzz
+        PRIVATE -fsanitize=fuzzer,address,undefined
+    )
+    target_link_options(resonith_maf_fuzz
+        PRIVATE -fsanitize=fuzzer,address,undefined
+    )
+    set_target_properties(
+        resonith_maf_fuzz
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_maf_fuzz)
 
     add_executable(resonith_seek_fuzz
         ${RESONITH_CORE_SOURCES}
@@ -388,4 +409,26 @@ if(BUILD_TESTING)
     set_target_properties(resonith_lapped_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_lapped_test)
     add_test(NAME lapped_conformance COMMAND resonith_lapped_test)
+
+    add_executable(resonith_maf_test
+        tests/maf_test.cpp
+    )
+    target_compile_features(resonith_maf_test PRIVATE cxx_std_23)
+    target_link_libraries(resonith_maf_test PRIVATE Resonith::Core)
+    set_target_properties(resonith_maf_test PROPERTIES CXX_EXTENSIONS OFF)
+    resonith_enable_warnings(resonith_maf_test)
+    add_test(NAME maf_dsp_conformance COMMAND resonith_maf_test)
+
+    add_executable(resonith_maf_fuzz_smoke
+        fuzz/maf_fuzz.cpp
+        tests/maf_fuzz_smoke.cpp
+    )
+    target_compile_features(resonith_maf_fuzz_smoke PRIVATE cxx_std_23)
+    target_link_libraries(resonith_maf_fuzz_smoke PRIVATE Resonith::Core)
+    set_target_properties(
+        resonith_maf_fuzz_smoke
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_maf_fuzz_smoke)
+    add_test(NAME maf_adversarial_smoke COMMAND resonith_maf_fuzz_smoke)
 endif()

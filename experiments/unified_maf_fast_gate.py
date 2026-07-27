@@ -68,6 +68,15 @@ def main() -> None:
     parser.add_argument("--excitation-pulses", type=int, default=8)
     parser.add_argument("--excitation-quality-guard-q12", type=int, default=4096)
     parser.add_argument("--adaptive-quality-guard-q12", type=int, default=4608)
+    parser.add_argument("--excitation-basis-count", type=int, default=0)
+    parser.add_argument("--excitation-basis-pulses", type=int, default=16)
+    parser.add_argument("--excitation-basis-iterations", type=int, default=4)
+    parser.add_argument("--excitation-basis-search-limit", type=int, default=8)
+    parser.add_argument(
+        "--excitation-basis-correction-pulses",
+        type=int,
+        default=0,
+    )
     args = parser.parse_args()
     if (args.opus_stream is None) != (args.opus_decoded is None):
         raise ValueError("the Opus stream and decode must be supplied together")
@@ -114,6 +123,15 @@ def main() -> None:
                 args.excitation_quality_guard_q12
             ),
             adaptive_quality_guard_q12=args.adaptive_quality_guard_q12,
+            excitation_basis_count=args.excitation_basis_count,
+            excitation_basis_pulses=args.excitation_basis_pulses,
+            excitation_basis_iterations=args.excitation_basis_iterations,
+            excitation_basis_search_limit=(
+                args.excitation_basis_search_limit
+            ),
+            excitation_basis_correction_pulses=(
+                args.excitation_basis_correction_pulses
+            ),
         )
     else:
         encoded = encode_maf_cell_analysis(
@@ -159,7 +177,7 @@ def main() -> None:
 
     report = {
         "schema": "resonith-unified-maf-fast-diagnostic-1",
-        "decision": "R-120",
+        "decision": "R-121",
         "status": (
             "fast diagnostic only; not an R-118 architecture gate or "
             "general codec claim"
