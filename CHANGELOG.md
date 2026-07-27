@@ -11,6 +11,13 @@ version.
 
 ### Research
 
+- Completed the mandatory 19-item R-117 temporal score companding gate.
+  The 17,904-byte pinned speech point improved SNR, STOI, ESTOI, and log-mel
+  error without syntax changes; the other 18 items retained exact R-113
+  fallbacks. The parameter remains an encoder-side candidate, not a default.
+- Closed global PVE2 as the next factorization after an equal-size speech
+  diagnostic improved log-mel error but substantially regressed SNR, STOI,
+  and ESTOI. The next PVE experiment is packet- and band-local RDO.
 - Added R-116 mobile portability gates, checked-in CMake presets for Android
   ARM64/x86-64 and iOS device/simulator builds, and CI artifact production
   with stable NDK r29 and Xcode.

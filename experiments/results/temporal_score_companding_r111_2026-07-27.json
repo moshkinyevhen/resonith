@@ -1,0 +1,3371 @@
+{
+  "band_whitening": 0.0,
+  "clips": {
+    "ebu-claves": {
+      "baseline": {
+        "bytes": 182000,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.029557972514050783,
+            "log_spectral_distance_db": 3.6574828909963455,
+            "magnitude_cosine_similarity": 0.9999741191456802,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.42244176792533666,
+                "spectral_convergence": 0.005742382484967454
+              },
+              "512": {
+                "log_magnitude_mae": 0.4967691779813285,
+                "spectral_convergence": 0.005783090288510577
+              },
+              "8192": {
+                "log_magnitude_mae": 0.300743358839607,
+                "spectral_convergence": 0.00577120566649655
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.005950927734375,
+            "rms_error": 0.0001940975598100116,
+            "segmental_snr_db": 34.996094933982874,
+            "si_sdr_db": 39.44232800069851,
+            "snr_db": 39.44101683149476
+          }
+        },
+        "sha256": "d2dc0ab19b176ff9541f6f7de571d9994fbcd1e9619406276e4242dd0d81fe8b"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 2.5154040999914287,
+        "bytes": 183232,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-claves\\candidate-decoded.wav",
+        "decoded_sha256": "cbf018e01ed791c7034028333e71f3e139aca5aad554f81a76931084d2761fb7",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": -8.177116809983398e-06,
+          "snr_db": -0.0006735878728960643
+        },
+        "eligible": false,
+        "encode_wall_seconds": 2.047624099999666,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.0295497953972408,
+            "log_spectral_distance_db": 3.801950426914864,
+            "magnitude_cosine_similarity": 0.9999741089412525,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.42108411706628757,
+                "spectral_convergence": 0.0057425864994634975
+              },
+              "512": {
+                "log_magnitude_mae": 0.49505599547675266,
+                "spectral_convergence": 0.005782718389912829
+              },
+              "8192": {
+                "log_magnitude_mae": 0.29991381285911883,
+                "spectral_convergence": 0.005771321449491427
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.005950927734375,
+            "rms_error": 0.0001941126125953358,
+            "segmental_snr_db": 34.99608827521503,
+            "si_sdr_db": 39.44165726855314,
+            "snr_db": 39.44034324362186
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "adb9f26d57299d83303b4ff7bdb02a7ea4afe1199a379caea438f0a1f85759f3",
+        "stream_file": "ebu-claves\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 2,
+          "coefficients_per_frame": 71,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 195,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            83,
+            83,
+            10840,
+            7731,
+            5199,
+            4048,
+            2820,
+            2067,
+            2058,
+            1955,
+            2029,
+            10536,
+            8018,
+            5364,
+            3598,
+            2518,
+            2064,
+            1964,
+            1944,
+            2076,
+            10701,
+            7753,
+            5178,
+            3398,
+            2375,
+            2128,
+            2010,
+            1933,
+            846,
+            134,
+            255,
+            83,
+            1129,
+            12229,
+            6870,
+            4679,
+            3916,
+            2446,
+            2097,
+            1983,
+            1953,
+            2108,
+            12409,
+            7142,
+            4829,
+            3151,
+            2442
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 39.44034324373075,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 183232,
+          "stream_sha256": "adb9f26d57299d83303b4ff7bdb02a7ea4afe1199a379caea438f0a1f85759f3",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "transient",
+        "sparse",
+        "percussion",
+        "stereo"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 182000,
+        "decoded_file": "ebu-claves\\selected-decoded.wav",
+        "decoded_sha256": "35008b3e659441c569dd4eae169cdb2dedcdd1a73113516bbca5507286289809",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.029557972514050783,
+            "log_spectral_distance_db": 3.6574828909963455,
+            "magnitude_cosine_similarity": 0.9999741191456802,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.42244176792533666,
+                "spectral_convergence": 0.005742382484967454
+              },
+              "512": {
+                "log_magnitude_mae": 0.4967691779813285,
+                "spectral_convergence": 0.005783090288510577
+              },
+              "8192": {
+                "log_magnitude_mae": 0.300743358839607,
+                "spectral_convergence": 0.00577120566649655
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.005950927734375,
+            "rms_error": 0.0001940975598100116,
+            "segmental_snr_db": 34.996094933982874,
+            "si_sdr_db": 39.44232800069851,
+            "snr_db": 39.44101683149476
+          }
+        },
+        "sha256": "d2dc0ab19b176ff9541f6f7de571d9994fbcd1e9619406276e4242dd0d81fe8b",
+        "stream_file": "ebu-claves\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-claves.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "9069b02a7bf39a67c36f634aef759d79ad63241b8b709d08b12f8a6a043959df"
+      }
+    },
+    "ebu-cymbal": {
+      "baseline": {
+        "bytes": 169405,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.1102035036241586,
+            "log_spectral_distance_db": 13.790010337130546,
+            "magnitude_cosine_similarity": 0.9996233130982094,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.9464366143667302,
+                "spectral_convergence": 0.022313761995863914
+              },
+              "512": {
+                "log_magnitude_mae": 1.072506716621501,
+                "spectral_convergence": 0.02243792320261424
+              },
+              "8192": {
+                "log_magnitude_mae": 0.7667039201929672,
+                "spectral_convergence": 0.022705673106762397
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.0087890625,
+            "rms_error": 0.0008867208025015021,
+            "segmental_snr_db": 22.970212413726475,
+            "si_sdr_db": 29.165699838045413,
+            "snr_db": 29.11459089284312
+          }
+        },
+        "sha256": "d97a692dbbcb62a34b92d22c805f3a4dccd40519480fec20bade8b21c5c93db7"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 3.041348900005687,
+        "bytes": 170380,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-cymbal\\candidate-decoded.wav",
+        "decoded_sha256": "0be4d7292b125fe2361d8d931cf15be090f0c3c0229822c3d966556203543ad1",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": -0.027535679440420457,
+          "snr_db": -0.02035543192522482
+        },
+        "eligible": false,
+        "encode_wall_seconds": 2.2708190999983344,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.0826678241837382,
+            "log_spectral_distance_db": 13.846662754352067,
+            "magnitude_cosine_similarity": 0.9996159331062915,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.9423419890038942,
+                "spectral_convergence": 0.022251280893305744
+              },
+              "512": {
+                "log_magnitude_mae": 1.0663122470957855,
+                "spectral_convergence": 0.02237601200512102
+              },
+              "8192": {
+                "log_magnitude_mae": 0.7639587239530671,
+                "spectral_convergence": 0.022634639098343415
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.0096435546875,
+            "rms_error": 0.0008888012746084227,
+            "segmental_snr_db": 22.957753191183134,
+            "si_sdr_db": 29.147980710566642,
+            "snr_db": 29.094235460917893
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "7f3c148a9e1909e6a3866a40e7158cb0e97373e1098dc351cba41ac4dae8e83f",
+        "stream_file": "ebu-cymbal\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 2,
+          "coefficients_per_frame": 71,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 316,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            83,
+            83,
+            5335,
+            10160,
+            9752,
+            8990,
+            7560,
+            6280,
+            5430,
+            4511,
+            3771,
+            3209,
+            4022,
+            12092,
+            12579,
+            11337,
+            10169,
+            8304,
+            6777,
+            5800,
+            4778,
+            3865,
+            3543,
+            2707,
+            2292,
+            2001,
+            1630,
+            1532,
+            1304,
+            1155,
+            1045,
+            926,
+            867,
+            769,
+            637,
+            593,
+            542,
+            509,
+            474,
+            421,
+            407,
+            394,
+            357,
+            363,
+            332,
+            323,
+            310
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 29.09423546092308,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 170380,
+          "stream_sha256": "7f3c148a9e1909e6a3866a40e7158cb0e97373e1098dc351cba41ac4dae8e83f",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "transient",
+        "stochastic",
+        "long-decay",
+        "stereo"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 169405,
+        "decoded_file": "ebu-cymbal\\selected-decoded.wav",
+        "decoded_sha256": "6f95d131eae764460b043d68cef5cf947ebe073e6c0fdb054c8a8bf2da72ee8e",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.1102035036241586,
+            "log_spectral_distance_db": 13.790010337130546,
+            "magnitude_cosine_similarity": 0.9996233130982094,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.9464366143667302,
+                "spectral_convergence": 0.022313761995863914
+              },
+              "512": {
+                "log_magnitude_mae": 1.072506716621501,
+                "spectral_convergence": 0.02243792320261424
+              },
+              "8192": {
+                "log_magnitude_mae": 0.7667039201929672,
+                "spectral_convergence": 0.022705673106762397
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.0087890625,
+            "rms_error": 0.0008867208025015021,
+            "segmental_snr_db": 22.970212413726475,
+            "si_sdr_db": 29.165699838045413,
+            "snr_db": 29.11459089284312
+          }
+        },
+        "sha256": "d97a692dbbcb62a34b92d22c805f3a4dccd40519480fec20bade8b21c5c93db7",
+        "stream_file": "ebu-cymbal\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-cymbal.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "4e5fed73eea73f72b9b227591a9a586dbd664d762497aa6a9457920571447b42"
+      }
+    },
+    "ebu-dense-orchestra": {
+      "baseline": {
+        "bytes": 193566,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.015353560975283068,
+            "log_spectral_distance_db": 0.0,
+            "magnitude_cosine_similarity": 0.0,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.39232379620638824,
+                "spectral_convergence": 0.0030571981802816482
+              },
+              "512": {
+                "log_magnitude_mae": 0.46035315411332384,
+                "spectral_convergence": 0.0030211700263357666
+              },
+              "8192": {
+                "log_magnitude_mae": 0.29539228417439506,
+                "spectral_convergence": 0.0027835593324764493
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.00360107421875,
+            "rms_error": 4.853419087973591e-05,
+            "segmental_snr_db": 34.97704065672568,
+            "si_sdr_db": 44.88132818577459,
+            "snr_db": 44.88128903247929
+          }
+        },
+        "sha256": "5e1f7b733eff15dfec38bafb32ba9e87ea971da5379259946fb41c6fa810f970"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 2.612407599997823,
+        "bytes": 198382,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-dense-orchestra\\candidate-decoded.wav",
+        "decoded_sha256": "bd5e7314880a8c9ff400872ae48b5149d715e844590fcc2397188312e128492d",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": -4.1472347294246176e-05,
+          "snr_db": -0.001164676282243704
+        },
+        "eligible": false,
+        "encode_wall_seconds": 2.417673300005845,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.015312088627988822,
+            "log_spectral_distance_db": 0.0,
+            "magnitude_cosine_similarity": 0.0,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.39175884533587585,
+                "spectral_convergence": 0.003056708466443083
+              },
+              "512": {
+                "log_magnitude_mae": 0.4603193654174213,
+                "spectral_convergence": 0.0030206624033479942
+              },
+              "8192": {
+                "log_magnitude_mae": 0.29525966927468555,
+                "spectral_convergence": 0.0027836095955260987
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.00360107421875,
+            "rms_error": 4.8540699183815614e-05,
+            "segmental_snr_db": 34.977034708386206,
+            "si_sdr_db": 44.8801598025897,
+            "snr_db": 44.880124356197044
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "233d0f9cf8a8a71a8aabdd7464882d2249a2fc32236ea8abd985fa50f3ea117c",
+        "stream_file": "ebu-dense-orchestra\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 2,
+          "coefficients_per_frame": 71,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 118,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            83,
+            83,
+            2965,
+            4183,
+            4018,
+            3963,
+            4406,
+            5789,
+            5017,
+            4142,
+            4096,
+            4213,
+            4151,
+            4127,
+            4134,
+            4138,
+            4282,
+            4151,
+            4152,
+            4296,
+            4233,
+            4362,
+            4245,
+            4247,
+            4195,
+            4391,
+            4327,
+            5486,
+            5591,
+            4627,
+            4273,
+            4178,
+            4675,
+            4431,
+            4604,
+            4604,
+            4433,
+            5081,
+            5035,
+            4181,
+            4453,
+            4330,
+            4364,
+            4580,
+            4241,
+            4071,
+            4695
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 44.88012435793848,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 198382,
+          "stream_sha256": "233d0f9cf8a8a71a8aabdd7464882d2249a2fc32236ea8abd985fa50f3ea117c",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "dense-mix",
+        "orchestra",
+        "classical",
+        "stereo"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 193566,
+        "decoded_file": "ebu-dense-orchestra\\selected-decoded.wav",
+        "decoded_sha256": "50c48c1267002845d2427ebb717b00b67ec40195558df835f9cab978ac126939",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.015353560975283068,
+            "log_spectral_distance_db": 0.0,
+            "magnitude_cosine_similarity": 0.0,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.39232379620638824,
+                "spectral_convergence": 0.0030571981802816482
+              },
+              "512": {
+                "log_magnitude_mae": 0.46035315411332384,
+                "spectral_convergence": 0.0030211700263357666
+              },
+              "8192": {
+                "log_magnitude_mae": 0.29539228417439506,
+                "spectral_convergence": 0.0027835593324764493
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.00360107421875,
+            "rms_error": 4.853419087973591e-05,
+            "segmental_snr_db": 34.97704065672568,
+            "si_sdr_db": 44.88132818577459,
+            "snr_db": 44.88128903247929
+          }
+        },
+        "sha256": "5e1f7b733eff15dfec38bafb32ba9e87ea971da5379259946fb41c6fa810f970",
+        "stream_file": "ebu-dense-orchestra\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-dense-orchestra.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "0b4a52d215937c541b3443fbbda3e45dd75909e3086d31d7c14dc0ca0885f134"
+      }
+    },
+    "ebu-dense-pop": {
+      "baseline": {
+        "bytes": 182726,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.3076650019437088,
+            "log_spectral_distance_db": 17.367005226394458,
+            "magnitude_cosine_similarity": 0.9996497698692882,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.4832358809095991,
+                "spectral_convergence": 0.018664665406393156
+              },
+              "512": {
+                "log_magnitude_mae": 1.640390117004509,
+                "spectral_convergence": 0.018669728499286286
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1043396802332885,
+                "spectral_convergence": 0.018642054156636837
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.06085205078125,
+            "rms_error": 0.0011442911088605037,
+            "segmental_snr_db": 27.796566913857728,
+            "si_sdr_db": 30.36078213868775,
+            "snr_db": 30.347421906810993
+          }
+        },
+        "sha256": "608625ca401d3b8c928fd754cf04b303bb546d4dd87d567a8075ea7c94926c80"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 2.4829040999902645,
+        "bytes": 182763,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-dense-pop\\candidate-decoded.wav",
+        "decoded_sha256": "6e713d2a53dbd539c329e6cff09c56a5baa67d1a7acaa2c8f23f4d266810bcc1",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": -0.0036521547853656244,
+          "snr_db": -0.004054617314302789
+        },
+        "eligible": false,
+        "encode_wall_seconds": 2.0449670999951195,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.3040128471583432,
+            "log_spectral_distance_db": 17.375232865864167,
+            "magnitude_cosine_similarity": 0.9996527363831509,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.4832246121874848,
+                "spectral_convergence": 0.018680292702474
+              },
+              "512": {
+                "log_magnitude_mae": 1.6401091334357385,
+                "spectral_convergence": 0.018670710550466287
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1047107628680006,
+                "spectral_convergence": 0.018657672564907718
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.0609130859375,
+            "rms_error": 0.0011448253944447658,
+            "segmental_snr_db": 27.847908005686424,
+            "si_sdr_db": 30.356871247686094,
+            "snr_db": 30.34336728949669
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "b8cba0c71e8c3bf331ce25d437f42c332cf29f0b17c0a037a9459ab3093094e5",
+        "stream_file": "ebu-dense-pop\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 2,
+          "coefficients_per_frame": 71,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 1996,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            83,
+            83,
+            1127,
+            1642,
+            2114,
+            2291,
+            2331,
+            2223,
+            2630,
+            2096,
+            2341,
+            2408,
+            2522,
+            2475,
+            2396,
+            2283,
+            2322,
+            2154,
+            2309,
+            2270,
+            2283,
+            2529,
+            2388,
+            2505,
+            2440,
+            2205,
+            2492,
+            2721,
+            2758,
+            3198,
+            3633,
+            7470,
+            5185,
+            6650,
+            6411,
+            7961,
+            7141,
+            7637,
+            7200,
+            7906,
+            7049,
+            7043,
+            7132,
+            7298,
+            6933,
+            6885,
+            7550
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 30.343367289499824,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 182763,
+          "stream_sha256": "b8cba0c71e8c3bf331ce25d437f42c332cf29f0b17c0a037a9459ab3093094e5",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "dense-mix",
+        "popular-music",
+        "voice",
+        "stereo"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 182726,
+        "decoded_file": "ebu-dense-pop\\selected-decoded.wav",
+        "decoded_sha256": "06ea5960d8f6c6d926c009d3273565a0934a17399a0c22348c41998378041506",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.3076650019437088,
+            "log_spectral_distance_db": 17.367005226394458,
+            "magnitude_cosine_similarity": 0.9996497698692882,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.4832358809095991,
+                "spectral_convergence": 0.018664665406393156
+              },
+              "512": {
+                "log_magnitude_mae": 1.640390117004509,
+                "spectral_convergence": 0.018669728499286286
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1043396802332885,
+                "spectral_convergence": 0.018642054156636837
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.06085205078125,
+            "rms_error": 0.0011442911088605037,
+            "segmental_snr_db": 27.796566913857728,
+            "si_sdr_db": 30.36078213868775,
+            "snr_db": 30.347421906810993
+          }
+        },
+        "sha256": "608625ca401d3b8c928fd754cf04b303bb546d4dd87d567a8075ea7c94926c80",
+        "stream_file": "ebu-dense-pop\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-dense-pop.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "268d05e02aa746ffad10a7d4f1b9567334fcc9c784d42b56819ffafa2437436e"
+      }
+    },
+    "ebu-electronic-tune": {
+      "baseline": {
+        "bytes": 86387,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.45930225668492314,
+            "log_spectral_distance_db": 6.466986482134114,
+            "magnitude_cosine_similarity": 0.9999790597922865,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.5238338399793488,
+                "spectral_convergence": 0.0065769803547718894
+              },
+              "512": {
+                "log_magnitude_mae": 0.5752641253058923,
+                "spectral_convergence": 0.006329142832952397
+              },
+              "8192": {
+                "log_magnitude_mae": 0.45825003383467555,
+                "spectral_convergence": 0.0075397340654718165
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.333343505859375,
+            "rms_error": 0.0037957917229906445,
+            "segmental_snr_db": 34.93236263614021,
+            "si_sdr_db": 36.18102425279063,
+            "snr_db": 36.180923901978524
+          }
+        },
+        "sha256": "b0e6c7db08f9c3f4e178218dcffe9889c936507ddb8861a249a4a05147150296"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 1.2502902999985963,
+        "bytes": 87498,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-electronic-tune\\candidate-decoded.wav",
+        "decoded_sha256": "3d7efef54cf4dc6fa0bb8edbdf8af119b0a04b0523a87b5699a9d5b36d167b51",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": 5.926811355194683e-05,
+          "snr_db": -4.4627051089207725e-05
+        },
+        "eligible": false,
+        "encode_wall_seconds": 0.8422371000051498,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.4593615247984751,
+            "log_spectral_distance_db": 6.485543023098839,
+            "magnitude_cosine_similarity": 0.9999790608425798,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.5210305825200164,
+                "spectral_convergence": 0.006577071780908644
+              },
+              "512": {
+                "log_magnitude_mae": 0.5709709559518278,
+                "spectral_convergence": 0.006329248587656401
+              },
+              "8192": {
+                "log_magnitude_mae": 0.45591805870135693,
+                "spectral_convergence": 0.007539839704217781
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.333343505859375,
+            "rms_error": 0.003795811225359817,
+            "segmental_snr_db": 34.93236141884323,
+            "si_sdr_db": 36.18097983397159,
+            "snr_db": 36.180879274927435
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "2e5ea13135230f17d499bf2ea31c744972c7b950ad505881bfff857f6db3437f",
+        "stream_file": "ebu-electronic-tune\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 1,
+          "coefficients_per_frame": 67,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 10923,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            73,
+            73,
+            2704,
+            2499,
+            905,
+            1498,
+            3586,
+            1197,
+            669,
+            4723,
+            2242,
+            879,
+            2753,
+            2718,
+            971,
+            1060,
+            3845,
+            1306,
+            711,
+            3434,
+            2039,
+            846,
+            2567,
+            3991,
+            1282,
+            915,
+            4056,
+            1374,
+            764,
+            230,
+            73,
+            73,
+            765,
+            3774,
+            1263,
+            727,
+            3516,
+            1916,
+            808,
+            2837,
+            3871,
+            1197,
+            1059,
+            3996,
+            1312,
+            729,
+            3612
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 36.180879274928,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 87498,
+          "stream_sha256": "2e5ea13135230f17d499bf2ea31c744972c7b950ad505881bfff857f6db3437f",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "electronic",
+        "tonal",
+        "synthetic"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 86387,
+        "decoded_file": "ebu-electronic-tune\\selected-decoded.wav",
+        "decoded_sha256": "8414c6bbdf674ec968a5f38af0f3f625660f0d00acbbb64ee2726887f050763c",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.45930225668492314,
+            "log_spectral_distance_db": 6.466986482134114,
+            "magnitude_cosine_similarity": 0.9999790597922865,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.5238338399793488,
+                "spectral_convergence": 0.0065769803547718894
+              },
+              "512": {
+                "log_magnitude_mae": 0.5752641253058923,
+                "spectral_convergence": 0.006329142832952397
+              },
+              "8192": {
+                "log_magnitude_mae": 0.45825003383467555,
+                "spectral_convergence": 0.0075397340654718165
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.333343505859375,
+            "rms_error": 0.0037957917229906445,
+            "segmental_snr_db": 34.93236263614021,
+            "si_sdr_db": 36.18102425279063,
+            "snr_db": 36.180923901978524
+          }
+        },
+        "sha256": "b0e6c7db08f9c3f4e178218dcffe9889c936507ddb8861a249a4a05147150296",
+        "stream_file": "ebu-electronic-tune\\selected.resonith"
+      },
+      "source": {
+        "channels": 1,
+        "file": "ebu-electronic-tune.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "8e863d085c3cfec9d8b4998e70db5de5dc0df414c1bb4c42547cf64e7f8db01e"
+      }
+    },
+    "ebu-female-speech-en": {
+      "baseline": {
+        "bytes": 88427,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.5016626273593765,
+            "log_spectral_distance_db": 24.321370201046093,
+            "magnitude_cosine_similarity": 0.9972958592948107,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 2.031504356320376,
+                "spectral_convergence": 0.020105375222654296
+              },
+              "256": {
+                "log_magnitude_mae": 2.081476821099287,
+                "spectral_convergence": 0.019542396852133027
+              },
+              "512": {
+                "log_magnitude_mae": 2.0985588635020176,
+                "spectral_convergence": 0.02013772627740059
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9855991812138017,
+            "stoi": 0.9975519545845195
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.059478759765625,
+            "rms_error": 0.002001974820915995,
+            "segmental_snr_db": 27.145842486124167,
+            "si_sdr_db": 31.41449594244863,
+            "snr_db": 31.40916968529814
+          }
+        },
+        "sha256": "6de81cef21c8a3d0b620d384aa085ef58eecca067b5cc1393d1a3abd43ec7f84"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 1.463263999990886,
+        "bytes": 88450,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-female-speech-en\\candidate-decoded.wav",
+        "decoded_sha256": "7444002d5cee91bd3a6e0bb4ae9e11c789450e6091224bbb4c2b92d892c39579",
+        "deltas_vs_baseline": {
+          "estoi": 0.0004076980712496292,
+          "log_mel_rmse": -0.006184773225931028,
+          "snr_db": -0.0021874840848425947,
+          "stoi": 3.693986436925645e-05
+        },
+        "eligible": false,
+        "encode_wall_seconds": 0.97637869999744,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.4954778541334455,
+            "log_spectral_distance_db": 24.35335395530532,
+            "magnitude_cosine_similarity": 0.9973964303039904,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 2.0280844969561724,
+                "spectral_convergence": 0.020106243845431665
+              },
+              "256": {
+                "log_magnitude_mae": 2.0758962264829672,
+                "spectral_convergence": 0.01952239027481811
+              },
+              "512": {
+                "log_magnitude_mae": 2.094466967173161,
+                "spectral_convergence": 0.020134847463184495
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9860068792850514,
+            "stoi": 0.9975888944488888
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.05755615234375,
+            "rms_error": 0.0020024790685791868,
+            "segmental_snr_db": 27.16994390064688,
+            "si_sdr_db": 31.4124470793289,
+            "snr_db": 31.406982201213296
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "36e3e285e571c84ee1bdfb7a0f28be1ebe68f39b1c5d7854c569d85db20dcf34",
+        "stream_file": "ebu-female-speech-en\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 1,
+          "coefficients_per_frame": 67,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 1886,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            73,
+            73,
+            2130,
+            1428,
+            4128,
+            1548,
+            4292,
+            1897,
+            1477,
+            2262,
+            3605,
+            1345,
+            1887,
+            1543,
+            1876,
+            1063,
+            2444,
+            662,
+            608,
+            1099,
+            2558,
+            1944,
+            3249,
+            3540,
+            2713,
+            2256,
+            2713,
+            393,
+            187,
+            183,
+            216,
+            2723,
+            2745,
+            2415,
+            1745,
+            2697,
+            2751,
+            1786,
+            2725,
+            1024,
+            2619,
+            1063,
+            1280,
+            2120,
+            1237,
+            3288,
+            780
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 31.406982201215342,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 88450,
+          "stream_sha256": "36e3e285e571c84ee1bdfb7a0f28be1ebe68f39b1c5d7854c569d85db20dcf34",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "speech",
+        "female",
+        "english"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 88427,
+        "decoded_file": "ebu-female-speech-en\\selected-decoded.wav",
+        "decoded_sha256": "a63c0bd2de459d9459e68d5c49a3be7794df90b2c384662fbef53d35e4e1f545",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.5016626273593765,
+            "log_spectral_distance_db": 24.321370201046093,
+            "magnitude_cosine_similarity": 0.9972958592948107,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 2.031504356320376,
+                "spectral_convergence": 0.020105375222654296
+              },
+              "256": {
+                "log_magnitude_mae": 2.081476821099287,
+                "spectral_convergence": 0.019542396852133027
+              },
+              "512": {
+                "log_magnitude_mae": 2.0985588635020176,
+                "spectral_convergence": 0.02013772627740059
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9855991812138017,
+            "stoi": 0.9975519545845195
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.059478759765625,
+            "rms_error": 0.002001974820915995,
+            "segmental_snr_db": 27.145842486124167,
+            "si_sdr_db": 31.41449594244863,
+            "snr_db": 31.40916968529814
+          }
+        },
+        "sha256": "6de81cef21c8a3d0b620d384aa085ef58eecca067b5cc1393d1a3abd43ec7f84",
+        "stream_file": "ebu-female-speech-en\\selected.resonith"
+      },
+      "source": {
+        "channels": 1,
+        "file": "ebu-female-speech-en.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "f88f9321b302f2bab62cf5aa2dab62721b105efc36b37921372651625c4c0a0e"
+      }
+    },
+    "ebu-grand-piano": {
+      "baseline": {
+        "bytes": 164309,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.13952767241764533,
+            "log_spectral_distance_db": 9.140073930674587,
+            "magnitude_cosine_similarity": 0.9999915300140151,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.7642663798014706,
+                "spectral_convergence": 0.004052549253996238
+              },
+              "512": {
+                "log_magnitude_mae": 0.8594297117575985,
+                "spectral_convergence": 0.004806108075188977
+              },
+              "8192": {
+                "log_magnitude_mae": 0.6310885088474099,
+                "spectral_convergence": 0.004019391874137062
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.22100830078125,
+            "rms_error": 0.001540658093573368,
+            "segmental_snr_db": 34.939880810910445,
+            "si_sdr_db": 32.25061721534466,
+            "snr_db": 32.25310500524796
+          }
+        },
+        "sha256": "7db03bb38cbf54cfa7fe3a65251ea78966b4f41b6e793c604a9cfe7d8c7a53d2"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 2.9210310999915237,
+        "bytes": 166934,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-grand-piano\\candidate-decoded.wav",
+        "decoded_sha256": "41fefe2226b090687d8964e65cde10b18f604b0f82627d858d14bc47cb17470a",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": -0.0005719125613996012,
+          "snr_db": -1.0521245066286156e-05
+        },
+        "eligible": false,
+        "encode_wall_seconds": 1.959185300001991,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.13895575985624573,
+            "log_spectral_distance_db": 9.144241442000729,
+            "magnitude_cosine_similarity": 0.9999915287954595,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.7646375012895684,
+                "spectral_convergence": 0.004052447689981436
+              },
+              "512": {
+                "log_magnitude_mae": 0.85907516315267,
+                "spectral_convergence": 0.004806115256048585
+              },
+              "8192": {
+                "log_magnitude_mae": 0.6312351887348325,
+                "spectral_convergence": 0.004019430005861905
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.22100830078125,
+            "rms_error": 0.0015406599597784267,
+            "segmental_snr_db": 34.93988073899029,
+            "si_sdr_db": 32.250606690246705,
+            "snr_db": 32.253094484002894
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "0936273bbacdb7f51dc4b9f69804456af3bc6a79e3c2005ed79768a71f465d8f",
+        "stream_file": "ebu-grand-piano\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 2,
+          "coefficients_per_frame": 71,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 7242,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            83,
+            83,
+            3366,
+            3934,
+            3678,
+            4576,
+            3900,
+            5215,
+            4565,
+            5086,
+            4681,
+            4843,
+            5327,
+            4924,
+            5448,
+            4772,
+            5215,
+            4981,
+            4981,
+            4482,
+            4786,
+            3855,
+            3160,
+            2792,
+            2589,
+            2375,
+            2053,
+            1731,
+            1101,
+            717,
+            510,
+            425,
+            350,
+            262,
+            157,
+            4289,
+            3826,
+            3959,
+            4336,
+            4046,
+            5217,
+            4781,
+            4819,
+            4861,
+            4612,
+            5487,
+            5638
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 32.25309448400462,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 166934,
+          "stream_sha256": "0936273bbacdb7f51dc4b9f69804456af3bc6a79e3c2005ed79768a71f465d8f",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "polyphonic",
+        "tonal",
+        "attack-decay",
+        "stereo"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 164309,
+        "decoded_file": "ebu-grand-piano\\selected-decoded.wav",
+        "decoded_sha256": "322a225f4f8985cad93e52bc049ff18badc6538d2035afc5cea7d92af9b8e91c",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.13952767241764533,
+            "log_spectral_distance_db": 9.140073930674587,
+            "magnitude_cosine_similarity": 0.9999915300140151,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.7642663798014706,
+                "spectral_convergence": 0.004052549253996238
+              },
+              "512": {
+                "log_magnitude_mae": 0.8594297117575985,
+                "spectral_convergence": 0.004806108075188977
+              },
+              "8192": {
+                "log_magnitude_mae": 0.6310885088474099,
+                "spectral_convergence": 0.004019391874137062
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.22100830078125,
+            "rms_error": 0.001540658093573368,
+            "segmental_snr_db": 34.939880810910445,
+            "si_sdr_db": 32.25061721534466,
+            "snr_db": 32.25310500524796
+          }
+        },
+        "sha256": "7db03bb38cbf54cfa7fe3a65251ea78966b4f41b6e793c604a9cfe7d8c7a53d2",
+        "stream_file": "ebu-grand-piano\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-grand-piano.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "7141951e68eac8533d3a78065cc3036cdd2f13025d6c0bcb98b79d804d31629c"
+      }
+    },
+    "ebu-male-speech-en": {
+      "baseline": {
+        "bytes": 90217,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.23583899654295,
+            "log_spectral_distance_db": 23.15470127277658,
+            "magnitude_cosine_similarity": 0.9979891874354455,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 1.9836965866599285,
+                "spectral_convergence": 0.014032683644060873
+              },
+              "256": {
+                "log_magnitude_mae": 1.9664532088317455,
+                "spectral_convergence": 0.013947931200652379
+              },
+              "512": {
+                "log_magnitude_mae": 2.024946690291403,
+                "spectral_convergence": 0.014072587752174858
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9298536876892447,
+            "stoi": 0.968698851513457
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.110137939453125,
+            "rms_error": 0.0017723210444557426,
+            "segmental_snr_db": 26.53624200009319,
+            "si_sdr_db": 33.61629135888382,
+            "snr_db": 33.61766575584816
+          }
+        },
+        "sha256": "d7fc4cfd6614b31ead78e545fadd888b5ae941a5ff681b62126773cf572b5bbf"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 1.2262875000014901,
+        "bytes": 90231,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-male-speech-en\\candidate-decoded.wav",
+        "decoded_sha256": "cfec6da37f31d1c81bade35c2e8a2f34cd88ed68846fae57af9374a1497d9f55",
+        "deltas_vs_baseline": {
+          "estoi": 0.0012456041229792492,
+          "log_mel_rmse": -0.0036192753838881764,
+          "snr_db": -0.0034569153396901697,
+          "stoi": 0.0007877648124203773
+        },
+        "eligible": false,
+        "encode_wall_seconds": 0.9852461999980733,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.232219721159062,
+            "log_spectral_distance_db": 23.183051238318996,
+            "magnitude_cosine_similarity": 0.998075099564287,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 1.98245726845877,
+                "spectral_convergence": 0.014036429985236548
+              },
+              "256": {
+                "log_magnitude_mae": 1.9657040146155311,
+                "spectral_convergence": 0.013948611063488209
+              },
+              "512": {
+                "log_magnitude_mae": 2.0238943736802124,
+                "spectral_convergence": 0.014067385760007172
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.931099291812224,
+            "stoi": 0.9694866163258774
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.110137939453125,
+            "rms_error": 0.0017730265545904914,
+            "segmental_snr_db": 26.59986349297808,
+            "si_sdr_db": 33.61283866474581,
+            "snr_db": 33.61420884050847
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "7100d3c58c68b114516c1a1bc81308f8d5afcc927a5755054f29d19c038b9716",
+        "stream_file": "ebu-male-speech-en\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 1,
+          "coefficients_per_frame": 67,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 3609,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            73,
+            73,
+            1772,
+            2355,
+            2441,
+            4095,
+            1797,
+            2416,
+            1712,
+            1416,
+            2457,
+            800,
+            856,
+            2426,
+            2946,
+            2268,
+            2240,
+            2617,
+            2300,
+            1497,
+            1692,
+            2032,
+            2487,
+            1929,
+            1177,
+            2033,
+            1629,
+            3716,
+            1484,
+            2797,
+            1628,
+            222,
+            238,
+            245,
+            2232,
+            2509,
+            2100,
+            2679,
+            1184,
+            2264,
+            3067,
+            2435,
+            2083,
+            839,
+            860,
+            2779,
+            3274
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 33.614208840511075,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 90231,
+          "stream_sha256": "7100d3c58c68b114516c1a1bc81308f8d5afcc927a5755054f29d19c038b9716",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "speech",
+        "male",
+        "english"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 90217,
+        "decoded_file": "ebu-male-speech-en\\selected-decoded.wav",
+        "decoded_sha256": "832df08d9bf95d9876cee210f55b15ae2d6c85df8db5ab040b11cc285d62ff91",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.23583899654295,
+            "log_spectral_distance_db": 23.15470127277658,
+            "magnitude_cosine_similarity": 0.9979891874354455,
+            "multiresolution_stft": {
+              "1024": {
+                "log_magnitude_mae": 1.9836965866599285,
+                "spectral_convergence": 0.014032683644060873
+              },
+              "256": {
+                "log_magnitude_mae": 1.9664532088317455,
+                "spectral_convergence": 0.013947931200652379
+              },
+              "512": {
+                "log_magnitude_mae": 2.024946690291403,
+                "spectral_convergence": 0.014072587752174858
+              }
+            }
+          },
+          "speech": {
+            "estoi": 0.9298536876892447,
+            "stoi": 0.968698851513457
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.110137939453125,
+            "rms_error": 0.0017723210444557426,
+            "segmental_snr_db": 26.53624200009319,
+            "si_sdr_db": 33.61629135888382,
+            "snr_db": 33.61766575584816
+          }
+        },
+        "sha256": "d7fc4cfd6614b31ead78e545fadd888b5ae941a5ff681b62126773cf572b5bbf",
+        "stream_file": "ebu-male-speech-en\\selected.resonith"
+      },
+      "source": {
+        "channels": 1,
+        "file": "ebu-male-speech-en.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "0b12c8ee0f3def4a525fbeb2f9362972285d114a30d959a6da2a53be6b09ffea"
+      }
+    },
+    "ebu-pink-noise": {
+      "baseline": {
+        "bytes": 206566,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.1087286339258742,
+            "log_spectral_distance_db": 0.0,
+            "magnitude_cosine_similarity": 0.0,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.3194116025479403,
+                "spectral_convergence": 0.3017283670171147
+              },
+              "512": {
+                "log_magnitude_mae": 1.3984874928238695,
+                "spectral_convergence": 0.29663857204109056
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1033635988771517,
+                "spectral_convergence": 0.2884260053050732
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.0074462890625,
+            "rms_error": 0.001502322964608213,
+            "segmental_snr_db": 7.393247693630483,
+            "si_sdr_db": 6.65832880963927,
+            "snr_db": 7.333828890814038
+          }
+        },
+        "sha256": "761c342b3bdf8459a9c68cb9632777fc91691fbcd2398ff738ee6de0e934383a"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 2.574554499995429,
+        "bytes": 214912,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-pink-noise\\candidate-decoded.wav",
+        "decoded_sha256": "04043f48ce094ef835e0acad1e0c0c7b4dc3d1c368debd6e583c93560ab5042b",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": -0.005108949874014224,
+          "snr_db": -0.000916965155432159
+        },
+        "eligible": false,
+        "encode_wall_seconds": 2.7209753999923123,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.10361968405186,
+            "log_spectral_distance_db": 0.0,
+            "magnitude_cosine_similarity": 0.0,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.3176455697144047,
+                "spectral_convergence": 0.30173738961827795
+              },
+              "512": {
+                "log_magnitude_mae": 1.396863581422677,
+                "spectral_convergence": 0.2966669834157477
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1013943063293354,
+                "spectral_convergence": 0.2883872317585629
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.0074462890625,
+            "rms_error": 0.0015024815724867177,
+            "segmental_snr_db": 7.391255523473311,
+            "si_sdr_db": 6.657556297597265,
+            "snr_db": 7.332911925658606
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "7f4e491ddd19453bddfdcd8dca15d27a4af5d6f784a25d8db1929b35ed704e7e",
+        "stream_file": "ebu-pink-noise\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 2,
+          "coefficients_per_frame": 71,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 244,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            83,
+            83,
+            91,
+            243,
+            606,
+            2260,
+            4481,
+            5180,
+            5121,
+            5044,
+            5157,
+            5164,
+            5166,
+            5125,
+            5122,
+            5278,
+            5137,
+            5125,
+            5231,
+            5047,
+            5259,
+            5106,
+            5183,
+            5228,
+            5145,
+            5194,
+            5171,
+            5234,
+            5202,
+            5320,
+            5168,
+            5195,
+            5127,
+            5176,
+            5187,
+            5237,
+            5104,
+            5234,
+            5190,
+            5258,
+            5197,
+            5174,
+            5117,
+            5181,
+            5160,
+            5207,
+            5154
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 7.332911925660088,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 214912,
+          "stream_sha256": "7f4e491ddd19453bddfdcd8dca15d27a4af5d6f784a25d8db1929b35ed704e7e",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "stochastic",
+        "noise",
+        "stereo"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 206566,
+        "decoded_file": "ebu-pink-noise\\selected-decoded.wav",
+        "decoded_sha256": "3f7133c858244ec4b1e5a86b29dde10e08149359e5680762444cc2cda86f5614",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.1087286339258742,
+            "log_spectral_distance_db": 0.0,
+            "magnitude_cosine_similarity": 0.0,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.3194116025479403,
+                "spectral_convergence": 0.3017283670171147
+              },
+              "512": {
+                "log_magnitude_mae": 1.3984874928238695,
+                "spectral_convergence": 0.29663857204109056
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1033635988771517,
+                "spectral_convergence": 0.2884260053050732
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.0074462890625,
+            "rms_error": 0.001502322964608213,
+            "segmental_snr_db": 7.393247693630483,
+            "si_sdr_db": 6.65832880963927,
+            "snr_db": 7.333828890814038
+          }
+        },
+        "sha256": "761c342b3bdf8459a9c68cb9632777fc91691fbcd2398ff738ee6de0e934383a",
+        "stream_file": "ebu-pink-noise\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-pink-noise.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "b3198d029a6ffd9ec43e9f5a863b8d8603a940ade4bb9ef90c8e184f643c295a"
+      }
+    },
+    "ebu-side-drum": {
+      "baseline": {
+        "bytes": 180465,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.017113049223191016,
+            "log_spectral_distance_db": 3.239939150248812,
+            "magnitude_cosine_similarity": 0.9999956285934264,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.4239563442986208,
+                "spectral_convergence": 0.003032731084227989
+              },
+              "512": {
+                "log_magnitude_mae": 0.5050169768168029,
+                "spectral_convergence": 0.002993034152538755
+              },
+              "8192": {
+                "log_magnitude_mae": 0.304222463377197,
+                "spectral_convergence": 0.003062982107475913
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.005401611328125,
+            "rms_error": 0.00015764220640062575,
+            "segmental_snr_db": 35.0,
+            "si_sdr_db": 44.36445312219445,
+            "snr_db": 44.287280428018505
+          }
+        },
+        "sha256": "53b363e5cf119b39fe2524d99f823f55430e354b08bbe672ccac9bd756f838e8"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 2.5345687000080943,
+        "bytes": 182194,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-side-drum\\candidate-decoded.wav",
+        "decoded_sha256": "3b492d3cc631e0f9a37918df934c55dca3e9a0c91c6c8524867fb98587788bb4",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": -0.00021430418888618644,
+          "snr_db": -0.0002961631872722137
+        },
+        "eligible": false,
+        "encode_wall_seconds": 2.0033651999983704,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.01689874503430483,
+            "log_spectral_distance_db": 3.3639645834591168,
+            "magnitude_cosine_similarity": 0.9999956255515466,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.42070547043499734,
+                "spectral_convergence": 0.00303229724094226
+              },
+              "512": {
+                "log_magnitude_mae": 0.5010059061256799,
+                "spectral_convergence": 0.0029925254774646045
+              },
+              "8192": {
+                "log_magnitude_mae": 0.3013757008475299,
+                "spectral_convergence": 0.0030627342487849502
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.005401611328125,
+            "rms_error": 0.00015764758162598684,
+            "segmental_snr_db": 35.0,
+            "si_sdr_db": 44.364109226775234,
+            "snr_db": 44.28698426483123
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "25e7d128f56049fd6bbbd1ac50e05b4216eab1b632c98c71635375f22b336a5d",
+        "stream_file": "ebu-side-drum\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 2,
+          "coefficients_per_frame": 71,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 177,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            83,
+            83,
+            10961,
+            7823,
+            5193,
+            3700,
+            2573,
+            2053,
+            1718,
+            1651,
+            3487,
+            11794,
+            6676,
+            4505,
+            3118,
+            2245,
+            1874,
+            1699,
+            1590,
+            4957,
+            11233,
+            6663,
+            4588,
+            3157,
+            2327,
+            1885,
+            1610,
+            850,
+            429,
+            83,
+            83,
+            11253,
+            7577,
+            5156,
+            3560,
+            2525,
+            2021,
+            1771,
+            1658,
+            4890,
+            11173,
+            6511,
+            4498,
+            3058,
+            2135,
+            1871,
+            1786
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 44.28698426499633,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 182194,
+          "stream_sha256": "25e7d128f56049fd6bbbd1ac50e05b4216eab1b632c98c71635375f22b336a5d",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "transient",
+        "drum",
+        "noise-like",
+        "stereo"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 180465,
+        "decoded_file": "ebu-side-drum\\selected-decoded.wav",
+        "decoded_sha256": "24aa2a415c252b5258ca5b962cac0915a8e221587804eb8ecfcc23a7e8c1dc5e",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.017113049223191016,
+            "log_spectral_distance_db": 3.239939150248812,
+            "magnitude_cosine_similarity": 0.9999956285934264,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.4239563442986208,
+                "spectral_convergence": 0.003032731084227989
+              },
+              "512": {
+                "log_magnitude_mae": 0.5050169768168029,
+                "spectral_convergence": 0.002993034152538755
+              },
+              "8192": {
+                "log_magnitude_mae": 0.304222463377197,
+                "spectral_convergence": 0.003062982107475913
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.005401611328125,
+            "rms_error": 0.00015764220640062575,
+            "segmental_snr_db": 35.0,
+            "si_sdr_db": 44.36445312219445,
+            "snr_db": 44.287280428018505
+          }
+        },
+        "sha256": "53b363e5cf119b39fe2524d99f823f55430e354b08bbe672ccac9bd756f838e8",
+        "stream_file": "ebu-side-drum\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-side-drum.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "47ef7efbb69684d60f68191182b482c083bb7e118903f761764817b75e4b0a31"
+      }
+    },
+    "ebu-soprano": {
+      "baseline": {
+        "bytes": 175345,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.868674655455135,
+            "log_spectral_distance_db": 15.54002540800747,
+            "magnitude_cosine_similarity": 0.9999719386762853,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.3335192274799827,
+                "spectral_convergence": 0.005645646607163552
+              },
+              "512": {
+                "log_magnitude_mae": 1.4466006057562462,
+                "spectral_convergence": 0.005630620950524575
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1203273268765028,
+                "spectral_convergence": 0.005673623006567569
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.00799560546875,
+            "rms_error": 0.0007687541611277778,
+            "segmental_snr_db": 34.528361634078195,
+            "si_sdr_db": 39.86841812204165,
+            "snr_db": 39.86637007357753
+          }
+        },
+        "sha256": "1ca756fb918a0ff104b43fe28d2c3cc9993b403716c2cd4766efb53d613f9283"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 2.8875718000053894,
+        "bytes": 176368,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-soprano\\candidate-decoded.wav",
+        "decoded_sha256": "386d5e6b8e7e0db3e7092c72caca390dbdb5f49b41694605ffe0a480c1743edb",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": 0.000743697968218715,
+          "snr_db": -0.0029340362095524597
+        },
+        "eligible": false,
+        "encode_wall_seconds": 2.353150299997651,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.8694183534233537,
+            "log_spectral_distance_db": 15.556261463275398,
+            "magnitude_cosine_similarity": 0.999972158173114,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.3343963949973592,
+                "spectral_convergence": 0.005648674940865036
+              },
+              "512": {
+                "log_magnitude_mae": 1.4470763034400604,
+                "spectral_convergence": 0.005632904157634099
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1209743181012508,
+                "spectral_convergence": 0.005675901883790413
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.00799560546875,
+            "rms_error": 0.0007690138850751548,
+            "segmental_snr_db": 34.54446495202535,
+            "si_sdr_db": 39.865494444627736,
+            "snr_db": 39.863436037367975
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "123f4b2de6e33044a3b4301114d813c6ff35cf3131eea9aae400858d5cbea1bd",
+        "stream_file": "ebu-soprano\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 2,
+          "coefficients_per_frame": 71,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 262,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            83,
+            83,
+            1336,
+            2770,
+            4147,
+            4681,
+            4839,
+            4429,
+            4653,
+            3884,
+            4262,
+            5320,
+            5242,
+            4542,
+            4931,
+            4522,
+            3713,
+            4184,
+            4773,
+            3927,
+            3528,
+            2186,
+            2278,
+            3663,
+            5406,
+            7411,
+            3940,
+            5205,
+            4839,
+            4680,
+            4813,
+            4214,
+            4294,
+            4976,
+            4590,
+            4192,
+            3997,
+            6278,
+            3126,
+            4005,
+            4034,
+            3481,
+            2291,
+            1224,
+            663,
+            401,
+            272
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 39.86343603737491,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 176368,
+          "stream_sha256": "123f4b2de6e33044a3b4301114d813c6ff35cf3131eea9aae400858d5cbea1bd",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "solo-voice",
+        "harmonic",
+        "formant",
+        "stereo"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 175345,
+        "decoded_file": "ebu-soprano\\selected-decoded.wav",
+        "decoded_sha256": "86233082d69d3ec0c089eec46291f6446a72637ffc9f742a5ffe3913e4e5c9ff",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.868674655455135,
+            "log_spectral_distance_db": 15.54002540800747,
+            "magnitude_cosine_similarity": 0.9999719386762853,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.3335192274799827,
+                "spectral_convergence": 0.005645646607163552
+              },
+              "512": {
+                "log_magnitude_mae": 1.4466006057562462,
+                "spectral_convergence": 0.005630620950524575
+              },
+              "8192": {
+                "log_magnitude_mae": 1.1203273268765028,
+                "spectral_convergence": 0.005673623006567569
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.00799560546875,
+            "rms_error": 0.0007687541611277778,
+            "segmental_snr_db": 34.528361634078195,
+            "si_sdr_db": 39.86841812204165,
+            "snr_db": 39.86637007357753
+          }
+        },
+        "sha256": "1ca756fb918a0ff104b43fe28d2c3cc9993b403716c2cd4766efb53d613f9283",
+        "stream_file": "ebu-soprano\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-soprano.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "b56f2d5b1b4f5a7061fe3c55e86ddd924c865fc3beeceeee5da1e0044e8cc0e2"
+      }
+    },
+    "ebu-sustained-sine": {
+      "baseline": {
+        "bytes": 83061,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.854054867724853,
+            "log_spectral_distance_db": 6.49642021907513,
+            "magnitude_cosine_similarity": 0.9999754730906352,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.5376373076906279,
+                "spectral_convergence": 0.007270741749766498
+              },
+              "512": {
+                "log_magnitude_mae": 0.5269721650233566,
+                "spectral_convergence": 0.00617335760999587
+              },
+              "8192": {
+                "log_magnitude_mae": 0.5015786485749557,
+                "spectral_convergence": 0.00813880798285828
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.071563720703125,
+            "rms_error": 0.0008851364597471051,
+            "segmental_snr_db": 34.961473582009965,
+            "si_sdr_db": 37.82788316916423,
+            "snr_db": 37.828589534493574
+          }
+        },
+        "sha256": "2e68ed0d45aafc3571530f1241d7457c914f3e3453b85ccaac1341bfc64cb546"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 1.3247406000009505,
+        "bytes": 83204,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-sustained-sine\\candidate-decoded.wav",
+        "decoded_sha256": "4aee14176c028a5a94812d520443e524ba4f3ff725b6b6cfa30e7e747935e443",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": 1.8500365953744158e-05,
+          "snr_db": -2.8358794089911044e-05
+        },
+        "eligible": false,
+        "encode_wall_seconds": 0.7674725000106264,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.8540733680908067,
+            "log_spectral_distance_db": 6.498474028106927,
+            "magnitude_cosine_similarity": 0.9999754727988684,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.5378067423608135,
+                "spectral_convergence": 0.007270820000847627
+              },
+              "512": {
+                "log_magnitude_mae": 0.5269765536225332,
+                "spectral_convergence": 0.0061734653631541824
+              },
+              "8192": {
+                "log_magnitude_mae": 0.5016915425483829,
+                "spectral_convergence": 0.008138880996073202
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.071563720703125,
+            "rms_error": 0.0008851393496575955,
+            "segmental_snr_db": 34.961473582009965,
+            "si_sdr_db": 37.8278548479836,
+            "snr_db": 37.828561175699484
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "784ba11b30c012f87e2b9a685ff76c60b25147013c5672dbc0f598a989766408",
+        "stream_file": "ebu-sustained-sine\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 1,
+          "coefficients_per_frame": 67,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 2345,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            73,
+            73,
+            1426,
+            1855,
+            1853,
+            1848,
+            1864,
+            1846,
+            1829,
+            1853,
+            1844,
+            1830,
+            1863,
+            1844,
+            1838,
+            1835,
+            1842,
+            1863,
+            1834,
+            1832,
+            1848,
+            1856,
+            1819,
+            1857,
+            1849,
+            1833,
+            1846,
+            1845,
+            1833,
+            1844,
+            1841,
+            1833,
+            1863,
+            1857,
+            1837,
+            1850,
+            1842,
+            1837,
+            1862,
+            1849,
+            1823,
+            1843,
+            1824,
+            1840,
+            1861,
+            1836,
+            2271
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 37.82856117570995,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 83204,
+          "stream_sha256": "784ba11b30c012f87e2b9a685ff76c60b25147013c5672dbc0f598a989766408",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "sustained-tone",
+        "deterministic",
+        "level-tracking"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 83061,
+        "decoded_file": "ebu-sustained-sine\\selected-decoded.wav",
+        "decoded_sha256": "70ba3ba9883621404b38c7106766a86859988dccfb5e26142c3cca65097a4574",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.854054867724853,
+            "log_spectral_distance_db": 6.49642021907513,
+            "magnitude_cosine_similarity": 0.9999754730906352,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.5376373076906279,
+                "spectral_convergence": 0.007270741749766498
+              },
+              "512": {
+                "log_magnitude_mae": 0.5269721650233566,
+                "spectral_convergence": 0.00617335760999587
+              },
+              "8192": {
+                "log_magnitude_mae": 0.5015786485749557,
+                "spectral_convergence": 0.00813880798285828
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.071563720703125,
+            "rms_error": 0.0008851364597471051,
+            "segmental_snr_db": 34.961473582009965,
+            "si_sdr_db": 37.82788316916423,
+            "snr_db": 37.828589534493574
+          }
+        },
+        "sha256": "2e68ed0d45aafc3571530f1241d7457c914f3e3453b85ccaac1341bfc64cb546",
+        "stream_file": "ebu-sustained-sine\\selected.resonith"
+      },
+      "source": {
+        "channels": 1,
+        "file": "ebu-sustained-sine.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "78faec4d9b92b72cba0ae1d13ec16bfc520c6c31e1b6df5f4e97e89515557e57"
+      }
+    },
+    "ebu-vibrato-gong": {
+      "baseline": {
+        "bytes": 83341,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.20666092649664494,
+            "log_spectral_distance_db": 6.761010077494455,
+            "magnitude_cosine_similarity": 0.9999885000323038,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.29119724066426145,
+                "spectral_convergence": 0.005358926951094386
+              },
+              "512": {
+                "log_magnitude_mae": 0.3085443991559588,
+                "spectral_convergence": 0.005336588254906719
+              },
+              "8192": {
+                "log_magnitude_mae": 0.24636967131879067,
+                "spectral_convergence": 0.0053403787544962595
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.021514892578125,
+            "rms_error": 0.0015675799603862683,
+            "segmental_snr_db": 34.9172922137931,
+            "si_sdr_db": 42.41256461699608,
+            "snr_db": 42.4115232124705
+          }
+        },
+        "sha256": "8dd1596a56e7b6557ce29fcb6b338ff2fc2aa0f1c821a23cc76140662685e36f"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 1.2566494999919087,
+        "bytes": 85320,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-vibrato-gong\\candidate-decoded.wav",
+        "decoded_sha256": "b185a118d8e5ef592f9ee9b81f798e890450a1a60341fa66343c5e52bea3235e",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": 9.698825129442201e-05,
+          "snr_db": 4.633158741285115e-05
+        },
+        "eligible": false,
+        "encode_wall_seconds": 0.7658348999975715,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.20675791474793936,
+            "log_spectral_distance_db": 6.765032875886556,
+            "magnitude_cosine_similarity": 0.9999885007465695,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.2906122067136962,
+                "spectral_convergence": 0.005358930835588888
+              },
+              "512": {
+                "log_magnitude_mae": 0.30811425578541085,
+                "spectral_convergence": 0.0053365562482923165
+              },
+              "8192": {
+                "log_magnitude_mae": 0.24652284396124052,
+                "spectral_convergence": 0.005340347779191833
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.021514892578125,
+            "rms_error": 0.0015675715987471866,
+            "segmental_snr_db": 34.9172922137931,
+            "si_sdr_db": 42.412610434344735,
+            "snr_db": 42.41156954405791
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "dc68ab61b7d75c514dd1eda85c8fb553fb76f8e233e234a6fc66e419c8365bad",
+        "stream_file": "ebu-vibrato-gong\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 1,
+          "coefficients_per_frame": 67,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 705,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            73,
+            73,
+            6091,
+            4957,
+            2738,
+            1619,
+            1100,
+            472,
+            73,
+            2826,
+            6554,
+            3597,
+            1953,
+            1285,
+            867,
+            85,
+            73,
+            73,
+            73,
+            73,
+            335,
+            6826,
+            5026,
+            2333,
+            1453,
+            953,
+            316,
+            73,
+            4533,
+            5819,
+            3298,
+            2115,
+            1201,
+            689,
+            73,
+            73,
+            73,
+            73,
+            73,
+            73,
+            73,
+            73,
+            73,
+            179,
+            6884,
+            5022,
+            2893
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 42.41156954406125,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 85320,
+          "stream_sha256": "dc68ab61b7d75c514dd1eda85c8fb553fb76f8e233e234a6fc66e419c8365bad",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "resonant",
+        "vibrato",
+        "long-decay"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 83341,
+        "decoded_file": "ebu-vibrato-gong\\selected-decoded.wav",
+        "decoded_sha256": "eae3c9bd9ee0ac95093670ee1a4593b83c56096eff9298823de32403c2b38512",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 0.20666092649664494,
+            "log_spectral_distance_db": 6.761010077494455,
+            "magnitude_cosine_similarity": 0.9999885000323038,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 0.29119724066426145,
+                "spectral_convergence": 0.005358926951094386
+              },
+              "512": {
+                "log_magnitude_mae": 0.3085443991559588,
+                "spectral_convergence": 0.005336588254906719
+              },
+              "8192": {
+                "log_magnitude_mae": 0.24636967131879067,
+                "spectral_convergence": 0.0053403787544962595
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.021514892578125,
+            "rms_error": 0.0015675799603862683,
+            "segmental_snr_db": 34.9172922137931,
+            "si_sdr_db": 42.41256461699608,
+            "snr_db": 42.4115232124705
+          }
+        },
+        "sha256": "8dd1596a56e7b6557ce29fcb6b338ff2fc2aa0f1c821a23cc76140662685e36f",
+        "stream_file": "ebu-vibrato-gong\\selected.resonith"
+      },
+      "source": {
+        "channels": 1,
+        "file": "ebu-vibrato-gong.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "314210d30b03d67e4f923f1584d1bb30f548e39abecf717a63ce837e31b54187"
+      }
+    },
+    "ebu-violin": {
+      "baseline": {
+        "bytes": 186405,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.5303970024467302,
+            "log_spectral_distance_db": 20.749880184176238,
+            "magnitude_cosine_similarity": 0.9997997343411275,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.7801809520165572,
+                "spectral_convergence": 0.011537165971024355
+              },
+              "512": {
+                "log_magnitude_mae": 1.794586266459225,
+                "spectral_convergence": 0.01161864596805597
+              },
+              "8192": {
+                "log_magnitude_mae": 1.6123607013456036,
+                "spectral_convergence": 0.011500840881719295
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.010498046875,
+            "rms_error": 0.0013923305711585504,
+            "segmental_snr_db": 31.491006272374765,
+            "si_sdr_db": 34.269137344531494,
+            "snr_db": 34.247076184838214
+          }
+        },
+        "sha256": "c69acfeb5e0b104d57d7ada214738e390aa05199ff99ea962b156c5e7bedbb37"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 2.4755887999926927,
+        "bytes": 187817,
+        "complete_byte_non_regression": false,
+        "decoded_file": "ebu-violin\\candidate-decoded.wav",
+        "decoded_sha256": "75c02856db82a0e57588c43720755884ef50c7cc55ea9859e2737dccc023d5b0",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": 0.00027321201665997386,
+          "snr_db": 0.002171095336052531
+        },
+        "eligible": false,
+        "encode_wall_seconds": 2.409141300013289,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.5306702144633901,
+            "log_spectral_distance_db": 20.753990871529336,
+            "magnitude_cosine_similarity": 0.9998020679069382,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.7807350109646018,
+                "spectral_convergence": 0.011540411777645379
+              },
+              "512": {
+                "log_magnitude_mae": 1.7951990490228054,
+                "spectral_convergence": 0.011620034870299096
+              },
+              "8192": {
+                "log_magnitude_mae": 1.612986893789296,
+                "spectral_convergence": 0.01150343256125219
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.010498046875,
+            "rms_error": 0.0013919825924514726,
+            "segmental_snr_db": 31.514216750840596,
+            "si_sdr_db": 34.2713171121742,
+            "snr_db": 34.24924728017427
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "04b2cd7c1a7b57d8d4022fd972f28947180729a82d5a26bc7245ef3b05ebdf28",
+        "stream_file": "ebu-violin\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 2,
+          "coefficients_per_frame": 71,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 529200,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 344,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 11264,
+          "packet_record_bytes": [
+            83,
+            83,
+            2568,
+            4123,
+            4810,
+            4741,
+            4398,
+            4469,
+            4626,
+            4675,
+            4403,
+            4182,
+            4442,
+            4609,
+            4516,
+            4282,
+            4227,
+            4182,
+            4002,
+            4514,
+            4517,
+            4368,
+            4518,
+            4977,
+            5028,
+            4123,
+            3704,
+            3875,
+            4553,
+            4867,
+            4609,
+            4412,
+            4489,
+            3973,
+            3034,
+            3814,
+            4708,
+            5242,
+            4445,
+            3667,
+            3235,
+            3747,
+            4044,
+            4077,
+            3733,
+            2814,
+            1249
+          ],
+          "sample_rate": 44100,
+          "selection_backend": "gain-shape",
+          "snr_db": 34.249247280176384,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 187817,
+          "stream_sha256": "04b2cd7c1a7b57d8d4022fd972f28947180729a82d5a26bc7245ef3b05ebdf28",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "solo-instrument",
+        "tonal",
+        "bowed-string",
+        "stereo"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 186405,
+        "decoded_file": "ebu-violin\\selected-decoded.wav",
+        "decoded_sha256": "6829659a650c65921e17a4a2507bc7136b9d10fd93ecabf3c74e45dd5e4d45fb",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 1.5303970024467302,
+            "log_spectral_distance_db": 20.749880184176238,
+            "magnitude_cosine_similarity": 0.9997997343411275,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.7801809520165572,
+                "spectral_convergence": 0.011537165971024355
+              },
+              "512": {
+                "log_magnitude_mae": 1.794586266459225,
+                "spectral_convergence": 0.01161864596805597
+              },
+              "8192": {
+                "log_magnitude_mae": 1.6123607013456036,
+                "spectral_convergence": 0.011500840881719295
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.010498046875,
+            "rms_error": 0.0013923305711585504,
+            "segmental_snr_db": 31.491006272374765,
+            "si_sdr_db": 34.269137344531494,
+            "snr_db": 34.247076184838214
+          }
+        },
+        "sha256": "c69acfeb5e0b104d57d7ada214738e390aa05199ff99ea962b156c5e7bedbb37",
+        "stream_file": "ebu-violin\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "ebu-violin.wav",
+        "frames": 529200,
+        "sample_rate": 44100,
+        "sha256": "e0aadf5f82ab9c6ba9517d59e4266c9ad382e56de880096a9d2e5154f1135370"
+      }
+    },
+    "xiph-elephants-dream-film-mix": {
+      "baseline": {
+        "bytes": 200211,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.0670049554169108,
+            "log_spectral_distance_db": 23.600136614942663,
+            "magnitude_cosine_similarity": 0.9992103128242584,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 2.28561785253894,
+                "spectral_convergence": 0.02739487112351287
+              },
+              "512": {
+                "log_magnitude_mae": 2.47713173655496,
+                "spectral_convergence": 0.02681306553511725
+              },
+              "8192": {
+                "log_magnitude_mae": 1.8987088672364612,
+                "spectral_convergence": 0.02663257676772658
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.011993408203125,
+            "rms_error": 0.001037536703840769,
+            "segmental_snr_db": 25.23743216650911,
+            "si_sdr_db": 28.34286998201754,
+            "snr_db": 28.337705161618644
+          }
+        },
+        "sha256": "ddcafedd075c14886c26d7d99bafb946061d751db7ea39516154e9ae68f587a3"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 2.603374900005292,
+        "bytes": 202370,
+        "complete_byte_non_regression": false,
+        "decoded_file": "xiph-elephants-dream-film-mix\\candidate-decoded.wav",
+        "decoded_sha256": "a2035a44a613ab921a923a66aa9b26ba54b9d880eece7d6a811f193e50ba24cc",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": -0.0023648384653718324,
+          "snr_db": -0.005170116665524915
+        },
+        "eligible": false,
+        "encode_wall_seconds": 2.1750073000002885,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.064640116951539,
+            "log_spectral_distance_db": 23.6242462127772,
+            "magnitude_cosine_similarity": 0.9992132973419265,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 2.285945372482699,
+                "spectral_convergence": 0.027420242343311974
+              },
+              "512": {
+                "log_magnitude_mae": 2.4775591819309746,
+                "spectral_convergence": 0.026852815967349675
+              },
+              "8192": {
+                "log_magnitude_mae": 1.8988682765725522,
+                "spectral_convergence": 0.0266574668175088
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.011993408203125,
+            "rms_error": 0.001038154462390633,
+            "segmental_snr_db": 25.259312689789088,
+            "si_sdr_db": 28.3380925570917,
+            "snr_db": 28.33253504495312
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "fa5405b0cb99bc1c1a446e6cdd49493fe4f9ba1ea31c0b95fa972c631396cfaf",
+        "stream_file": "xiph-elephants-dream-film-mix\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 2,
+          "coefficients_per_frame": 71,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 576000,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 393,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 12288,
+          "packet_record_bytes": [
+            10226,
+            7693,
+            4121,
+            5797,
+            4944,
+            5095,
+            4567,
+            3798,
+            5953,
+            9751,
+            5926,
+            3906,
+            3571,
+            2667,
+            8310,
+            5784,
+            5000,
+            1833,
+            2121,
+            2934,
+            2759,
+            4691,
+            3256,
+            5400,
+            12974,
+            7491,
+            3614,
+            2209,
+            2169,
+            2126,
+            2718,
+            7510,
+            9739,
+            3455,
+            2506,
+            2531,
+            2616,
+            2397,
+            1910,
+            1751,
+            1890,
+            1972,
+            2260,
+            2052,
+            2173,
+            2284,
+            1860
+          ],
+          "sample_rate": 48000,
+          "selection_backend": "gain-shape",
+          "snr_db": 28.332535044956614,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 202370,
+          "stream_sha256": "fa5405b0cb99bc1c1a446e6cdd49493fe4f9ba1ea31c0b95fa972c631396cfaf",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "film-mix",
+        "dialogue",
+        "music",
+        "effects",
+        "ambience",
+        "stereo"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 200211,
+        "decoded_file": "xiph-elephants-dream-film-mix\\selected-decoded.wav",
+        "decoded_sha256": "82d24a87dd2ec4d47385e5c97e2bf4bce035c9a054151aa7d0a2307182e1ce8f",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.0670049554169108,
+            "log_spectral_distance_db": 23.600136614942663,
+            "magnitude_cosine_similarity": 0.9992103128242584,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 2.28561785253894,
+                "spectral_convergence": 0.02739487112351287
+              },
+              "512": {
+                "log_magnitude_mae": 2.47713173655496,
+                "spectral_convergence": 0.02681306553511725
+              },
+              "8192": {
+                "log_magnitude_mae": 1.8987088672364612,
+                "spectral_convergence": 0.02663257676772658
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.011993408203125,
+            "rms_error": 0.001037536703840769,
+            "segmental_snr_db": 25.23743216650911,
+            "si_sdr_db": 28.34286998201754,
+            "snr_db": 28.337705161618644
+          }
+        },
+        "sha256": "ddcafedd075c14886c26d7d99bafb946061d751db7ea39516154e9ae68f587a3",
+        "stream_file": "xiph-elephants-dream-film-mix\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "xiph-elephants-dream-film-mix.wav",
+        "frames": 576000,
+        "sample_rate": 48000,
+        "sha256": "d7992ab9edb34ba7fc5d750eb9cf76a843de7500110aa62b2d87b6f74de55af3"
+      }
+    },
+    "xiph-sintel-film-mix": {
+      "baseline": {
+        "bytes": 197037,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.0958637443999546,
+            "log_spectral_distance_db": 21.306378073762502,
+            "magnitude_cosine_similarity": 0.9997862800363372,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.9535915450591577,
+                "spectral_convergence": 0.009994807278754835
+              },
+              "512": {
+                "log_magnitude_mae": 2.1220784866100164,
+                "spectral_convergence": 0.008894517536129656
+              },
+              "8192": {
+                "log_magnitude_mae": 1.6457786732335142,
+                "spectral_convergence": 0.009696502359138078
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.04339599609375,
+            "rms_error": 0.002215191881615117,
+            "segmental_snr_db": 32.35714105349251,
+            "si_sdr_db": 36.5595814258785,
+            "snr_db": 36.55673139150372
+          }
+        },
+        "sha256": "a86a18936ed356f7c98349c7ba16710a94f4c8cbe8f1d7dd81db111c5a593d48"
+      },
+      "candidate": {
+        "analysis_wall_seconds": 2.7439823000022443,
+        "bytes": 197915,
+        "complete_byte_non_regression": false,
+        "decoded_file": "xiph-sintel-film-mix\\candidate-decoded.wav",
+        "decoded_sha256": "9b7c406cb2e2b930524e9cb8db98048e3d4772f359003097eef6c5d9edfa73d1",
+        "deltas_vs_baseline": {
+          "log_mel_rmse": -0.002082284938663026,
+          "snr_db": -0.0022642170513620385
+        },
+        "eligible": false,
+        "encode_wall_seconds": 2.053033399992273,
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.0937814594612916,
+            "log_spectral_distance_db": 21.300128618807467,
+            "magnitude_cosine_similarity": 0.9997901999455909,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.9527264397831874,
+                "spectral_convergence": 0.00998167160486481
+              },
+              "512": {
+                "log_magnitude_mae": 2.1211630053202675,
+                "spectral_convergence": 0.00888170704751134
+              },
+              "8192": {
+                "log_magnitude_mae": 1.6448575736980953,
+                "spectral_convergence": 0.00968518674272987
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.04339599609375,
+            "rms_error": 0.002215769407836767,
+            "segmental_snr_db": 32.396980877125706,
+            "si_sdr_db": 36.557326339331034,
+            "snr_db": 36.554467174452355
+          }
+        },
+        "quality_non_regression": false,
+        "sha256": "a04c7eac8eb2ad9a487dc22b1fe8fb758ded5c04a326423813578d1fa61a12af",
+        "stream_file": "xiph-sintel-film-mix\\candidate.resonith",
+        "stream_report": {
+          "band_count": 24,
+          "band_whitening": 0.0,
+          "channel_count": 2,
+          "coefficients_per_frame": 71,
+          "density_backend": "adaptive-global",
+          "duplicated_boundary_transform_frames": 0,
+          "entropy_backend": "bounded adaptive fields plus Rice/packed values; reset per record",
+          "exact": false,
+          "exact_monolithic_reconstruction": null,
+          "format_profile": "prospective-LPS6",
+          "frame_count": 576000,
+          "frame_whitening": 0.02,
+          "half_window": 512,
+          "integrity": "SHA-256 sequence header plus CRC-32 packet records; cryptographic packet authentication is a transport requirement",
+          "lookahead_frames": 512,
+          "max_abs_error": 1422,
+          "maximum_loss_extension_frames": 512,
+          "monolithic_conformance_checked": false,
+          "monolithic_stream_bytes": null,
+          "packet_byte_overhead_fraction": null,
+          "packet_count": 47,
+          "packet_frames": 12288,
+          "packet_record_bytes": [
+            7193,
+            4792,
+            3137,
+            2102,
+            1558,
+            1407,
+            1339,
+            1200,
+            1984,
+            3199,
+            5438,
+            4925,
+            4420,
+            3987,
+            5017,
+            4617,
+            4277,
+            1755,
+            1810,
+            1806,
+            1752,
+            1884,
+            2052,
+            1820,
+            1746,
+            6800,
+            9675,
+            13358,
+            8300,
+            5291,
+            3722,
+            2827,
+            2482,
+            4198,
+            10147,
+            7377,
+            8232,
+            6110,
+            4459,
+            3680,
+            4274,
+            3827,
+            4777,
+            3024,
+            2643,
+            3430,
+            4005
+          ],
+          "sample_rate": 48000,
+          "selection_backend": "gain-shape",
+          "snr_db": 36.55446717445312,
+          "status": "adaptive integer transport-framed research stream",
+          "stream_bytes": 197915,
+          "stream_sha256": "a04c7eac8eb2ad9a487dc22b1fe8fb758ded5c04a326423813578d1fa61a12af",
+          "value_entropy_backend": "bounded",
+          "verification_backend": "native Golden Core"
+        }
+      },
+      "categories": [
+        "film-mix",
+        "dialogue",
+        "music",
+        "effects",
+        "ambience",
+        "stereo"
+      ],
+      "selected": {
+        "backend": "R-113 exact fallback",
+        "bytes": 197037,
+        "decoded_file": "xiph-sintel-film-mix\\selected-decoded.wav",
+        "decoded_sha256": "2f5092251ca1a3930a6465aa2e3e5dfa2dd8a1ef69ddc7288950b774e63505a7",
+        "metrics": {
+          "spectral": {
+            "log_mel_rmse": 2.0958637443999546,
+            "log_spectral_distance_db": 21.306378073762502,
+            "magnitude_cosine_similarity": 0.9997862800363372,
+            "multiresolution_stft": {
+              "2048": {
+                "log_magnitude_mae": 1.9535915450591577,
+                "spectral_convergence": 0.009994807278754835
+              },
+              "512": {
+                "log_magnitude_mae": 2.1220784866100164,
+                "spectral_convergence": 0.008894517536129656
+              },
+              "8192": {
+                "log_magnitude_mae": 1.6457786732335142,
+                "spectral_convergence": 0.009696502359138078
+              }
+            }
+          },
+          "waveform": {
+            "maximum_absolute_error": 0.04339599609375,
+            "rms_error": 0.002215191881615117,
+            "segmental_snr_db": 32.35714105349251,
+            "si_sdr_db": 36.5595814258785,
+            "snr_db": 36.55673139150372
+          }
+        },
+        "sha256": "a86a18936ed356f7c98349c7ba16710a94f4c8cbe8f1d7dd81db111c5a593d48",
+        "stream_file": "xiph-sintel-film-mix\\selected.resonith"
+      },
+      "source": {
+        "channels": 2,
+        "file": "xiph-sintel-film-mix.wav",
+        "frames": 576000,
+        "sample_rate": 48000,
+        "sha256": "d4917c7b38fb9c409e29837d5907f5d932f75129c9e54ba2df6200fdb23416ca"
+      }
+    }
+  },
+  "decision": "R-117",
+  "evaluated_clip_count": 16,
+  "frame_whitening": 0.02,
+  "native_core": {
+    "path": "libresonith_core_shared.dll",
+    "sha256": "a801f0192c81c57b2c97465efa637d0ea4612c6194f9f146a4c93cde6408fab0"
+  },
+  "schema": "resonith-temporal-score-companding-gate-1",
+  "selected_clip_count": 0,
+  "source_revision": "e52b0caeefdf601d50acf7e7ba8eec329620c5c4",
+  "status": "all clips retained the exact R-113 fallback",
+  "total_wall_seconds": 119.37016950000543
+}
