@@ -1,0 +1,75 @@
+{
+  "schema": "resonith-native-packing-optimization-summary-1",
+  "decision": "R-112",
+  "date": "2026-07-27",
+  "native_core": {
+    "sha256": "fba0805a8038e006440d4285ca870171423f5ddc2dfd4e1fd1682728962f20bb",
+    "toolchain": "llvm-mingw 20260616, clang 22.1.8, C++20, -O3"
+  },
+  "mandatory_complete_files": {
+    "speech": {
+      "duration_seconds": 5.855,
+      "published_wall_seconds": 1.0095218999922508,
+      "optimized_wall_seconds": 0.4386699999886332,
+      "speedup": 2.3013242301010086,
+      "audio_seconds_per_wall_second": 13.347163015824458,
+      "bytes": 17924,
+      "sha256": "a25435922af489adf4e5aedccc308c23a82f7261b47162af5e97ef021515c91f",
+      "byte_identical": true
+    },
+    "emotional_piano": {
+      "duration_seconds": 8.0,
+      "published_wall_seconds": 6.981052200004342,
+      "optimized_wall_seconds": 2.8592747999937274,
+      "speedup": 2.441546436886604,
+      "audio_seconds_per_wall_second": 2.797912253840572,
+      "bytes": 117225,
+      "sha256": "7bd27f3fbba8a20a0565c52ad24f5a0e4084c6e218dea93d5fda448e083f49ff",
+      "byte_identical": true
+    },
+    "mozart_full": {
+      "duration_seconds": 400.7726666666667,
+      "published_wall_seconds": 385.97575659998984,
+      "optimized_wall_seconds": 155.86618899999303,
+      "speedup": 2.4763276697552867,
+      "audio_seconds_per_wall_second": 2.571261087718547,
+      "bytes": 6526665,
+      "sha256": "9018223f167b21bb47be165c1b39d947b4e580f96dd8eda4315438f8d5c9ff6f",
+      "byte_identical": true
+    }
+  },
+  "r111_regression": {
+    "clip_count": 16,
+    "total_audio_seconds": 192.0,
+    "total_wall_seconds": 60.17395250000118,
+    "all_byte_identical": true,
+    "minimum_audio_seconds_per_wall_second": 2.3452,
+    "maximum_audio_seconds_per_wall_second": 6.3637,
+    "clip_ids": [
+      "ebu-claves",
+      "ebu-cymbal",
+      "ebu-dense-orchestra",
+      "ebu-dense-pop",
+      "ebu-electronic-tune",
+      "ebu-female-speech-en",
+      "ebu-grand-piano",
+      "ebu-male-speech-en",
+      "ebu-pink-noise",
+      "ebu-side-drum",
+      "ebu-soprano",
+      "ebu-sustained-sine",
+      "ebu-vibrato-gong",
+      "ebu-violin",
+      "xiph-elephants-dream-film-mix",
+      "xiph-sintel-film-mix"
+    ]
+  },
+  "verification": {
+    "strict_warning_build": "passed",
+    "python_native_tests_passed": 180,
+    "external_integrations_skipped": 4,
+    "quality_metrics_changed": false,
+    "bitstream_syntax_changed": false
+  },
+  "status": "passed"
+}

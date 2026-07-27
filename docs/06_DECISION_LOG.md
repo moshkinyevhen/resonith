@@ -3336,6 +3336,27 @@ new oscillator opcode.
     over the complete-byte-matched official Opus anchor;
   - every passing speech point proceeds through the full cross-content gate
     in R-109 before a normative opcode, changelog release entry, or version.
+- Pure-PVQ finding:
+  - the first independently decoded PVE1 stream reduced the sustained-sine
+    point from 83,061 to 23,913 complete bytes, but regressed SNR by 1.762 dB
+    and log-mel RMSE by 2.398x relative to R-107;
+  - on speech it produced 18,404 bytes against 17,924 for R-107, improved STOI
+    from 0.953579 to 0.964781 and ESTOI from 0.905907 to 0.930657, but reduced
+    SNR from 19.605 to 11.494 dB;
+  - this is evidence that the compact envelope and direction preserve useful
+    perceptual structure but cannot replace TruthInnovation. PVE1 remains an
+    oracle and is not eligible for promotion by adding pulses indefinitely.
+- PVE2 amendment:
+  - couple the independently decodable PVE1 basis with a bounded sparse
+    transform-domain TruthInnovation field in the same RSC1 stream;
+  - reconstruct the base coefficients first, add explicit signed correction
+    coefficients under transmitted per-band integer scales, then run one fixed
+    integer synthesis. The correction may contain only measured source-minus-
+    base error and may not generate or predict untransmitted detail;
+  - select the complete-byte Pareto frontier across base pulse and correction
+    budgets. PVE2 passes the fast gate only if one point is no larger than
+    R-107 and simultaneously improves speech SNR, STOI, ESTOI, and log-mel
+    RMSE; otherwise retain the negative result and change the factorization.
 
 ## R-109 — Permanent cross-content architecture evidence gate
 
@@ -3442,3 +3463,56 @@ new oscillator opcode.
     items for every class where the bounded crop shows a material win or loss;
   - packet-loss tests apply deterministic loss patterns to the speech, dense
     mix, and film-mix streams in addition to clean-channel measurements.
+
+## R-112 — Immediate improvement capture and measured optimization
+
+- Date: 2026-07-27
+- Status: **ACCEPTED**
+- Decision:
+  - when implementation or measurement exposes a concrete improvement, record
+    it immediately with its affected invariant, expected benefit, regression
+    risk, and measurable acceptance gate;
+  - implement it at the nearest safe boundary of the active experiment. Do not
+    discard an in-flight reproducible gate or mix unmeasured changes into its
+    evidence, but do not leave a discovered opportunity only in chat or an
+    unprioritized backlog;
+  - small isolated improvements with existing coverage are applied and tested
+    immediately. Architectural or bitstream changes first receive a frozen
+    decision and baseline so that an apparent gain cannot erase comparability;
+  - every performance claim requires wall-time evidence, exact output-byte or
+    decoded-PCM identity where the algorithm is intended to be unchanged, and
+    the toolchain, CPU/GPU path, input duration, and source revision.
+- Current optimization gate:
+  - profile the R-107 native-backed complete encode and attribute wall time
+    among analysis, selection, entropy packing, container construction, and
+    independent decode rather than assuming Python is the bottleneck;
+  - move every material sample/coefficient/symbol loop identified by that
+    profile into the C++20 Core or replace it with a measured bounded vector
+    operation, while retaining Python only as the experiment controller;
+  - require byte-identical `.resonith` output and PCM-identical decode before
+    accepting an unchanged-algorithm optimization;
+  - publish short-reference before/after timings first, then rerun complete
+    Mozart. The immediate target is at least 2x end-to-end encode throughput
+    over the published 385.976-second R-107 run on the same machine; this is a
+    target, not a measured result.
+- Measured result:
+  - the allocation-free C++20 adaptive arithmetic packer is byte-identical to
+    the independent Python oracle for alphabets from 2 through 512 and is now
+    used for LAF1 scale, value, and gap-category fields;
+  - the ordinary encode hot path no longer serializes and decodes a duplicate
+    monolithic LPF1 stream. That comparison remains available as an explicit
+    conformance mode and in independent streaming/native tests;
+  - complete Mozart encoded in 155.866 seconds instead of the published
+    385.976 seconds, a 2.476x speedup and 2.571x realtime throughput. The
+    6,526,665-byte result remained byte-identical with SHA-256
+    `9018223f167b21bb47be165c1b39d947b4e580f96dd8eda4315438f8d5c9ff6f`;
+  - speech improved from 1.010 to 0.439 seconds (2.301x), and Emotional piano
+    improved from 6.981 to 2.859 seconds (2.442x), also with exact stream
+    identity;
+  - all 16 R-111 class streams remained byte-identical in a 60.174-second
+    regression gate, the strict warning build passed, and the complete
+    Python/native suite passed 180 tests with four unavailable external-device
+    or external-tool integrations skipped;
+  - because every compressed byte is identical, all previously published
+    objective quality and decoded-PCM results remain exactly unchanged. R-112
+    changes implementation throughput, not bitstream syntax or codec quality.

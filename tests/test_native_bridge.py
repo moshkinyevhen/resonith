@@ -13,6 +13,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "reference"))
 
 from maf_p0.composition import GainEventLaw  # noqa: E402
 from maf_p0.finite_state_oracle import (  # noqa: E402
+    _encode_adaptive,
     decode_finite_state_lapped,
     encode_finite_state_lapped,
 )
@@ -365,7 +366,6 @@ class NativeBridgeTests(unittest.TestCase):
             native.workspace_bytes,
             scales.size + 2 * counts.size + 3 * positions.size,
         )
-
         constrained = NativeMain0Decoder(
             self.library,
             max_workspace_bytes=1,
@@ -374,6 +374,26 @@ class NativeBridgeTests(unittest.TestCase):
             constrained.decode_lapped_finite(payload, half_window=64)
         with self.assertRaises(NativeCoreError):
             self.decoder.decode_lapped_finite(payload + b"\0", half_window=64)
+
+    def test_native_adaptive_encoder_is_byte_identical(self) -> None:
+        generator = np.random.default_rng(20260727)
+        for alphabet_size in (2, 16, 63, 256, 512):
+            symbols = generator.integers(
+                0,
+                alphabet_size,
+                size=8193,
+                dtype=np.uint16,
+            )
+            expected_payload, expected_bits = _encode_adaptive(
+                symbols,
+                alphabet_size,
+            )
+            actual_payload, actual_bits = self.decoder.encode_lapped_adaptive(
+                symbols,
+                alphabet_size,
+            )
+            self.assertEqual(actual_payload, expected_payload)
+            self.assertEqual(actual_bits, expected_bits)
 
     def test_fixed_lapped_analysis_matches_native_core(self) -> None:
         right = np.roll(self.samples, 37)

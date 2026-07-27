@@ -700,6 +700,7 @@ def encode_lapped_analysis(
     frame_whitening: float = 0.0,
     band_whitening: float = 0.0,
     native_decoder=None,
+    emit_stream: bool = True,
 ) -> LappedEncodeResult:
     """Select, pack, and verify one stream from reusable source analysis."""
 
@@ -898,6 +899,37 @@ def encode_lapped_analysis(
                     cursor = end
             variable_values = np.concatenate(value_parts)
     nonzero_count = int(np.count_nonzero(coefficients))
+    if not emit_stream:
+        coefficients.flags.writeable = False
+        empty_reconstruction = np.empty(
+            (0, source.shape[1]),
+            dtype=np.int16,
+        )
+        empty_reconstruction.flags.writeable = False
+        return LappedEncodeResult(
+            b"",
+            empty_reconstruction,
+            {
+                "status": "encoder-only selected lapped fields",
+                "analysis_backend": analysis.analysis_backend,
+                "density_backend": density_backend,
+                "selection_backend": selection_backend,
+                "frame_whitening": frame_whitening,
+                "band_whitening": band_whitening,
+                "sample_rate": sample_rate,
+                "frame_count": int(source.shape[0]),
+                "channel_count": int(source.shape[1]),
+                "half_window": half_window,
+                "transform_frame_count": frame_count,
+                "band_count": band_count,
+                "coefficients_per_frame": coefficients_per_frame,
+                "selected_count_min": selected_count_min,
+                "selected_count_max": selected_count_max,
+                "nonzero_coefficients": nonzero_count,
+            },
+            selected_scales,
+            coefficients,
+        )
 
     raw = bytearray()
     for channel in range(source.shape[1]):

@@ -52,6 +52,22 @@ RESONITH_API resonith_status resonith_lapped_finite_decode(
     const resonith_lapped_workspace* workspace
 );
 
+/*
+ * Encodes one bounded unsigned-symbol field with the exact LAF1 adaptive
+ * arithmetic model. The caller supplies output storage; no heap or global
+ * mutable state is used. `output_size` and `bit_count` are always set on
+ * success and report the canonical zero-padded field length.
+ */
+RESONITH_API resonith_status resonith_lapped_adaptive_encode(
+    const uint16_t* symbols,
+    size_t symbol_count,
+    uint16_t alphabet_size,
+    uint8_t* output,
+    size_t output_capacity,
+    size_t* output_size,
+    uint32_t* bit_count
+);
+
 #ifdef __cplusplus
 }
 #endif

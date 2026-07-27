@@ -37,6 +37,9 @@ The native Core:
   entropy fields through `resonith_lapped_finite_inspect()` and
   `resonith_lapped_finite_decode()`, using caller-owned arrays, fixed 32-bit
   arithmetic state, bounded count rescaling, and no transmitted model table;
+- encodes the same canonical LAF1 adaptive arithmetic field through
+  `resonith_lapped_adaptive_encode()`, using caller-owned symbol/output arrays,
+  alphabets of 2 through 512, and no heap or mutable global state;
 - validates and exports caller-owned byte/sample block indexes for bounded
   seek planning without decoding PCM or allocating memory;
 - builds and verifies optional source-bound `RSI1` seek sidecars with

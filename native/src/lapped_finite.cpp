@@ -108,6 +108,62 @@ private:
     std::uint32_t position_ = 0U;
 };
 
+class bit_writer {
+public:
+    bit_writer(std::uint8_t* output, std::size_t capacity) noexcept
+        : output_(output), capacity_(capacity) {}
+
+    bool write_bit(std::uint32_t value) noexcept {
+        if (value > 1U || output_ == nullptr) {
+            return false;
+        }
+        if (used_ == 0U) {
+            if (size_ >= capacity_) {
+                return false;
+            }
+            output_[size_] = 0U;
+        }
+        output_[size_] |= static_cast<std::uint8_t>(value << used_);
+        ++used_;
+        ++bit_count_;
+        if (used_ == 8U) {
+            used_ = 0U;
+            ++size_;
+        }
+        return true;
+    }
+
+    bool emit_with_pending(
+        std::uint32_t value,
+        std::uint32_t pending
+    ) noexcept {
+        if (!write_bit(value)) {
+            return false;
+        }
+        for (std::uint32_t index = 0U; index < pending; ++index) {
+            if (!write_bit(1U - value)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    std::size_t size() const noexcept {
+        return size_ + (used_ == 0U ? 0U : 1U);
+    }
+
+    std::uint32_t bit_count() const noexcept {
+        return bit_count_;
+    }
+
+private:
+    std::uint8_t* output_;
+    std::size_t capacity_;
+    std::size_t size_ = 0U;
+    std::uint32_t bit_count_ = 0U;
+    std::uint8_t used_ = 0U;
+};
+
 struct adaptive_model {
     std::array<std::uint16_t, 512U> counts{};
     std::uint16_t alphabet_size = 0U;
@@ -157,6 +213,27 @@ struct adaptive_model {
         return false;
     }
 
+    bool interval(
+        std::uint16_t symbol,
+        std::uint32_t* cumulative_low,
+        std::uint32_t* cumulative_high
+    ) const noexcept {
+        if (
+            symbol >= alphabet_size
+            || cumulative_low == nullptr
+            || cumulative_high == nullptr
+        ) {
+            return false;
+        }
+        std::uint32_t cumulative = 0U;
+        for (std::uint16_t index = 0U; index < symbol; ++index) {
+            cumulative += counts[index];
+        }
+        *cumulative_low = cumulative;
+        *cumulative_high = cumulative + counts[symbol];
+        return true;
+    }
+
     void update(std::uint16_t symbol) noexcept {
         ++counts[symbol];
         ++total;
@@ -175,6 +252,94 @@ struct adaptive_model {
         }
     }
 };
+
+resonith_status encode_adaptive(
+    const std::uint16_t* symbols,
+    std::size_t symbol_count,
+    std::uint16_t alphabet_size,
+    std::uint8_t* output,
+    std::size_t output_capacity,
+    std::size_t* output_size,
+    std::uint32_t* bit_count
+) noexcept {
+    if (
+        output_size == nullptr
+        || bit_count == nullptr
+        || alphabet_size < 2U
+        || alphabet_size > 512U
+        || symbol_count > kMaximumSymbols
+        || (symbol_count != 0U && (symbols == nullptr || output == nullptr))
+    ) {
+        return RESONITH_STATUS_INVALID_ARGUMENT;
+    }
+    *output_size = 0U;
+    *bit_count = 0U;
+    if (symbol_count == 0U) {
+        return RESONITH_STATUS_OK;
+    }
+
+    adaptive_model model{};
+    if (!model.reset(alphabet_size)) {
+        return RESONITH_STATUS_PROFILE_BOUND;
+    }
+    bit_writer writer(output, output_capacity);
+    std::uint64_t low = 0U;
+    std::uint64_t high = kTop;
+    std::uint32_t pending = 0U;
+    for (std::size_t index = 0U; index < symbol_count; ++index) {
+        const std::uint16_t symbol = symbols[index];
+        std::uint32_t cumulative_low = 0U;
+        std::uint32_t cumulative_high = 0U;
+        if (
+            !model.interval(
+                symbol,
+                &cumulative_low,
+                &cumulative_high
+            )
+        ) {
+            return RESONITH_STATUS_PROFILE_BOUND;
+        }
+        const std::uint64_t width = high - low + 1U;
+        high = low + width * cumulative_high / model.total - 1U;
+        low = low + width * cumulative_low / model.total;
+        while (true) {
+            if (high < kHalf) {
+                if (!writer.emit_with_pending(0U, pending)) {
+                    return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+                }
+                pending = 0U;
+            } else if (low >= kHalf) {
+                if (!writer.emit_with_pending(1U, pending)) {
+                    return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+                }
+                pending = 0U;
+                low -= kHalf;
+                high -= kHalf;
+            } else if (low >= kQuarter && high < kThreeQuarters) {
+                ++pending;
+                low -= kQuarter;
+                high -= kQuarter;
+            } else {
+                break;
+            }
+            low = (low << 1U) & kTop;
+            high = ((high << 1U) | 1U) & kTop;
+        }
+        model.update(symbol);
+    }
+    ++pending;
+    if (
+        !writer.emit_with_pending(
+            low < kQuarter ? 0U : 1U,
+            pending
+        )
+    ) {
+        return RESONITH_STATUS_OUTPUT_TOO_SMALL;
+    }
+    *output_size = writer.size();
+    *bit_count = writer.bit_count();
+    return RESONITH_STATUS_OK;
+}
 
 struct arithmetic_decoder {
     bit_reader* reader = nullptr;
@@ -945,4 +1110,24 @@ extern "C" resonith_status resonith_lapped_finite_decode(
         return RESONITH_STATUS_SCRATCH_TOO_SMALL;
     }
     return decode_finite(parsed, requirements, *workspace);
+}
+
+extern "C" resonith_status resonith_lapped_adaptive_encode(
+    const std::uint16_t* symbols,
+    std::size_t symbol_count,
+    std::uint16_t alphabet_size,
+    std::uint8_t* output,
+    std::size_t output_capacity,
+    std::size_t* output_size,
+    std::uint32_t* bit_count
+) {
+    return encode_adaptive(
+        symbols,
+        symbol_count,
+        alphabet_size,
+        output,
+        output_capacity,
+        output_size,
+        bit_count
+    );
 }

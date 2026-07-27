@@ -999,6 +999,7 @@ def encode_lapped_finite_packet_stream(
     frame_whitening: float = 0.0,
     band_whitening: float = 0.0,
     native_core=None,
+    verify_monolithic: bool = False,
 ) -> LappedPacketEncodeResult:
     """Packetize single-owner fields with independently reset LAF1 entropy."""
 
@@ -1039,6 +1040,7 @@ def encode_lapped_finite_packet_stream(
         frame_whitening=frame_whitening,
         band_whitening=band_whitening,
         native_decoder=native_core,
+        emit_stream=verify_monolithic,
     )
     header = HEADER.pack(
         FINITE_COMPACT_MAGIC,
@@ -1091,6 +1093,7 @@ def encode_lapped_finite_packet_stream(
             np.concatenate(position_parts),
             np.concatenate(value_parts),
             half_window=half_window,
+            native_encoder=native_core,
         )
         record = compact_finite_state_lapped(full_laf1)
         body += record
@@ -1106,7 +1109,10 @@ def encode_lapped_finite_packet_stream(
             payload
         ).samples
         verification_backend = "native Golden Core"
-    if not np.array_equal(decoded_samples, monolithic.reconstruction):
+    if (
+        verify_monolithic
+        and not np.array_equal(decoded_samples, monolithic.reconstruction)
+    ):
         raise RuntimeError("LPS5 packet reconstruction differs from LPF1")
     report = {
         "status": "adaptive integer transport-framed research stream",
@@ -1135,11 +1141,18 @@ def encode_lapped_finite_packet_stream(
         "duplicated_boundary_transform_frames": 0,
         "lookahead_frames": half_window,
         "maximum_loss_extension_frames": half_window,
-        "monolithic_stream_bytes": len(monolithic.payload),
+        "monolithic_stream_bytes": (
+            len(monolithic.payload) if verify_monolithic else None
+        ),
         "packet_byte_overhead_fraction": (
             len(payload) / len(monolithic.payload) - 1.0
+            if verify_monolithic
+            else None
         ),
-        "exact_monolithic_reconstruction": True,
+        "exact_monolithic_reconstruction": (
+            True if verify_monolithic else None
+        ),
+        "monolithic_conformance_checked": verify_monolithic,
         **_quality_report(
             source.reshape(-1),
             decoded_samples.reshape(-1),

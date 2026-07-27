@@ -11,6 +11,10 @@ version.
 
 ### Research
 
+- Accepted R-112 and moved the exact LAF1 adaptive arithmetic packer into the
+  allocation-free C++20 Core. Complete Mozart encoding improved from 385.976
+  to 155.866 seconds (2.476x) while retaining the exact 6,526,665-byte stream;
+  speech, piano, and all 16 R-111 class streams were also byte-identical.
 - Accepted R-110: Python remains the rapidly editable research control plane
   and independent oracle, while scaling transform, PVQ, candidate
   reconstruction, synthesis, and decode work executes in C++20/SIMD or

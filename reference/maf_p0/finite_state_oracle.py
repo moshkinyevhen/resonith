@@ -364,6 +364,7 @@ def encode_finite_state_lapped(
     values: np.ndarray,
     *,
     half_window: int,
+    native_encoder=None,
 ) -> bytes:
     """Encode existing sparse fields with adaptive integer entropy only."""
 
@@ -424,14 +425,19 @@ def encode_finite_state_lapped(
     if frame_count > 1:
         scale_delta[:, 1:, :] -= scale_grid[:, :-1, :].astype(np.int64)
         count_delta[:, 1:] -= count_grid[:, :-1].astype(np.int64)
-    scale_payload, scale_bits = _encode_adaptive(
+    adaptive_encode = (
+        _encode_adaptive
+        if native_encoder is None
+        else native_encoder.encode_lapped_adaptive
+    )
+    scale_payload, scale_bits = adaptive_encode(
         scale_delta.reshape(-1) + 31,
         63,
     )
     count_entropy, count_parameter, count_payload, count_bits = _encode_entropy(
         count_delta.reshape(-1)
     )
-    value_payload, value_bits = _encode_adaptive(
+    value_payload, value_bits = adaptive_encode(
         value_array.astype(np.int64) + 128,
         256,
     )
@@ -449,7 +455,7 @@ def encode_finite_state_lapped(
             threshold,
             half_window,
         )
-        category_payload, category_bits = _encode_adaptive(
+        category_payload, category_bits = adaptive_encode(
             categories,
             alphabet_size,
         )

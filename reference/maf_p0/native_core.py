@@ -725,6 +725,16 @@ class NativeMain0Decoder:
             ctypes.POINTER(_LappedWorkspace),
         ]
         self._library.resonith_lapped_finite_decode.restype = ctypes.c_int
+        self._library.resonith_lapped_adaptive_encode.argtypes = [
+            ctypes.POINTER(ctypes.c_uint16),
+            ctypes.c_size_t,
+            ctypes.c_uint16,
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_size_t),
+            ctypes.POINTER(ctypes.c_uint32),
+        ]
+        self._library.resonith_lapped_adaptive_encode.restype = ctypes.c_int
         self._library.resonith_lapped_packet_open.argtypes = [
             byte_pointer,
             ctypes.c_size_t,
@@ -1128,6 +1138,41 @@ class NativeMain0Decoder:
             scores,
             transform_frames,
         )
+
+    def encode_lapped_adaptive(
+        self,
+        symbols: np.ndarray,
+        alphabet_size: int,
+    ) -> tuple[bytes, int]:
+        """Encode one LAF1 adaptive field through the allocation-free Core."""
+
+        symbol_view = np.asarray(symbols)
+        if (
+            symbol_view.ndim != 1
+            or not np.issubdtype(symbol_view.dtype, np.integer)
+            or not 2 <= alphabet_size <= 512
+            or np.any(symbol_view < 0)
+            or np.any(symbol_view >= alphabet_size)
+        ):
+            raise TypeError("invalid native adaptive symbol field")
+        source = np.ascontiguousarray(symbol_view, dtype=np.uint16)
+        if source.size == 0:
+            return b"", 0
+        output = np.empty(source.size * 2 + 16, dtype=np.uint8)
+        output_size = ctypes.c_size_t()
+        bit_count = ctypes.c_uint32()
+        self._check(
+            self._library.resonith_lapped_adaptive_encode(
+                source.ctypes.data_as(ctypes.POINTER(ctypes.c_uint16)),
+                source.size,
+                alphabet_size,
+                output.ctypes.data_as(ctypes.POINTER(ctypes.c_uint8)),
+                output.size,
+                ctypes.byref(output_size),
+                ctypes.byref(bit_count),
+            )
+        )
+        return output[: output_size.value].tobytes(), int(bit_count.value)
 
     def decode_lapped_packets(
         self,

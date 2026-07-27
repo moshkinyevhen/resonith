@@ -62,6 +62,9 @@ The repository contains:
 - a bounded allocation-free native `LAF1` adaptive integer entropy candidate
   that preserves the selected lapped reconstruction while reducing complete
   three-second R-084 bytes by 5.34% to 7.67% on all three licensed clips;
+- an allocation-free C++20 LAF1 encoder that preserves every published R-107
+  stream byte and improves complete-Mozart encode throughput by 2.476x to
+  2.571x realtime on the measured Windows x64 host;
 - prospective `LPS5` independently reset adaptive records, which preserve LPS4
   loss containment and reduce complete 278.6 ms transport bytes by 3.43% to
   5.95% on the three R-084 clips;
@@ -72,7 +75,7 @@ The repository contains:
 - a pinned 16-class EBU SQAM/Xiph heterogeneous gate spanning speech, solo
   voice, sustained tones, noise, electronic, transient, dense, stereo, and
   film-mix material;
-- 147 pure reference/security/integration tests, fifteen native decoder-in-loop
+- 165 pure reference/security/integration tests, fifteen native decoder-in-loop
   integration tests, ten native conformance targets, native x64/ARM64
   coverage across Linux, Windows, and macOS, an Android arm64-v8a build, and
   separate sanitized LiftPack/Main-0/RSI1/LPF1/LAF1 mutation targets.

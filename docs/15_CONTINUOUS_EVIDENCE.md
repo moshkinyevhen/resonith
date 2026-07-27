@@ -116,3 +116,20 @@ changes decode, playback, or UI behavior must verify:
 Orkela has its own version and changelog. Player regressions cannot be hidden
 by a codec release and codec regressions cannot be attributed to the player
 without decoder-output evidence.
+
+## 8. Immediate improvement capture
+
+A concrete improvement discovered during implementation or measurement MUST
+be written to the decision log immediately with its expected benefit,
+invariants, regression risk, and acceptance gate. It is implemented at the
+nearest safe boundary of the active reproducible experiment.
+
+Small isolated improvements with existing coverage are tested immediately.
+Architectural or bitstream changes first freeze the current baseline and
+decision so that mixed changes cannot destroy causal evidence. An active
+reproducible run is never discarded merely to apply an unrelated optimization.
+
+Unchanged-algorithm performance work MUST prove exact stream or decoded-PCM
+identity as applicable, record complete wall time and realtime factor, and
+identify the source revision, compiler, host, and executable hash. A possible
+improvement may not remain only in chat or an unmeasured backlog.
