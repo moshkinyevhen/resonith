@@ -137,18 +137,24 @@ jobs:
         shell: pwsh
         run: |
           $report = Join-Path $env:GITHUB_WORKSPACE "build/native/ctest-windows-arm64.xml"
-          ctest --test-dir build/native `
+          $output = @(& ctest --test-dir build/native `
             --build-config Release `
             --output-on-failure `
-            --output-junit $report
+            --output-junit $report 2>&1)
           $status = $LASTEXITCODE
+          $output | Write-Output
           if ($status -ne 0 -and (Test-Path -LiteralPath $report)) {
             [xml]$document = Get-Content -LiteralPath $report -Raw
             $cases = @($document.testsuite.testcase)
             $cases += @($document.testsuites.testsuite.testcase)
             foreach ($case in $cases) {
-              if ($null -ne $case.failure) {
-                $detail = [string]$case.failure.InnerText
+              $problem = if ($null -ne $case.failure) {
+                $case.failure
+              } else {
+                $case.error
+              }
+              if ($null -ne $problem) {
+                $detail = [string]$problem.InnerText
                 $detail = ($detail -replace "[\r\n]+", " ").Trim()
                 if ($detail.Length -gt 512) {
                   $detail = $detail.Substring(0, 512)
@@ -156,6 +162,16 @@ jobs:
                 Write-Output "::error title=Windows ARM64 CTest $($case.name)::$detail"
               }
             }
+          }
+          if ($status -ne 0) {
+            $tail = (($output | Select-Object -Last 12) -join " | ").Trim()
+            $tail = $tail -replace "%", "%25"
+            $tail = $tail -replace "`r", "%0D"
+            $tail = $tail -replace "`n", "%0A"
+            if ($tail.Length -gt 2048) {
+              $tail = $tail.Substring(0, 2048)
+            }
+            Write-Output "::error title=Windows ARM64 CTest output::$tail"
           }
           exit $status
 
