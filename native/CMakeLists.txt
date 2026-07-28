@@ -472,7 +472,9 @@ if(BUILD_TESTING)
         )
         set_target_properties(
             resonith_c_header_shared_test
-            PROPERTIES C_EXTENSIONS OFF
+            PROPERTIES
+                C_EXTENSIONS OFF
+                LINKER_LANGUAGE CXX
         )
         resonith_enable_warnings(resonith_c_header_shared_test)
         add_test(

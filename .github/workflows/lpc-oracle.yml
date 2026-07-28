@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: "3.14"
       - name: Install runtime dependency
-        run: python -m pip install numpy
+        run: python -m pip install -r requirements-research.txt
       - name: Run bounded integer LPC oracle
         run: >
           python experiments/lpc_liftpack_oracle_benchmark.py

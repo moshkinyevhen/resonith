@@ -17,15 +17,24 @@
 
 #include <stddef.h>
 
+/*
+ * Compile-time ABI guards avoid a runtime constant branch, which MSVC ARM64
+ * correctly diagnoses under the project's warnings-as-errors policy.
+ */
+typedef char resonith_manifest_size_must_match[
+    sizeof(resonith_partial_path_manifest) == 1224U ? 1 : -1
+];
+typedef char resonith_path_size_must_match[
+    sizeof(resonith_partial_path) == 136U ? 1 : -1
+];
+typedef char resonith_entry_size_must_match[
+    sizeof(resonith_partial_path_entry) == 48U ? 1 : -1
+];
+typedef char resonith_report_size_must_match[
+    sizeof(resonith_partial_path_report) == 336U ? 1 : -1
+];
+
 int main(void) {
-    if (
-        sizeof(resonith_partial_path_manifest) != 1224U
-        || sizeof(resonith_partial_path) != 136U
-        || sizeof(resonith_partial_path_entry) != 48U
-        || sizeof(resonith_partial_path_report) != 336U
-    ) {
-        return 1;
-    }
     resonith_container_view view = {
         NULL,
         0U,

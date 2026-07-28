@@ -81,6 +81,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p build/linux-sanitized/evidence
           {
             echo "source_sha=${GITHUB_SHA}"
             echo "run_id=${GITHUB_RUN_ID}"
@@ -256,22 +257,29 @@ jobs:
           )
           test -s "$static"
           test -s "$shared"
-          "$llvm_root/llvm-ar" t "$static" | grep -q .
+          "$llvm_root/llvm-ar" t "$static" > "$build/static-members.txt"
+          test -s "$build/static-members.txt"
           "$llvm_root/llvm-readelf" -h "$shared" \
-            | grep -F "Machine:" \
-            | grep -Fq "${{ matrix.elf_machine }}"
+            > "$build/shared-elf-header.txt"
+          grep -F "Machine:" "$build/shared-elf-header.txt" \
+            | grep -F "${{ matrix.elf_machine }}" > /dev/null
           "$llvm_root/llvm-readelf" -d "$shared" \
             > "$build/libresonith_core_shared.dynamic.txt"
           grep -Fq "(NEEDED)" "$build/libresonith_core_shared.dynamic.txt"
-          ! "$llvm_root/llvm-readelf" -d "$shared" \
-            | grep -Fq "libc++_shared"
+          ! grep -Fq \
+            "libc++_shared" \
+            "$build/libresonith_core_shared.dynamic.txt"
           "$llvm_root/llvm-nm" -D --defined-only "$shared" \
-            | grep -Fq "resonith_partial_graph_paths_cpu_v2"
+            > "$build/shared-exported-symbols.txt"
+          grep -Fq \
+            "resonith_partial_graph_paths_cpu_v2" \
+            "$build/shared-exported-symbols.txt"
           for test_name in "${tests[@]}"; do
             test -x "$build/$test_name"
             "$llvm_root/llvm-readelf" -h "$build/$test_name" \
-              | grep -F "Machine:" \
-              | grep -Fq "${{ matrix.elf_machine }}"
+              > "$build/$test_name.elf-header.txt"
+            grep -F "Machine:" "$build/$test_name.elf-header.txt" \
+              | grep -F "${{ matrix.elf_machine }}" > /dev/null
           done
 
       - name: Install and start the pinned API-26 Android emulator
@@ -284,6 +292,7 @@ jobs:
             "emulator" \
             "platform-tools" \
             "$package"
+          export PATH="$ANDROID_HOME/platform-tools:$PATH"
           echo "no" | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" \
             create avd \
             --force \
