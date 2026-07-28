@@ -13,6 +13,7 @@ from maf_p0.maf_typed import (
     STOCHASTIC_EXCITATION,
     MafBasis,
     MafBasisInstance,
+    MafBasisWarpInstance,
     MafFilter,
     MafMix,
     MafSourceFilter,
@@ -29,6 +30,7 @@ from maf_p0.maf_typed_candidate import (
 )
 from maf_p0.motif_orbit import _fit_gain_shift_q15
 from maf_p0.native_core import NativeMain0Decoder
+from maf_p0.warp_dictionary import fit_warp_dictionary_prediction
 from maf_p0.motif_orbit import (
     _render_gain_shift_envelope,
     encode_gain_orbit_candidate,
@@ -353,6 +355,88 @@ class MafTypedNativeTests(unittest.TestCase):
                 dtype=np.int16,
             ),
         )
+
+    def test_basis_warp_is_fractional_and_partition_invariant(self) -> None:
+        basis = tuple(1000 * index for index in range(8))
+        payload = pack_maf_typed(
+            sample_rate=48000,
+            total_frames=16,
+            render_quantum=8,
+            output_channels=1,
+            emitter_count=1,
+            mixes=(MafMix(0, 16, ((32767,),)),),
+            bases=(MafBasis(basis),),
+            basis_warp_instances=(
+                MafBasisWarpInstance(
+                    0,
+                    0,
+                    0,
+                    6,
+                    1 << 15,
+                    1 << 15,
+                    32768,
+                ),
+                MafBasisWarpInstance(
+                    0,
+                    0,
+                    8,
+                    5,
+                    0,
+                    1 << 15,
+                    32768,
+                    end_source_step_q16=3 << 15,
+                ),
+            ),
+            declared_operations_per_frame=64,
+        )
+        info = parse_maf_typed(payload)
+        self.assertEqual(len(info.basis_warp_instances), 2)
+        self.assertEqual(
+            info.basis_warp_instances[1].end_source_step_q16,
+            3 << 15,
+        )
+        regular = self.decoder.decode_maf_typed(payload, callback_frames=8)
+        irregular = self.decoder.decode_maf_typed(payload, callback_frames=3)
+        np.testing.assert_array_equal(regular.samples, irregular.samples)
+        np.testing.assert_array_equal(
+            regular.samples[0:6, 0],
+            np.asarray((500, 1000, 1500, 2000, 2500, 3000), dtype=np.int16),
+        )
+        np.testing.assert_array_equal(
+            regular.samples[8:13, 0],
+            np.asarray((0, 500, 1333, 2500, 4000), dtype=np.int16),
+        )
+
+    def test_warp_dictionary_reuses_phase_and_polarity_across_channels(
+        self,
+    ) -> None:
+        position = np.arange(64, dtype=np.float64)
+        basis = np.rint(
+            8000.0 * np.sin(2.0 * np.pi * 5.0 * position / 64.0)
+            + 2000.0 * np.sin(2.0 * np.pi * 13.0 * position / 64.0)
+        ).astype(np.int16)
+        samples = np.column_stack(
+            (
+                np.concatenate((basis, np.roll(basis, 7))),
+                np.concatenate((-np.roll(basis, 3), basis)),
+            )
+        )
+        prediction = fit_warp_dictionary_prediction(
+            samples,
+            48000,
+            native_decoder=self.decoder,
+            block_samples=64,
+            maximum_bases=4,
+            maximum_instances=8,
+            maximum_normalized_error=1.0e-8,
+        )
+        self.assertGreaterEqual(prediction.report["instance_count"], 2)
+        self.assertGreaterEqual(prediction.report["covered_blocks"], 2)
+        self.assertLessEqual(
+            prediction.report["maximum_normalized_fit_error"],
+            1.0e-8,
+        )
+        np.testing.assert_array_equal(prediction.reconstruction, samples)
 
     def test_phase_search_finds_shift_and_counterphase(self) -> None:
         basis = np.asarray((100, 200, -300, 500, -700, 1100), dtype=np.int64)

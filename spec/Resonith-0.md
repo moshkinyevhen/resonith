@@ -1475,11 +1475,42 @@ signed gain supplies polarity/counterphase. Linear gain supplies one bounded
 fade or damping trajectory. `REVERSE` reads decreasing Basis indices;
 non-circular reverse requires `basis_sample_offset` to name the first (highest)
 valid source index, while circular reverse wraps modulo the Basis length.
-Later levels MAY add fractional phase/alignment,
-pitch/time laws, piecewise envelopes, overlap windows, and short transfer
-filters, but MUST use a new explicitly versioned record and MUST declare
-maximum Basis samples, instances, simultaneous overlap, operations per output
-frame, correction bytes, and random-access dependency span.
+Schema 1 record type 8 `BASIS_WARP_INSTANCE` adds a bounded fractional
+coordinate law without changing record type 7:
+
+```text
+u16 instance_id
+u16 emitter_id
+u16 basis_id
+u16 flags: bit 0 CIRCULAR, bit 1 LINEAR_GAIN, bit 2 LINEAR_STEP
+u32 output_start
+u32 output_sample_count
+i32 source_position_q16
+i32 source_step_start_q16
+i32 source_step_end_q16
+i32 start_gain_q15
+i32 end_gain_q15
+```
+
+The source coordinate and step use signed Q16.16; `65536` means one Basis
+sample per output sample and a negative step expresses reverse playback.
+Constant step is canonical when `LINEAR_STEP` is clear and
+`source_step_end_q16` MUST then be zero. A linear step uses the closed
+absolute-index law specified by the conformance model and cannot cross zero
+inside one instance. Schema 1 uses fixed two-tap linear interpolation with
+ties-away-from-zero signed rounding. Circular positions use Euclidean modulo.
+Non-circular positions MUST remain inside the Basis for the complete
+instance.
+
+`abs(source_step_q16)` MUST NOT exceed `8 * 65536`. A warp instance contains
+at most 65,535 output samples; a longer trajectory is split at canonical
+absolute output positions. `LINEAR_STEP` requires at least three output
+samples and `LINEAR_GAIN` requires at least two. Integer and warp instances
+share the Main limit of 4,096 placements. Future piecewise envelopes,
+overlap windows, spectral envelopes, and short transfer filters MUST use a
+new explicitly versioned record and MUST declare maximum Basis samples,
+instances, simultaneous overlap, operations per output frame, correction
+bytes, and random-access dependency span.
 
 Content-defined hashing, fingerprinting, semantic motif recognition, and
 near-duplicate search are encoder operations and are non-normative. The
@@ -1501,6 +1532,89 @@ A discovery, selection, or provisional ownership at one scale SHALL NOT remove
 an overlapping, nested, cross-band, cross-channel, or direct longer candidate
 at another scale. Exact content-defined matching SHALL complement rather than
 replace the regular declared lattice.
+
+The candidate language is gridless in meaning even when its execution is
+tiled. A fixed transform frame, analysis block, entropy page, checkpoint, GPU
+tile, or render callback SHALL NOT restrict an eligible pattern onset,
+duration, frequency support, channel route, or compound span. Basis instances
+use arbitrary integer output starts and lengths.
+
+An evidence-grade discovery union SHALL declare:
+
+1. exact rolling fingerprints at every sample origin for each declared exact
+   duration, followed by objective sample verification;
+2. content-defined anchors computed independently from original PCM on each
+   declared channel and perfect-reconstruction frequency cell;
+3. overlapping regular origins and their hop at every declared scale;
+4. cross-channel and cross-band interval candidates;
+5. both direct long spans and bottom-up `CompoundBasis` spans.
+
+An implementation MAY use bounded CUDA or CPU tiles to evaluate this union.
+Changing tile size, host/device spill boundaries, thread count, or evaluation
+order SHALL NOT change declared candidate membership or the selected
+fixed-point result.
+
+An evidence-grade Foundry encoder SHALL additionally offer the R-159 Latent
+Source Pattern Field. It MAY infer additive layers from complex
+time-frequency, cross-channel, cross-occurrence, sparse, low-rank, neural, or
+other objective observations, but it SHALL NOT require a semantic source name.
+The encoder SHALL run the declared gridless multiscale dictionary search
+independently on each admitted layer hypothesis.
+
+Every layer count, factorization iteration, origin, routing law and
+fixed-point parameter neighbourhood included by a Foundry run SHALL appear in
+the finite run manifest. Phase and cross-channel transfer SHALL be part of
+candidate verification; magnitude-only similarity cannot establish a Truth
+relation. Direct observed-channel candidates, composite Basis candidates and
+independent Truth SHALL remain in the same global selector and cannot be
+pruned by layer inference.
+
+The complete decoded candidate SHALL synthesize and route every layer through
+the bounded MAF ISA, compose them in normative integer order, and code the
+remaining Truth. Physical source identifiability is not a conformance
+assumption. Lossless admission requires exact PCM after composition and Truth;
+an incorrect or uneconomic decomposition SHALL fall back without changing the
+source.
+
+R-160 defines the prospective event grammar for admitted anonymous layers.
+Each layer owns immutable Basis references, bounded persistent transform and
+route laws, and a sparse event ledger. A motif MAY join non-adjacent events;
+unrelated or overlapping events between its steps remain independently
+representable. A motif therefore does not require the complete mixture between
+its steps to repeat.
+
+A long macro SHOULD be encoded as a bounded DAG of smaller Basis references and
+laws when that complete representation wins. A raw long Basis is legal only
+when its dictionary payload, activation, dependency and correction costs
+amortize under the same global selector. The initial finite parameter-series
+language is:
+
+1. literal values;
+2. one constant value;
+3. an exact affine sequence;
+4. run-length values;
+5. a modal value with sparse indexed exceptions.
+
+The event decoder SHALL NOT execute an arbitrary mathematical program. Every
+law and Basis transform has a versioned integer syntax, bounded state, bounded
+operation count and deterministic failure path.
+
+Integer time alignment of a finite Basis SHALL use finite support and SHALL NOT
+wrap samples from one boundary to the other. A fractional phase or resampling
+claim requires its own normative bounded transform and conformance vectors.
+Partial-spectrum ownership SHALL use perfect-reconstruction integer lifting or
+another approved exact partition. Magnitude-only subtraction is not a
+conforming lossless layer decomposition.
+
+One final Truth correction is computed after the normative sum of all admitted
+anonymous fields. An encoder SHALL NOT charge or transmit a separate exact
+correction for every hypothetical source unless those corrections themselves
+win as independently useful normative atoms.
+
+Compression of an isolated event ledger does not establish audio compression.
+Official evidence SHALL price and decode the complete stream, including Basis
+payloads, events, transforms, routes, entropy state, checkpoints and the final
+Truth correction.
 
 Hashes, fingerprints, learned embeddings, classifiers, and external semantic
 analysis MAY order evaluation. They SHALL NOT remove candidates from an
@@ -1527,6 +1641,534 @@ syntax, deterministic composition order, operation and memory limits,
 corruption tests, independent-model conformance, exact correction path, and
 random-access rule. An arbitrary executable formula, neural program, shader,
 or unbounded transform graph SHALL NOT be a Basis transform.
+
+### 14.8 LSPF evidence-carrying implementation order
+
+R-161 assigns highest implementation priority to the Latent Source Pattern
+Field until each package below passes or is explicitly rejected by complete
+evidence:
+
+1. convolutive anonymous fields;
+2. bounded pitch, time, phase, formant, envelope, and route laws;
+3. persistent source-filter, stochastic, transient, and cross-channel
+   competition;
+4. multiple sparse motifs, arbitrary-gap `CompoundBasis` DAGs, and persistent
+   parameter laws;
+5. correction-entropy-driven complete-stream global RDO;
+6. C++23/CUDA Foundry execution with portable fixed-integer CPU parity;
+7. the complete R-118 quality and byte frontier.
+
+This order governs the reference project and official evidence encoder; it
+does not require a conforming third-party encoder to use the same search
+algorithm.
+
+Explained energy, separation quality, semantic confidence, or proposer
+likelihood SHALL NOT establish a compression win. A candidate first meets
+exact reconstruction or every applicable quality floor, then competes by
+complete stream bytes and bounded decoder resources. Only the final
+mixture-domain Truth is authoritative.
+
+Every material LSPF generation SHALL retain:
+
+- the original input;
+- the encoded `.resonith` stream;
+- PCM decoded by the actual candidate decoder;
+- the preceding Resonith stream and decoded PCM;
+- a current official Opus stream and its actual decoded PCM when a perceptual
+  comparison is applicable;
+- machine-readable configuration, metrics, resource use, hashes, and
+  provenance;
+- the exact Orkela executable that opened, decoded, played, sought, and
+  inspected the candidate stream.
+
+An evidence report SHALL link every retained local artifact. A work package is
+not complete when the stream, decoded listening output, player compatibility,
+hashes, or required R-118 rows are missing. A Fast diagnostic MAY use a
+declared subset but SHALL NOT create a release, syntax promotion, or general
+performance claim.
+
+### 14.9 Simultaneous duration adaptation gate
+
+Every official LSPF work-package generation SHALL evaluate both:
+
+1. continuous material of at least 120 seconds for dictionary amortization,
+   persistent-law drift, long motifs, checkpoints, indexes, memory, throughput,
+   seeking, and fallback stability;
+2. short focused material for onset, phase, boundary, transient,
+   intelligibility, local transform, low-latency, and ablation behavior.
+
+Neither duration class substitutes for the other. Reports SHALL retain
+individual rows and short/long aggregates. The long gate SHALL execute first.
+Its configuration, streams, hashes, metrics, and Pareto frontier SHALL be
+frozen before short-input tuning begins. A shared-default change after short
+tuning requires the affected long candidates to be rerun.
+
+Live, Studio, and Foundry are encoder policy/resource levels over the same
+syntax and decoder. An encoder MAY deterministically adapt its scale union,
+factor or convolution depth, candidate residency, dictionary lifetime,
+checkpoint cadence, search depth, and scheduling to duration, sample rate,
+channels, latency, resource budget, structure, and requested quality.
+
+The selected plan, every enabled family, and every skipped family SHALL appear
+in the evidence manifest. Automatic adaptation SHALL NOT remove independent
+Truth, applicable quality floors, resource/corruption bounds, or decoder
+conformance.
+
+### 14.10 Duration-Pareto preservation
+
+A reference encoder SHALL retain any incumbent candidate that has already won
+for a duration bucket by complete bytes at the applicable quality floor, or by
+quality at a declared equal complete-byte budget. Tuning for another duration
+bucket SHALL add or refine a specialized candidate and SHALL NOT remove,
+weaken, or silently retune that incumbent.
+
+For every input, the applicable incumbent, every new challenger, and
+independent Truth/fallback SHALL compete under identical decoder-produced
+complete-byte and quality accounting. Selection is per input. A cross-duration
+average SHALL NOT justify a regression inside any duration bucket.
+
+The generation manifest SHALL record the incumbent identifier, duration class,
+evaluated alternatives, quality eligibility, complete bytes, rejection
+reasons, and selected winner. Separate short, medium, and long Pareto frontiers
+SHALL be retained. A long-only win is a valid capability but SHALL NOT be
+reported as a universal duration win.
+
+### 14.11 Dual-axis generation success
+
+A generation is a successful retained Pareto candidate for a duration bucket
+when at least one of the following predeclared comparisons passes:
+
+1. complete decoder-produced bytes decrease while all applicable quality floors
+   remain satisfied; or
+2. objective quality, and subjective quality for a promotion claim, improves
+   inside the declared matched-complete-byte tolerance.
+
+Improvement on both axes is preferred but is not required. A rate/quality
+trade-off outside the equivalence tolerance SHALL be retained and labelled as
+an alternative operating point rather than installed silently as a universal
+default. A failed short bucket SHALL NOT erase a successful frozen long point,
+and the reciprocal rule applies to a successful short point.
+
+The evidence plan SHALL declare byte tolerance, quality floors, metric deltas,
+and listening protocol before encoding. Reports SHALL present the long gate
+and frozen frontier first, short tuning second, and final per-duration
+selection last.
+
+### 14.12 Dual-axis refinement before freeze
+
+When an initial candidate passes only the rate-success or quality-success axis,
+the reference encoder SHALL run a bounded refinement targeting the missing axis
+before assigning a fixed generation identifier or release version.
+
+After a rate-only win, refinement SHALL seek higher quality without losing the
+proven rate advantage. After a quality-only win, refinement SHALL seek fewer
+complete bytes without losing the proven quality advantage. A verified
+two-axis point MAY be frozen immediately after conformance verification.
+
+A one-axis point MAY be frozen only after the predeclared candidate lattice,
+time and resource budget, and stop conditions have been exhausted. It remains
+a successful Pareto candidate if the second axis cannot be improved. The
+report SHALL retain the initial point, all refinement points, both axis deltas,
+rejection reasons, selected final point, and refinement-exhaustion status.
+
+### 14.13 Maximum-effort Opus anchor
+
+Every real-audio material generation SHALL include the current project-pinned
+official libopus encoder and decoder. Complexity 10 is mandatory. The anchor
+search SHALL evaluate all applicable application, signal, frame-duration,
+bandwidth, VBR/constrained-VBR, channel, and offline file-coding controls and
+search bitrate around the declared complete-byte or quality target.
+
+Every candidate SHALL be decoded by the official decoder. The selected Opus
+point SHALL be the strongest eligible point under the same predeclared quality
+floors, complete-container byte accounting, objective metric panel, and
+listening protocol used for Resonith. Encoder delay, pre-skip, sample count,
+channel mapping, metadata, and container overhead SHALL be treated
+consistently.
+
+Evidence SHALL retain the search configuration, rejected points, winning
+`.opus`, decoded PCM, hashes, encoder and decoder versions, and wall time. A
+lossless structural proxy MAY include this anchor as context but SHALL NOT
+rank lossy Opus bytes against exact-lossless bytes as a codec victory.
+
+### 14.14 Causal acoustic mechanism objective
+
+The reference MAF encoder models output pressure as:
+
+```text
+Pressure_c(t) =
+  sum_s Route_c,s(Resonator_s(Excitation_s, State_s))
+  + Truth_c(t)
+```
+
+An excitation MAY contain coherent or quasiperiodic trajectories, sparse
+impulses, and counter-addressed stochastic innovation. Resonant state MAY
+contain harmonic or bounded-inharmonic partial bundles, source-filter/formant
+laws, decay, modulation, and short stable body or room responses. A route MAY
+contain bounded delay, gain, phase, channel covariance, and stable propagation
+filters.
+
+The reference encoder SHOULD identify these mechanisms jointly at micro,
+meso, and macro scales. A law, state, Basis, or motif is paid once and remains
+alive until an event changes or expires it. Semantic source names are not
+required.
+
+Admission minimizes complete dictionary, state, event, route, checkpoint,
+entropy, final-Truth, distortion, decode, and seek cost. Physical plausibility,
+semantic analysis, and predicted continuation are proposer evidence only. They
+SHALL NOT remove decoder verification, quality floors, deterministic fallback,
+or independent Truth.
+
+This model does not assert that arbitrary audio has zero conditional entropy.
+Exact reconstruction is established only by the complete bounded render plus
+final Truth and the declared PCM hash. Losing causal candidates SHALL fall
+back to the simpler incumbent.
+
+### 14.15 Separate causal lanes with single ownership
+
+The reference encoder SHALL allow independent proposals for:
+
+1. coherent harmonic partial bundles;
+2. deterministic bounded-inharmonic partial bundles;
+3. sparse onset-addressed transients;
+4. counter-addressed stochastic fields;
+5. complex phase, delay, decay, room, and cross-channel routes;
+6. direct innovation/Truth.
+
+Lanes MAY overlap additively in time and frequency, but one primary lane owns
+each admitted explanatory coefficient/sample region for rate accounting. A
+harmonic lane SHALL NOT absorb transient or stochastic structure merely to
+avoid signalling its proper representation. No lane carries an independent
+full residual: all selected lanes are rendered and summed before one final
+mixture-domain Truth.
+
+Linear reinforcement and cancellation SHALL be reproduced through complex
+phase and route laws when selected. Unexplained nonlinear interaction or model
+error remains final Truth. The global selector prices every state, partial,
+event, phase, route, checkpoint, entropy symbol, composition, and compressed
+Truth byte.
+
+### 14.16 Causal Sequence Atlas
+
+The reference Foundry SHALL index canonical event streams in addition to
+waveform and coefficient patterns. Event coordinates SHOULD include anonymous
+Basis or partial state, arbitrary time gap, pitch/frequency law, complex phase
+law, gain/envelope, formant or spectral shape, decay/resonator state, and
+channel/route state.
+
+Absolute onset, pitch, phase, gain, and channel position SHALL be separated
+from transition laws when constructing transformed motif candidates. For every
+declared finite quantization and transform family, an exact suffix automaton or
+equivalent compressed index SHALL cover every event origin.
+
+One suffix-automaton end-position class MAY represent a complete interval of
+repeated substring lengths. The candidate manifest SHALL record that complete
+interval; an encoder SHALL NOT describe a few preferred lengths as exhaustive.
+The reference search SHALL include literal, constant-offset, first-difference,
+and bounded second-difference pitch/gain/phase/route canonical streams.
+
+Approximate landmarks, LSH, DTW, source separation, learned analysis, and AI
+MAY add candidates but SHALL NOT prune the exact declared canonical language.
+Arbitrary gaps and unrelated intervening events remain explicit. Maximal
+sequences, shorter represented intervals, direct long candidates, and
+bottom-up `CompoundBasis` candidates all compete under complete RDO.
+
+### 14.17 All-lane causal event streams
+
+Each separately owned causal lane SHALL expose an independently ordered event
+stream for encoder analysis. At minimum these streams cover coherent harmonic,
+deterministic bounded-inharmonic, sparse transient, stochastic-law, and
+phase/room/channel-route state.
+
+Simultaneous events in different lanes SHALL remain separately addressable.
+The encoder MAY define synchronized cross-lane motifs, but SHALL NOT require a
+single opaque token to own the combined waveform. Stochastic events describe
+distribution, envelope, modulation, density, and channel-correlation laws;
+they do not predict a particular random realization phase.
+
+All selected lanes are rendered and summed before the one authoritative
+mixture-domain Truth correction. Event discovery alone does not admit a
+bitstream representation.
+
+### 14.18 Factorized law atlases
+
+Within each causal lane, the reference Foundry SHALL index timing, pitch,
+phase, gain, envelope, resonator, and route laws independently before joint
+composition. A repetition in one law SHALL NOT be discarded solely because an
+unrelated law differs.
+
+For each declared finite projection and canonical transform family, the exact
+index SHALL cover every eligible event origin and every repeated-length
+interval represented by its end-position classes. Stochastic realization
+phase is excluded from predictive state.
+
+A bounded synchronized grammar MAY compose factorized laws and shared
+lifetimes. Its generation manifest SHALL declare the exact composition family,
+exceptions, dictionary/state/event cost, render cost, checkpoints, and final
+Truth. Approximate or learned joint proposals MAY add candidates but SHALL NOT
+prune exact projected candidates.
+
+### 14.19 Hierarchical causal-law ledger
+
+A factorized canonical law stream MAY be serialized as:
+
+1. a literal token ledger;
+2. an immutable token dictionary plus symbol ledger; or
+3. a bounded acyclic pair grammar whose rules reference literals or earlier
+   rules.
+
+The encoder SHALL compare actual complete entropy-coded payload bytes. A
+grammar rule SHALL be admitted only when the candidate payload is smaller than
+the preceding ledger at that admission step. The selected stream SHALL decode
+to the exact canonical token sequence.
+
+The decoder SHALL bound token count, token width, vocabulary size, rule count,
+symbol references, and total expansion. Rules SHALL be backward-referencing
+and acyclic. Checksum and trailing-byte validation are mandatory.
+
+This ledger alone does not admit an acoustic mode. Complete MAF admission also
+prices Basis data, synchronized laws, state, checkpoints, render operations,
+and one final audio Truth.
+
+### 14.20 Shared causal-lane timeline
+
+One causal lane SHALL encode at most one ordered event timeline. Pitch, phase,
+gain, envelope, resonator, and route columns reference this clock by event
+ordinal or bounded lifetime; they SHALL NOT carry independent copies of the
+same onset/gap sequence.
+
+Columns that equal their declared default for the complete ledger MAY be
+omitted. An empty or constant identity route in a mono lane requires no route
+event stream. Omission SHALL reconstruct the exact declared default.
+
+The encoder SHALL compare complete row-oriented and shared-timeline
+column-oriented ledgers. The selected representation SHALL reproduce the exact
+causal-event sequence under decoder bounds. This selection remains
+non-normative until complete acoustic Basis, state, render, checkpoint, and
+final-Truth accounting admits it.
+
+### 14.21 Causal Basis Field research transport
+
+The research `CBF1` transport contains an immutable bounded PCM Basis
+dictionary and one R-175 event ledger per anonymous emitter. Each warp event
+defines onset, Basis ID, source position, start/end source step, start/end
+gain, finite lifetime, and bounded flags. No semantic source type is present.
+
+The reference research decoder SHALL validate `CBF1`, reconstruct the
+equivalent bounded `MFT1` Basis-warp program, obtain its predictor PCM from the
+native decoder, and add exactly one independent lapped Truth. The translated
+predictor SHALL be sample-identical to direct native decoding of the source
+`MFT1` program.
+
+`CBF1`, direct `MFT1`, and direct Truth remain complete-byte RDO candidates.
+`CBF1` is not a normative Main-profile section until a native C++23 decoder
+executes it directly with identical output, bounded resources, corruption
+tests, and cross-platform parity.
+
+### 14.22 Minimum-description anonymous causal program
+
+The primary MAF encoder objective SHALL be a minimum-description anonymous
+causal program, not a semantic content class or a single mutually exclusive
+coding mode. For every declared finite candidate language, the encoder SHALL
+minimize the complete packed program, event, route, checkpoint, final-Truth,
+distortion, bounded-decoder-complexity, and seek-dependency cost.
+
+An anonymous causal program MAY contain simultaneously active:
+
+1. coherent partial or source-filter excitation;
+2. deterministic bounded-inharmonic partial trajectories;
+3. sparse transient events;
+4. stochastic distribution and modulation laws;
+5. persistent resonator, envelope, phase, and channel/room-route state;
+6. immutable leaf Basis and bounded acyclic CompoundBasis definitions; and
+7. exactly one final mixture-domain Truth.
+
+The perfect-reconstruction analysis domain SHALL assign one primary owner to
+every modeled coefficient or sample contribution before causal renderers are
+summed. Per-lane exact correction streams are forbidden. The authoritative
+Truth is computed once from the actual decoder-produced sum.
+
+Timing, pitch, complex phase, gain, envelope, resonator, and route laws SHALL
+remain independently addressable. The encoder MAY compose them under a shared
+lifetime only when the complete decoder-produced candidate wins RDO. Internal
+analysis, CUDA, transform, entropy-page, or checkpoint subdivisions SHALL NOT
+reset persistent acoustic state.
+
+The normative program SHALL carry no source, speaker, instrument, note,
+speech, music, or noise name. Optional classifiers, source separators,
+learned embeddings, fingerprints, and external AI MAY propose additional
+columns, boundaries, or initial parameters. They SHALL NOT prune any candidate
+from the declared deterministic search language and SHALL NOT decide syntax
+admission.
+
+The decoder SHALL execute only the fixed bounded integer ISA. It SHALL
+validate the declared Basis bytes, emitter count, simultaneously active state,
+expanded event count, grammar depth, operations per frame, workspace, and
+checkpoint dependency before rendering. Arbitrary executable programs,
+callbacks, shaders, transmitted neural networks, and per-sample neural
+inference are forbidden.
+
+Research admission requires actual independent pack and decode. Explained
+energy, semantic confidence, separation quality, and analytic fit error are
+proposal diagnostics only; none is a bitrate or quality result.
+
+### 14.23 Theory-before-syntax and per-track Foundry learning
+
+Before a material syntax or decoder-state proposal is admitted, its evidence
+record SHALL contain: a formal signal model and limits; a current
+primary-source prior-art review; bounded alternatives; decoder, memory,
+security, seek, mobile, and ASIC consequences; a falsifiable byte/quality
+budget; a kill gate; and long-first/short-second test manifests. Defect fixes
+that restore already specified behavior do not require a new theory review.
+
+Every material change SHALL also undergo an independent adversarial design
+review. The evidence record SHALL include materially different alternatives,
+attempted counterexamples, negative results, decoder and resource stress,
+complete-byte accounting, explicit accepted/rejected/unresolved claims, and
+resolution of every blocking finding before implementation or promotion.
+
+An encoder MAY train or adapt an unlabeled model on the complete input PCM.
+Per-track learning MAY infer anonymous emitters, partial trajectories,
+excitation, resonator and route state, stochastic laws, transient events, and
+hierarchical motifs. Its authoritative objective SHALL include the actual
+packed program, final-Truth payload, decoded distortion, and bounded resource
+cost.
+
+The trained Foundry state is not a decoder dependency. Only explicitly
+admitted bounded Basis, laws, events, routes, checkpoints, and Truth are
+carried. A filename, benchmark identity, content label, hand-authored event
+map, cloud response, or unbounded learned network SHALL NOT be required for
+decoding or released default selection.
+
+### 14.24 Whole-track self-supervised causal compilation
+
+The Foundry encoder MAY use the complete input recording to identify a
+file-specific anonymous causal program. Its finite candidate language SHOULD
+include overlapping complex partial trajectories, bounded inharmonic
+partials, excitation and resonator state, transient events, stochastic laws,
+immutable Basis memory, hierarchical gapped motifs, and cross-channel routes.
+Analysis windows, accelerator tiles, batches, entropy pages, and checkpoints
+SHALL NOT constrain the start, end, or return of an acoustic lifetime.
+
+For a point-like coherent cause, the encoder SHOULD evaluate a vector state
+whose partial frequencies obey
+`f_k(t) = k * f_0(t) + delta_f_k(t)` and whose amplitude, phase, detuning,
+shape, envelope, resonator, and route coordinates can evolve independently.
+This state competes against independent inharmonic, transient, stochastic,
+route, and direct-Truth explanations. Semantic classes are neither required
+nor carried.
+
+The authoritative training objective SHALL charge every packed Basis,
+parameter, state law, event, route, checkpoint, entropy record, decoder
+resource declaration, and the one final mixture Truth. Learned weights or
+external model state not present in the bitstream SHALL NOT be treated as
+free decoder knowledge.
+
+The encoder SHALL preserve a direct-Truth candidate. A causal structure is
+admissible only when its independently decoded complete file occupies the
+rate/quality/resource Pareto frontier. Parameter-fit error, explained energy,
+source-separation score, neural likelihood, and semantic confidence SHALL NOT
+authorize admission.
+
+Scalable search MAY use deterministic column generation and bounded beam
+edits, but SHALL publish its finite candidate manifest, resource limits, and
+stopping reason. Claims of unrestricted global optimality are forbidden.
+Small declared subproblems SHOULD retain an exact enumeration oracle.
+
+### 14.25 Multivoice causal Basis ledger
+
+A causal Basis transport MAY represent up to the profile limit of anonymous
+emitter ledgers and a bounded static output mix. Each ledger SHALL contain a
+strictly time-ordered sequence of Basis trajectory events. Different ledgers
+MAY overlap and MAY route to the same output channel.
+
+The transport SHALL preserve exact onset, lifetime, Basis identifier, source
+position, start and optional end source step, start and optional end gain, and
+circularity state. Its validated lowering to the normative bounded DSP SHALL
+be sample-identical to the uncompressed typed program.
+
+Output count, emitter count, Basis memory, ledger count, expanded events,
+matrix dimensions, operations, and workspace SHALL be validated before
+allocation or rendering. This transport defines no source semantics and no
+dynamic route law.
+
+### 14.26 Global complex-partial flow
+
+The primary coherent Foundry analysis SHALL NOT require a frame-local
+fundamental-frequency decision to define an anonymous source. It SHOULD first
+form a finite graph of sub-bin complex partial observations over the complete
+input and evaluate continuous, birth, death, crossing, and bounded-gap
+continuations.
+
+Every selected partial trajectory SHALL remain representable independently.
+The encoder MAY group trajectories under harmonic, bounded-inharmonic,
+common-modulation, common-envelope, resonator, motif, or route laws only when
+the grouped independently decoded complete candidate reaches the
+rate/quality/resource Pareto frontier against those independent paths.
+
+Phase SHALL be an authoritative trajectory coordinate. A continuous path SHALL
+derive phase from its declared frequency law and SHALL signal a bounded phase
+innovation or restart when required. A magnitude-only match SHALL NOT authorize
+selection.
+
+For multichannel input, a shared delay, gain, polarity, decay, or bounded
+frequency-dependent transfer law SHOULD compete against independent channel
+states. Neither route sharing nor a semantic source identity is mandatory.
+
+### 14.27 Partial-path proposal scores
+
+An encoder MAY retain several bounded partial-path proposal families. A
+continuity ranker, an uncertainty-aware local-potential ranker, and a
+frequency-stratified weak-line ranker SHOULD remain independent until their
+finite top-K unions have been formed. One ranker SHALL NOT erase the candidates
+of another ranker merely because their proxy scores use different objectives.
+
+A local observation potential that has not been calibrated by decoded
+residual deltas SHALL be identified as a dimensionless search heuristic, not
+bits, entropy, rate, or Truth savings. It SHALL decrease with declared
+uncertainty and leakage risk, and SHALL be zero when the lower-confidence
+amplitude is non-positive. Window, resolution, detector-channel, and
+coherent-gain normalization SHALL be declared.
+
+Provisional program cost SHALL be reported separately from heuristic value.
+Duplicate channel, aggregate, resolution, and sidelobe hypotheses SHALL carry
+ownership conflicts and SHALL NOT be rewarded more than once in a selected
+set. Fixed-point scores SHALL saturate and use deterministic lexicographic tie
+breaks.
+
+These path scores are encoder-side proposals only. They SHALL NOT authorize a
+normative prediction, Basis, grouping, or stream record. Authoritative
+selection still requires an independently packed and decoded candidate, its
+one final Truth, complete bytes, decoded quality, and bounded resource cost.
+
+### 14.28 Canonical peak proposals
+
+A logarithmic band allocator SHALL NOT manufacture a coherent-partial
+observation from the maximum value of a monotonic band boundary. An encoder
+using spectral-peak proposals SHOULD first identify plateau-aware local maxima
+over the complete positive-frequency detector spectrum, excluding DC and
+Nyquist, and only then allocate each canonical peak bin to exactly one
+half-open analysis band. A bin exactly on a boundary belongs to the upper
+band.
+
+Per-band resource limits MAY rank or omit canonical proposals after
+allocation. SNR, prominence, leakage, and uncertainty MAY annotate and rank a
+canonical candidate but SHALL NOT erase it before declared resource
+allocation. Pruning SHALL report candidate-pool count, retained and discarded
+candidate IDs, and the resource bound that caused it. A band containing no
+genuine local maximum MAY emit no coherent partial; stochastic, convolutional,
+direct-Basis, learned-proposer, and Truth alternatives remain available.
+
+When two or more candidates are permitted per band, the allocation SHOULD
+retain the deterministic union of a conservative-salience slot and an
+independently ranked protected-line slot. A low-confidence magnitude proposal
+MAY survive while its phase is forbidden from continuation cost.
+
+Distinct genuine peaks inside the declared resolution interval SHALL be
+retained as an unresolved equivalence group. No group member may be called an
+authoritatively resolved partial, and the group SHALL NOT be collapsed to one
+representative unless an independently specified and audited observation
+hypothesis authorizes that operation.
 
 ## 15. Security
 
@@ -1568,6 +2210,10 @@ playback milestone MUST:
    stereo/spatial, latency, corruption, determinism, memory, throughput,
    mobile, or listening gate affected by the change;
 9. keep perceptual claims conditional on controlled blinded listening.
+10. retain one stable evidence-generation directory containing original,
+    encoded Resonith, actual Resonith decode, encoded Opus, actual Opus decode,
+    preceding Resonith, metrics, hashes, tools, and the tested Orkela package;
+11. provide direct report links to every listening file and executable.
 
 A subset run is a fast diagnostic only. It MUST NOT authorize a material
 architecture conclusion, default change, version, general compression or

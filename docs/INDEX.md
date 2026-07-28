@@ -21,6 +21,16 @@
 | [16_TOOLCHAIN_BASELINE.md](16_TOOLCHAIN_BASELINE.md) | C++23 production language, stable tool versions, hashes, and upgrade gates |
 | [17_MAF_RATE_DISTORTION_FRONTIER.md](17_MAF_RATE_DISTORTION_FRONTIER.md) | Unified MAF cell, theoretical-limit definitions, target budgets, and admission frontier |
 | [18_COMPLETE_PATTERN_FIELD.md](18_COMPLETE_PATTERN_FIELD.md) | STEP M-151 finite-complete multiscale pattern search, global RDO, player, and evidence gate |
+| [19_LATENT_SOURCE_PATTERN_FIELD.md](19_LATENT_SOURCE_PATTERN_FIELD.md) | R-159/R-160 anonymous fields, sparse motif grammar, prior art, implementation, and kill gates |
+| [20_LSPF_MASTER_EXECUTION_PLAN.md](20_LSPF_MASTER_EXECUTION_PLAN.md) | R-161 priority lock, work packages, evidence artifacts, Orkela coupling, and promotion gates |
+| [21_MAF_CAUSAL_MEMORY.md](21_MAF_CAUSAL_MEMORY.md) | Permanent causal-simplicity invariant and anti-complexity checklist |
+| [22_PER_TRACK_CAUSAL_FOUNDRY.md](22_PER_TRACK_CAUSAL_FOUNDRY.md) | R-182 whole-track self-supervised causal learning, bounded compilation, and evidence gates |
+| [reviews/R184_GLOBAL_COMPLEX_PARTIAL_FLOW_AUDIT_2026-07-28.md](reviews/R184_GLOBAL_COMPLEX_PARTIAL_FLOW_AUDIT_2026-07-28.md) | R-185 red-team counterexamples, rejected shortcuts, and revised R-184 admission blockers |
+| [reviews/R187_PARTIAL_PATH_UNION_AUDIT_2026-07-28.md](reviews/R187_PARTIAL_PATH_UNION_AUDIT_2026-07-28.md) | Independent audit of R-187 scoring, canonical peaks, protected weak lines, and remaining admission blockers |
+| [reviews/R191_PATH_ABI_AUDIT_2026-07-28.md](reviews/R191_PATH_ABI_AUDIT_2026-07-28.md) | Independent audit of the separate transactional K-best path ABI, integer second-order law, and falsification gates |
+| [reviews/R191_POST_IMPLEMENTATION_RED_TEAM_2026-07-28.md](reviews/R191_POST_IMPLEMENTATION_RED_TEAM_2026-07-28.md) | Post-implementation NO-GO, reproduced blockers, rejected shortcuts, and bounded remediation package |
+| [reviews/R192_MULTI_PARTIAL_PREDICTOR_PREFLIGHT_2026-07-28.md](reviews/R192_MULTI_PARTIAL_PREDICTOR_PREFLIGHT_2026-07-28.md) | Pre-audit alternatives, source evidence, phase laws, and kill gates for decoder-domain multi-partial prediction |
+| [reviews/R193_PHASE_INNOVATION_ANCHOR_AUDIT_2026-07-28.md](reviews/R193_PHASE_INNOVATION_ANCHOR_AUDIT_2026-07-28.md) | Independent prior-art correction, counterexamples, ablations, and kill gates for persistent phase innovations |
 | [results/EXTENDED_AUDIO_CORPUS_2026-07-27.md](results/EXTENDED_AUDIO_CORPUS_2026-07-27.md) | R-111 heterogeneous corpus acquisition, coverage, and preparation evidence |
 | [results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md](results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md) | R-107 gain-shape results against Opus across all 16 R-111 classes |
 | [results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md](results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md) | R-107 complete speech, piano, and full-Mozart admission result |
@@ -38,6 +48,13 @@
 | [results/TYPED_MAF_R118_2026-07-27.md](results/TYPED_MAF_R118_2026-07-27.md) | R-131/R-135 complete 19-item typed-MAF rate and quality gate |
 | [results/MAF_TRUTH_FRONTIER_AND_ABLATION_2026-07-27.md](results/MAF_TRUTH_FRONTIER_AND_ABLATION_2026-07-27.md) | R-136–R-138 quality-constrained residual frontier and MAF family ablation |
 | [results/GEMINI_BYTE_PATTERN_2026-07-27.md](results/GEMINI_BYTE_PATTERN_2026-07-27.md) | R-152 Gemini-on-PCM16-hex precision/recall A/B gate against exact CUDA Foundry |
+| [results/LATENT_SOURCE_PATTERN_FIELD_R160_2026-07-27.md](results/LATENT_SOURCE_PATTERN_FIELD_R160_2026-07-27.md) | R-159/R-160 anonymous fields, sparse motif grammar, exact synthetic and real PCM proxy evidence |
+| [results/LSPF_LONG_FIRST_R165_2026-07-27.md](results/LSPF_LONG_FIRST_R165_2026-07-27.md) | R-165 long-first CNMF/LSPF exact structural rejection and phase-aware causal-lane pivot |
+| [results/CAUSAL_SEQUENCE_ATLAS_R171_R173_2026-07-27.md](results/CAUSAL_SEQUENCE_ATLAS_R171_R173_2026-07-27.md) | R-171–R-173 harmonic, rejected joint, and all-lane factorized sequence-discovery evidence |
+| [results/CAUSAL_LAW_LEDGER_R174_R175_2026-07-27.md](results/CAUSAL_LAW_LEDGER_R174_R175_2026-07-27.md) | R-174/R-175 exact byte-priced hierarchical laws and one-timeline-per-lane event ledgers |
+| [results/CAUSAL_BASIS_TRUTH_R176_2026-07-28.md](results/CAUSAL_BASIS_TRUTH_R176_2026-07-28.md) | R-176 complete CBF1 plus final-Truth rejection and R-177 analyzer pivot |
+| [results/COMPLEX_PARTIAL_R187_2026-07-28.md](results/COMPLEX_PARTIAL_R187_2026-07-28.md) | Audited canonical-peak, crossing-chirp, weak-line, phase, and finite-resource analyzer gate |
+| [results/NATIVE_PARTIAL_GRAPH_R190_R191_2026-07-28.md](results/NATIVE_PARTIAL_GRAPH_R190_R191_2026-07-28.md) | Native C++23/Python/CUDA exact partial-edge and K-best path parity gate |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |

@@ -1,0 +1,160 @@
+{
+  "claim_boundary": "complete CBF1 plus final Truth fast diagnostic; full R-118 and maximum-effort Opus pending",
+  "long_frontier_frozen": true,
+  "long_results": [
+    {
+      "channels": 2,
+      "duration_seconds": 1.0,
+      "frames": 48000,
+      "id": "mozart-original",
+      "path": "G:\\Orkela\\comparison\\public-benchmark-2026-07-26\\mozart-original.wav",
+      "report": {
+        "candidate_sse": 7833,
+        "cbf1_truth_bytes": 17704,
+        "independent_decode": true,
+        "mft1_truth_bytes": 17751,
+        "predictor": {
+          "basis_count": 0,
+          "block_samples": 1024,
+          "channels": 2,
+          "covered_blocks": 0,
+          "covered_samples": 0,
+          "evaluated_pair_count": 0,
+          "frames": 48000,
+          "instance_count": 0,
+          "linear_gain_instance_count": 0,
+          "linear_step_instance_count": 0,
+          "maximum_normalized_fit_error": null,
+          "mean_normalized_fit_error": null,
+          "predictor_bytes": 104,
+          "predictor_sha256": "127ed0e891eeb61d757f5efc8f6006865615e9375a2e5a779dc185f2225895da",
+          "residual_clip_count": 0,
+          "residual_rms": 0.631862326776965,
+          "reverse_instance_count": 0,
+          "sample_rate": 48000,
+          "schema": "resonith-r155-warp-dictionary-prediction-1",
+          "spectral_bucket_count": 0,
+          "status": "native-decoded predictor; Truth admission pending",
+          "workspace_bytes": 32840
+        },
+        "residual_bytes": 17359,
+        "residual_clip_count": 0,
+        "schema": "resonith-r176-causal-basis-truth-candidate-1",
+        "selected_bytes": 17359,
+        "selected_kind": "truth-fallback",
+        "selected_sha256": "dae3a92ea33ba2793aa51704c0340a92296dcfa96c3a8c052d620f6b7c2e5088",
+        "semantic_source_classes": false,
+        "status": "complete-byte fast candidate; full R-118 pending",
+        "transport": {
+          "basis_count": 0,
+          "cbf1_bytes": 57,
+          "cbf1_sha256": "45ca9c91adca1175db40d55e62a8228ea39798004018f3753aa546e9f84b25d3",
+          "emitter_count": 2,
+          "exact_event_round_trip": true,
+          "ledger_reports": [
+            {
+              "column_bytes": 45,
+              "column_reports": {
+                "time": {
+                  "accepted_rule_count": 0,
+                  "dictionary_bytes": 22,
+                  "evaluated_pair_candidates": 0,
+                  "exact_token_round_trip": true,
+                  "grammar_bytes": null,
+                  "raw_bytes": 21,
+                  "schema": "resonith-r174-causal-law-grammar-1",
+                  "selected_bytes": 21,
+                  "selected_kind": "raw",
+                  "status": "exact token-ledger RDO; audio integration pending",
+                  "token_count": 0,
+                  "token_vocabulary_size": 0
+                }
+              },
+              "event_count": 0,
+              "exact_event_round_trip": true,
+              "omitted_zero_default_columns": [
+                "basis",
+                "envelope",
+                "gain",
+                "phase",
+                "pitch",
+                "resonator",
+                "route"
+              ],
+              "one_timeline_per_lane": true,
+              "row_bytes": 21,
+              "schema": "resonith-r175-causal-event-ledger-1",
+              "selected_bytes": 21,
+              "selected_kind": "row",
+              "semantic_source_classes": false,
+              "status": "exact event-ledger RDO; audio integration pending"
+            },
+            {
+              "column_bytes": 45,
+              "column_reports": {
+                "time": {
+                  "accepted_rule_count": 0,
+                  "dictionary_bytes": 22,
+                  "evaluated_pair_candidates": 0,
+                  "exact_token_round_trip": true,
+                  "grammar_bytes": null,
+                  "raw_bytes": 21,
+                  "schema": "resonith-r174-causal-law-grammar-1",
+                  "selected_bytes": 21,
+                  "selected_kind": "raw",
+                  "status": "exact token-ledger RDO; audio integration pending",
+                  "token_count": 0,
+                  "token_vocabulary_size": 0
+                }
+              },
+              "event_count": 0,
+              "exact_event_round_trip": true,
+              "omitted_zero_default_columns": [
+                "basis",
+                "envelope",
+                "gain",
+                "phase",
+                "pitch",
+                "resonator",
+                "route"
+              ],
+              "one_timeline_per_lane": true,
+              "row_bytes": 21,
+              "schema": "resonith-r175-causal-event-ledger-1",
+              "selected_bytes": 21,
+              "selected_kind": "row",
+              "semantic_source_classes": false,
+              "status": "exact event-ledger RDO; audio integration pending"
+            }
+          ],
+          "mft1_bytes": 104,
+          "schema": "resonith-r176-causal-basis-field-1",
+          "selected_bytes": 57,
+          "selected_kind": "cbf1",
+          "semantic_source_classes": false,
+          "status": "bounded MFT1 translation transport; final Truth pending",
+          "warp_instance_count": 0
+        },
+        "truth_fallback_bytes": 17359,
+        "truth_fallback_sse": 7833
+      },
+      "sample_rate": 48000,
+      "selected_decode_sha256": "a863b5a5a5b67a43f6619343858925682a82dbdd8b7bee8ff6999c069148dab3",
+      "selected_decoded_path": "G:\\Resonith\\experiments\\artifacts\\r176-smoke\\mozart-original-selected-decoded.wav",
+      "selected_encoded_path": "G:\\Resonith\\experiments\\artifacts\\r176-smoke\\mozart-original-selected.resonith",
+      "selected_encoded_sha256": "dae3a92ea33ba2793aa51704c0340a92296dcfa96c3a8c052d620f6b7c2e5088",
+      "selected_is_pcm_exact": false,
+      "source_sha256": "f3b9ff6075466b3c14decb5d6e67765167cb1511dad8f452db6dc160bd6cf73c",
+      "status": "Real PCM / Complete CBF1+Truth fast diagnostic / not R-118 or Opus comparison",
+      "wall_seconds": 0.9628686000069138
+    }
+  ],
+  "schema": "resonith-r176-causal-basis-truth-gate-1",
+  "short_results": [],
+  "status": "complete-fast-diagnostic",
+  "test_order": [
+    "long",
+    "freeze-long",
+    "short"
+  ]
+}

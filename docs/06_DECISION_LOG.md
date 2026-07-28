@@ -5311,3 +5311,2029 @@ new oscillator opcode.
   - the frozen R-152 authority explicitly excludes later reverse-transform
     candidates because reverse was not described in the blind provider
     prompt.
+
+## R-155 — Bounded fractional Basis warp instance
+
+- Status: **NORMATIVE-DRAFT — STEP M-151 TRANSFORM EXPANSION**
+- Date: 2026-07-27
+- Purpose:
+  - schema-1 integer placement cannot express fractional phase, pitch
+    resampling, bounded time stretch, or a continuous pitch/time trajectory;
+  - these transforms are required to test whether one objective micro-Basis
+    can replace many related speech, music, and cross-channel fragments
+    without semantic labels.
+- New record:
+  - add `BASIS_WARP_INSTANCE` as record type 8 rather than changing the
+    already executable schema-1 `BASIS_INSTANCE`;
+  - canonical schema-1 payload:
+
+```text
+u16 instance_id
+u16 emitter_id
+u16 basis_id
+u16 flags: bit 0 CIRCULAR, bit 1 LINEAR_GAIN, bit 2 LINEAR_STEP
+u32 output_start
+u32 output_sample_count
+i32 source_position_q16
+i32 source_step_start_q16
+i32 source_step_end_q16
+i32 start_gain_q15
+i32 end_gain_q15
+```
+
+- Deterministic synthesis:
+  - the source coordinate is signed Q16.16. One source sample per output
+    sample is `65536`; negative steps express reverse playback;
+  - source step is constant unless `LINEAR_STEP` is set. A linear law is
+    evaluated from the absolute instance-local output index with one closed
+    integer expression, so callback partitioning cannot accumulate drift;
+  - schema-1 uses fixed two-tap linear interpolation with signed
+    ties-away-from-zero rounding. Integer coordinates reproduce the selected
+    Basis sample exactly;
+  - circular instances use Euclidean modulo. Non-circular instances require
+    every source coordinate to remain inside `[0, basis_samples - 1]`;
+  - constant and linear signed Q1.15 gain retain the existing normative
+    rounding and saturation rules.
+- Bounds:
+  - `abs(source_step_q16) <= 8 * 65536`;
+  - one warp instance contains at most 65535 output samples; longer laws are
+    split at canonical absolute positions without decoder-state carry;
+  - a linear step cannot cross zero inside one instance; a reversal is split
+    into separate instances;
+  - `LINEAR_STEP` requires at least three output samples and
+    `LINEAR_GAIN` requires at least two;
+  - warp and integer instances share the Main limit of 4096 placements and
+    are preflighted against declared operation and memory bounds.
+- Admission:
+  - the record is not a compression claim. It must first pass native/Python
+    parity, callback partition, corruption, resource, Android/iOS compile,
+    exact Truth correction, Orkela playback, and the complete R-118 gate;
+  - the encoder SHALL compare complete Basis, instance, correction, entropy,
+    checkpoint, and operation cost against independent Truth. A warped
+    prediction that is larger or worse is rejected.
+
+## R-156 — Gridless Multiscale Pattern Field
+
+- Status: **NORMATIVE-DRAFT — PRIMARY ENCODER STEP**
+- Date: 2026-07-27
+- Decision:
+  - Resonith SHALL NOT make a fixed analysis block, transform frame, or CUDA
+    tile the semantic unit of an acoustic pattern;
+  - normative Basis instances remain events with arbitrary integer
+    `output_start` and `output_sample_count`. Implementation tiles MAY batch
+    analysis, entropy, checkpoints, and rendering, but their boundaries SHALL
+    NOT restrict candidate onset, duration, frequency support, or composition;
+  - this is the **gridless meaning, tiled execution** contract.
+- Required discovery union:
+  1. rolling exact fingerprints at every source-sample origin for every
+     declared exact duration, followed by byte/sample verification;
+  2. content-defined anchors derived from original PCM independently on every
+     declared channel and perfect-reconstruction frequency cell;
+  3. overlapping regular origins at every declared duration scale, with the
+     hop and origin set published in the run manifest;
+  4. cross-channel and cross-band candidates whose intervals may start and end
+     at different implementation-tile positions;
+  5. direct longer spans and bottom-up `CompoundBasis` spans, neither of which
+     may be removed because shorter candidates were found first.
+- Anti-blindness:
+  - a pattern crossing one or many analysis-tile boundaries remains eligible;
+  - discovery at one scale cannot claim samples or suppress overlapping,
+    nested, shifted, longer, shorter, cross-band, or cross-channel candidates;
+  - fingerprints, embeddings, Gemini, and other learned proposers MAY schedule
+    work but SHALL NOT establish equality or remove a declared Foundry
+    candidate;
+  - only the global complete-cost interval/field selector assigns ownership.
+- Evidence:
+  - the R-155 fixed lattice checked 18,494 transformed pairs at 4,096 samples
+    and 49,924 pairs at 1,024 samples on the complete Mozart reference but
+    selected zero Basis instances at the two-percent fit limit;
+  - both complete candidates therefore collapsed to a 104-byte empty MFT1
+    predictor plus Truth and measured 7,003,168 bytes, versus the 6,521,233-byte
+    stable reference. All R-135 quality checks passed, so the failure isolates
+    discovery and complete-byte economics rather than decoder correctness;
+  - these runs are retained as the fixed-grid A/B baseline, not promoted as
+    the new algorithm.
+- Completion gate:
+  - synthetic spans beginning at every possible offset around a tile boundary
+    MUST have identical recall to spans wholly inside a tile;
+  - CPU results MUST be invariant to tile size and thread order;
+  - at least one real speech, tonal, transient, stochastic, dense-mix, and
+    multichannel item MUST emit active arbitrary-interval Basis candidates;
+  - exact Truth, full-byte RDO, complete R-118 evidence, and Orkela playback
+    remain mandatory before promotion.
+
+## R-157 — Batched CUDA Warp Foundry
+
+- Status: **NORMATIVE-DRAFT — FOLLOWS R-156 CANDIDATE GENERATION**
+- Date: 2026-07-27
+- Decision:
+  - move the expensive R-155 transform fitter from per-candidate Python/NumPy
+    calls into large C++23/CUDA batches;
+  - the finite lattice includes every declared direction, integer and
+    fractional phase, signed constant/linear gain, bounded constant/linear
+    pitch/time step, and every explicitly declared fixed-point neighbour;
+  - CUDA batching MAY change residency and evaluation order but SHALL NOT
+    reduce candidate membership. Python remains only the experiment manifest,
+    orchestration, and report layer.
+- Required proof:
+  - one portable CPU reference and the CUDA backend produce identical selected
+    parameters, reconstructed PCM, squared error, and candidate cardinality;
+  - results are invariant to CUDA tile size, host spill boundaries, and
+    callback/render partitioning;
+  - every accepted warp is decoded by the normative C++23 Core before rate or
+    quality scoring;
+  - GPU failure falls back to the same finite CPU search or a clearly labelled
+    `Fast` profile, never to a silently pruned Foundry result.
+- Implemented evidence:
+  - the C++23 C ABI exposes complete warp cardinality plus portable CPU and
+    CUDA execution for ordered pairs, fractional phase, both directions,
+    bounded constant/linear pitch-time step, and constant/linear signed gain;
+  - an RTX 2080 Super / NVRTC 13.3 gate evaluated `6,912/6,912` candidates in
+    unequal `4,099 + 2,813` tiles. Every 48-byte result record was identical
+    between CPU and CUDA, and a known fractional-phase, linearly changing
+    pitch-time law produced zero correction;
+  - the Python 3.14 layer only declares tiles and consumes fixed result
+    records. It performs no per-candidate transform, gain fit, synthesis, or
+    squared-error loop;
+  - the first integrated gridless exact-RDO diagnostic evaluated
+    `7,168/7,168` candidates, selected one immutable Basis with eight
+    arbitrary placements, reconstructed PCM exactly, and measured 704 bytes
+    versus 1,156 bytes for independent lossless Truth (`-39.10%`). This is a
+    favorable synthetic construction and is not an Opus or real-audio claim.
+
+## R-158 — Multiscale economic lifetime gate
+
+- Status: **NORMATIVE-DRAFT — REQUIRED BEFORE WHOLE-FILE PROMOTION**
+- Date: 2026-07-27
+- Evidence that changes the next implementation:
+  - the first R-157 Fast structural union evaluated
+    `21,012,480/21,012,480` declared candidates on all 19 R-118 content types
+    in 103.122 seconds;
+  - short 64-sample search found from zero to 691,200 fit-eligible
+    relationships per item, including speech, tonal, transient, stochastic,
+    dense, and multichannel material, but complete byte RDO selected
+    independent exact Truth for all `19/19` items;
+  - therefore relationship recall is no longer the immediate limiter. Flat
+    micro-Basis activation, placement, and correction cost is.
+- Decision:
+  - every next gate SHALL search direct original-PCM spans independently at
+    64, 256, and 1,024 samples before whole-file encoding;
+  - longer direct spans and bottom-up CompoundBasis candidates SHALL remain in
+    the same global chart as micro-spans. Finding a short relation cannot
+    remove, claim, or synthesize a longer one;
+  - one persistent transform law MAY replace consecutive compatible
+    placements only when its exact rendered PCM plus correction and complete
+    signalling cost less than the unmerged path;
+  - Fast diagnostics MAY declare fewer content/regular origins at longer
+    scales to bound wall time, but SHALL publish every origin and evaluate
+    100% of the resulting finite lattice. Such a run is not a whole-file
+    Foundry claim;
+  - whole-file lossy/Opus work begins only after a real corpus item activates
+    a structured span under actual complete-byte exact RDO, or an ablation
+    proves that lossy correction changes that conclusion without violating
+    the R-118 quality floor.
+
+## R-159 — Latent Source Pattern Field
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED PRIMARY R-158 MECHANISM**
+- Date: 2026-07-27
+- Decision:
+  - the Foundry encoder SHALL search reusable patterns both in observed
+    channels and in objective latent additive layers inferred from changing
+    mixtures;
+  - a layer is not an instrument, speaker, phoneme, note, or environmental
+    label. It is only a decoder-verifiable term in
+    `Y_c(t) = sum_i Route_ci(t) Transform_i(Basis_i, t) + Truth_c(t)`;
+  - every inferred layer is searched independently by the same gridless,
+    multiscale, phase-aware, cross-channel R-156/R-157 dictionary machinery.
+- Candidate union:
+  1. direct observed-channel patterns remain mandatory;
+  2. complex time-frequency factorization SHALL retain magnitude, phase and
+     cross-channel transfer evidence rather than separating magnitude alone;
+  3. cross-occurrence robust consensus SHALL infer a recurring component from
+     several differently overlapped observations;
+  4. layer counts, origin sets, transform families, factorization iterations,
+     and fixed-point neighbours form a published finite language;
+  5. direct mixtures, composite Basis candidates, every inferred layer family,
+     and independent Truth coexist in the global selector. A separator cannot
+     remove a direct candidate.
+- Exactness and safety:
+  - source recovery is not assumed identifiable. Two physical decompositions
+    may explain the same PCM, and neither semantic explanation is normative;
+  - each complete candidate is rendered by the bounded MAF decoder, summed in
+    its normative order, and corrected by Truth. Lossless admission requires
+    exact PCM; lossy admission requires all R-118 quality floors;
+  - if factorization is wrong, its dictionary, route, transform and correction
+    bytes make it lose to a composite Basis or independent Truth.
+- First implementation:
+  - add a deterministic encoder-side latent-layer oracle using multiscale
+    complex spectral signatures, bounded phase/alignment and gain fitting,
+    robust cross-occurrence consensus, iterative residual peeling, and
+    cross-channel routing;
+  - CUDA performs the declared warp/phase/gain lattice. Python declares the
+    layer language and orchestrates reports only; it is not shipped;
+  - publish a synthetic changing-overlap recovery gate before making any
+    bitrate claim, then run speech-plus-noise, stereo music, orchestra,
+    ambience and the full R-118 union.
+- Completion gate:
+  - demonstrate at least one mixture where no direct mixed chunk repeats but a
+    decoder-verifiable latent Basis is reused under different overlaps;
+  - compare direct-mixture dictionary, latent-layer dictionary and independent
+    Truth by complete bytes and decoded quality;
+  - report latent candidate recall, correction energy/bytes, route bytes,
+    wall time, peak CPU/GPU memory, and exact reconstruction hash.
+
+## R-160 — Minimum-Description Anonymous Field Grammar
+
+- Status: **NORMATIVE-DRAFT — PRIMARY LSPF INTEGRATION CONTRACT**
+- Date: 2026-07-27
+- Problem:
+  - source separation, shift-invariant sparse coding, convolutive/NMF
+    dictionaries, sinusoidal/stochastic models, long-term prediction and neural
+    codebooks already demonstrate important parts of the proposed mechanism;
+  - they do not by themselves define a universal codec whose decoder receives
+    anonymous reusable fields, discontinuous long motifs, finite transform
+    laws, cross-channel routes and one final exact correction selected by full
+    serialized cost;
+  - physical source recovery is non-identifiable, unrestricted sparse search is
+    combinatorial, and arbitrary transform programs would merely hide a second
+    codec inside each file.
+- Decision:
+  - Resonith SHALL optimize a minimum-description explanation of PCM, not claim
+    to recover the true speaker, instrument or environmental source;
+  - an anonymous field is a decoder-verifiable additive component with a
+    reusable immutable Basis dictionary, persistent transform/route laws and a
+    sparse event ledger;
+  - a long motif MAY join non-adjacent observations. Unrelated or overlapping
+    events between its steps remain independent, so `A -> gap -> B` is one
+    legal motif without requiring the entire mixture between A and B to repeat;
+  - a long macro SHOULD normally be a DAG/grammar of smaller Basis references
+    and laws. Raw long PCM Basis payloads are admitted only when their complete
+    amortized byte cost wins;
+  - analysis boundaries are gridless and multiscale. CUDA tiles, entropy pages
+    and checkpoints are implementation details and SHALL NOT restrict event
+    onset, duration, partial-spectrum support or motif boundaries;
+  - the initial finite law language is `literal`, `constant`, `affine`,
+    `run-length` and `sparse-exception`. The decoder transform ISA remains
+    fixed, bounded and non-Turing-complete;
+  - partial-spectrum components SHALL be represented by
+    perfect-reconstruction integer lifting pairs; magnitude-only subtraction is
+    forbidden. Integer sample alignment is non-circular, and fractional
+    phase claims require a separately tested normative transform;
+  - routes MAY reuse one Basis across channels with gain, phase, delay and
+    bounded filter laws. The summed rendering receives one final Truth
+    correction; each hypothetical source SHALL NOT pay an independent exact
+    correction.
+- RDO:
+  - direct channel patterns, anonymous fields, composite Basis, stochastic
+    fields, source-filter atoms, transient atoms and independent Truth compete
+    in one global selector;
+  - admission is determined by the complete decoder-produced stream size and
+    the R-118 quality contract, including dictionary, event, route, law,
+    checkpoint, entropy and correction bytes;
+  - event-ledger compression is evidence about grammar signalling only and
+    SHALL NOT be reported as complete audio compression.
+- First exact evidence:
+  - a synthetic changing-overlap signal with no exactly repeated mixed block
+    reused one 128-sample anonymous Basis ten times with varying gains and
+    sparse contamination;
+  - the exact prototype reconstructed identical PCM by SHA-256 and cost
+    1,815 bytes versus a 2,491-byte independent lossless proxy, a 676-byte
+    or 27.14% proxy reduction;
+  - the same RDO rejected a short candidate that cost 49 bytes more than
+    independent Truth;
+  - the R-160 event grammar exactly round-tripped a 24-occurrence cross-channel
+    `token 0 -> affine gap -> token 7` motif while preserving unrelated
+    intervening events and selected it only when its actual serialized ledger
+    was smaller;
+  - these are **Synthetic / Proxy** results, not Opus, FLAC or full Resonith
+    wins.
+- First real diagnostic:
+  - exact reversible partial-spectrum search on 12 seconds of EBU dense
+    orchestra admitted two anonymous Basis entries with 1,082 occurrences and
+    explained 55.24% of waveform energy;
+  - its complete exact structural proxy cost 1,296,657 bytes versus 1,302,123
+    independent proxy bytes, a 5,466-byte or 0.42% reduction;
+  - a phase-preserving anonymous NMF proposer found one 40-occurrence field on
+    three seconds of EBU female speech, but the structured candidate cost
+    190,025 versus 189,099 bytes, so RDO selected independent Truth;
+  - this is **Real PCM / Fast diagnostic / Proxy**, not a FLAC, Opus or final
+    Resonith result. It proves that explained energy is not sufficient;
+    correction entropy and complete overhead are the blocking quantities.
+- Kill gates:
+  - changing-overlap synthetic: at least 15% complete-stream reduction versus
+    the best direct-dictionary/Truth path;
+  - anonymous-field correction: no more than 50% of the independent covered
+    cost, and the latent path must beat the direct dictionary by at least 5%;
+  - blind inference: within 15% of a known-stem oracle on controlled mixtures;
+  - real lossless corpus: at least 5% median complete-byte improvement over the
+    best current Truth/FLAC anchor before standard promotion;
+  - perceptual corpus: first gate at no more than 90% of matched-quality Opus;
+    the research target remains 60%, never a guaranteed universal ratio;
+  - Foundry gate: no more than 30x track duration and 7 GiB encoder VRAM for the
+    declared profile; CPU-only bounded decode and seek pre-roll remain required.
+- Novelty status:
+  - the combination is a research candidate, not a novelty or patent claim;
+    formal prior-art and freedom-to-operate searches remain mandatory before
+    such a claim or a standards submission.
+
+## R-161 — LSPF Priority Lock and Evidence-Carrying Generations
+
+- Status: **ACCEPTED — OWNER-DIRECTED HIGHEST PRIORITY**
+- Date: 2026-07-27
+- Priority:
+  - Latent Source Pattern Field is the only active compression-architecture
+    priority until every R-161 work package has either passed its gate or been
+    explicitly rejected by complete evidence;
+  - unrelated player polish, container expansion, provider integration,
+    marketing, and speculative syntax SHALL NOT displace an open LSPF gate;
+  - Orkela work remains mandatory only where it produces the listening,
+    inspection, and release artifact for the current verified codec
+    generation.
+- Required implementation order:
+  1. convolutive anonymous fields;
+  2. bounded pitch, time, phase, formant, envelope, and route laws;
+  3. persistent source-filter, stochastic, transient, and cross-channel
+     competition inside every observed or anonymous field;
+  4. multiple sparse motif definitions, arbitrary-gap CompoundBasis DAGs, and
+     persistent parameter laws;
+  5. correction-entropy-driven global RDO over every dictionary, event, route,
+     law, checkpoint, final Truth, and independent fallback byte;
+  6. C++23/CUDA Foundry execution with portable fixed-integer CPU parity and
+     the unchanged bounded decoder;
+  7. the complete R-118 quality/byte frontier and only then syntax promotion.
+- Non-negotiable selection rule:
+  - explained energy, separation quality, semantic plausibility, or proposer
+    confidence cannot promote a mechanism;
+  - a candidate first satisfies exact reconstruction or the applicable R-118
+    quality floors, then wins by actual complete bytes and bounded decode cost;
+  - only the final mixture-domain Truth correction is authoritative.
+- Evidence-carrying generation:
+  - every material work package SHALL produce an English machine report,
+    configuration, input/output hashes, wall time, resource use, ablation,
+    previous-Resonith comparison, and current official Opus anchor where a
+    perceptual comparison is meaningful;
+  - every generation SHALL retain the original input, actual decoded Resonith
+    PCM, encoded `.resonith`, actual decoded Opus PCM, and complete `.opus`
+    anchor in a stable generation directory;
+  - Orkela SHALL be updated to decode and inspect the promoted generation
+    before a release may be tagged. The report SHALL link the exact local
+    player executable and every listening artifact;
+  - Fast diagnostics MAY use a declared subset, but are never a milestone,
+    release, or general compression claim;
+  - every material milestone SHALL run the complete three-reference plus
+    sixteen-class R-118 union, including full-length Mozart.
+- Failure policy:
+  - losing candidates remain research evidence or are removed; they do not add
+    normative opcodes;
+  - no work package is declared complete while encoded listening files,
+    released-decoder output, Orkela compatibility, or required R-118 rows are
+    missing;
+  - ideas discovered during implementation are recorded immediately, but do
+    not interrupt the active gate unless they change its mathematical validity
+    or are required to prevent irreversible syntax error.
+
+## R-162 — Simultaneous Short- and Long-Duration Adaptation Gate
+
+- Status: **ACCEPTED — MANDATORY FOR EVERY LSPF WORK PACKAGE**
+- Date: 2026-07-27
+- Decision:
+  - every material LSPF mechanism SHALL be evaluated on short and long inputs
+    in the same generation;
+  - short inputs diagnose onset, phase, transient, boundary, local transform,
+    low-latency, and parameter-fit behavior;
+  - long inputs of at least 120 seconds diagnose dictionary amortization,
+    persistent-law drift, long motifs, checkpoint/index cost, memory growth,
+    random access, throughput, and fallback stability;
+  - a short pass cannot substitute for a long pass, and a long average cannot
+    hide a short transient, speech-intelligibility, or boundary failure.
+- Automatic adaptation:
+  - Live, Studio, and Foundry are encoder search/resource policies over one
+    decoder and one syntax family;
+  - the encoder SHALL derive a deterministic analysis plan from duration,
+    sample rate, channels, latency target, memory limit, signal structure, and
+    requested quality;
+  - duration MAY change scale union, candidate residency, checkpoint cadence,
+    dictionary lifetime, search depth, and parallel scheduling;
+  - duration SHALL NOT disable exact fallback, quality floors, corruption
+    bounds, or decoder conformance;
+  - automatic decisions and every candidate family enabled or skipped SHALL be
+    published in the generation manifest.
+- Minimum evidence:
+  - Fast development pairs each short diagnostic with at least one continuous
+    input of 120 seconds or longer;
+  - a material milestone still requires the complete full-length speech,
+    Emotional piano, 400.773-second Mozart, and all sixteen R-111 classes under
+    R-118;
+  - both per-file rows and duration-bucket aggregates SHALL be published. No
+    average-only result is sufficient.
+
+## R-163 — Duration-Pareto Preservation
+
+- Status: **ACCEPTED — MANDATORY FOR AUTOMATIC ADAPTATION**
+- Date: 2026-07-27
+- Decision:
+  - a mechanism that wins on long material by complete bytes at the applicable
+    quality floor, or by quality at an equal complete-byte budget, SHALL remain
+    an available RDO candidate while short-material behavior is improved;
+  - short-track tuning SHALL add or refine a duration-specialized search plan.
+    It SHALL NOT remove, weaken, or silently retune a proven long-track branch;
+  - the reciprocal rule applies to a proven short-track branch.
+- Selection:
+  - the encoder always evaluates the applicable incumbent, new specialized
+    candidate, and independent Truth/fallback under the same decoder-produced
+    byte and quality accounting;
+  - a new default is selected per input, never by an average that hides a
+    duration-bucket regression;
+  - exact lossless candidates compare complete bytes. Lossy candidates first
+    pass per-item quality floors and then compare complete bytes; equal-byte
+    quality claims require a declared equivalence budget and the full metric
+    panel.
+- Evidence:
+  - every generation manifest records the incumbent candidate identifier,
+    duration class, all evaluated alternatives, rejection reason, and selected
+    winner;
+  - short, medium, and long Pareto frontiers are retained independently;
+  - long-only success is a valid retained capability, not a failed experiment.
+    It is not promoted as a universal win until the other declared duration
+    classes pass their own gates.
+
+## R-164 — Long-First Gate and Dual-Axis Success
+
+- Status: **ACCEPTED — OWNER-DIRECTED TEST ORDER**
+- Date: 2026-07-27
+- Execution order:
+  1. run every generation on the declared continuous long inputs first;
+  2. freeze the long-input result, configuration, metrics, hashes, stream, and
+     Pareto candidates;
+  3. only then run the short corpus and tune a short-specialized search plan;
+  4. rerun any affected long candidate before changing a shared default.
+- Success criterion for one duration bucket:
+  - **rate success:** lower decoder-produced complete bytes while every
+    applicable quality floor remains satisfied; or
+  - **quality success:** objectively and, for a promotion claim, subjectively
+    better quality inside the declared matched-complete-byte tolerance.
+- Retention:
+  - either success axis makes the generation a retained successful Pareto
+    candidate; improvement on both axes is preferred but not required;
+  - a rate/quality trade-off outside the declared equivalence tolerance is
+    retained and labelled as an alternative operating point, not silently
+    installed as the universal default;
+  - failure on short material cannot erase a long-material success, and
+    short-material success cannot erase the frozen long incumbent.
+- Reporting:
+  - reports SHALL be written in actual execution order: long rows and frozen
+    frontier first, short rows and tuning second, final per-duration selection
+    last;
+  - byte equivalence tolerance, metric deltas, quality floors, and listening
+    protocol SHALL be declared before the comparison.
+
+## R-165 — Dual-Axis Refinement Before Generation Freeze
+
+- Status: **ACCEPTED — OWNER-DIRECTED COMPLETION RULE**
+- Date: 2026-07-27
+- Decision:
+  - a first pass that wins only rate or only quality SHALL immediately trigger
+    a bounded refinement pass targeting the missing axis before the generation
+    is frozen;
+  - after a rate-only win, the encoder tunes representation, allocation,
+    correction, entropy, and operating point to improve quality without losing
+    the rate success;
+  - after a quality-only win, it tunes state reuse, signalling, correction
+    entropy, allocation, and operating point to reduce complete bytes without
+    losing the quality success.
+- Completion:
+  - a two-axis win may be frozen immediately after verification;
+  - a one-axis win may be frozen only after the declared refinement lattice,
+    time/resource budget, and stop conditions have been exhausted and recorded;
+  - the surviving one-axis win remains a successful Pareto candidate. Failure
+    to improve the second axis does not erase it.
+- Evidence:
+  - the generation report SHALL contain the initial winning point, every
+    refinement candidate, both axis deltas, rejection reasons, selected final
+    point, and whether the refinement budget was exhausted;
+  - no release version or fixed generation identifier is assigned while a
+    required dual-axis refinement pass is still open.
+
+## R-166 — Maximum-Effort Official Opus Anchor
+
+- Status: **ACCEPTED — MANDATORY EXTERNAL ANCHOR**
+- Date: 2026-07-27
+- Decision:
+  - every real-audio material generation SHALL include the current project-
+    pinned official libopus encoder and decoder at their strongest lawful
+    offline settings;
+  - `OPUS_SET_COMPLEXITY(10)` is mandatory. The anchor search SHALL also
+    evaluate all applicable application, signal, frame-duration, bandwidth,
+    VBR/constrained-VBR, channel, and file-coding controls that can improve the
+    measured point without changing the source or comparison contract;
+  - bitrate is searched against the declared complete-byte target or quality
+    target. One convenient preset is not an adequate anchor.
+- Selection:
+  - every Opus candidate is decoded by the official decoder;
+  - the winning Opus point is chosen by the same predeclared quality floors,
+    complete-container bytes, objective panel, and listening protocol used for
+    the Resonith comparison;
+  - encoder delay, pre-skip, sample count, channel mapping, metadata, and
+    container overhead are included consistently.
+- Evidence:
+  - reports retain the complete Opus search configuration, rejected points,
+    winning `.opus`, decoded PCM, hashes, encoder/decoder versions, and wall
+    time;
+  - a lossless structural proxy MAY report Opus as contextual evidence but
+    SHALL NOT rank lossy Opus bytes against lossless exact bytes as a codec
+    victory;
+  - if the official pinned Opus version changes, anchors are regenerated before
+    any current comparative claim.
+
+## R-167 — Coherent Partial Bundle Dictionary
+
+- Status: **ACCEPTED — REQUIRED LSPF ANALYTIC CANDIDATE**
+- Date: 2026-07-27
+- Decision:
+  - LSPF SHALL search repeated coherent spectral bundles in addition to direct
+    waveform, transform, anonymous-field, source-filter, stochastic, transient,
+    and Truth candidates;
+  - a bundle is an unnamed group of partials whose frequency ratios,
+    amplitude/envelope evolution, phase trajectories, and channel routes are
+    jointly predictable. It is not required to be labelled as a voice or
+    instrument;
+  - one immutable `PartialBasis` stores normalized partial ratios, complex
+    phase relations, spectral/formant envelope, and optional inharmonic offsets.
+    Instances carry bounded pitch, absolute phase, gain/envelope, time, and
+    route laws.
+- Analysis:
+  - candidate grouping uses joint temporal co-modulation, harmonic or bounded
+    inharmonic ratio consistency, complex phase continuity, onset/decay
+    coherence, and cross-channel covariance;
+  - matching SHALL be multiscale and independent of fixed transform-frame
+    boundaries. Perfect-reconstruction filterbank tiles MAY be used internally;
+    they do not define event boundaries;
+  - harmonicity is evidence, not a semantic classifier and not an admission
+    rule.
+- Exactness and fallback:
+  - coherent bundles, stochastic fields, transient events, direct Basis, and
+    independent Truth compete per region and may overlap additively;
+  - the sum receives one final mixture-domain Truth correction;
+  - a claim that arbitrary audio is reconstructed without distortion is valid
+    only after the normative decoder plus final Truth reproduces the declared
+    exact PCM hash. A bundle alone is never assumed complete.
+- RDO:
+  - dictionary partials, parameter trajectories, phase anchors, route laws,
+    entropy state, checkpoints, and compressed final correction are priced;
+  - a large explained-energy fraction does not admit a bundle when its complete
+    bytes or applicable quality point loses;
+  - an initial one-axis win follows R-165 dual-axis refinement before the
+    generation may be fixed.
+
+## R-168 — Causal Acoustic Mechanism Objective
+
+- Status: **ACCEPTED — MAF NORTH-STAR OBJECTIVE**
+- Date: 2026-07-27
+- Signal model:
+  - MAF treats decoded pressure as the sum of unnamed causal emitters, their
+    bounded resonant dynamics, propagation/routes, and one final Truth:
+    `Pressure_c(t) = sum_s Route_c,s(Resonator_s(Excitation_s, State_s)) +
+    Truth_c(t)`;
+  - excitation may combine coherent/quasiperiodic trajectories, sparse
+    impulses, and counter-addressed stochastic innovation;
+  - resonant state may contain harmonic/inharmonic partial bundles,
+    source-filter/formant laws, decay, modulation, and a short stable room or
+    body response;
+  - routes contain bounded delay, gain, phase, channel covariance, and stable
+    propagation filters.
+- Representation:
+  - the encoder performs multiscale system identification: micro cycles and
+    attacks, meso acoustic states, and macro sparse motifs/parameter laws
+    compete together;
+  - a law, state, Basis, or motif is paid once and remains alive until an event
+    changes or expires it;
+  - semantic class names are never needed for conformance or admission.
+- Search objective:
+  - the preferred latent explanation is the one minimizing complete dictionary,
+    state, event, route, checkpoint, entropy, final-Truth, distortion, decode,
+    and seek cost;
+  - neural or semantic analysis MAY propose causes and boundaries but cannot
+    remove deterministic search, decoder verification, quality floors, or
+    independent Truth;
+  - physical plausibility and predicted continuation are useful priors, not
+    proof of compression.
+- Information boundary:
+  - Resonith does not claim that arbitrary audio has zero conditional entropy or
+    can always be compressed;
+  - distortion-free reconstruction of arbitrary supported PCM is provided only
+    by the complete bounded rendering plus final Truth and verified hash;
+  - if causal modelling does not reduce complete bytes or improve a matched-rate
+    quality point, RDO retains the simpler incumbent.
+
+## R-169 — Separate Causal Lanes with Single Ownership
+
+- Status: **ACCEPTED — REQUIRED MAF DECOMPOSITION**
+- Date: 2026-07-27
+- Lanes:
+  - coherent harmonic partial bundles;
+  - deterministic bounded-inharmonic partial bundles;
+  - sparse onset-addressed transients;
+  - counter-addressed stochastic fields;
+  - phase-, delay-, decay-, room-, and cross-channel route laws;
+  - direct innovation/Truth for everything not economically explained.
+- Ownership:
+  - these lanes MAY overlap in time and frequency because physical causes add,
+    but one primary lane owns each admitted explanatory coefficient/sample
+    region for rate accounting;
+  - a harmonic lane SHALL NOT absorb a transient or stochastic tail merely to
+    avoid signalling another representation;
+  - no lane carries an independent full residual. All selected lanes are summed
+    first and receive one final mixture-domain Truth correction.
+- Interference:
+  - linear reinforcement and cancellation are rendered by complex phase and
+    channel/route laws, not encoded as a duplicate source;
+  - unexplained nonlinear interaction or estimation error remains final Truth.
+- Selection:
+  - local lane proposals feed one global complete-byte RDO;
+  - the selector prices Basis/state, partials, events, phase, routes, entropy,
+    checkpoints, overlap composition, and compressed final Truth;
+  - a separate lane is admitted only when it reduces complete bytes or creates
+    a successful matched-rate quality point under R-164/R-165.
+
+## R-170 — Retire Magnitude-CNMF as a Primary Coding Path
+
+- Status: **ACCEPTED — FAST GATE REJECTION / PROPOSER RETAINED**
+- Date: 2026-07-27
+- Long-first evidence:
+  - the first R-165 gate analyzed the first continuous 120 seconds of the pinned
+    full Mozart input before any short tuning;
+  - the exact structural candidate selected zero latent components and cost
+    19,874,554 bytes versus 19,874,458 independent compressed-Truth proxy bytes,
+    a 96-byte or 0.000483% loss;
+  - exact reconstruction passed; wall time was 484.787 seconds, or 4.040 times
+    source duration.
+- Short-second evidence:
+  - 12-second EBU female speech found three active anonymous fields and 144
+    placements but cost 0.485516% more than independent Truth;
+  - 12-second EBU dense orchestra and pink noise admitted no field and lost
+    0.009830% and 0.009173% respectively on structural overhead;
+  - all cases reconstructed exact PCM.
+- Decision:
+  - mixture-phase-preserving magnitude CNMF remains an encoder proposal and
+    ablation, but SHALL NOT be developed as the primary MAF coding
+    representation;
+  - the primary refinement moves to phase-aware/time-domain convolutional
+    sparse fields plus the R-167/R-169 coherent, inharmonic, transient,
+    stochastic, and route lanes;
+  - future CNMF use must propose onsets, masks, partial groups, or boundaries
+    whose decoder-verifiable causal representation wins complete RDO. CNMF
+    magnitude factors themselves are not transmitted.
+- Claim boundary:
+  - these are **Real PCM / Fast diagnostic / Exact structural proxy** results,
+    not full Resonith, FLAC, or Opus comparisons;
+  - no `.resonith` generation or Orkela release is created for this rejected
+    proxy candidate.
+
+## R-171 — Causal Sequence Atlas
+
+- Status: **ACCEPTED — HIGHEST-PRIORITY PATTERN SEARCH**
+- Date: 2026-07-27
+- Decision:
+  - pattern search moves from repeated whole-waveform windows to canonical
+    causal event streams derived from the R-167/R-169 lanes;
+  - event coordinates include anonymous Basis/partial state, arbitrary time
+    gap, pitch/frequency law, complex phase law, gain/envelope, formant/spectral
+    shape, decay/resonator state, and channel/route state;
+  - absolute pitch, phase, gain, onset, and channel position are separated from
+    their transition laws so one motif can cover transformed performances.
+- Completeness:
+  - for each declared finite quantization and transform family, the Foundry
+    SHALL build an exact suffix automaton or equivalent compressed index over
+    every event origin;
+  - one automaton state represents the complete interval of repeated substring
+    lengths sharing an end-position class. The candidate manifest records that
+    covered interval rather than silently testing only a few preferred lengths;
+  - separate canonical streams SHALL cover at least literal, constant-offset,
+    first-difference, and bounded second-difference pitch/gain/phase/route laws;
+  - approximate matching MAY use landmarks, LSH, DTW, learned separation, or AI
+    as additional proposers, but no proposer may prune the exact declared
+    canonical language.
+- Grammar:
+  - arbitrary gaps and unrelated intervening events remain explicit;
+  - maximal repeated sequences and their shorter suffix-automaton intervals
+    feed multiple motif definitions and bounded `CompoundBasis` DAG selection;
+  - micro patterns may merge into longer candidates, while direct long
+    candidates continue to compete independently.
+- Admission:
+  - discovery does not imply coding gain. Complete dictionary, transform,
+    event, entropy, checkpoint, render, and final-Truth bytes are compared with
+    the incumbent and maximum-effort Opus under R-164 through R-166;
+  - the long-first gate is mandatory because musical amortization and motif
+    structure may not appear in short clips.
+
+## R-172 — All-Lane Causal Event Atlas
+
+- Status: **ACCEPTED — REQUIRED R-171 COMPLETION**
+- Date: 2026-07-27
+- Evidence:
+  - the first R-171 long-first diagnostic indexed 20,849 harmonic causal events
+    from the first continuous 120 seconds of the pinned Mozart input and found
+    681 repeated end-position classes in 38.693 seconds;
+  - 680 classes were found by bounded second-difference laws and one by
+    constant-offset/first-difference laws. The longest reported class covered
+    four events and the most frequent covered six occurrences;
+  - 12-second female speech produced 1,216 events and 11 repeated classes;
+  - dense orchestra produced only eight harmonic events, while its
+    deterministic-inharmonic, transient, and stochastic lanes owned nearly all
+    coefficients. This is an event-extraction coverage failure, not evidence
+    that the mixture contains no repeated causal state.
+- Decision:
+  - every R-169 lane SHALL expose its own strictly ordered anonymous causal
+    event stream: coherent harmonic, deterministic inharmonic, sparse
+    transient, stochastic law, and phase/room/channel route;
+  - each lane is indexed independently so simultaneous events never overwrite
+    one another and cross-lane ownership remains explicit;
+  - the joint grammar may reference synchronized events from several lanes,
+    but it SHALL NOT merge them into one opaque waveform token;
+  - stochastic events describe repeated distributions, envelopes,
+    correlations, and modulation laws. They do not require repeated random
+    sample realizations;
+  - one final mixture-domain Truth remains the only authoritative correction.
+- Admission:
+  - the all-lane atlas is a proposer until dictionary, event, transform,
+    entropy, checkpoint, render, and final-Truth bytes are priced together;
+  - the R-171 diagnostic is sequence-discovery evidence only and makes no
+    bitrate, quality, or Opus claim.
+
+## R-173 — Factorized Law Atlases Before Joint Composition
+
+- Status: **ACCEPTED — CORRECTION TO R-172 SEARCH**
+- Date: 2026-07-27
+- Failed conjunction:
+  - the first all-lane implementation required time, pitch, phase, gain,
+    envelope, resonator, and route coordinates to repeat as one indivisible
+    token;
+  - on the first 120 seconds of Mozart this indexed 64,501 lane events but
+    reported zero joint classes, even though the simpler harmonic R-171
+    language had already found 681 classes;
+  - this is a false-negative construction: an unrelated coordinate, especially
+    stochastic realization phase or small route drift, can destroy a real
+    repetition in every other causal law.
+- Decision:
+  - each lane SHALL maintain independent exact atlases for timing, pitch,
+    phase, gain, envelope, resonator, and route laws;
+  - the full joint event atlas remains an optional high-specificity proposal,
+    not a prerequisite for discovering a reusable law;
+  - a bounded synchronized grammar composes separately reusable laws and prices
+    their shared lifetime, exceptions, and final Truth. It need not retransmit
+    a combined opaque token;
+  - stochastic phase realizations are excluded from predictive state. Their
+    distribution and channel correlation remain eligible laws.
+- Completeness boundary:
+  - exact completeness is claimed separately for every declared finite
+    projected event language and every event origin;
+  - cross-law composition is complete only for the explicitly bounded grammar
+    family declared by the evidence generation;
+  - learned, approximate, and semantic proposers may add joint candidates but
+    cannot prune any exact factorized-law candidate.
+
+## R-174 — Byte-Priced Hierarchical Causal-Law Grammar
+
+- Status: **ACCEPTED — EXECUTABLE RESEARCH LEDGER**
+- Date: 2026-07-27
+- Decision:
+  - factorized causal-law tokens SHALL compete as an exact literal ledger, a
+    token dictionary, and a bounded acyclic hierarchical pair grammar;
+  - a grammar rule is a `CompoundBasis` over two literal or earlier-rule
+    symbols. Repeated rules may therefore grow micro patterns into longer
+    structures without fixed waveform blocks;
+  - every proposed rule is packed, entropy-coded, and admitted only when it
+    reduces the complete causal-law payload at that step;
+  - the decoder validates vocabulary, rule direction, expansion count, token
+    width, checksum, and trailing bytes before accepting the ledger.
+- Scope:
+  - this first executable grammar prices and reproduces canonical event tokens
+    exactly. It does not yet price acoustic Basis payloads, synchronized
+    cross-law composition, renderer state, checkpoints, or final audio Truth;
+  - therefore a token-ledger byte win is architecture evidence only, not a
+    Resonith or Opus compression claim.
+- Semantic boundary:
+  - input names such as speech, Mozart, orchestra, or noise identify corpus
+    files in evidence reports only;
+  - the term `end-position class` denotes a suffix-automaton mathematical
+    equivalence family, never a classified sound, speaker, instrument, or
+    content type;
+  - neither R-173 discovery nor R-174 grammar requires or transmits semantic
+    source classes. Admission uses anonymous numeric causal laws and bytes.
+
+## R-175 — One Timeline per Causal Lane
+
+- Status: **ACCEPTED — REQUIRED LEDGER DEDUPLICATION**
+- Date: 2026-07-27
+- R-174 evidence:
+  - on the first 120 seconds of Mozart, independently packed factorized token
+    ledgers decreased from 611,298 to 514,946 bytes, or 15.761871%, with exact
+    token round-trip;
+  - female speech, dense orchestra, and pink noise token ledgers decreased by
+    10.577340%, 6.074323%, and 11.925028% respectively;
+  - most Mozart savings came from immutable token dictionaries. Hierarchical
+    grammar won only coherent-harmonic timing and sparse-transient timing,
+    demonstrating that rule admission correctly rejects gratuitous macros.
+- Correction:
+  - R-174 priced every factorized law independently and therefore repeated the
+    same event timeline across pitch, phase, gain, envelope, resonator, and
+    route columns;
+  - one causal lane SHALL encode one ordered event clock. Its numeric law
+    columns reference event ordinals or shared lifetimes;
+  - constant/default columns and empty mono routes SHALL be omitted and
+    reconstructed from declared defaults;
+  - a complete row ledger, shared-timeline column ledger, and incumbent direct
+    representation compete by actual packed bytes and exact decode.
+- Claim boundary:
+  - the R-174 percentages apply only to canonical causal token ledgers. They
+    exclude acoustic Basis, rendering, checkpoints, synchronization, and final
+    Truth and are not full Resonith or Opus gains.
+- R-175 result:
+  - the first 120 seconds of Mozart selected the shared-timeline column form in
+    every lane and reduced the exact event ledger from 602,415 to 471,002
+    bytes, or 21.814364%;
+  - female speech, dense orchestra, and pink noise reduced their exact event
+    ledgers by 8.105210%, 9.904385%, and 14.411588%;
+  - short transient and very small harmonic lanes selected complete row
+    fallback, proving that column factorization is not forced when its headers
+    cost more;
+  - all selected ledgers reproduced every anonymous numeric event exactly, and
+    all analytic lane renders plus final Truth reproduced the PCM hashes.
+
+## R-176 — Causal Basis Field Research Transport
+
+- Status: **ACCEPTED — DECODER-IN-LOOP INTEGRATION STEP**
+- Date: 2026-07-27
+- Decision:
+  - the first complete integration SHALL replace repeated MFT1
+    `BASIS_WARP_INSTANCE` records with one immutable Basis dictionary and one
+    R-175 event ledger per anonymous emitter;
+  - each event carries only bounded numeric render state: onset, Basis ID,
+    source position/phase, start/end source step, start/end gain, finite
+    lifetime, and flags. It carries no source class;
+  - the research decoder parses and bounds this `CBF1` transport, reconstructs
+    the equivalent MFT1 bounded-DSP program, executes the existing native
+    decoder, and then adds one independently decoded lapped Truth;
+  - direct MFT1 and direct Truth remain complete-byte fallbacks.
+- Admission:
+  - the `CBF1` predictor must reproduce the native MFT1 prediction sample for
+    sample before any residual comparison;
+  - complete `CBF1 + Truth` bytes and decoded quality compete against direct
+    Truth under the same quality floor;
+  - this translation transport is research-only until a native C++23 parser
+    renders the same events directly with CPU parity and declared bounds.
+- Long-first result:
+  - the first 120 seconds of Mozart selected direct Truth at 1,883,620 bytes;
+    fixed-block CBF1 plus Truth cost 1,885,808 bytes, only 2,188 bytes more,
+    but the proposer found one Basis and two instances covering 2,048 samples;
+  - female speech, dense orchestra, and pink noise also selected Truth.
+    CBF1 compressed the dense-orchestra predictor from 133,804 to 52,968 bytes,
+    but its insufficiently isolated prediction made complete Truth correction
+    and quality substantially worse;
+  - all CBF1 translations were sample-identical to their native MFT1
+    predictors. The transport passes; R-155 fixed-block discovery is rejected
+    as the primary real-audio predictor under R-177.
+
+## R-177 — Anonymous Partial-Basis Trajectories Replace Fixed-Block Proposals
+
+- Status: **ACCEPTED — PRIMARY R-176 ANALYZER REFINEMENT**
+- Date: 2026-07-28
+- Evidence:
+  - on the 12-second speech smoke input, R-176 compressed the bounded predictor
+    from 8,792 MFT1 bytes to 6,131 CBF1 bytes, but the fixed 1,024-sample warp
+    proposer covered only 10,240 of 529,200 samples;
+  - complete CBF1 plus Truth cost 97,837 bytes and had larger SSE than the
+    91,120-byte direct Truth, so exact RDO selected fallback;
+  - transport and native translation therefore work; inadequate causal
+    coverage and residual reduction are the blocker.
+- Decision:
+  - fixed waveform blocks remain a direct-dictionary candidate but cease to be
+    the primary CBF1 analyzer;
+  - coherent observations SHALL be clustered into multiple anonymous immutable
+    partial-shape Basis states using normalized amplitude ratios and relative
+    complex phase, without instrument or voice labels;
+  - contiguous observations are compiled into long bounded source-position,
+    source-step, gain, and route trajectories at arbitrary sample boundaries;
+  - each Basis count, clustering, segmentation, and trajectory refinement
+    competes by complete CBF1 plus final-Truth bytes. One global median Basis is
+    never assumed sufficient;
+  - inharmonic, transient, stochastic, and route lanes remain separate and
+    continue to compete with direct Truth.
+
+## R-178 — Persistent Anonymous State and Decoder-Domain Admission
+
+- Status: **ACCEPTED — REQUIRED R-177 CORRECTION**
+- Date: 2026-07-28
+- Failed behavior:
+  - the first R-177 boundary smoother raised one Basis from zero gain to its
+    fitted gain and returned it to zero across the complete lifetime;
+  - this suppressed most of a long-lived cause merely to avoid a boundary
+    discontinuity. On the 12-second female-speech diagnostic it improved the
+    complete candidate from the earlier R-176 result, but still cost 96,067
+    bytes versus 91,120 direct-Truth bytes and produced `1.007334` times the
+    direct-Truth SSE;
+  - analytic coherent-lane fit therefore cannot by itself admit a transported
+    Basis. The actual residual transform, quantizer, entropy payload, and
+    decoded reconstruction are authoritative.
+- Decision:
+  - an anonymous cause persists at its fitted gain and phase for its useful
+    lifetime. Boundary smoothing is confined to short bounded edge ramps and
+    SHALL NOT taper the entire lifetime to zero;
+  - subdivision for CUDA, analysis windows, entropy pages, or checkpoints
+    SHALL preserve source position, phase, gain, and law state. An internal
+    chunk boundary is not an acoustic event;
+  - adjacent compatible state intervals SHOULD be chained before transport.
+    A new event is emitted only for an objectively measured state change;
+  - candidate admission SHALL compare the actual decoder-produced
+    `Basis + events + final Truth` stream with the incumbent at complete bytes
+    and decoded quality. Analytic lane error is a proposer score only;
+  - bounded local or beam RDO MAY use an exact affected-transform-domain
+    delta before the final complete-stream decode. It SHALL retain direct
+    Truth and SHALL NOT use semantic content names or classifier confidence.
+- Evidence order:
+  - every generation runs a long input first and freezes its Pareto point;
+  - short speech, orchestra, noise, and heterogeneous diagnostics follow;
+  - a rate-only or quality-only candidate receives the bounded refinement of
+    the missing axis required by R-164 before it is frozen.
+
+## R-179 — Minimum-Description Anonymous Causal Program
+
+- Status: **ACCEPTED — PRIMARY MAF COMPILER OBJECTIVE**
+- Date: 2026-07-28
+- Correction:
+  - tuning one waveform Basis, threshold, frame mode, or semantic source class
+    at a time cannot realize MAF. The 12-second R-177 diagnostic assigned
+    90.546% of signal energy to its analytic coherent lane, yet the primitive
+    single-cycle trajectory language covered only a small fraction
+    economically and did not beat direct Truth;
+  - this is a representation failure, not evidence that the recording lacks
+    causal structure. The compiler must optimize the complete anonymous
+    program rather than force one representation to explain every cause.
+- Objective:
+  - for a declared finite program language, the Foundry minimizes
+    `L(program) + L(events, routes, state | program) + L(final Truth | program)
+    + lambda * distortion + mu * decode cost + nu * seek cost`;
+  - the byte terms are actual packed streams from the independent decoder.
+    Explained energy, separation score, semantic confidence, and analytic
+    error are proposal evidence only;
+  - Lossless fixes distortion to zero. Perceptual profiles retain a
+    decoder-produced matched-quality Pareto frontier and direct Truth.
+- Anonymous causal program:
+  - a program contains unnamed additive emitters, immutable leaf Basis,
+    excitation laws, resonator/state laws, deterministic inharmonic partials,
+    transient events, stochastic distributions, phase-continuous parameter
+    trajectories, channel/room routes, and bounded acyclic CompoundBasis;
+  - these mechanisms may overlap in time but have single primary ownership in
+    the perfect-reconstruction analysis domain. They are summed before one
+    mixture-domain Truth; per-lane exact residuals are forbidden;
+  - timing, pitch, complex phase, gain, envelope, resonator, and route remain
+    independently indexed and are composed only when the complete program
+    becomes shorter;
+  - source, instrument, speaker, note, speech, music, and noise names are not
+    program fields. Optional AI, separation, embeddings, fingerprints, and
+    semantic models may add columns but cannot delete any candidate in the
+    declared deterministic language.
+- Search:
+  - proposer union includes direct complex/time-domain patterns, anonymous
+    convolutive factors, coherent partial bundles, source-filter,
+    deterministic inharmonic, transient, stochastic, cross-channel route, and
+    direct Truth candidates at overlapping scales and arbitrary origins;
+  - a bounded exact oracle is used for small candidate families. Scalable
+    encoding uses column generation plus deterministic add/remove/swap beam
+    RDO and an actual final pack/decode pass;
+  - short events may form long sparse gap motifs, while direct long
+    candidates remain independent. CUDA tiles, transforms, and entropy pages
+    never define acoustic boundaries.
+- Decoder and limits:
+  - the decoder executes a fixed resource-bounded integer ISA; it performs no
+    search, classification, separation, or neural inference;
+  - arbitrary programs, shaders, callbacks, floating-point normative state,
+    and transmitted neural networks remain forbidden;
+  - every program declares bounded Basis bytes, active emitters, expanded
+    events, grammar depth, operations per frame, checkpoint dependency, and
+    workspace before rendering.
+- Falsifiable gates:
+  - first prove the free-oracle bound on changing-overlap synthetic mixtures;
+  - then run long real material before short tuning and report Basis, event,
+    route, checkpoint, final-Truth, total-byte, quality, and wall-time budgets;
+  - no architecture or Opus claim is made until the complete R-118 union and
+    maximum-effort official Opus frontier pass from actual decoders.
+
+## R-181 — Theory-Before-Syntax Research Protocol
+
+- Status: **ACCEPTED — MANDATORY PROJECT METHOD**
+- Date: 2026-07-28
+- Scope:
+  - before implementing any new codec mechanism, opcode, normative state, AI
+    role, transform family, or material encoder heuristic, the project SHALL
+    complete a written theory review;
+  - ordinary defect fixes, tests for already accepted behavior, mechanical
+    portability work, and measurement-only runs do not require a new review.
+- Required review:
+  1. state the signal model, invariant, objective, and what existing candidate
+     fails;
+  2. derive the information, identifiability, approximation, and worst-case
+     limits. Separate possible compression from impossible universal claims;
+  3. search current primary scientific and engineering sources online,
+     including prior art, successful methods, negative results, and practical
+     implementations. Record direct references and the date;
+  4. compare at least the direct-Truth incumbent, the simplest bounded
+     candidate, the strongest practical alternative, and the proposed union;
+  5. define decoder ISA, fixed-point state, memory, operations, security,
+     random access, packet-loss, mobile, and ASIC consequences before syntax;
+  6. publish a falsifiable byte/quality budget, expected activation domain,
+     ablation plan, and kill gate;
+  7. declare long-first and short-second real inputs, synthetic oracle bounds,
+     maximum-effort anchors, exact artifacts, and independent-decode checks;
+  8. record the decision before code and update the theory if evidence
+     contradicts an assumption.
+- Per-file oracle:
+  - manual, visual, AI-assisted, and exhaustive analysis of each evidence file
+    is encouraged for discovering the best attainable anonymous program;
+  - such analysis is an encoder oracle, never transmitted semantics. A useful
+    manual explanation must be converted into deterministic mathematics,
+    reproduced automatically, and validated on held-out files before a
+    general codec claim;
+  - no benchmark-specific table, hand-authored event map, filename, or content
+    label may enter a released encoder default.
+- Scientific basis:
+  - Rissanen's minimum-description principle justifies charging the model and
+    the data together;
+  - McAulay-Quatieri and Serra justify time-varying sinusoidal/partial laws and
+    separate deterministic/stochastic representations;
+  - phase-aware complex factorization shows that magnitude-only separation is
+    insufficient;
+  - MixIT shows label-free latent separation is possible but not unique, while
+    sparse-solution NP-hardness requires an explicitly bounded search rather
+    than an unprovable claim of a universal exact optimum.
+
+## R-182 — Whole-Track Self-Supervised Causal Foundry
+
+- Status: **ACCEPTED — HIGHEST-PRIORITY RESEARCH ARCHITECTURE**
+- Date: 2026-07-28
+- Problem:
+  - isolated frame, block, or locally fitted Basis candidates do not learn how
+    one anonymous cause evolves, disappears, returns, routes between channels,
+    or participates in a longer gapped law across the complete recording;
+  - a separator optimized for human source names is neither identifiable from
+    a mixture nor aligned with minimum complete codec bytes;
+  - fitting a per-track neural function without charging its quantized weights
+    can merely hide the waveform in an unreported second payload.
+- Formal signal model:
+  - for channel \(c\), the analysis hypothesis is
+    \(x_c[n]=\sum_s Route_{c,s}(n)\{Resonator_s(State_s,
+    Excitation_s)[n]+Transient_s[n]+Stochastic_s[n]\}+Truth_c[n]\);
+  - an anonymous point-cause state is a vector rather than one pitch:
+    \(f_{s,k}(n)=k f_{s,0}(n)+Delta f_{s,k}(n)\), with separately persistent
+    amplitude, complex phase, waveform-shape, resonator, envelope, and route
+    coordinates for each retained partial;
+  - causes may overlap and need not equal physical instruments. They exist only
+    when they shorten the decoded explanation.
+- Authoritative objective:
+  - the per-track Foundry minimizes the actual packed description
+    \(L(P)+L(E,R,S,C\mid P)+L(Truth\mid P,E,R,S,C)+lambda D+mu C_{decode}
+    +nu C_{seek}\);
+  - learned parameters, immutable Basis samples, dictionaries, events, routes,
+    checkpoints, entropy state, and the single final Truth are all charged;
+  - explained energy, separator confidence, likelihood, training loss, and
+    semantic plausibility are proposal diagnostics only.
+- Deterministic training loop:
+  1. analyze the complete input at overlapping phase-preserving resolutions
+     and arbitrary content-defined origins;
+  2. propose anonymous coherent-vector, bounded-inharmonic, source-filter,
+     transient, stochastic, convolution/resonator, route, direct long-Basis,
+     and sparse gapped-motif columns;
+  3. initialize parameters from deterministic DSP, an optional local learned
+     proposer, or an external AI proposer, without allowing any proposer to
+     prune the declared deterministic union;
+  4. alternate quantized parameter re-estimation with add, remove, split,
+     merge, link, unlink, route-share, motif-grow, and Basis-deduplicate edits;
+  5. pack and independently decode every frontier edit, compute the one final
+     mixture Truth, and admit an edit only on the complete rate-distortion-
+     resource Pareto frontier;
+  6. analyze the decoder-domain residual to generate the next columns while
+     preserving single ownership and preventing per-lane correction streams;
+  7. stop deterministically when a complete pass produces no admitted edit or
+     a declared Foundry resource bound is reached.
+- Whole-track learning rule:
+  - all samples and channels MAY train the file-specific model. This is not a
+    generalization task: overfitting is controlled by charging every emitted
+    parameter and its final correction, not by pretending weights are free;
+  - long-range state, returns, gapped motifs, cross-channel transfer, and
+    repeated transformations are learned before short-only refinement;
+  - internal FFT windows, CUDA tiles, batches, entropy pages, and checkpoints
+    are implementation units and SHALL NOT define acoustic boundaries.
+- Solver:
+  - bounded exact subset search remains the oracle for small column sets;
+  - scalable Foundry uses deterministic column generation plus reproducible
+    add/remove/swap/split/merge beam search. It MUST publish the finite
+    hypothesis manifest and the gap to every available exact subproblem;
+  - global optimum over unrestricted sparse programs is not claimed.
+- Decoder and privacy:
+  - per-track training, source separation, gradients, Python, CUDA, and cloud
+    models are encoder-only. The decoder receives only bounded integer ISA
+    records already permitted by the selected profile;
+  - a transmitted neural network, arbitrary executable graph, content label,
+    filename identity, or cloud response is forbidden as a decoding
+    dependency;
+  - private PCM is local by default. External AI receives data only under an
+    explicit user policy and remains a non-authoritative proposer.
+- Prior-art review, checked 2026-07-28:
+  - Rissanen supports charging the model and data jointly through minimum
+    description length;
+  - McAulay-Quatieri and Serra support evolving sinusoidal partials and
+    deterministic-plus-stochastic analysis;
+  - phase-aware complex factorization shows that magnitude-only factors lose
+    a decisive coordinate;
+  - MixIT and Sparse MixIT show label-free mixture learning and the need to
+    penalize over-separation, but do not make the inferred sources unique;
+  - per-signal implicit neural representations demonstrate train-on-the-file
+    compression, while their quantized weights and slow fitting confirm that
+    a learned representation must be charged and compiled into a bounded
+    decoder language;
+  - sparse program selection is NP-hard in general, so the declared finite
+    exact/beam split is a required honesty boundary.
+- Falsifiable budgets and kill gates:
+  - for every selected structure,
+    `saved final-Truth bytes > added program + event + route + checkpoint
+    bytes` at the admitted quality point;
+  - an alternative matched-byte quality point may be retained, but receives
+    the required bounded refinement of the missing rate axis before freeze;
+  - synthetic mixtures with known evolving causes test parameter recovery and
+    independent decoded reconstruction, but do not authorize a real-audio
+    compression claim;
+  - long real inputs run first. Their Pareto incumbents are frozen before short
+    tuning. A family that never reaches a Pareto frontier is disabled from the
+    default without being hidden from the report;
+  - only actual complete files decoded by the independent Core can pass.
+    R-118 plus maximum-effort official Opus remains the promotion gate.
+
+## R-183 — Multivoice Causal Basis Ledger
+
+- Status: **ACCEPTED — REQUIRED R-182 TRANSPORT**
+- Date: 2026-07-28
+- Evidence that triggered the decision:
+  - the first R-180 vector-partial synthetic fit explained approximately
+    99.4% of event-domain energy but represented 2 seconds with 1,620 raw MFT1
+    warp records and 71,424 predictor bytes;
+  - this is a signaling failure, not a compression result. Repeating the full
+    record header for every partial and analysis hop prevents a useful causal
+    model from repaying itself.
+- Design:
+  - extend the CBF research transport from one identity-routed emitter per
+    output to up to 64 anonymous emitter ledgers plus one bounded static output
+    mix;
+  - one emitter ledger owns one time-ordered partial or Basis trajectory.
+    Several ledgers may overlap and route to the same output channel;
+  - all ledgers share the Basis dictionary and total timeline. Their event
+    fields retain exact onset, lifetime, source position, start/end step, and
+    start/end gain;
+  - the transport is a lossless lowering to the already bounded MFT1 decoder
+    subset. It adds no oscillator, inference, floating-point behavior, or
+    arbitrary program to the decoder.
+- Alternatives:
+  - raw MFT1 is retained as the exact fallback;
+  - collapsing all partials into one PCM Basis reduces signaling but prevents
+    independent frequency, phase, amplitude, and detuning evolution;
+  - a neural waveform function may be more compact on some inputs, but its
+    weights require a new decoder and must be charged. It remains an encoder
+    proposer, not this transport.
+- Limits and security:
+  - output channels remain at most 8, emitters at most 64, Basis at most 256,
+    and every ledger is strictly ordered with bounded event count;
+  - the static mix is validated before MFT1 construction. Dynamic routes remain
+    a separate future candidate and are not smuggled into this transport;
+  - parser expansion is resource-preflighted and independently decoded.
+- Kill gate:
+  - conversion MUST reproduce the source MFT1 program and native PCM exactly;
+  - it is selected only when its complete bytes are smaller than raw MFT1;
+  - vector-partial compression claims remain forbidden until this transport,
+    the final Truth, and complete program bytes beat the incumbent frontier.
+
+## R-184 — Global Complex-Partial Flow Before Cause Grouping
+
+- Status: **ACCEPTED — REQUIRED CORRECTION TO R-182 ANALYSIS**
+- Date: 2026-07-28
+- Rejected shortcut:
+  - greedily selecting several fundamental frequencies in each STFT frame is
+    allowed only as a labeled diagnostic proposer;
+  - it is not the primary Foundry architecture because it can select
+    subharmonics, switch identities at crossings, duplicate leaked energy,
+    discard inharmonic causes, and spend an independent phase value for every
+    channel and hop.
+- Signal objects:
+  - a primitive observation is an anonymous complex spectral partial
+    \(p=(t,f,A,phi,route,uncertainty)\), estimated at sub-bin precision from
+    overlapping phase-preserving analyses;
+  - a partial trajectory is a path through such observations with continuous
+    or explicitly corrected integrated phase, amplitude/frequency laws,
+    births, deaths, and bounded gap edges;
+  - a causal field is an optional group of partial trajectories that shares
+    enough frequency modulation, amplitude envelope, resonator state, event
+    timing, or channel route to reduce complete description length.
+- Required analysis order:
+  1. generate complex partial observations at all declared resolutions,
+     without first assigning fundamentals or source classes;
+  2. form a global time-frequency continuation graph over the complete track.
+     Edges encode frequency, phase-integration, amplitude, route, gap, and
+     residual consequences;
+  3. select non-duplicating partial paths using exact min-cost flow where costs
+     are additive and deterministic bounded beam/column generation where
+     higher-order laws break that reduction;
+  4. retain every selected path as an independent fallback;
+  5. propose harmonic, bounded-inharmonic, common-modulation, common-envelope,
+     resonator, motif, and route groupings only after paths exist;
+  6. admit a grouping only when its shared law plus corrections is cheaper
+     than the independent paths and produces a complete decoded Pareto point.
+- Phase and channels:
+  - phase is a state coordinate, not an afterthought. A continuous path derives
+    phase by integrating frequency and adds sparse phase innovations only when
+    they are cheaper than a restart;
+  - cross-channel phase is first proposed as a shared route law, including
+    delay-induced frequency-dependent phase, gain, polarity, decay, and a
+    bounded transfer correction. Independent per-channel phase remains the
+    exact fallback;
+  - magnitude-only tracking cannot authorize a selected field.
+- Other lanes:
+  - transient, stochastic, convolution/resonator, and direct long-Basis
+    candidates compete separately. A partial graph never forces them into a
+    sinusoidal explanation;
+  - the final Truth is computed once after the native sum of all selected
+    lanes. Graph confidence and path coverage are diagnostics only.
+- Primary-source review, checked 2026-07-28:
+  - McAulay-Quatieri established time-varying sinusoidal tracks with phase
+    related to the integral of instantaneous frequency;
+  - PARSHL and Serra's spectral modeling track frequency, amplitude, and phase
+    of spectral lines and explicitly retain a stochastic residual;
+  - phase-aware complex factorization and phase-aware harmonic/percussive
+    optimization show why magnitude-only assignment is insufficient;
+  - published SMS implementations also document identity switching and the
+    need for track continuation rules, confirming that frame-local nearest or
+    pitch-guided matches are not a complete solution.
+- Solver and complexity:
+  - the declared observation and edge graph is finite. Exact flow is used for
+    additive first-order tracking; spline, shared-law, and route groupings use
+    bounded deterministic search with the independent paths always available;
+  - unrestricted joint separation, grouping, and sparse-program selection is
+    not claimed tractable or uniquely identifiable.
+- Falsifiable gates:
+  - synthetic crossing chirps, disappearing/reappearing tracks, harmonic and
+    inharmonic bundles, opposite polarity, channel delay, and transient/noise
+    overlap MUST be included;
+  - the global tracker MUST report observation recall, identity switches,
+    phase-integration error, grouped versus independent bytes, final-Truth
+    bytes, and independently decoded PCM;
+  - a grouped cause is rejected unless its actual total is smaller than the
+    independent-track representation at admitted quality;
+  - long real material remains first. No result from a frame-local
+    multi-fundamental proposer may be presented as R-182 evidence.
+
+## R-185 — Mandatory Adversarial Design Review Before Material Changes
+
+- Status: **ACCEPTED — MANDATORY PROJECT METHOD**
+- Date: 2026-07-28
+- Scope:
+  - applies before every material codec improvement, correction of an
+    architectural assumption, syntax or state addition, search-family change,
+    model/AI role, quality objective, transport, or resource-policy change;
+  - ordinary typo fixes, mechanical refactors with proven identical behavior,
+    tests of an already accepted invariant, and emergency restoration of a
+    previously passing decoder do not require a new review.
+- Required sequence:
+  1. state the observed failure and freeze the evidence that exposed it;
+  2. perform a divergent brainstorm containing the direct-Truth incumbent, the
+     simplest bounded fix, at least one materially different alternative, and
+     the strongest plausible combined approach;
+  3. attempt to reject every alternative through information limits,
+     identifiability, counterexamples, adversarial signals, complexity,
+     security, seek/loss behavior, mobile/ASIC consequences, and actual-byte
+     accounting;
+  4. review several independent sources of truth: primary theory, current
+     research, working implementations or standards, negative evidence, and
+     the project's measured decoder output;
+  5. assign an independent red-team subagent that did not author the proposal.
+     The auditor SHALL inspect the theory, code if any, assumptions, budgets,
+     tests, and stopping rule and SHALL return explicit accepted, rejected, and
+     unresolved claims;
+  6. resolve every blocking audit item in writing, revise or reject the design,
+     and record the decision and kill gates;
+  7. only then implement or continue the material change.
+- Draft-code boundary:
+  - exploratory code written before the audit is non-admitted scratch. It
+    SHALL NOT become a default, result claim, release, or basis for subsequent
+    architecture until the audit is closed;
+  - preserving a draft for inspection is allowed, but its status and failing
+    assumptions must be explicit.
+- Evidence:
+  - the decision record SHALL list rejected alternatives and why they lost;
+  - a material result report SHALL link the audit, primary sources, synthetic
+    counterexamples, independent decode, and long-first real gate;
+  - agreement by the author is not an audit. If the auditor finds no weakness,
+    a second counterexample pass is required before implementation.
+
+## R-186 — Audited Complex-Partial Analyzer Manifest and Quarantine
+
+- Status: **ACCEPTED — ANALYZER/TEST WORK ONLY**
+- Date: 2026-07-28
+- Audit disposition:
+  - R-185 red-team accepts R-184 observation and tracking research only after
+    the restrictions below;
+  - predictor integration, phase syntax, R-183 lowering, cause grouping,
+    long-real compression gates, default changes, and claims remain blocked
+    until a second audit after native sparse-graph parity.
+- Accepted foundations:
+  - anonymous complex observations precede fundamentals and source grouping;
+  - independent partial paths remain available;
+  - phase is required state, while the current draft is phase evidence only;
+  - transient, stochastic, direct-Basis, factorization, sparse-convolution,
+    learned-proposer, and direct-Truth families remain in the union;
+  - an additive first-order disjoint-path subproblem may have an exact
+    diagnostic solution, but it is not the codec objective.
+- Rejected current claims:
+  - authoritative phase, all-resolution coverage, persistent phase paths,
+    cross-channel route sharing, non-duplicating ownership, actual byte RDO,
+    grouping, R-183 use, and scalable global flow are not implemented;
+  - energy ranking, observation coverage, or arbitrary edge benefit cannot
+    select a codec program.
+- Finite research manifest:
+  - declared resolutions are `(512,128)`, `(2048,512)`, and `(8192,2048)`
+    samples by default; a gate may publish a smaller explicit subset;
+  - 24 logarithmic bands, at most 2 observations per band and 48 total per
+    detector/frame; aggregate and each channel are separate detector
+    hypotheses with duplicate provenance and later ownership conflicts;
+  - direct complex-DTFT and reassigned/phase-derivative estimates are distinct
+    hypotheses. The first implementation supports only direct DTFT and reports
+    that subset;
+  - every observation carries resolution, centered time origin, detector,
+    complex channel values, local SNR, frequency and phase uncertainty,
+    resolvability, and provenance;
+  - gap hypotheses are `1, 2, 4, 8` local hops; at most 4 neighbors per gap;
+    second-order state contains frequency slope/acceleration, amplitude slope,
+    route change, endpoint phase error, and cycle offsets `m0 + {-2..2}`;
+  - bounded K-best width is 8 per terminal state, with deterministic numeric
+    tie breaks; exact diagnostics are limited to at most 512 observations and
+    4,096 continuation hypotheses;
+  - original PCM plus strongest-first and lowest-correction decoder-residual
+    observation orders form the finite order union, with at most 2 residual
+    passes per order. Original candidates are never erased by a peel;
+  - an evidence run declares at most 65,536 retained path hypotheses, 7 GiB
+    VRAM, and 16 GiB host RAM. Crossing those limits yields a bounded-search
+    report, never silent pruning or a completeness claim.
+- Phase convention:
+  - direct DTFT uses a symmetric declared window and complex exponential whose
+    time zero is the observation center sample;
+  - low-SNR phase does not affect continuation cost;
+  - endpoint phase compilation is forbidden in this generation. A future
+    phase law must enumerate integer cycle counts near the integrated-frequency
+    prediction and compare `CONTINUE(m)` against `RESTART`.
+- Resolvability and truth:
+  - perfectly symmetric crossings, sub-Rayleigh close tones, and complete
+    destructive cancellation are scored modulo permutation or marked
+    unidentifiable; they do not become false tracker failures;
+  - direct, convolutional, factorization, and Truth alternatives remain
+    available for all unresolved content.
+- Ordered implementation gate:
+  1. analytic resolvability oracle and counterexample tests;
+  2. corrected observation records and DTFT phase;
+  3. exact small first/second-order diagnostics with restart/birth/death and
+     minimum length inside the state;
+  4. bounded K-best sparse tracker;
+  5. native C++23/CUDA sparse graph parity;
+  6. stop for a second R-185 audit before any phase synthesis or transport.
+- Accounting preconditions:
+  - publish observation/track diagnostics on known analytic signals;
+  - publish a free-oracle lower bound that charges proposed path, phase, event,
+    and route records and shows whether zero-cost grouping could plausibly
+    repay them;
+  - failure of the lower bound blocks syntax design.
+
+## R-187 — Audited Multi-Objective Partial-Path Hypothesis Union
+
+- Status: **ACCEPTED — ANALYZER PROPOSER ONLY**
+- Date: 2026-07-28
+- Frozen failure:
+  - a continuity-only R-186 draft followed stable window sidelobes through a
+    two-chirp crossing because every retained observation was assigned the
+    same artificial independent-observation value;
+  - on the declared crossing test it emitted two long paths, but their median
+    nearest-ground-truth frequency errors were approximately 125 Hz and
+    186 Hz. The draft is rejected as evidence of partial identity;
+  - assigning `base + scale * log(amplitude)` "saved bits" was also rejected:
+    without a decoded residual experiment this is neither an entropy bound nor
+    an estimate of Truth bytes.
+- Brainstorm and falsification:
+  - **continuity only** is retained as one hypothesis family, but rejected as
+    the sole ranker because coherent leakage can be temporally smoother than a
+    crossing partial;
+  - **strongest energy only** is rejected because it removes the planted
+    approximately -47.6 dB weak line and biases every path toward dominant
+    sources;
+  - **higher detection thresholds** are rejected because they hide rather than
+    solve ownership and weak-line recall;
+  - **semantic or neural classification** is rejected as an authority because
+    it can neither prove phase identity nor suppress a mathematically valid
+    anonymous candidate;
+  - **a calibrated residual delta per candidate** is the future authoritative
+    value, but evaluating it for the complete raw graph is too expensive for
+    the present analyzer. It is required before codec admission;
+  - the accepted bounded proposer is the deterministic union of three
+    materially different rankings: continuity, uncertainty-aware local
+    potential, and frequency-stratified protected weak lines.
+- Score separation:
+  - `potential_node_value_q` is a dimensionless fixed-point search heuristic,
+    not bits. It is zero when the lower confidence amplitude is non-positive
+    and decreases with amplitude uncertainty, frequency uncertainty, phase
+    uncertainty, low prominence, and leakage risk;
+  - amplitude entering that heuristic is normalized by the declared window
+    coherent gain, detector channel count, and analysis resolution;
+  - `program_cost_bits` separately reports the provisional birth, continuation,
+    cycle, phase, gap, and death syntax estimate. It is never subtracted from a
+    dimensionless value to claim byte savings;
+  - each path separately reports continuity score, potential value,
+    uncertainty/leakage penalty, program cost, conflict count, family, and
+    phase error.
+- Ownership and union:
+  - duplicate observations from channel, aggregate, resolution, or sidelobe
+    hypotheses remain explicit conflicts and cannot be rewarded twice inside a
+    selected set;
+  - the retained top-K union SHALL include value-weighted, continuity-only,
+    and protected weak-line paths. Selection by one family SHALL NOT prune the
+    candidates of another family;
+  - weak-line protection is stratified by frequency band and confidence. It
+    preserves a candidate for later exact residual testing; it does not force
+    a weak line into the codec program.
+- Determinism and bounds:
+  - all ranking values are signed saturating fixed-point integers with
+    published constants and lexicographic ties on family, observation IDs, and
+    cycle counts;
+  - the R-186 graph, K-best, path, host-memory, and accelerator bounds remain;
+    hitting a bound is reported as pruning, never completeness;
+  - partial tracking literature supports global lattice/path optimization over
+    greedy continuation, but does not establish this heuristic as a codec
+    objective. The full decoder-domain MDL remains authoritative.
+- Kill gates:
+  - both planted crossing chirps MUST occur in the emitted top-K equivalence
+    set modulo permutation, and stable sidelobes MUST NOT displace them;
+  - the approximately -47.6 dB line MUST survive in at least one protected
+    weak-line path;
+  - the 440.3 Hz clean-tone frequency, centered-phase, and path-continuity
+    results MUST not regress;
+  - reports MUST expose each score component and ownership conflict count;
+  - no path may enter a predictor, syntax, R-183 transport, long-real claim, or
+    release until a second R-185 audit and complete
+    `pack -> native decode -> one final Truth -> actual bytes` comparison.
+
+## R-188 — Canonical Spectral Peaks Before Band Allocation
+
+- Status: **ACCEPTED — AUDITED ANALYZER CORRECTION**
+- Date: 2026-07-28
+- Frozen failure:
+  - the R-186 detector searched each logarithmic band independently and
+    inserted `argmax(band)` whenever that band had no interior local maximum;
+  - a monotonic band edge is not a spectral peak. Around two planted crossing
+    chirps this fallback emitted pairs near 453.1/459.6 Hz and 940.2/953.1 Hz;
+  - the later Rayleigh test then treated each artifact as a second physical
+    line, rejected the true observation, and left stable sidelobes for the
+    path tracker.
+- Alternatives and audit:
+  - raising amplitude, SNR, or prominence thresholds is rejected because it
+    can remove genuine weak lines without fixing the false feature;
+  - choosing one representative from every sub-Rayleigh ambiguity cluster is
+    rejected as the first correction because it can silently collapse two
+    genuine close lines;
+  - immediate multi-line deconvolution or reassignment remains a separate
+    bounded observation hypothesis and is not necessary to remove this
+    detector artifact;
+  - the independent R-185 auditor accepts canonical full-spectrum peak
+    detection as the smallest causal correction and blocks representative
+    clustering until a later separately audited proposal.
+- Required detector order:
+  1. identify plateau-aware local maxima once over the complete positive
+     spectrum, excluding DC and Nyquist;
+  2. map every canonical peak bin into exactly one half-open logarithmic band.
+     A peak exactly on a boundary belongs to the upper band;
+  3. apply the per-band and per-detector resource caps only after this mapping.
+     A band without a genuine local maximum emits no coherent partial;
+  4. fit sub-bin frequency, direct DTFT, amplitude, phase, prominence, and
+     uncertainty only for canonical bins;
+  5. retain every genuine sub-Rayleigh member, attach an unresolved
+     equivalence group, and mark no member as an authoritative resolved
+     partial. Do not replace the group by a synthetic representative;
+  6. preserve cross-detector and cross-resolution alternatives with ownership
+     conflicts.
+- Kill gates:
+  - the frozen chirp frame MUST retain one canonical feature near each planted
+    460 Hz and 940 Hz component and remove the band-boundary duplicates;
+  - both chirps MUST then survive the R-187 top-K equivalence gate;
+  - the approximately -47.6 dB weak genuine maximum and clean 440.3 Hz phase
+    tests MUST not regress;
+  - if canonical peaks alone do not clear the crossing failure, stop for a new
+    R-185 audit before adding ambiguity representatives or deconvolution.
+
+## R-189 — Canonical-Pool Admission and Protected Band Slots
+
+- Status: **ACCEPTED — AUDITED ANALYZER CORRECTION**
+- Date: 2026-07-28
+- Frozen failure:
+  - after R-188 removed false boundary features, a genuine 460 Hz chirp peak
+    was still omitted because its three-bin Hann main lobe had a median of
+    4,948 amplitude units. Treating that self-energy as noise and applying a
+    3 dB gate rejected the 6,624-unit maximum;
+  - a within-band median or percentile dominated by the candidate's own main
+    lobe is not a noise estimator.
+- Accepted rule:
+  - every full-spectrum canonical local maximum enters the candidate pool;
+    SNR, prominence, leakage, and uncertainty annotate and rank candidates but
+    SHALL NOT reject them before the declared resource allocation;
+  - the first band slot uses deterministic conservative salience based on
+    coherent-gain-normalized peak amplitude, a lower-confidence proxy, and
+    prominence;
+  - the second band slot uses an independent protected-line ordering based on
+    relative prominence and leakage resistance. If both slots select the same
+    peak, the next deterministic candidate fills the available slot;
+  - remaining configured slots use the published lexicographic salience order;
+    at global allocation, one protected candidate per occupied band precedes
+    second candidates whenever the global cap permits;
+  - all pruning reports pool count, retained and discarded candidate IDs, and
+    `resource_pruned=true`. Retained candidates are never called complete.
+- Confidence:
+  - an optional diagnostic noise estimate uses a window-specific annulus
+    outside the declared main-lobe guard and excludes guards belonging to all
+    other canonical peaks;
+  - if too few unowned bins remain, SNR is unknown and phase is unusable.
+    Neither outcome removes the magnitude proposal;
+  - noise confidence never authorizes candidate admission.
+- Kill gates:
+  - both 460 Hz and 940 Hz frozen-frame peaks survive while the old boundary
+    artifacts remain absent;
+  - the approximately 0.30 Hz crossing-path result, the -47.6 dB weak line,
+    clean 440.3 Hz phase, and white-noise resource bounds all pass;
+  - every detector/frame exposes resource-allocation diagnostics.
+
+## R-190 — Native Sparse-Graph Parity and Optional CUDA Edge Scoring
+
+- Status: **ACCEPTED — CONDITIONAL IMPLEMENTATION MANIFEST**
+- Date: 2026-07-28
+- Approved milestone wording:
+  - **C++23 native sparse-graph parity with optional bit-exact CUDA
+    edge-score acceleration**;
+  - `CUDA tracker`, `full-GPU graph`, predictor, codec, or compression claims
+    are forbidden in this generation. Canonical enumeration and the dependent
+    K-best frontier remain deterministic C++23 CPU work.
+- Alternatives:
+  - porting the full FFT/DTFT analyzer to CUDA first is rejected because
+    window/FFT differences would obscure graph parity and repeat detector
+    errors before the accepted graph is stable;
+  - CPU-only C++23 is retained as the mandatory fallback and oracle but does
+    not satisfy accelerator evidence;
+  - a fully GPU-resident K-best/min-cost tracker is deferred because
+    cross-frontier dependencies, atomics, reductions, and tie order create a
+    larger determinism problem. Official CUDA documentation notes that
+    floating-point and atomic/reduction ordering can vary;
+  - the accepted first phase enumerates the complete declared fixed-point graph
+    on the host, maps one canonical candidate ID to one output record, scores
+    every independent edge/cycle record on CPU or optional NVRTC CUDA, and
+    runs the complete bounded R-187 path-family union in C++23.
+- Scalar domains:
+  - sample rate is `1..384000` Hz; declared analysis frequencies are
+    `0..sample_rate/2`;
+  - frequency and frequency delta use signed `int64_t` Q20 Hz. Frequency
+    uncertainty uses unsigned `uint64_t` Q20 Hz;
+  - normalized amplitude and amplitude uncertainty use unsigned `uint32_t`
+    Q16 PCM-amplitude units, inclusive range `0..0xffffffff`. Normalization is
+    direct-DTFT amplitude divided by window coherent gain and aggregate
+    detector amplitude divided by square root of channel count;
+  - phase is `phase_turn_u32`, one turn modulo `2^32`. Wrapped subtraction is
+    interpreted as `int32_t`. Endpoint error is `phase_error_u31` in
+    `[0,2^31]`; phase uncertainty uses the same half-turn domain;
+  - `phase_step_u32` is
+    `round(frequency_hz / sample_rate * 2^32) mod 2^32` and is carried in the
+    observation fixture. Phase-invalid observations set the phase-usable flag
+    to zero; no sentinel phase value is interpreted;
+  - potential, uncertainty/leakage penalty, protected rank, continuity, and
+    provisional program cost use signed Q8. Edge fields are bounded `int32_t`;
+    path accumulation uses signed saturating `int64_t`. Dimensionless value and
+    provisional bits remain separate objectives.
+- Multiresolution and provenance:
+  - the manifest contains at most eight resolution records with
+    `resolution_id`, `fft_samples`, and `hop_samples`;
+  - every observation carries `uint64_t center_sample`, local frame index,
+    resolution, signed detector ID, band, ambiguity identity, canonical
+    ownership component, local-resolvability and phase flags, protected rank,
+    neighbor priority, potential, and uncertainty penalty;
+  - center-sample delta is authoritative. Frame index is a
+    resolution-local index and an edge is valid only when its center delta
+    equals a declared gap multiplied by that resolution's hop;
+  - ownership input is the deterministic union-find transitive closure of all
+    detector, resolution, sidelobe, and duplicate relations. It is a disjoint
+    equivalence partition before ABI entry. Non-transitive relations MUST use
+    explicit CSR adjacency in a future ABI rather than being silently merged;
+  - ambiguity identity is separate and does not authorize ownership or a
+    representative.
+- Integer laws:
+  - neighbor membership and order are fixed-point only. Rank is normalized
+    frequency distance Q8, then descending precomputed anonymous neighbor
+    priority, then target observation ID;
+  - `log2(1+n/d)` is a published integer Q8 operation: form a saturated Q16
+    ratio capped at 65535, normalize with integer leading-bit position, then
+    derive eight fractional bits by repeated unsigned Q31 squaring with
+    round-down at every step. No lookup table or floating point participates;
+  - phase advance computes
+    `round((step0+step1)*center_delta/2) mod 2^32` by quotient/remainder
+    decomposition. Only low 32-bit factors are multiplied; an odd step sum
+    adds `ceil(center_delta/2) mod 2^32`. CPU and CUDA use the same unsigned
+    operations and never require `__int128`;
+  - every addition, multiplication used for cardinality/bytes, and signed
+    score accumulation is checked or saturating before allocation or launch.
+- C ABI:
+  - every public manifest, resolution, observation, candidate, edge, and path
+    record uses exact-width fields, `struct_size`, `abi_version`, explicit
+    reserved-zero storage, a fixed packed layout, and compile-time size/offset
+    assertions;
+  - records are an in-memory ABI, not the Resonith serialized bitstream.
+    Callers provide pointer/count spans; no uninitialized padding is hashed or
+    compared;
+  - invalid detector is not a sentinel: aggregate is explicitly `-1`, channel
+    detectors are nonnegative. `UINT32_MAX` denotes absent ambiguity identity;
+    ownership component is always present.
+- Execution and reporting:
+  - host enumeration, host-to-device transfer, CUDA scoring, device-to-host
+    transfer, and CPU frontier times are reported separately;
+  - CUDA tiles cannot change candidate membership, ID, order, score, or hash.
+    CUDA absence or loader failure selects the identical CPU result;
+  - host memory is capped at 16 GiB and VRAM at 7 GiB. Bound hits report
+    explicit pruning/stopping and never a complete-search claim;
+  - if host enumeration plus frontier exceeds 50% of wall time, the only
+    allowed performance claim is edge-score acceleration.
+- Kill gates:
+  - CPU and CUDA edge arrays are bit-exact on every R-187/R-189 fixture,
+    adversarial scalar extrema, every cycle offset, randomized valid
+    manifests, and CUDA tile sizes `1,31,32,255,256,1024`;
+  - C++23 path-family union, conflicts, component scores, tie order, bound
+    reports, and exact-small selected set are bit-exact to a separate Python
+    fixed-point oracle;
+  - candidate cardinality and byte products are checked in 64-bit; maximum
+    sample rate, center delta, gap, frequency, amplitude, score, path length,
+    and invalid-manifest cases are covered;
+  - the frame-50 460/940 Hz observations, approximately 0.30 Hz crossing
+    paths, -47.6 dB protected line, and clean 440.3 Hz result do not regress;
+  - Windows and Linux C++23 plus Android/iOS CPU-only compile gates pass;
+  - a 120-second sparse and dense graph reports peak memory and stage times;
+  - no output is imported by a predictor, R-183 transport, syntax, Orkela, or
+    a real-audio compression report before the mandatory second R-185 audit.
+
+## R-191 — Separate Transactional Path ABI and Frozen Second-Order Law
+
+- Status: **QUARANTINED — POST-IMPLEMENTATION AUDIT BLOCKED**
+- Date: 2026-07-28
+- Trigger:
+  - the first R-190 implementation achieved bit-exact Python/C++23 parity for
+    the fixed 80-byte edge records, but the edge manifest did not declare the
+    complete R-187 K-best frontier policy and the edge ABI could not represent
+    variable-length paths;
+  - implementing an implicit C++ policy would have violated R-185 by hiding
+    pruning, resource use, tie order, and path ownership behind implementation
+    defaults.
+- Brainstormed alternatives:
+  - **A — preserve edge ABI v1 and add a separate path ABI** is accepted.
+    First-order independent edge scoring and dependent path search have
+    different lifetimes, storage, and resource policy. Paths use fixed records
+    plus a bounded CSR entry arena;
+  - **B — replace the edge manifest with ABI v2** is rejected. It would mix
+    independent edge scoring with frontier policy, invalidate frozen edge
+    fixtures and hashes, and still require a variable-length output arena;
+  - **C — compile K and other limits into C++** is rejected. It prevents exact
+    preflight, makes the search language invisible to callers, and can turn a
+    bound hit into silent pruning;
+  - inline fixed-length path arrays and per-path allocation are rejected.
+    The former imposes an artificial maximum on causal lifetime; the latter
+    prevents exact capacity checks and stable cross-language layout.
+- Independent red-team result:
+  - two independent auditors selected alternative A;
+  - both blocked implementation until amplitude-log scaling, temporal
+    extrapolation, median-band assignment, transactional capacity behavior,
+    ownership conflicts, and exact-small tie order were frozen;
+  - this decision resolves those blockers before path code is admitted.
+- Public in-memory ABI:
+  - `resonith_partial_path_manifest` is separate from and does not modify
+    `resonith_partial_graph_manifest` v1;
+  - `resonith_partial_path`, `resonith_partial_path_entry`, and
+    `resonith_partial_path_report` use exact-width integer fields,
+    `struct_size`, `abi_version`, explicit reserved-zero bytes, packed fixed
+    layouts, and compile-time size and offset checks;
+  - one path record names a half-open slice in one bounded entry arena.
+    Entry zero uses `UINT64_MAX` as the birth edge; every later entry references
+    the stable incoming R-190 edge candidate ID. Gap, cycle, and phase data are
+    not duplicated;
+  - path identity is the complete tuple of observation IDs followed by incoming
+    edge candidate IDs. Hashes are diagnostics only and never break a tie;
+  - the API is two-pass and transactional. A null-output preflight returns the
+    complete required path and entry counts and an input/config fingerprint.
+    A fill request supplies that expected fingerprint. Stale input,
+    insufficient capacity, invalid data, or a declared bound hit writes
+    neither semantic output array;
+  - all count, byte, offset, and work products are checked in `uint64_t` before
+    conversion to `size_t` or allocation.
+- Declared resource policy:
+  - the path manifest independently declares K per terminal state for the
+    local-potential and continuity objectives; top-K reservations for
+    local-potential, continuity, and protected-weak families; protected
+    paths per frequency band; minimum and maximum observations per path;
+    maximum output paths, total entries, frontier states, work units, and host
+    bytes; and the exact-small candidate limit;
+  - frequency bands are explicit strictly increasing Q20-Hz upper edges.
+    Bands are half-open and an exact boundary belongs to the upper band. The
+    last band includes the declared Nyquist endpoint;
+  - bounds are checked at canonical deterministic work checkpoints. Wall time
+    may cancel a run but never defines a reproducible retained subset;
+  - a bound hit sets an explicit termination and pruning report and cannot be
+    described as a complete search.
+- Canonical graph order correction:
+  - source observations are enumerated by
+    `(center_sample, resolution_id, detector_id, frequency_q20,
+    observation_id)`, independent of caller array order;
+  - declared gaps and cycle offsets are strictly increasing; target order is
+    normalized frequency distance, descending anonymous neighbor priority,
+    then target observation ID;
+  - changing input permutation, CPU thread count, or CUDA tile order cannot
+    change candidate IDs, records, paths, or selection.
+- Fixed second-order frequency law, version 1:
+  - for three observations with positive center deltas
+    `dt01=t1-t0` and `dt12=t2-t1`, define
+    `df01=f1-f0` and `df12=f2-f1` in signed Q20 Hz;
+  - `predicted_df12 = scale_nearest_even(df01, dt12, dt01)`.
+    Scaling uses sign/magnitude quotient-and-remainder arithmetic and never
+    evaluates a potentially overflowing wide product;
+  - frequency residual is
+    `abs(df12-predicted_df12)`. Its denominator is the saturating unsigned sum
+    of all three Q20 frequency uncertainties, clamped to the manifest's
+    positive Q20 sigma floor;
+  - frequency acceleration cost is the frozen R-190 integer
+    `log2(1+residual/denominator)` Q8 operation.
+- Fixed second-order amplitude law, version 1:
+  - replace each unsigned Q16 normalized amplitude `a` by
+    `max(a, amplitude_floor_q16)`, where the declared floor is positive;
+  - define `dlog01=ilog2_ratio_q8(a1,a0)` and
+    `dlog12=ilog2_ratio_q8(a2,a1)`. `ilog2_ratio_q8` is the signed use of the
+    frozen R-190 integer `log2(1+n/d)` law: zero for equality, positive for
+    growth, and negative for decay;
+  - `predicted_dlog12 =
+    scale_nearest_even(dlog01,dt12,dt01)`. The amplitude residual is
+    `abs(dlog12-predicted_dlog12)`;
+  - with the manifest's positive `amplitude_residual_weight_q8`, amplitude
+    acceleration cost is
+    `ilog2_1p_q8(residual * weight_q8 / 65536)`. The multiplication is checked
+    or evaluated by quotient/remainder decomposition;
+  - frequency and amplitude second-order costs are separate components before
+    saturating addition. No floating point participates.
+- `scale_nearest_even`:
+  - division rounds to nearest; an exact half selects the even magnitude;
+  - an unsigned product/division is evaluated as quotient plus a bit-serial
+    remainder product, so CPU, CUDA, 32-bit, and 64-bit hosts require no
+    `__int128`;
+  - an unrepresentable result saturates to the declared signed path score
+    limit and increments the report saturation count.
+- Frontier, families, and ownership:
+  - local-potential and continuity states are retained independently per
+    terminal `(previous,current)` state, then unioned by canonical path
+    identity. Dimensionless Q8 heuristic accumulators and provisional-bit Q8
+    accumulators remain separate and are never compared across domains;
+  - a protected-weak path contains at least one observation carrying
+    `RESONITH_PARTIAL_OBSERVATION_PROTECTED_WEAK`. It is ranked within the
+    lower-median frequency band by descending protected-observation count,
+    descending saturating sum of nonnegative protected rank, descending
+    continuity score, then canonical identity;
+  - the path's frequency is the lower median Q20 value at index `(n-1)/2`
+    after integer sorting. No floating-point or averaged even median is used;
+  - a repeated ownership component inside one path increments its internal
+    conflict count and makes that path ineligible for selected-set output.
+    Cross-path conflicts are intersections of ownership components; ambiguity
+    components never confer ownership;
+  - exact-small selection maximizes the sum of
+    `max(0, local_potential_score, continuity_score)`. Equal totals select the
+    lexicographically smaller sorted tuple of canonical path IDs. Above the
+    exact limit, deterministic greedy order uses descending selection score
+    then canonical identity and is reported as non-exact;
+  - protected retention reserves hypotheses for later measurement; it never
+    overrides ownership and never forces final selection.
+- Signed half-score correction:
+  - randomized Python/C++ parity exposed that language-default division differs
+    for a negative odd continuity score: Python produced
+    `floor(-833/2)=-417`, while C++ truncated to `-416`;
+  - an independent follow-up audit selected floor toward negative infinity.
+    Truncation can erase a `-1` penalty and nearest-even adds parity-dependent
+    tie behavior;
+  - `half_score(x)` is therefore `x/2` followed by decrement when `x<0` and
+    the remainder is nonzero. Implementations SHALL NOT rely on signed right
+    shift. Required vectors include `-833 -> -417`, `-1 -> -1`, `1 -> 0`,
+    and the minimum stored score.
+- Report requirements:
+  - required and written path/entry counts; raw, retained, deduplicated and
+    per-family counts; frontier peak; deterministic work units; host bytes;
+    internal and cross-path conflict counts; exact-small candidates and
+    selections; solver and termination enums; score-saturation count;
+    pruning/bound flags; and canonical input/config/output fingerprints;
+  - neither path scores nor the report are predictor bytes, Truth savings,
+    compression results, or bitstream syntax.
+- Kill gates:
+  - edge ABI v1 sizes, existing golden bytes, hashes, and the 14 current
+    analyzer/edge tests remain unchanged;
+  - a separate Python fixed-point oracle and C++23 implementation produce
+    identical path, entry, family, selected-set, and report records;
+  - caller input permutations, CPU thread counts, and CUDA tile sizes do not
+    alter canonical output;
+  - constant and linear chirps, amplitude ramps, irregular positive deltas,
+    phase-invalid magnitude evidence, the approximately -47.6 dB protected
+    line, odd/even medians, exact band boundaries, equal-score selections,
+    ownership transitive closures, internal conflicts, and cross-path
+    conflicts pass;
+  - minimum and maximum path lengths, every arena boundary, stale preflight,
+    insufficient capacity, count/offset/byte overflow, work exhaustion, and
+    scalar extrema produce the declared status with no partial semantic write;
+  - exact-small output matches an independent brute-force solver;
+  - Windows and Linux C++23 plus Android and iOS CPU-only compile gates pass;
+  - predictor, syntax, compression, Opus, release, and Orkela integration
+    remain blocked until the second R-185 audit required by R-190.
+- Second R-185 post-implementation result:
+  - the independent auditor returned **NO-GO** for predictor admission;
+  - path ABI v1 is an experimental fixture and SHALL NOT be release-frozen;
+  - the audit demonstrated that path input validation accepted backward and
+    internally inconsistent edge records instead of verifying that the edge
+    array was the exact output of the declared graph;
+  - reported work and host bytes covered neither the cumulative copied state
+    frontier nor all temporary containers, pair comparisons, fingerprint
+    sorting, and edge preflight materialization;
+  - second-order dimensionless curvature had been added to both continuity and
+    provisional-program accumulators, contrary to the domain separation above;
+  - state/family truncation did not set the pruning flag or expose the promised
+    discard counts;
+  - exact-small totals used silent saturation, so the selected set was not
+    exact under score overflow;
+  - irregular-gap frequency uncertainty omitted the extrapolation ratio. For
+    `q=dt12/dt01`, a conservative independent-error bound is
+    `u2 + (1+q)u1 + q*u0`, not `u0+u1+u2`;
+  - the 32 randomized CPU cases and one nine-edge CUDA fixture did not satisfy
+    the declared resource, overflow, selector, scalar-extrema, cross-platform,
+    and randomized CPU/CUDA kill gates.
+- Audited remediation direction, pending a separate pre-code review:
+  - edge ABI v1 remains frozen, but path ABI advances experimentally. The path
+    call receives the resolution table and validates the caller's canonical
+    edge array against a shared streaming edge enumerator and scorer. Local
+    delta checks or a diagnostic fingerprint alone are insufficient;
+  - edge preflight becomes count-only streaming enumeration; semantic output
+    is filled only after capacity succeeds. It SHALL NOT materialize the full
+    edge vector merely to count it;
+  - copied path vectors and cumulative historical maps are replaced by a
+    fixed-record state arena with parent backpointers and indexed terminal
+    ranges. A counting `pmr::memory_resource` enforces peak live allocated
+    bytes; a work meter charges before scans, comparisons, sorts, pair tests,
+    and state creation;
+  - path ABI v2 reports raw, retained, deduplicated, and discarded states,
+    per-family truncation, every bound hit, peak live bytes, and every
+    authoritative saturation. Any unrepresentable selector total terminates
+    with a profile bound; exact-small never uses saturating set totals;
+  - second-order curvature affects only dimensionless continuity ranking until
+    an independently packed coding-cost model exists;
+  - irregular-gap uncertainty uses the ratio-scaled conservative law with
+    checked quotient/remainder arithmetic and exact Python/C++ parity;
+  - transactional canary tests, an arbitrary-precision brute-force selector,
+    resource/overflow extremes, randomized CPU/CUDA cases, ABI offsets, and
+    Windows/Linux/Android/iOS gates are mandatory before another predictor
+    admission audit.
+- Pre-code remediation audit:
+  - verdict is **conditional GO for analyzer remediation only**; predictor
+    admission remains NO-GO;
+  - supplied edges SHALL be in canonical `candidate_id` order and SHALL match
+    the shared streaming enumerator field-for-field. Observation order remains
+    caller-independent. Resolutions and ordering policy enter the fingerprint;
+  - fill SHALL finish enumeration, fingerprint, exact count, and capacity
+    validation before the first semantic write;
+  - arena nodes use checked integer parent indices, a declared sentinel,
+    indexed terminal buckets, reference-counted reclamation, and collision-free
+    canonical sequence equality. Reconstructed identities, medians, ownership,
+    and output entries consume declared work;
+  - all dynamic project-controlled temporary containers use one bounded PMR
+    resource. The report states `peak_live_managed_bytes`, not process RSS or
+    allocator metadata. Environmental allocation failure is distinct from a
+    declared profile bound;
+  - sorting receives a published implementation-independent precharge;
+    all possible pair tests, bucket scans, state creation, traversal, and
+    reconstruction are charged before execution;
+  - path API v2 uses a new symbol and never reads a v1-sized record. It reports
+    generated, duplicate, retained, K-discarded, family-presented,
+    family-discarded, output-deduplicated, and bound-rejected counts. Normal
+    finite K/top-K truncation sets `PRUNED`;
+  - exact-small totals are checked and unsaturated. Overflow terminates at the
+    profile bound; equal totals compare full sorted canonical path identities;
+  - frequency uncertainty law v2 is the estimator L1 proxy
+    `u2 + u1 + ceil(dt12*(u0+u1)/dt01)`. Amplitude acceleration remains a
+    weighted heuristic until amplitude uncertainty has its own audited law.
+
+## R-192 — Multi-Partial Predictor Preflight
+
+- Status: **ACCEPTED PREFLIGHT — IMPLEMENTATION BLOCKED BY R-191**
+- Date: 2026-07-28
+- Decision:
+  - retain independent anonymous complex-partial paths as the first candidate
+    source for decoder-domain prediction;
+  - compare integrated phase and explicit endpoint-locked phase as finite,
+    mutually exclusive hypotheses for the same path interval;
+  - quantize and render every hypothesis through the prospective bounded
+    integer decoder before measuring one final mixture-domain Truth;
+  - preserve direct Truth as a complete fallback and admit no predictor record
+    from analyzer scores alone.
+- Rejected:
+  - one frame-local fundamental as a universal representation;
+  - magnitude-only synthesis;
+  - a normative neural waveform decoder;
+  - one independently corrected residual per inferred source;
+  - syntax work before the quarantined R-191 graph passes its second
+    post-remediation audit.
+- Evidence and counterexamples are recorded in
+  `docs/reviews/R192_MULTI_PARTIAL_PREDICTOR_PREFLIGHT_2026-07-28.md`.
+
+## R-193 — Phase-Innovation Anchor Gate for Persistent Complex Partials
+
+- Status: **ACCEPTED FUTURE EVIDENCE GATE — NO OPCODE ADMITTED**
+- Date: 2026-07-28
+- Trigger:
+  - the project owner proposed replacing repeated phase estimates with one
+    persistent oscillator state and sparse objective phase-lock events;
+  - an independent R-185 red-team audit was required before adding the idea to
+    the execution plan.
+- What the audit accepted:
+  - a small frequency error integrates into a large phase error over a long
+    coherent lifetime;
+  - integrated phase and explicit phase innovation must compete by complete
+    decoder-in-loop rate/distortion cost;
+  - long material is the correct first amortization and drift gate.
+- Corrections to the proposal:
+  - transform and predictive codecs do not simply forget phase. Opus uses
+    lapped MDCT, inter-frame energy prediction, pitch filtering, and SILK
+    long-term prediction; FLAC reconstructs the exact sample sequence;
+  - continuous sinusoidal tracking and phase-continuous interpolation are
+    established prior art, including McAulay–Quatieri models and MPEG-4 HILN;
+  - a spectral peak or energy maximum does not uniquely define physical phase
+    under window-origin changes, overlap, cancellation, or gauge ambiguity;
+  - a large Truth reduction is a falsifiable target, not an established
+    consequence.
+- Current implementation boundary:
+  - R-029 and the existing trajectory core already provide absolute integer
+    phase state and partition-independent rendering;
+  - R-190/R-191 observations and edges carry phase, phase-step, uncertainty,
+    and endpoint-error evidence;
+  - the Python research union already names `continuous` and `phase-locked`
+    columns, but it emits short absolute-position warp instances. It does not
+    implement sparse phase-innovation events or prove their byte economy;
+  - no audited graph path currently drives persistent native synthesis,
+    phase-anchor syntax, recovery checkpoints, or Orkela playback.
+- Admitted research model for partial \(k\):
+
+  \[
+  z_k[n] = a_k[n]e^{i\theta_k[n]},
+  \qquad
+  \theta_k[n] =
+  \theta_{0,k}+\Phi_{\omega_k}(n)
+  \sum_j \Delta_{k,j}G(n-\tau_{k,j})
+  \pmod {2^{32}}.
+  \]
+
+  `Phi` is an absolute bounded integer frequency integral. Each transmitted
+  `Delta` is an objective phase innovation. `G` is one fixed bounded causal
+  correction ramp. An instantaneous hidden phase reset is forbidden: a
+  discontinuity uses a declared rebirth/crossfade candidate.
+- Required alternatives and ablations:
+  1. direct Truth;
+  2. the preceding short harmonic/event predictor;
+  3. persistent amplitude/frequency knots without phase anchors;
+  4. denser frequency knots;
+  5. persistent state plus phase-innovation anchors;
+  6. rebirth plus deterministic crossfade using existing primitives;
+  7. a free exact-phase oracle as an upper-bound diagnostic;
+  8. magnitude-only or randomized phase as a negative control;
+  9. shared oscillator plus cross-channel route versus independent channels.
+- Admission and kill gates:
+  - stop before syntax if the free exact-phase oracle fails to reduce compressed
+    final Truth by at least 10% in at least three long coherent classes;
+  - anchor mode must beat no-anchor, dense-frequency-knot, and
+    rebirth/crossfade alternatives by at least 3% complete bytes on at least
+    two long real coherent classes at the declared quality floor;
+  - a stationary sinusoid and exactly representable linear chirp use no phase
+    anchors after onset; a ten-minute bounded-vibrato case uses no more than
+    one anchor per second;
+  - close tones below nominal resolution, beating, crossing chirps,
+    cancellation, onset/offset, noise, impulses, reverberation, anti-phase
+    stereo, and changing inter-channel delay are mandatory counterexamples;
+  - IDs, births/deaths, knots, anchors, routes, checkpoints, entropy, decoder
+    work/memory, and final Truth all enter the complete cost;
+  - callback partition and random-access slice cannot alter decoded PCM;
+    corruption recovery must be bounded by a declared checkpoint;
+  - no opcode is proposed until the oracle gate, native deterministic
+    synthesis, complete R-118, current maximum-effort Opus, and listening gates
+    pass.
+- Execution order:
+  - this is appended after the current final Orkela-coupled evidence step;
+  - it does not bypass the active R-191 quarantine or R-192 predictor gate;
+  - successful results amend R-192 instead of creating a parallel codec
+    architecture.

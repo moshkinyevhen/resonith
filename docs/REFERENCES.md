@@ -1,6 +1,6 @@
 # Resonith Primary Sources
 
-Last update: 2026-07-27.
+Last update: 2026-07-28.
 
 Numbers from papers are statements made by the authors prior to independent reproduction.
 
@@ -28,9 +28,43 @@ Numbers from papers are statements made by the authors prior to independent repr
 
 ## Signal models
 
+- [Rissanen: Modeling by shortest data description](https://research.ibm.com/publications/modeling-by-shortest-data-description)
 - [McAulay and Quatieri: Speech analysis/synthesis based on a sinusoidal representation](https://doi.org/10.1109/TASSP.1986.1164910)
+- [MIT Lincoln Laboratory summary: McAulay–Quatieri sinusoidal analysis/synthesis](https://www.ll.mit.edu/r-d/publications/speech-analysissynthesis-based-sinusoidal-representation)
+- [McAulay and Quatieri: Speech transformations based on a sinusoidal representation](https://www.ll.mit.edu/r-d/publications/speech-transformations-based-sinusoidal-representation)
+- [McAulay and Quatieri: Audio signal processing based on sinusoidal analysis/synthesis](https://www.ll.mit.edu/r-d/publications/audio-signal-processing-based-sinusoidal-analysissynthesis)
+- [Laroche and Dolson: Improved Phase Vocoder Time-Scale Modification of Audio](https://doi.org/10.1109/89.759041)
 - [Serra: A System for Sound Analysis/Transformation/Synthesis Based on a Deterministic Plus Stochastic Decomposition](https://mtg.upf.edu/content/serra-PhD-thesis)
 - [Serra and Smith: Spectral Modeling Synthesis](https://doi.org/10.2307/3680788)
+- [Smith and Serra: PARSHL — Analysis/Synthesis of Non-Harmonic Sounds](https://mtg.upf.edu/node/244)
+- [Masuyama, Yatabe, and Oikawa: Phase-aware Harmonic/Percussive Source Separation via Convex Optimization](https://arxiv.org/abs/1903.05600)
+- [Esterer and Depalle: A Linear Programming Approach to the Tracking of Partials](https://arxiv.org/abs/1901.05044)
+- [MPEG-4 Audio Version 2 HILN verification report](https://sound.media.mit.edu/resources/mpeg4/audio/public/w3075.html)
+- [Purnhagen: Very Low Bit Rate Parametric Audio Coding and HILN](https://heikopurnhagen.net/sigproc/diss-hp.pdf)
+- [Engel et al.: Differentiable Digital Signal Processing](https://research.google/pubs/ddsp-differentiable-digital-signal-processing/)
+- [Schulze-Forster et al.: Unsupervised Music Source Separation Using Differentiable Parametric Source Models](https://arxiv.org/abs/2201.09592)
+- [Kawamura et al.: DDSP Mixture Model for Parameter Extraction from Harmonic Mixtures](https://arxiv.org/abs/2202.00200)
+- [Shier et al.: Differentiable Modelling of Percussive Audio with Transient and Spectral Synthesis](https://arxiv.org/abs/2309.06649)
+- [NVIDIA CUDA Programming Guide](https://docs.nvidia.com/cuda/cuda-programming-guide/index.html)
+- [NVIDIA CUDA Guide: Deterministic Floating-Point Results](https://docs.nvidia.com/cuda/cuda-programming-guide/05-appendices/mathematical-functions.html)
+- [Khronos Vulkan 1.4 Specification: two-call enumeration and incomplete output](https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html)
+- [C++ working draft: signed arithmetic overflow is undefined](https://eel.is/c++draft/basic.types)
+- [SEI CERT INT32-C: checked signed integer arithmetic](https://wiki.sei.cmu.edu/confluence/spaces/c/pages/87152210/INT32-C.%2BEnsure%2Bthat%2Boperations%2Bon%2Bsigned%2Bintegers%2Bdo%2Bnot%2Bresult%2Bin%2Boverflow)
+
+## Anonymous layers, dictionaries, and motifs
+
+- [Lewicki and Sejnowski: Coding Time-Varying Signals Using Sparse, Shift-Invariant Representations](https://proceedings.neurips.cc/paper/1998/hash/83f2550373f2f19492aa30fbd5b57512-Abstract.html)
+- [Bell and Sejnowski: An Information-Maximization Approach to Blind Separation and Blind Deconvolution](https://pubmed.ncbi.nlm.nih.gov/7584893/)
+- [Wisdom et al.: Unsupervised Sound Separation Using Mixture Invariant Training](https://research.google/pubs/unsupervised-sound-separation-using-mixture-invariant-training/)
+- [Wisdom et al.: Sparse, Efficient, and Semantic MixIT](https://research.google/pubs/sparse-efficient-and-semantic-mixit-taming-in-the-wild-unsupervised-sound-separation/)
+- [Smaragdis: Non-negative Matrix Factor Deconvolution](https://www.merl.com/publications/TR2004-104)
+- [Smaragdis: Convolutive Speech Bases and Their Application to Supervised Speech Separation](https://www.merl.com/publications/TR2007-002)
+- [Smaragdis and Raj: Shift-Invariant Probabilistic Latent Component Analysis](https://paris.cs.illinois.edu/pubs/smaragdis-icassp2008.pdf)
+- [Wohlberg: Convolutional Sparse Representations of Color Images and Audio Signals](https://brendt.wohlberg.net/publications/pdf/jao-2016-monaural.pdf)
+- [Magron, Badeau, and David: Phase Recovery in NMF for Audio Source Separation](https://arxiv.org/abs/1605.07466)
+- [Wang: An Industrial-Strength Audio Search Algorithm](https://www.ee.columbia.edu/~dpwe/papers/Wang03-shazam.pdf)
+- [Rafii and Pardo: REpeating Pattern Extraction Technique](https://ismir2012.ismir.net/event/papers/583_ISMIR_2012.pdf)
+- [Natarajan: Sparse Approximate Solutions to Linear Systems](https://epubs.siam.org/doi/abs/10.1137/S0097539792240406)
 
 ## Modern learned codecs
 
@@ -43,6 +77,9 @@ Numbers from papers are statements made by the authors prior to independent repr
 - [LDCodec](https://arxiv.org/abs/2510.15364)
 - [TQCodec](https://arxiv.org/abs/2603.01592)
 - [VoCodec](https://arxiv.org/abs/2606.05892)
+- [APCodec: Parallel Amplitude and Phase Spectrum Coding](https://arxiv.org/abs/2402.10533)
+- [Guo et al.: Compression with Bayesian Implicit Neural Representations](https://openreview.net/forum?id=5otj6QKUMI)
+- [Lanzendörfer and Wattenhofer: Siamese SIREN — Audio Compression with Implicit Neural Representations](https://openreview.net/pdf?id=bb8442dcc33b7516acb78ecc294e324bc923be67.pdf)
 
 ## Subjective evaluation
 

@@ -8,6 +8,7 @@ for the global selector. It deliberately contains no semantic audio labels.
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from dataclasses import dataclass
 import hashlib
 import struct
@@ -400,12 +401,36 @@ def select_complete_pattern_cover(
         assert span.basis_id is not None
         spans_by_basis.setdefault(span.basis_id, []).append(span)
     rejected: set[str] = set()
+    truth_prefix = [0]
+    for value in truth:
+        truth_prefix.append(truth_prefix[-1] + value)
     for basis_id, basis_spans in spans_by_basis.items():
-        gross_upper_bound = 0
-        for span in basis_spans:
-            truth_cost = sum(truth[span.start : span.end])
-            gross_upper_bound += max(0, truth_cost - span.payload_bytes)
-        if gross_upper_bound <= activation[basis_id]:
+        # The previous sum counted mutually overlapping placements together.
+        # Weighted interval scheduling is a tighter admissible upper bound:
+        # it computes the largest gross saving this Basis could possibly earn
+        # before activation while respecting non-overlap exactly.
+        ordered = sorted(
+            basis_spans,
+            key=lambda span: (span.end, span.start, span.label),
+        )
+        ends = [span.end for span in ordered]
+        maximum_saving = [0]
+        for index, span in enumerate(ordered, start=1):
+            previous = bisect_right(
+                ends,
+                span.start,
+                0,
+                index - 1,
+            )
+            truth_cost = (
+                truth_prefix[span.end] - truth_prefix[span.start]
+            )
+            gross = max(0, truth_cost - span.payload_bytes)
+            maximum_saving.append(max(
+                maximum_saving[index - 1],
+                maximum_saving[previous] + gross,
+            ))
+        if maximum_saving[-1] <= activation[basis_id]:
             rejected.add(basis_id)
     admitted_spans = tuple(
         span for span in spans if span.basis_id not in rejected

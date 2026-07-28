@@ -1,0 +1,63 @@
+{
+  "clean_tone": {
+    "frequency_error_hz": 0.1141156340687246,
+    "mean_phase_error_radians": 0.010606569394565304,
+    "observation_count": 32
+  },
+  "crossing_chirps": {
+    "first_median_frequency_error_hz": 0.3176314307860366,
+    "first_observation_count": 33,
+    "frame_50_frequencies_hz": [
+      464.7999026527096,
+      533.9604906747971,
+      1145.031278256382,
+      1435.012157823885,
+      1714.751254863302,
+      2119.19710319299,
+      2427.2912039456805,
+      3249.4793393200202,
+      3624.550485349624
+    ],
+    "second_median_frequency_error_hz": 0.28367741039204475,
+    "second_observation_count": 10,
+    "tracking_report": {
+      "actual_byte_rdo": false,
+      "continuation_hypothesis_count": 6373,
+      "node_value_unit": "dimensionless fixed-point heuristic",
+      "observation_count": 1015,
+      "path_family_counts": {
+        "continuity": 64,
+        "local-potential": 64,
+        "protected-weak-line": 22
+      },
+      "path_hypothesis_count": 122,
+      "phase_evidence_only": true,
+      "predictor_integrated": false,
+      "program_cost_unit": "provisional bits, reported separately",
+      "retained_track_observation_count": 438,
+      "schema": "resonith-r187-complex-partial-tracking-1",
+      "score_fraction_bits": 8,
+      "score_saturation": 2147483647,
+      "selected_path_count": 7,
+      "selected_set_solver": "deterministic-bounded-disjoint-heuristic",
+      "semantic_source_classes": false,
+      "status": "path hypotheses only; no predictor or codec claim"
+    }
+  },
+  "schema": "resonith-r187-synthetic-gate-1",
+  "status": "analyzer evidence only; no predictor, bitstream, or compression claim",
+  "wall_seconds": 25.262086600007024,
+  "weak_line": {
+    "median_frequency_error_hz": 6.10182269156212e-06,
+    "observation_count": 33,
+    "protected_family_survived": true,
+    "relative_level_db": -47.60422483423212
+  },
+  "white_noise": {
+    "candidate_discarded_count": 680,
+    "candidate_pool_count": 1140,
+    "observation_count": 460,
+    "per_frame_bound_respected": true,
+    "resource_pruned": true
+  }
+}

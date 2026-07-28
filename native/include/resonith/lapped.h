@@ -53,6 +53,34 @@ typedef struct resonith_lapped_analysis_requirements {
 } resonith_lapped_analysis_requirements;
 
 /*
+ * Bounded sequential renderer for one authenticated LPF1 stream.
+ *
+ * Entropy fields are decoded and validated once by
+ * resonith_lapped_pull_open(). The session then renders only the requested
+ * PCM interval, so a long recording does not require a frame-sized PCM or
+ * overlap buffer before playback can begin.
+ */
+typedef struct resonith_lapped_pull_requirements {
+    resonith_lapped_requirements field;
+    uint32_t render_quantum;
+    size_t maximum_output_elements;
+} resonith_lapped_pull_requirements;
+
+typedef struct resonith_lapped_pull_session {
+    uint32_t sample_rate;
+    uint32_t frame_count;
+    uint32_t transform_frame_count;
+    uint32_t next_frame;
+    uint32_t render_quantum;
+    uint16_t half_window;
+    uint16_t band_count;
+    uint16_t coefficients_per_frame;
+    uint16_t output_channels;
+    uint8_t variable_density;
+    uint8_t reserved[3];
+} resonith_lapped_pull_session;
+
+/*
  * Computes allocation sizes for the fixed Q15/Q14 forward transform.
  * `sample_frame_count` is the number of interleaved PCM frames, not elements.
  */
@@ -106,6 +134,44 @@ RESONITH_API resonith_status resonith_lapped_decode(
     const resonith_lapped_workspace* workspace,
     int16_t* output,
     size_t output_capacity,
+    size_t* frames_written
+);
+
+/*
+ * Reports bounded field and output storage for sequential LPF1 rendering.
+ * Unlike resonith_lapped_inspect(), `field.overlap_elements` is bounded by
+ * render_quantum rather than the complete recording duration.
+ */
+RESONITH_API resonith_status resonith_lapped_pull_inspect(
+    const uint8_t* data,
+    size_t data_size,
+    resonith_lapped_pull_requirements* requirements
+);
+
+/*
+ * Authenticates the complete stream and decodes its entropy fields into
+ * caller-owned memory. No PCM synthesis is performed during open.
+ */
+RESONITH_API resonith_status resonith_lapped_pull_open(
+    const uint8_t* data,
+    size_t data_size,
+    const resonith_lapped_workspace* workspace,
+    resonith_lapped_pull_session* session,
+    resonith_lapped_pull_requirements* requirements
+);
+
+/*
+ * Renders the next sequential interval. `requested_frames` must be non-zero
+ * and no larger than render_quantum. End of stream is reported by
+ * frames_written == 0.
+ */
+RESONITH_API resonith_status resonith_lapped_pull_decode_next(
+    resonith_lapped_pull_session* session,
+    const resonith_lapped_workspace* workspace,
+    uint32_t requested_frames,
+    int16_t* output,
+    size_t output_capacity,
+    uint32_t* logical_start,
     size_t* frames_written
 );
 

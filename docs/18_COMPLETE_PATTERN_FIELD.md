@@ -52,12 +52,19 @@ candidates is labelled `Fast` or `Live`, never `Foundry`.
 6. Repeated parameter increments compete with one persistent state law.
 7. Only the global complete-cost selector assigns reconstruction ownership.
 
+The field is **gridless in meaning and tiled in execution**. Pattern onset,
+duration, frequency support, and channel route are independent of transform
+frames, entropy pages, checkpoints, render callbacks, and CUDA tile
+boundaries. Evidence-grade discovery is the union of rolling exact origins,
+content-defined anchors, overlapping regular origins at every declared scale,
+cross-band/channel intervals, and direct plus CompoundBasis spans.
+
 ## 4. Objective candidate families
 
 | Family | Required search |
 |---|---|
 | Exact motif | Identical PCM and partial-spectrum cells at every declared scale |
-| Basis orbit | Crop, alignment, circular phase, polarity, gain/envelope, pitch/time, fractional phase, spectral envelope, reverse/loop, stable short filtering |
+| Basis orbit | Crop, non-circular integer alignment, bounded phase, polarity, gain/envelope, pitch/time, fractional phase, spectral envelope, reverse/loop, stable short filtering |
 | Persistent source-filter | Excitation and slowly changing filter/pitch/phase laws |
 | Stochastic field | Counter-seeded law, spectral envelope, density, modulation, and channel correlation |
 | Transient | Independent onset and attack support without long-window pre-echo |
@@ -68,6 +75,48 @@ candidates is labelled `Fast` or `Live`, never `Foundry`.
 Mixture factorization is objective: the encoder may infer latent recurring
 components from changing mixtures, but the stream does not need to name their
 physical source.
+
+The mandatory R-159 **Latent Source Pattern Field** runs the same pattern
+search on both observed channels and inferred additive layers. A robust
+component seen through different overlaps may become one immutable Basis even
+when none of the complete mixed intervals match. Magnitude, phase,
+cross-channel transfer, alignment and gain evidence are retained. Layer
+counts and factorization laws are finite published candidates; direct mixtures
+and independent Truth are never pruned by a separator.
+
+R-160 turns those hypotheses into a **minimum-description anonymous field
+grammar**. The target is not the physically true instrument or speaker. It is
+the cheapest decoder-verifiable additive explanation:
+
+\[
+Y_c[n] =
+\sum_s Route_{c,s}\left(
+\sum_e T(\theta_e) Basis_{s,k_e}[n-\tau_e]
+\right) + Truth_c[n].
+\]
+
+An anonymous field owns an immutable multiscale Basis dictionary, persistent
+transform and route laws, and an exact sparse event ledger. A motif may connect
+events separated by unrelated or overlapping events. Thus `A -> gap -> B` can
+be one reusable rule without claiming that the complete mixture inside the gap
+repeats.
+
+Long material is represented preferentially as a DAG of smaller Basis and
+finite laws rather than copied into a raw long dictionary entry. The initial
+law set is deliberately small: literal, constant, affine, run-length, and
+sparse-exception series. Partial-spectrum ownership must use
+perfect-reconstruction integer lifting, and a single Truth correction is
+applied only after all anonymous fields are summed. There is no independent
+exact residual for every hypothetical source.
+
+The first exact synthetic proxy reused one 128-sample latent Basis ten times
+under changing gains and contamination and reconstructed identical PCM. Its
+structured payload was 1,815 bytes versus a 2,491-byte independent lossless
+proxy (27.14% smaller). A short uneconomic candidate was rejected at +49
+bytes. The first event grammar also preserved a 24-occurrence cross-channel
+gapped motif and all unrelated intervening events. These results validate
+construction and signalling only; they are not complete Resonith, FLAC, or
+Opus claims.
 
 ## 5. Global quality-constrained RDO
 
@@ -93,16 +142,16 @@ means useful code exists but the row is not complete.
 | ID | Mechanism | Current state | Completion evidence |
 |---|---|---|---|
 | M151-01 | Exact Basis placement, crop, integer/circular phase, polarity, forward/reverse direction, constant/linear gain, exact correction | PARTIAL | Native schema-1 decoder/CUDA lattice and direct Orkela execution pass; final container and full R-118 remain |
-| M151-02 | Independent multiscale and all-declared-origin discovery | PARTIAL | Native GPU tiles, CPU parity, overlap and scale recall, declared cardinality pass; frequency cells and full R-118 remain |
-| M151-03 | Content-defined exact motif cache | NOT STARTED | Exact hash plus byte verification, variable span syntax, full byte accounting |
-| M151-04 | Pitch/time/fractional-phase/spectral-envelope/reverse/loop/filter orbit | PARTIAL | Forward/reverse direction passes; pitch/time, fractional phase, envelope, loop, and filter remain |
+| M151-02 | Independent gridless multiscale and all-declared-origin discovery | PARTIAL | Native every-origin rolling hash, canonical content anchors, overlapping arbitrary intervals, cross-channel spans, and boundary-invariant tests pass; normative frequency cells and full R-118 remain |
+| M151-03 | Content-defined exact motif cache | PARTIAL | Native rolling hash, byte/sample verification, arbitrary-start type-8 emission, and complete-byte fallback pass; variable-duration grammar and full corpus evidence remain |
+| M151-04 | Pitch/time/fractional-phase/spectral-envelope/reverse/loop/filter orbit | PARTIAL | R-157 C++23/CUDA evaluates the complete declared fractional-phase, forward/reverse, constant/linear pitch-time and gain lattice with exact CPU parity; spectral envelope, loop/filter families, and full gate remain |
 | M151-05 | Partial-spectrum Basis ownership and perfect-reconstruction tiling | PARTIAL | Exact research oracle exists; native normative stream and global ownership gate remain |
 | M151-06 | Cross-channel global dictionary and transfer/decay laws | PARTIAL | Shared gain/phase research path exists; bounded transfer and multichannel evidence remain |
 | M151-07 | Source-filter, stochastic, and transient competition | PARTIAL | Typed decoder records exist; integrated encoder and one-cell RDO remain |
-| M151-08 | Objective mixture factorization | NOT STARTED | Latent component candidates, exact synthesis/correction, dense-mix evidence |
-| M151-09 | Persistent transform laws and CompoundBasis hierarchy | PARTIAL | Exact bounded Python chart exists; native emitted-stream integration and GPU chart remain |
+| M151-08 | Objective mixture factorization | PARTIAL | R-159 latent changing-overlap oracle and exact cross-channel reconstruction pass; partial-spectrum integration, known-stem bound, native/GPU search, and complete-byte R-118 evidence remain |
+| M151-09 | Persistent transform laws and CompoundBasis hierarchy | PARTIAL | R-160 exact sparse pair grammar supports unrelated intervening events and literal/constant/affine/RLE/sparse-exception laws; arbitrary-length DAG grammar, decoder audio integration, global selection, and real corpus evidence remain |
 | M151-10 | Local learned proposer and optional semantic hints | PARTIAL | Provider boundary oracle exists; local objective embeddings and recall union remain |
-| M151-11 | Complete-byte, quality-constrained global selector | PARTIAL | Exact bounded chart and actual MFT1 plus whole-channel Truth/fallback pricing pass; standardized composite transport and lossy quality frontier remain |
+| M151-11 | Complete-byte, quality-constrained global selector | PARTIAL | R-157 actual MFT1 plus whole-channel exact Truth/fallback gate selected 704 B versus 1,156 B independent Truth on the constructive gridless case; standardized composite transport and lossy/full-corpus frontier remain |
 | M151-12 | Orkela playback and inspection | PARTIAL | Windows/Android direct bounded MFT1 backend, version, changelog, and corruption gate pass; seek/listening/full-platform public pin remain |
 | M151-13 | Full original/Resonith/official-Opus evidence | NOT STARTED | Complete R-118 union, reports, hashes, runtime, artifacts, public release |
 
@@ -125,10 +174,14 @@ a general codec claim.
 
 ## 8. Immediate implementation order
 
-1. multiscale/all-origin GPU search with portable CPU parity;
-2. global quality-constrained selection with exact Truth fallback;
-3. content-defined exact matching and bounded transform expansion;
-4. partial-spectrum, channel, stochastic, source-filter, transient, mixture,
-   and persistent-law integration;
-5. Orkela backend update;
-6. full R-118 evidence, versioning, changelog, hashes, and publication.
+1. R-159/R-160 anonymous latent hypotheses and the exact sparse event ledger;
+2. gridless per-band perfect-reconstruction candidates, non-circular phase/time
+   alignment, and cross-channel routing;
+3. arbitrary-length gapped motif DAG, persistent laws, and non-greedy
+   CompoundBasis activation;
+4. R-157 batched CUDA hypothesis evaluation with portable CPU parity and no
+   declared-candidate pruning;
+5. one global quality-constrained selector over dictionary, events, routes,
+   laws, stochastic/source-filter/transient atoms, final Truth and checkpoints;
+6. Orkela backend update;
+7. full R-118 evidence, versioning, changelog, hashes, and publication.

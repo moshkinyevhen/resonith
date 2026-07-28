@@ -10,6 +10,7 @@
 #include "resonith/maf.h"
 #include "resonith/maf_typed.h"
 #include "resonith/multichannel.h"
+#include "resonith/partial_graph.h"
 #include "resonith/seek.h"
 #include "resonith/stream.h"
 #include "resonith/trajectory.h"
@@ -17,6 +18,14 @@
 #include <stddef.h>
 
 int main(void) {
+    if (
+        sizeof(resonith_partial_path_manifest) != 1224U
+        || sizeof(resonith_partial_path) != 136U
+        || sizeof(resonith_partial_path_entry) != 48U
+        || sizeof(resonith_partial_path_report) != 336U
+    ) {
+        return 1;
+    }
     resonith_container_view view = {
         NULL,
         0U,

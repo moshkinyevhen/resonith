@@ -40,6 +40,34 @@ class _Result(ctypes.Structure):
     ]
 
 
+class _WarpRange(ctypes.Structure):
+    _fields_ = [
+        ("block_count", ctypes.c_uint32),
+        ("block_samples", ctypes.c_uint32),
+        ("phase_subsamples", ctypes.c_uint32),
+        ("step_radius", ctypes.c_uint32),
+        ("step_increment_q16", ctypes.c_uint32),
+        ("end_step_radius", ctypes.c_uint32),
+        ("first_candidate", ctypes.c_uint64),
+        ("candidate_count", ctypes.c_uint64),
+    ]
+
+
+class _WarpResult(ctypes.Structure):
+    _fields_ = [
+        ("basis_index", ctypes.c_uint32),
+        ("target_index", ctypes.c_uint32),
+        ("source_position_q16", ctypes.c_int32),
+        ("source_step_q16", ctypes.c_int32),
+        ("end_source_step_q16", ctypes.c_int32),
+        ("gain_q15", ctypes.c_int32),
+        ("end_gain_q15", ctypes.c_int32),
+        ("transform_flags", ctypes.c_uint32),
+        ("squared_error", ctypes.c_uint64),
+        ("target_energy", ctypes.c_uint64),
+    ]
+
+
 class _Evidence(ctypes.Structure):
     _fields_ = [
         ("nvrtc_major", ctypes.c_uint32),
@@ -79,6 +107,37 @@ RESULT_DTYPE = np.dtype(
         ),
         "offsets": (0, 4, 8, 12, 16, 20, 24, 32),
         "itemsize": 40,
+    }
+)
+
+WARP_RESULT_DTYPE = np.dtype(
+    {
+        "names": (
+            "basis_index",
+            "target_index",
+            "source_position_q16",
+            "source_step_q16",
+            "end_source_step_q16",
+            "gain_q15",
+            "end_gain_q15",
+            "transform_flags",
+            "squared_error",
+            "target_energy",
+        ),
+        "formats": (
+            "<u4",
+            "<u4",
+            "<i4",
+            "<i4",
+            "<i4",
+            "<i4",
+            "<i4",
+            "<u4",
+            "<u8",
+            "<u8",
+        ),
+        "offsets": (0, 4, 8, 12, 16, 20, 24, 28, 32, 40),
+        "itemsize": 48,
     }
 )
 
@@ -137,6 +196,108 @@ class GainPhaseCudaFoundry:
             ctypes.c_size_t,
         ]
         self._cpu.restype = ctypes.c_int
+        self._warp_count = self._dll.resonith_foundry_warp_candidate_count
+        self._warp_count.argtypes = [
+            ctypes.POINTER(_WarpRange),
+            ctypes.POINTER(ctypes.c_uint64),
+        ]
+        self._warp_count.restype = ctypes.c_int
+        self._warp_cuda = self._dll.resonith_foundry_warp_cuda
+        self._warp_cuda.argtypes = [
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.POINTER(_WarpRange),
+            ctypes.POINTER(_WarpResult),
+            ctypes.c_size_t,
+            ctypes.c_char_p,
+            ctypes.POINTER(_Evidence),
+            ctypes.POINTER(ctypes.c_char),
+            ctypes.c_size_t,
+        ]
+        self._warp_cuda.restype = ctypes.c_int
+        self._warp_cpu = self._dll.resonith_foundry_warp_cpu
+        self._warp_cpu.argtypes = [
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.POINTER(_WarpRange),
+            ctypes.POINTER(_WarpResult),
+            ctypes.c_size_t,
+        ]
+        self._warp_cpu.restype = ctypes.c_int
+        self._rolling = self._dll.resonith_foundry_rolling_hash_cpu
+        self._rolling.argtypes = [
+            ctypes.POINTER(ctypes.c_int16),
+            ctypes.c_size_t,
+            ctypes.c_uint32,
+            ctypes.POINTER(ctypes.c_uint64),
+            ctypes.c_size_t,
+        ]
+        self._rolling.restype = ctypes.c_int
+        self._winnow = self._dll.resonith_foundry_winnow_cpu
+        self._winnow.argtypes = [
+            ctypes.POINTER(ctypes.c_uint64),
+            ctypes.c_size_t,
+            ctypes.c_uint32,
+            ctypes.POINTER(ctypes.c_uint32),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_size_t),
+        ]
+        self._winnow.restype = ctypes.c_int
+
+    def rolling_hashes(
+        self,
+        samples: np.ndarray,
+        *,
+        window_samples: int,
+    ) -> np.ndarray:
+        """Hash every possible origin for one exact R-156 duration."""
+
+        source = np.ascontiguousarray(samples, dtype=np.int16)
+        if source.ndim != 1:
+            raise ValueError("gridless rolling input must be mono PCM16")
+        if not 1 <= window_samples <= source.size:
+            raise ValueError("gridless rolling window exceeds the source")
+        output = np.empty(source.size - window_samples + 1, dtype="<u8")
+        status = self._rolling(
+            source.ctypes.data_as(ctypes.POINTER(ctypes.c_int16)),
+            source.size,
+            window_samples,
+            output.ctypes.data_as(ctypes.POINTER(ctypes.c_uint64)),
+            output.size,
+        )
+        if status != 0:
+            raise FoundryCudaError(status, "gridless rolling hash failed")
+        output.flags.writeable = False
+        return output
+
+    def content_defined_anchors(
+        self,
+        hashes: np.ndarray,
+        *,
+        selection_window: int,
+    ) -> np.ndarray:
+        """Return canonical newest-minimum anchors from a rolling hash field."""
+
+        source = np.ascontiguousarray(hashes, dtype="<u8")
+        if source.ndim != 1:
+            raise ValueError("gridless hash field must be one-dimensional")
+        if not 1 <= selection_window <= source.size:
+            raise ValueError("gridless selection window exceeds the field")
+        output = np.empty(source.size, dtype="<u4")
+        count = ctypes.c_size_t()
+        status = self._winnow(
+            source.ctypes.data_as(ctypes.POINTER(ctypes.c_uint64)),
+            source.size,
+            selection_window,
+            output.ctypes.data_as(ctypes.POINTER(ctypes.c_uint32)),
+            output.size,
+            ctypes.byref(count),
+        )
+        if status != 0:
+            raise FoundryCudaError(status, "gridless anchor selection failed")
+        result = np.array(output[: count.value], copy=True)
+        result.flags.writeable = False
+        return result
 
     def candidate_count(self, block_count: int, block_samples: int) -> int:
         """Return the full pair x phase x direction lattice cardinality."""
@@ -145,6 +306,37 @@ class GainPhaseCudaFoundry:
         status = self._count(block_count, block_samples, ctypes.byref(output))
         if status != 0:
             raise FoundryCudaError(status, "invalid candidate lattice")
+        return int(output.value)
+
+    def warp_candidate_count(
+        self,
+        block_count: int,
+        block_samples: int,
+        *,
+        phase_subsamples: int,
+        step_radius: int,
+        step_increment_q16: int,
+        end_step_radius: int,
+    ) -> int:
+        """Return the complete finite R-157 warp-lattice cardinality."""
+
+        search_range = _WarpRange(
+            block_count,
+            block_samples,
+            phase_subsamples,
+            step_radius,
+            step_increment_q16,
+            end_step_radius,
+            0,
+            1,
+        )
+        output = ctypes.c_uint64()
+        status = self._warp_count(
+            ctypes.byref(search_range),
+            ctypes.byref(output),
+        )
+        if status != 0:
+            raise FoundryCudaError(status, "invalid warp candidate lattice")
         return int(output.value)
 
     def evaluate_tiles(
@@ -245,4 +437,149 @@ class GainPhaseCudaFoundry:
             )
             if status != 0:
                 raise FoundryCudaError(status, "portable CPU search failed")
+            yield output
+
+    def evaluate_warp_tiles(
+        self,
+        blocks: np.ndarray,
+        *,
+        phase_subsamples: int,
+        step_radius: int,
+        step_increment_q16: int,
+        end_step_radius: int,
+        tile_candidates: int = 1 << 20,
+    ) -> Iterator[tuple[np.ndarray, FoundryCudaEvidence]]:
+        """Yield the complete R-157 fractional warp lattice on CUDA."""
+
+        source = np.ascontiguousarray(blocks, dtype=np.int16)
+        if (
+            source.ndim != 2
+            or source.shape[0] < 2
+            or not 3 <= source.shape[1] <= 32767
+        ):
+            raise ValueError(
+                "warp Foundry requires a 2-D PCM16 matrix with 3..32767 samples"
+            )
+        if tile_candidates <= 0:
+            raise ValueError("tile_candidates must be positive")
+        block_count, block_samples = source.shape
+        total = self.warp_candidate_count(
+            block_count,
+            block_samples,
+            phase_subsamples=phase_subsamples,
+            step_radius=step_radius,
+            step_increment_q16=step_increment_q16,
+            end_step_radius=end_step_radius,
+        )
+        directory = str(self._nvrtc_directory).encode("utf-8")
+        source_pointer = source.ctypes.data_as(
+            ctypes.POINTER(ctypes.c_int16)
+        )
+        for first in range(0, total, tile_candidates):
+            count = min(tile_candidates, total - first)
+            output = np.empty(count, dtype=WARP_RESULT_DTYPE)
+            evidence = _Evidence()
+            error = ctypes.create_string_buffer(16384)
+            search_range = _WarpRange(
+                block_count,
+                block_samples,
+                phase_subsamples,
+                step_radius,
+                step_increment_q16,
+                end_step_radius,
+                first,
+                count,
+            )
+            status = self._warp_cuda(
+                source_pointer,
+                source.size,
+                ctypes.byref(search_range),
+                output.ctypes.data_as(ctypes.POINTER(_WarpResult)),
+                output.size,
+                directory,
+                ctypes.byref(evidence),
+                error,
+                len(error),
+            )
+            if status != 0:
+                raise FoundryCudaError(
+                    status,
+                    error.value.decode("utf-8", errors="replace"),
+                )
+            yield output, FoundryCudaEvidence(
+                nvrtc=f"{evidence.nvrtc_major}.{evidence.nvrtc_minor}",
+                compute_capability=(
+                    f"{evidence.compute_major}.{evidence.compute_minor}"
+                ),
+                device_name=bytes(evidence.device_name).split(
+                    b"\0",
+                    1,
+                )[0].decode("utf-8", errors="replace"),
+                device_memory_bytes=int(evidence.device_memory_bytes),
+                input_bytes=int(evidence.input_bytes),
+                output_bytes=int(evidence.output_bytes),
+                first_candidate=int(evidence.first_candidate),
+                candidate_count=int(evidence.candidate_count),
+            )
+
+    def evaluate_warp_cpu_tiles(
+        self,
+        blocks: np.ndarray,
+        *,
+        phase_subsamples: int,
+        step_radius: int,
+        step_increment_q16: int,
+        end_step_radius: int,
+        tile_candidates: int = 1 << 16,
+    ) -> Iterator[np.ndarray]:
+        """Yield the portable exact CPU reference for the R-157 lattice."""
+
+        source = np.ascontiguousarray(blocks, dtype=np.int16)
+        if (
+            source.ndim != 2
+            or source.shape[0] < 2
+            or not 3 <= source.shape[1] <= 32767
+        ):
+            raise ValueError(
+                "warp Foundry requires a 2-D PCM16 matrix with 3..32767 samples"
+            )
+        if tile_candidates <= 0:
+            raise ValueError("tile_candidates must be positive")
+        block_count, block_samples = source.shape
+        total = self.warp_candidate_count(
+            block_count,
+            block_samples,
+            phase_subsamples=phase_subsamples,
+            step_radius=step_radius,
+            step_increment_q16=step_increment_q16,
+            end_step_radius=end_step_radius,
+        )
+        source_pointer = source.ctypes.data_as(
+            ctypes.POINTER(ctypes.c_int16)
+        )
+        for first in range(0, total, tile_candidates):
+            count = min(tile_candidates, total - first)
+            output = np.empty(count, dtype=WARP_RESULT_DTYPE)
+            search_range = _WarpRange(
+                block_count,
+                block_samples,
+                phase_subsamples,
+                step_radius,
+                step_increment_q16,
+                end_step_radius,
+                first,
+                count,
+            )
+            status = self._warp_cpu(
+                source_pointer,
+                source.size,
+                ctypes.byref(search_range),
+                output.ctypes.data_as(ctypes.POINTER(_WarpResult)),
+                output.size,
+            )
+            if status != 0:
+                raise FoundryCudaError(
+                    status,
+                    "portable CPU warp search failed",
+                )
             yield output

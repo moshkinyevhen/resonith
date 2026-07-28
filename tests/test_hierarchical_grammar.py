@@ -9,6 +9,7 @@ from maf_p0.hierarchical_grammar import (
     StateAtom,
     discover_affine_state_compounds,
     discover_exact_compounds,
+    discover_interval_compounds,
     select_minimum_description,
 )
 
@@ -87,6 +88,22 @@ class HierarchicalGrammarTests(unittest.TestCase):
         self.assertEqual(selected.selected_spans, ())
         self.assertEqual(selected.truth_positions, (0, 1, 2))
 
+    def test_long_sparse_chart_has_no_recursion_or_dense_path_copy(self) -> None:
+        selected = select_minimum_description(
+            20000,
+            (2,) * 20000,
+            (GrammarSpan(10003, 14003, 2000, "long-basis"),),
+            {},
+        )
+        self.assertEqual(selected.complete_bytes, 34000)
+        self.assertEqual(
+            tuple(item.label for item in selected.selected_spans),
+            ("long-basis",),
+        )
+        self.assertNotIn(10003, selected.truth_positions)
+        self.assertIn(10002, selected.truth_positions)
+        self.assertIn(14003, selected.truth_positions)
+
     def test_state_increments_unify_different_absolute_placements(self) -> None:
         atoms = (
             StateAtom(1, 5, 100),
@@ -113,6 +130,42 @@ class HierarchicalGrammarTests(unittest.TestCase):
         self.assertGreaterEqual(compounds.repeated_sequence_count, 1)
         self.assertEqual(len(selected.selected_spans), 2)
         self.assertLess(selected.complete_bytes, 60)
+
+    def test_arbitrary_interval_paths_form_compounds_without_blindness(
+        self,
+    ) -> None:
+        atoms = (
+            GrammarSpan(3, 7, 3, "a@3", "a"),
+            GrammarSpan(7, 12, 3, "b@7", "b"),
+            GrammarSpan(19, 23, 3, "a@19", "a"),
+            GrammarSpan(23, 28, 3, "b@23", "b"),
+            # This overlapping alternative must remain in the chart.
+            GrammarSpan(3, 12, 7, "direct@3"),
+        )
+        compounds = discover_interval_compounds(
+            atoms,
+            minimum_atoms=2,
+            maximum_atoms=3,
+            placement_bytes=2,
+            dictionary_bytes_per_atom=1,
+        )
+        compound_ranges = {
+            (span.start, span.end) for span in compounds.spans
+        }
+        self.assertIn((3, 12), compound_ranges)
+        self.assertIn((19, 28), compound_ranges)
+        selected = select_minimum_description(
+            32,
+            (10,) * 32,
+            (*atoms, *compounds.spans),
+            {"a": 0, "b": 0, **compounds.basis_activation_bytes},
+        )
+        selected_ranges = {
+            (span.start, span.end) for span in selected.selected_spans
+        }
+        self.assertIn((3, 12), selected_ranges)
+        self.assertIn((19, 28), selected_ranges)
+        self.assertLess(selected.complete_bytes, 320)
 
 
 if __name__ == "__main__":

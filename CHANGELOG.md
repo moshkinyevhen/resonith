@@ -11,6 +11,146 @@ version.
 
 ### Research
 
+- Accepted audited R-190/R-191 native graph contracts. The immutable edge ABI
+  now has bit-exact Python/C++23 parity, while dependent K-best paths receive a
+  separate transactional CSR ABI with explicit frontier/work/memory bounds,
+  canonical ownership and tie rules, protected weak-line reservations, and a
+  frozen overflow-safe integer second-order frequency/amplitude law. This is
+  analyzer infrastructure only; predictor, syntax, compression, Opus, release,
+  and player claims remain blocked. The measured gate passes 32 randomized
+  Python/C++ graphs, input-permutation parity, 30 analyzer/tracker/path tests,
+  and exact CPU/GPU edge scoring on an RTX 2080 Super across six internal tile
+  sizes. An independently audited negative-odd half-score discrepancy was
+  corrected by freezing floor-toward-negative-infinity division.
+- Accepted R-182 through R-189 as a quarantined whole-track causal-analysis
+  sequence: anonymous complex partials now precede source grouping; canonical
+  spectral peaks precede half-open band allocation; continuity, local
+  potential, and protected weak-line top-K families remain independent; proxy
+  values are never reported as Truth bits. The audited synthetic gate passes
+  clean 440.3 Hz phase, both crossing chirps, an approximately -47.6 dB weak
+  line, white-noise resource pruning, and exact-small disjoint selection.
+  Predictor, syntax, complete-byte, Opus, and release claims remain blocked
+  pending native C++23/CUDA parity and a second audit.
+- Accepted R-161 as the project priority lock. LSPF is now the only active
+  compression-architecture priority until its convolutive fields, bounded
+  transform laws, physical-law competition, long grammar, global
+  correction-entropy RDO, native Foundry, and full R-118 gates pass or are
+  explicitly rejected. Every material generation must retain original,
+  encoded Resonith, actual Resonith decode, official Opus, actual Opus decode,
+  preceding Resonith, metrics, hashes, and the exact tested Orkela package.
+- Accepted R-162: every LSPF package now runs short diagnostic and continuous
+  120-second-or-longer material simultaneously. One syntax/decoder serves all
+  durations; the encoder deterministically adapts scales, convolution/search
+  depth, dictionary lifetime, checkpoints, residency, and scheduling while
+  publishing the complete chosen plan and retaining every fallback/quality
+  invariant.
+- Accepted R-163 duration-Pareto preservation: a proven long-input mode remains
+  an explicit RDO candidate while short-input behavior is tuned, and vice
+  versa. New tuning may add specialized candidates but cannot silently replace
+  an incumbent. Per-input manifests retain all alternatives, quality
+  eligibility, complete bytes, rejection reasons, and the selected winner.
+- Accepted R-164 long-first testing and dual-axis success. Each generation now
+  freezes continuous 120-second-or-longer evidence before short tuning. A
+  candidate is retained when it either lowers complete bytes at the quality
+  floor or improves quality inside the declared matched-byte tolerance;
+  duration-specific wins are not erased by failure in another bucket.
+- Accepted R-165: a rate-only or quality-only result now triggers immediate
+  bounded optimization of the missing axis before the generation is fixed.
+  Two-axis wins may close after verification; one-axis wins close only after
+  the declared refinement budget is exhausted and remain retained Pareto
+  points with the complete refinement trace.
+- Accepted R-166 maximum-effort Opus anchoring. Every material real-audio gate
+  now uses official libopus at complexity 10 plus an applicable
+  application/signal/frame/VBR/bandwidth/bitrate search, official decode, full
+  container accounting, and retained candidate evidence rather than a single
+  convenient preset.
+- Accepted R-167 through R-169: coherent complex partial bundles and the causal
+  acoustic mechanism objective now separate harmonic, bounded-inharmonic,
+  transient, stochastic, and phase/room/channel-route lanes. Lanes may overlap
+  additively but have single rate ownership, are summed before one final Truth,
+  and require no semantic source labels.
+- Completed the R-165 long-first exact structural proxy. The 120-second Mozart
+  candidate lost 96 bytes (0.000483%) and selected independent Truth; short
+  speech found three fields and 144 placements but lost 0.485516%, while dense
+  orchestra and pink noise selected Truth. R-170 therefore retains
+  magnitude-CNMF only as a proposer and moves the primary path to
+  phase-aware/time-domain causal lanes.
+- Accepted R-171 Causal Sequence Atlas. Pattern discovery now indexes
+  canonical causal event transitions rather than relying on whole-waveform
+  windows. Exact suffix-automaton states cover every origin and complete
+  repeated-length interval for literal, offset, first-difference, and bounded
+  second-difference pitch/gain/phase/route laws before global RDO.
+- Accepted R-172/R-173 all-lane factorized law atlases. Harmonic,
+  bounded-inharmonic, transient, stochastic, and route events remain separate;
+  timing, pitch, phase, gain, envelope, resonator, and route laws are indexed
+  independently before bounded synchronized composition. This prevents an
+  unrelated phase or route mismatch from erasing a reusable causal law.
+- Completed the R-171–R-173 long-first discovery diagnostic. The first 120
+  seconds of Mozart produced 681 transformed harmonic classes, the rejected
+  all-coordinate conjunction produced zero, and the corrected factorized-law
+  atlas covered 258,664 overlapping end-position classes across 64,501 lane
+  events in 69.576 seconds. Speech, dense orchestra, and pink noise produced
+  22,875, 12,238, and 22,511 factorized classes respectively. These are exact
+  reconstruction and search-coverage results, not bitrate or Opus claims.
+- Added R-174 exact byte-priced causal-law ledgers: literal, immutable token
+  dictionary, and bounded acyclic hierarchical pair grammar compete by actual
+  compressed payload bytes. The decoder verifies bounds, backward-only rules,
+  checksum, full expansion, and exact token round-trip. Corpus names remain
+  evidence labels only and never become transmitted source classes.
+- Completed R-174/R-175 long-first ledger gates. Mozart factorized-law tokens
+  decreased 15.761871%, then one shared timeline per causal lane reduced the
+  exact event ledger from 602,415 to 471,002 bytes (-21.814364%). The same
+  event-ledger selector reduced separate female-speech, dense-orchestra, and
+  pink-noise inputs by 8.105210%, 9.904385%, and 14.411588%. Short transient
+  and tiny harmonic lanes retained row fallback where column headers lost.
+  These are metadata-ledger results, not complete Resonith or Opus gains.
+- Added R-176 Causal Basis Field research transport and complete decoder-in-loop
+  candidate. CBF1 stores one immutable Basis dictionary and compressed
+  anonymous warp-event ledger per emitter, reconstructs a sample-identical
+  native MFT1 DSP program, and adds one final lapped Truth. CBF1, direct MFT1,
+  and direct Truth remain actual-byte fallbacks; native direct CBF1 execution
+  and full R-118 evidence are pending.
+- Completed the R-176 long-first gate. CBF1 plus Truth lost by 2,188 bytes on
+  120 seconds of Mozart and fixed-block discovery covered only 2,048 samples;
+  speech, dense orchestra, and pink noise also selected Truth. CBF1 itself
+  remained sample-identical to native MFT1 and reduced the dense-orchestra
+  predictor from 133,804 to 52,968 bytes, isolating causal coverage and final
+  correction—not transport—as the blocker. R-177 therefore replaces the
+  primary fixed-block proposer with unnamed clustered partial-Basis
+  trajectories fitted only against their separately owned harmonic lane.
+- Added R-159/R-160 Latent Source Pattern Field and its
+  minimum-description anonymous field grammar. The exact research oracle now
+  uses non-circular finite alignment, batched similarity evaluation,
+  cross-channel occurrence reuse, one final Truth identity, global event
+  ledgers, and byte-selected sparse pair or multi-step motifs whose steps may
+  skip unrelated events. A perfect-reconstruction partial-spectrum wrapper
+  searches independently normalized lifting bands without losing discarded
+  coefficient bits. Focused tests include changing overlap, cross-channel
+  routes, arbitrary gaps, affine laws, partial-spectrum contamination, exact
+  CRC/decoder round-trips, and explicit uneconomic fallback.
+- Measured the first R-160 synthetic structural proxy at 1,815 bytes versus
+  2,491 independent proxy bytes (-27.14%) with exact PCM SHA-256; a short
+  candidate costing 49 extra bytes was rejected. These are Synthetic / Proxy
+  results, not full Resonith, FLAC, or Opus claims. The first real whole-band
+  diagnostic on speech, dense orchestra, and pink noise admitted no component,
+  correctly exposing partial-spectrum/source-field inference as the current
+  blocker rather than hiding the loss behind fallback.
+- The exact partial-spectrum R-160b diagnostic activated two anonymous Basis
+  entries and 1,082 occurrences on 12 seconds of dense orchestra. They
+  explained 55.24% of energy but reduced the exact structural proxy only 0.42%
+  (1,296,657 versus 1,302,123 bytes). A phase-preserving anonymous NMF proposer
+  found 40 speech occurrences but its complete candidate was 0.49% larger, so
+  RDO retained independent Truth. This establishes residual entropy—not source
+  discovery alone—as the next blocking metric.
+- Completed the R-156/R-157 gridless warp execution loop. Native every-origin
+  rolling hashes and arbitrary interval manifests now feed a C++23/CUDA
+  fractional-phase, forward/reverse, constant/linear pitch-time and signed
+  gain lattice. The RTX 2080 Super gate produced exact CPU/GPU parity for
+  6,912/6,912 candidates in unequal tiles. An integrated exact global RDO
+  diagnostic selected one Basis with eight arbitrary placements and reduced
+  a favorable lossless construction from 1,156 to 704 bytes (-39.10%) while
+  reconstructing PCM exactly. This is architecture evidence, not an Opus or
+  real-audio compression claim; the complete R-118 gate remains mandatory.
 - Added STEP M-151 Complete Pattern Field: the C++23/CUDA Foundry now searches
   every member of a declared finite multiscale/time/channel lattice, including
   forward/reverse circular Basis traversal and signed constant/linear Q1.15

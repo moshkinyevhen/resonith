@@ -13,3 +13,6 @@ htmlcov/
 # Blind provider inputs may contain small excerpts of locally prepared
 # reference PCM. Publish hashes and candidate outputs, not the raw request.
 /experiments/results/*blind_input*.json
+/experiments/results/*.pid
+/experiments/results/*.stderr.log
+/experiments/results/*.stdout.log

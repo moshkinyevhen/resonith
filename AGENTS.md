@@ -43,6 +43,29 @@ Never present a **TARGET** or **HYPOTHESIS** as a measured result.
     Scaling DSP/search kernels execute natively, and shipped codec, SDK,
     embedded, command-line, and playback artifacts have no Python runtime
     dependency.
+12. Preserve the causal-simplicity invariant: model sound as a small set of
+    persistent excitation, resonator/state, transient, stochastic, and
+    phase/room/channel-route causes. Keep harmonic, bounded-inharmonic,
+    transient, stochastic, and route lanes separately owned, sum them before
+    one final Truth, independently index their timing, pitch, phase, gain,
+    envelope, resonator, and route laws before bounded composition, and never
+    add a mechanism or opcode without a measured complete-description benefit.
+13. Apply the R-181 theory-before-syntax protocol to every new material
+    mechanism: formal model and limits, current online primary-source review,
+    prior art and alternatives, decoder/resource consequences, falsifiable
+    byte/quality budget, kill gate, and evidence plan come before code. A
+    per-file manual or AI oracle is discovery evidence only until a
+    deterministic label-free encoder reproduces it on held-out material.
+14. Apply the R-184 causal-analysis order: observe and globally track anonymous
+    complex partials before proposing fundamentals or source groupings; keep
+    independent partial paths as fallback; admit harmonic, inharmonic,
+    resonator, motif, or route grouping only by complete decoder-domain MDL.
+15. Apply R-185 before every material change: brainstorm genuinely different
+    alternatives, try to falsify each against theory, counterexamples,
+    implementations, standards, negative evidence, complete bytes, and
+    resource limits; assign an independent red-team subagent; resolve its
+    blocking findings in writing; record the decision and kill gates; only
+    then implement. Pre-audit exploratory code is non-admitted scratch.
 
 ## Repository language
 
@@ -95,3 +118,8 @@ After a change, verify:
     all three complete references plus all 16 R-111 heterogeneous classes.
     A three-file-only or corpus-only result is a fast diagnostic, never a
     milestone, default, version, or general quality/compression claim.
+13. each LSPF generation runs long material first, freezes that duration
+    frontier, then tunes short material without removing the long incumbent;
+14. a rate-only or quality-only win receives a bounded refinement of the
+    missing axis before generation freeze, and real-audio comparisons use the
+    maximum-effort official Opus frontier.

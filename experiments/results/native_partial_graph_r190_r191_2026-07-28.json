@@ -1,0 +1,66 @@
+{
+  "schema": "resonith-r190-r191-native-partial-graph-2",
+  "date": "2026-07-28",
+  "status": "remediated-analyzer-infrastructure-second-audit-pending",
+  "native_edge_fixture": {
+    "edge_count": 9,
+    "path_count": 8,
+    "deterministic": true,
+    "predictor_integrated": false
+  },
+  "python_cpp23": {
+    "edge_record_parity": "bit-exact",
+    "path_record_parity": "bit-exact",
+    "path_entry_parity": "bit-exact",
+    "path_abi_version": 2,
+    "input_permutation_invariant": true,
+    "random_graph_cases": 32,
+    "signed_half_score_rule": "floor-toward-negative-infinity",
+    "canonical_edge_stream_field_validation": true,
+    "transactional_path_and_entry_output": true,
+    "managed_pmr_measured": true,
+    "environmental_oom_distinct": true,
+    "unsaturated_exact_small_total": true
+  },
+  "cuda": {
+    "backend": "CUDA NVRTC C++23",
+    "device": "NVIDIA GeForce RTX 2080 SUPER",
+    "compute_capability": "7.5",
+    "nvrtc": "13.3",
+    "partial_edge_count": 9,
+    "random_graph_cases": 32,
+    "random_edge_count": 330,
+    "partial_tile_sizes": [1, 31, 32, 255, 256, 1024],
+    "cpu_gpu_exact": true
+  },
+  "tests": {
+    "native_executables": [
+      "resonith_partial_graph_test",
+      "resonith_partial_graph_fuzz_smoke",
+      "resonith_c_header_test",
+      "resonith_foundry_cuda_test"
+    ],
+    "python_test_files": [
+      "test_complex_partial_analyzer.py",
+      "test_complex_partial_tracker.py",
+      "test_partial_graph_fixed.py"
+    ],
+    "python_tests_passed": 45,
+    "python_tests_failed": 0,
+    "python_wall_seconds": 30.8,
+    "windows_compilers": ["Clang 22", "GCC 16"],
+    "android_targets": ["arm64-v8a", "x86_64"],
+    "physical_android_device": "Pixel 7 Pro",
+    "android_asan_ubsan": "passed-with-vptr-disabled-for-libcxx-pmr",
+    "android_libfuzzer_runs": 10000,
+    "android_libfuzzer_coverage": 3932,
+    "android_libfuzzer_failures": 0
+  },
+  "claims_explicitly_not_made": [
+    "predictor integration",
+    "bitstream integration",
+    "compression gain",
+    "Opus comparison",
+    "Orkela release readiness"
+  ]
+}

@@ -840,6 +840,76 @@ int main() {
         return 1;
     }
 
+    auto pull_matches = [&](
+        const auto& stream,
+        const auto& expected
+    ) -> bool {
+        resonith_lapped_pull_requirements pull_requirements{};
+        if (
+            resonith_lapped_pull_inspect(
+                stream.data(),
+                stream.size(),
+                &pull_requirements
+            ) != RESONITH_STATUS_OK
+            || pull_requirements.field.frame_count != 96U
+            || pull_requirements.render_quantum != 96U
+            || pull_requirements.field.overlap_elements != 96U
+            || pull_requirements.maximum_output_elements != 192U
+        ) {
+            return false;
+        }
+        workspace.count_capacity =
+            pull_requirements.field.count_elements;
+        resonith_lapped_pull_session pull_session{};
+        if (
+            resonith_lapped_pull_open(
+                stream.data(),
+                stream.size(),
+                &workspace,
+                &pull_session,
+                &pull_requirements
+            ) != RESONITH_STATUS_OK
+        ) {
+            return false;
+        }
+
+        std::array<std::int16_t, 192> streamed{};
+        std::array<std::int16_t, 34> packet{};
+        std::size_t cursor = 0U;
+        while (cursor < 96U) {
+            std::uint32_t packet_logical_start = 0U;
+            std::size_t packet_frames = 0U;
+            if (
+                resonith_lapped_pull_decode_next(
+                    &pull_session,
+                    &workspace,
+                    17U,
+                    packet.data(),
+                    packet.size(),
+                    &packet_logical_start,
+                    &packet_frames
+                ) != RESONITH_STATUS_OK
+                || packet_logical_start != cursor
+                || packet_frames == 0U
+            ) {
+                return false;
+            }
+            std::copy_n(
+                packet.data(),
+                packet_frames * 2U,
+                streamed.data() + cursor * 2U
+            );
+            cursor += packet_frames;
+        }
+        return streamed == expected;
+    };
+    if (!expect(
+            pull_matches(kLappedStream, kExpectedLappedPcm),
+            "fixed LPF1 bounded pull parity across non-window boundaries"
+        )) {
+        return 1;
+    }
+
     if (!expect(
             resonith_lapped_inspect(
                 kAdaptiveLappedStream.data(),
@@ -866,6 +936,12 @@ int main() {
                 && written == 96U
                 && output == kExpectedAdaptiveLappedPcm,
             "Python and native variable-density PCM parity"
+        )) {
+        return 1;
+    }
+    if (!expect(
+            pull_matches(kAdaptiveLappedStream, kExpectedAdaptiveLappedPcm),
+            "variable LPF1 bounded pull parity across non-window boundaries"
         )) {
         return 1;
     }

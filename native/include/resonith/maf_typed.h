@@ -14,7 +14,8 @@ enum {
     RESONITH_MAF_TYPED_HEADER_BYTES = 64,
     RESONITH_MAF_TYPED_RECORD_HEADER_BYTES = 8,
     RESONITH_MAF_TYPED_MAX_SOURCE_LIFETIMES = 4096,
-    RESONITH_MAF_TYPED_MAX_BASIS_INSTANCES = 4096
+    RESONITH_MAF_TYPED_MAX_BASIS_INSTANCES = 4096,
+    RESONITH_MAF_TYPED_MAX_WARP_INSTANCE_SAMPLES = 65535
 };
 
 typedef enum resonith_maf_typed_record_type {
@@ -24,7 +25,8 @@ typedef enum resonith_maf_typed_record_type {
     RESONITH_MAF_TYPED_TRANSIENT = 4,
     RESONITH_MAF_TYPED_MIX = 5,
     RESONITH_MAF_TYPED_BASIS = 6,
-    RESONITH_MAF_TYPED_BASIS_INSTANCE = 7
+    RESONITH_MAF_TYPED_BASIS_INSTANCE = 7,
+    RESONITH_MAF_TYPED_BASIS_WARP_INSTANCE = 8
 } resonith_maf_typed_record_type;
 
 typedef enum resonith_maf_typed_basis_instance_flags {
@@ -32,6 +34,12 @@ typedef enum resonith_maf_typed_basis_instance_flags {
     RESONITH_MAF_TYPED_BASIS_INSTANCE_LINEAR_GAIN = 2,
     RESONITH_MAF_TYPED_BASIS_INSTANCE_REVERSE = 4
 } resonith_maf_typed_basis_instance_flags;
+
+typedef enum resonith_maf_typed_basis_warp_instance_flags {
+    RESONITH_MAF_TYPED_BASIS_WARP_CIRCULAR = 1,
+    RESONITH_MAF_TYPED_BASIS_WARP_LINEAR_GAIN = 2,
+    RESONITH_MAF_TYPED_BASIS_WARP_LINEAR_STEP = 4
+} resonith_maf_typed_basis_warp_instance_flags;
 
 typedef enum resonith_maf_typed_excitation {
     RESONITH_MAF_TYPED_EXCITATION_IMPULSE = 1,

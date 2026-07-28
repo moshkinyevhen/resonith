@@ -26,6 +26,7 @@ set(RESONITH_CORE_SOURCES
     src/maf.cpp
     src/maf_typed.cpp
     src/multichannel.cpp
+    src/partial_graph.cpp
     src/seek.cpp
     src/status.cpp
     src/stream.cpp
@@ -153,7 +154,7 @@ if(RESONITH_BUILD_TOOLS)
         )
         target_link_libraries(
             resonith_foundry_cuda_test
-            PRIVATE Resonith::FoundryCuda
+            PRIVATE Resonith::FoundryCuda Resonith::Core
         )
         if(MINGW)
             target_link_options(
@@ -408,6 +409,30 @@ if(RESONITH_BUILD_FUZZERS)
         PROPERTIES CXX_EXTENSIONS OFF
     )
     resonith_enable_warnings(resonith_lapped_finite_fuzz)
+
+    add_executable(resonith_partial_graph_fuzz
+        ${RESONITH_CORE_SOURCES}
+        fuzz/partial_graph_fuzz.cpp
+    )
+    target_compile_features(resonith_partial_graph_fuzz PRIVATE cxx_std_23)
+    target_include_directories(resonith_partial_graph_fuzz
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    )
+    target_compile_options(resonith_partial_graph_fuzz
+        PRIVATE
+            -fsanitize=fuzzer,address,undefined
+            -fno-sanitize=vptr
+    )
+    target_link_options(resonith_partial_graph_fuzz
+        PRIVATE
+            -fsanitize=fuzzer,address,undefined
+            -fno-sanitize=vptr
+    )
+    set_target_properties(
+        resonith_partial_graph_fuzz
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_partial_graph_fuzz)
 endif()
 
 include(CTest)
@@ -429,6 +454,32 @@ if(BUILD_TESTING)
     set_target_properties(resonith_c_header_test PROPERTIES C_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_c_header_test)
     add_test(NAME c_header_compatibility COMMAND resonith_c_header_test)
+
+    if(RESONITH_BUILD_SHARED)
+        # This target is intentionally separate from the static C-header gate.
+        # Mobile CI executes it with the packaged shared library, proving that
+        # the public C ABI is exported and dynamically loadable.
+        add_executable(resonith_c_header_shared_test
+            tests/c_header_test.c
+        )
+        target_compile_features(
+            resonith_c_header_shared_test
+            PRIVATE c_std_99
+        )
+        target_link_libraries(
+            resonith_c_header_shared_test
+            PRIVATE Resonith::CoreShared
+        )
+        set_target_properties(
+            resonith_c_header_shared_test
+            PROPERTIES C_EXTENSIONS OFF
+        )
+        resonith_enable_warnings(resonith_c_header_shared_test)
+        add_test(
+            NAME c_header_shared_compatibility
+            COMMAND resonith_c_header_shared_test
+        )
+    endif()
 
     add_executable(resonith_cibs_test
         tests/cibs_test.cpp
@@ -528,6 +579,49 @@ if(BUILD_TESTING)
     )
     resonith_enable_warnings(resonith_maf_typed_test)
     add_test(NAME maf_typed_conformance COMMAND resonith_maf_typed_test)
+
+    add_executable(resonith_partial_graph_test
+        tests/partial_graph_test.cpp
+    )
+    target_compile_features(
+        resonith_partial_graph_test
+        PRIVATE cxx_std_23
+    )
+    target_link_libraries(
+        resonith_partial_graph_test
+        PRIVATE Resonith::Core
+    )
+    set_target_properties(
+        resonith_partial_graph_test
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_partial_graph_test)
+    add_test(
+        NAME partial_graph_conformance
+        COMMAND resonith_partial_graph_test
+    )
+
+    add_executable(resonith_partial_graph_fuzz_smoke
+        fuzz/partial_graph_fuzz.cpp
+        tests/partial_graph_fuzz_smoke.cpp
+    )
+    target_compile_features(
+        resonith_partial_graph_fuzz_smoke
+        PRIVATE cxx_std_23
+    )
+    target_link_libraries(
+        resonith_partial_graph_fuzz_smoke
+        PRIVATE Resonith::Core
+    )
+    set_target_properties(
+        resonith_partial_graph_fuzz_smoke
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_partial_graph_fuzz_smoke)
+    add_test(
+        NAME partial_graph_adversarial_smoke
+        COMMAND resonith_partial_graph_fuzz_smoke
+    )
 
     add_executable(resonith_maf_fuzz_smoke
         fuzz/maf_fuzz.cpp
