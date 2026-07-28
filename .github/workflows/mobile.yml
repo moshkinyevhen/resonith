@@ -288,6 +288,9 @@ jobs:
         run: |
           set -euo pipefail
           package="system-images;android-${ANDROID_RUNTIME_API};google_apis;x86_64"
+          export ANDROID_USER_HOME="${RUNNER_TEMP}/resonith-android-user"
+          export ANDROID_AVD_HOME="${ANDROID_USER_HOME}/avd"
+          mkdir -p "$ANDROID_AVD_HOME"
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
             "emulator" \
             "platform-tools" \
@@ -299,6 +302,7 @@ jobs:
             --name resonith-api26 \
             --package "$package" \
             --device "pixel_2" \
+            --path "$ANDROID_AVD_HOME/resonith-api26.avd" \
             < /dev/null
           "$ANDROID_HOME/emulator/emulator" -list-avds \
             | grep -Fx resonith-api26 > /dev/null
