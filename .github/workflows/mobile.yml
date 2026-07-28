@@ -293,11 +293,15 @@ jobs:
             "platform-tools" \
             "$package"
           export PATH="$ANDROID_HOME/platform-tools:$PATH"
-          echo "no" | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" \
+          "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" \
             create avd \
             --force \
             --name resonith-api26 \
-            --package "$package"
+            --package "$package" \
+            --device "pixel_2" \
+            < /dev/null
+          "$ANDROID_HOME/emulator/emulator" -list-avds \
+            | grep -Fx resonith-api26 > /dev/null
           sudo chown "$(id -un)" /dev/kvm
           "$ANDROID_HOME/emulator/emulator" @resonith-api26 \
             -no-window \
@@ -317,7 +321,11 @@ jobs:
             sleep 2
           done
           test "$ready" -eq 1
-          adb shell getprop ro.build.version.sdk | grep -Fxq "$ANDROID_RUNTIME_API"
+          actual_api="$(
+            adb shell getprop ro.build.version.sdk \
+              | tr -d '\r'
+          )"
+          test "$actual_api" = "$ANDROID_RUNTIME_API"
 
       - name: Execute the closed Android API-26 test set
         if: matrix.runtime
