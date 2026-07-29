@@ -649,6 +649,30 @@ if(BUILD_TESTING)
         COMMAND resonith_partial_graph_allocation_ordinal_test
     )
 
+    find_package(Threads REQUIRED)
+    add_executable(resonith_partial_graph_concurrency_test
+        tests/partial_graph_concurrency_test.cpp
+    )
+    target_compile_features(
+        resonith_partial_graph_concurrency_test
+        PRIVATE cxx_std_23
+    )
+    target_link_libraries(
+        resonith_partial_graph_concurrency_test
+        PRIVATE Resonith::Core Threads::Threads
+    )
+    set_target_properties(
+        resonith_partial_graph_concurrency_test
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(
+        resonith_partial_graph_concurrency_test
+    )
+    add_test(
+        NAME partial_graph_concurrency
+        COMMAND resonith_partial_graph_concurrency_test
+    )
+
     add_executable(resonith_partial_graph_fuzz_smoke
         fuzz/partial_graph_fuzz.cpp
         tests/partial_graph_fuzz_smoke.cpp

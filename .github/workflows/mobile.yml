@@ -17,7 +17,7 @@ jobs:
   linux-sanitizers:
     name: Linux Clang ASan UBSan and bounded fuzz
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Check out source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -81,6 +81,20 @@ jobs:
             -timeout=5 \
             -artifact_prefix=build/linux-sanitized/evidence/crashes/ \
             2>&1 | tee build/linux-sanitized/evidence/fuzz-time.log
+          build/linux-sanitized/resonith_partial_graph_fuzz \
+            -runs=1000000 \
+            -max_total_time=0 \
+            -max_len=96 \
+            -timeout=5 \
+            -artifact_prefix=build/linux-sanitized/evidence/crashes/ \
+            2>&1 | tee build/linux-sanitized/evidence/stateful-runs.log
+          build/linux-sanitized/resonith_partial_graph_fuzz \
+            -runs=-1 \
+            -max_total_time=600 \
+            -max_len=96 \
+            -timeout=5 \
+            -artifact_prefix=build/linux-sanitized/evidence/crashes/ \
+            2>&1 | tee build/linux-sanitized/evidence/stateful-time.log
 
       - name: Record sanitizer evidence
         if: always()
@@ -122,6 +136,237 @@ jobs:
             echo "- Artifact ID: ${{ steps.upload-sanitizer-evidence.outputs.artifact-id }}"
             echo "- Service digest: \`${{ steps.upload-sanitizer-evidence.outputs.artifact-digest }}\`"
             echo "- Scope: all native tests under ASan/UBSan plus the current bounded partial-graph fuzzer"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  linux-coverage:
+    name: Linux Clang ABI-v3 95/90 coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Configure source-based coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S native -B build/linux-coverage -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_FLAGS="-fprofile-instr-generate -fcoverage-mapping" \
+            -DCMAKE_CXX_FLAGS="-fprofile-instr-generate -fcoverage-mapping" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate" \
+            -DBUILD_TESTING=ON \
+            -DRESONITH_BUILD_SHARED=OFF \
+            -DRESONITH_BUILD_CUDA_FOUNDRY=OFF \
+            -DRESONITH_BUILD_FUZZERS=OFF \
+            -DRESONITH_BUILD_TOOLS=OFF \
+            -DRESONITH_WARNINGS_AS_ERRORS=ON
+
+      - name: Build focused ABI-v3 coverage drivers
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build/linux-coverage --parallel 4 --target \
+            resonith_partial_graph_test \
+            resonith_partial_graph_allocation_tripwire_test \
+            resonith_partial_graph_allocation_ordinal_test \
+            resonith_partial_graph_concurrency_test \
+            resonith_partial_graph_fuzz_smoke
+
+      - name: Execute focused coverage corpus
+        shell: bash
+        env:
+          LLVM_PROFILE_FILE: build/linux-coverage/profiles/%m-%p.profraw
+        run: |
+          set -euo pipefail
+          mkdir -p build/linux-coverage/profiles
+          mkdir -p build/linux-coverage/evidence
+          build/linux-coverage/resonith_partial_graph_test
+          build/linux-coverage/resonith_partial_graph_allocation_tripwire_test
+          build/linux-coverage/resonith_partial_graph_allocation_ordinal_test
+          build/linux-coverage/resonith_partial_graph_concurrency_test 10000
+          build/linux-coverage/resonith_partial_graph_fuzz_smoke
+
+      - name: Enforce public-entry 95/90 coverage floor
+        shell: bash
+        run: |
+          set -euo pipefail
+          llvm-profdata merge -sparse \
+            build/linux-coverage/profiles/*.profraw \
+            -o build/linux-coverage/evidence/coverage.profdata
+          objects=(
+            build/linux-coverage/resonith_partial_graph_test
+            -object=build/linux-coverage/resonith_partial_graph_allocation_tripwire_test
+            -object=build/linux-coverage/resonith_partial_graph_allocation_ordinal_test
+            -object=build/linux-coverage/resonith_partial_graph_concurrency_test
+            -object=build/linux-coverage/resonith_partial_graph_fuzz_smoke
+          )
+          llvm-cov export "${objects[@]}" \
+            -instr-profile=build/linux-coverage/evidence/coverage.profdata \
+            -summary-only \
+            -name-regex='^resonith_partial_graph_(edges_cpu|paths_cpu_v3)$' \
+            > build/linux-coverage/evidence/coverage-summary.json
+          llvm-cov report "${objects[@]}" \
+            -instr-profile=build/linux-coverage/evidence/coverage.profdata \
+            -show-functions \
+            -name-regex='^resonith_partial_graph_(edges_cpu|paths_cpu_v3)$' \
+            > build/linux-coverage/evidence/coverage-report.txt
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("build/linux-coverage/evidence/coverage-summary.json")
+          payload = json.loads(path.read_text(encoding="utf-8"))
+          totals = payload["data"][0]["totals"]
+          lines = float(totals["lines"]["percent"])
+          branches = float(totals["branches"]["percent"])
+          gate = {
+              "schema": "resonith-r202-public-entry-coverage-1",
+              "line_percent": lines,
+              "line_floor": 95.0,
+              "branch_percent": branches,
+              "branch_floor": 90.0,
+          }
+          Path("build/linux-coverage/evidence/coverage-gate.json").write_text(
+              json.dumps(gate, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          if lines < 95.0 or branches < 90.0:
+              raise SystemExit(
+                  f"coverage floor missed: lines={lines:.2f}, "
+                  f"branches={branches:.2f}"
+              )
+          PY
+
+      - name: Record coverage evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/linux-coverage/evidence
+          {
+            echo "source_sha=${GITHUB_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            clang --version | head -n 1
+            llvm-cov --version | head -n 1
+            llvm-profdata --version | head -n 1
+          } > build/linux-coverage/evidence/BUILD-METADATA.txt
+          find build/linux-coverage/evidence \
+            -type f ! -name SHA256SUMS -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > build/linux-coverage/evidence/SHA256SUMS
+
+      - name: Upload coverage evidence
+        if: always()
+        id: upload-coverage-evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: resonith-linux-coverage-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/linux-coverage/evidence
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish coverage artifact identity
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Linux public-entry coverage evidence"
+            echo "- Artifact ID: ${{ steps.upload-coverage-evidence.outputs.artifact-id }}"
+            echo "- Service digest: \`${{ steps.upload-coverage-evidence.outputs.artifact-digest }}\`"
+            echo "- Scope: R-190 and ABI-v3 public entries, 95% line / 90% branch floor"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  linux-tsan:
+    name: Linux Clang TSan concurrent ABI-v3
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Configure ThreadSanitizer Core
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S native -B build/linux-tsan -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_FLAGS="-fsanitize=thread -fno-omit-frame-pointer" \
+            -DCMAKE_CXX_FLAGS="-fsanitize=thread -fno-omit-frame-pointer" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=thread" \
+            -DBUILD_TESTING=ON \
+            -DRESONITH_BUILD_SHARED=OFF \
+            -DRESONITH_BUILD_CUDA_FOUNDRY=OFF \
+            -DRESONITH_BUILD_FUZZERS=OFF \
+            -DRESONITH_BUILD_TOOLS=OFF \
+            -DRESONITH_WARNINGS_AS_ERRORS=ON
+
+      - name: Build concurrent ABI-v3 gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build/linux-tsan --parallel 4 \
+            --target resonith_partial_graph_concurrency_test
+
+      - name: Execute 100000 independent concurrent sequences
+        shell: bash
+        env:
+          TSAN_OPTIONS: halt_on_error=1:history_size=7
+        run: |
+          set -euo pipefail
+          mkdir -p build/linux-tsan/evidence
+          build/linux-tsan/resonith_partial_graph_concurrency_test 100000 \
+            2>&1 | tee build/linux-tsan/evidence/concurrency.log
+
+      - name: Record TSan evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/linux-tsan/evidence
+          {
+            echo "source_sha=${GITHUB_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            clang --version | head -n 1
+            cmake --version | head -n 1
+            ninja --version
+          } > build/linux-tsan/evidence/BUILD-METADATA.txt
+          find build/linux-tsan/evidence \
+            -type f ! -name SHA256SUMS -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > build/linux-tsan/evidence/SHA256SUMS
+
+      - name: Upload TSan evidence
+        if: always()
+        id: upload-tsan-evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: resonith-linux-tsan-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/linux-tsan/evidence
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish TSan artifact identity
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Linux ThreadSanitizer evidence"
+            echo "- Artifact ID: ${{ steps.upload-tsan-evidence.outputs.artifact-id }}"
+            echo "- Service digest: \`${{ steps.upload-tsan-evidence.outputs.artifact-digest }}\`"
+            echo "- Scope: 100000 independent concurrent R-190/v3 preflight/fill sequences"
           } >> "$GITHUB_STEP_SUMMARY"
 
   macos-native:
@@ -695,6 +940,8 @@ jobs:
     if: always()
     needs:
       - linux-sanitizers
+      - linux-coverage
+      - linux-tsan
       - macos-native
       - android
       - ios
@@ -706,6 +953,8 @@ jobs:
         run: |
           set -euo pipefail
           test "${{ needs.linux-sanitizers.result }}" = "success"
+          test "${{ needs.linux-coverage.result }}" = "success"
+          test "${{ needs.linux-tsan.result }}" = "success"
           test "${{ needs.macos-native.result }}" = "success"
           test "${{ needs.android.result }}" = "success"
           test "${{ needs.ios.result }}" = "success"
