@@ -7955,6 +7955,13 @@ i32 end_gain_q15
   - the sole admission contract is bound to Ubuntu 24.04 and exact LLVM
     18.1.3 toolchain identity; automatic profile inference and unioned outcome
     sets are prohibited;
+  - a second unchanged Ubuntu run proved that mixed profiles from separately
+    linked executables are themselves unstable;
+  - semantic coverage now admits only the canonical conformance executable;
+    tripwire, ordinal, concurrency, and fuzz profiles are retained and hashed
+    as mandatory supplemental evidence but cannot enter semantic counters;
+  - the first canonical Ubuntu artifact seeds only a candidate contract; two
+    independent identical canonical runs are required before freezing it;
   - raw coverage is 93.3702% lines and 90.8696% branches;
   - proof-adjusted coverage is 96.1320% lines and 92.4779% branches;
   - independent post-implementation verdict is **GO with zero local design
@@ -7962,7 +7969,11 @@ i32 end_gain_q15
   - independent cross-toolchain audit rejected MinGW admission, then returned
     **GO with zero blockers** for the sole Ubuntu LLVM 18 contract and explicit
     version binding;
-  - GitHub platform and sanitizer results remain required before Step 9 closes.
+  - independent audit returned GO for canonical/supplemental separation with
+    predicted canonical-only adjusted coverage of 95.79% lines and 91.59%
+    branches;
+  - GitHub platform, reproducible canonical coverage, and sanitizer results
+    remain required before Step 9 closes.
 - Evidence:
   [R-202 Stateful ABI and Semantic Coverage Gate](results/R202_STATEFUL_ABI_COVERAGE_GATE_2026-07-29.md).
 - Evidence boundary:

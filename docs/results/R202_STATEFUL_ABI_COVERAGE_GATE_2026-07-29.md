@@ -6,7 +6,7 @@ Scope: Step-9 R-190/R-191 ABI, allocation, fuzz, and coverage infrastructure
 
 Codec algorithm or bitstream change: **no**
 
-Status: **canonical Ubuntu LLVM 18 replay passed; replacement CI run pending**
+Status: **canonical profile separation implemented; reproducibility runs pending**
 
 ## Corrected staging-boundary evidence
 
@@ -57,7 +57,7 @@ scripts/enforce_partial_graph_coverage.py
 FC91579F5D5E35C6304F12F796D16CC3D334A600769E67F7CA71EA2DCC30E146
 
 .github/workflows/mobile.yml
-B52A1569C48C27B0DD61C61CA7EDE3067E94C08B7AB4D3CC04B31C04C4FF04D6
+1B11957463FB39641E6A29538682F3E19B1E6DF61D42C2DD65747BB50FB0A854
 ```
 
 ## Native focused gates
@@ -85,10 +85,12 @@ The canonical native report is:
 
 ## Strict semantic coverage
 
-All five deterministic drivers produce profile data, but `llvm-cov` receives
-one canonical instrumented executable as the sole coverage mapping. This
-prevents duplicate static-library mappings from selecting incompatible
-counter layouts.
+All five deterministic drivers remain mandatory, but only
+`resonith_partial_graph_test` writes to `profiles/canonical`. Allocation
+tripwire, allocation ordinal, concurrency, and fuzz smoke write to
+`profiles/supplemental`. Both inventories are retained and hashed separately.
+Only non-empty canonical profiles may enter `llvm-profdata`, `llvm-cov`
+report, export, or show.
 
 The contract freezes:
 
@@ -99,31 +101,26 @@ The contract freezes:
 - every uncovered true or false branch outcome;
 - a disposition and reason for every gap.
 
-Admission is bound to Ubuntu 24.04 and the exact
+Admission remains bound to Ubuntu 24.04 and the exact
 `Ubuntu LLVM version 18.1.3` identity. Any toolchain mismatch, new miss, stale
 miss, source drift, helper drift, or proof-range drift fails before
-percentages are evaluated. Negative tests confirmed rejection of a changed
-source hash, a stale uncovered-line entry, and a non-admission toolchain.
+percentages are evaluated.
 
-Canonical Ubuntu LLVM 18 artifact replay:
+Local single-canonical-profile diagnostic:
 
-| Metric | Raw | Proof-adjusted | Floor |
+| Metric | Raw | Predicted proof-adjusted | Floor |
 |---|---:|---:|---:|
-| Lines | 845 / 905 = 93.3702% | 845 / 879 = 96.1320% | 95% |
-| Branch outcomes | 209 / 230 = 90.8696% | 209 / 226 = 92.4779% | 90% |
+| Lines | 842 / 905 = 93.0387% | 842 / 879 = 95.7907% | 95% |
+| Branch outcomes | 207 / 230 = 90.0000% | 207 / 226 = 91.5929% | 90% |
 
 Exactly 26 lines and four branch outcomes are excluded as
 allocation- or ledger-invariant unreachable. All remaining uncovered
 locations remain in the denominator as explicit tracked gaps.
 
-Generated gate:
-
-```text
-build/github-r202-coverage-30450722814/coverage-gate-corrected.json
-A25BEDFE50174D780E51AFDF43B8D86996811D7C89A06413046AACA7557F8BDD
-```
-
-`actionlint`, Python syntax validation, and `git diff --check` pass.
+These percentages are diagnostic predictions, not accepted GitHub evidence.
+The first Ubuntu canonical-only artifact may seed a replacement exact
+line/outcome contract. A second independent run must reproduce the complete
+set and count totals before the contract can be frozen.
 
 ## Rejected MinGW admission evidence
 
@@ -140,8 +137,12 @@ paths 7466:12 true = 9,223,372,036,854,775,807
 
 The independent auditor rejected both automatic dual-profile inference and a
 union of outcomes. A regression must not be able to impersonate another
-toolchain profile. The exact Ubuntu LLVM 18 set is therefore the sole
-admission contract; MinGW results are non-admission diagnostics.
+toolchain profile.
+
+Two Ubuntu runs then produced different missing outcomes from mixed profiles
+despite identical source and tests. Those 96.1320% line and 92.4779% branch
+results are revoked as admission evidence. Their raw artifacts remain negative
+evidence of cross-binary counter incompatibility.
 
 ## Acceptance boundary
 
@@ -184,6 +185,12 @@ the workflow platform binding, exact version `re.fullmatch`, fail-closed check
 ordering, exact 21-outcome and 60-line Ubuntu profiles, unchanged four-branch
 and 26-line semantic exclusions, recorded toolchain identity, and canonical
 96.1320%/92.4779% replay.
+
+Profile-separation verdict: **GO**. Semantic merge/report/export/show must
+consume only non-empty canonical profiles. Supplemental profiles remain
+mandatory, inventoried, and hashed but cannot enter semantic counters. Two
+independent identical Ubuntu LLVM 18 canonical-only runs are required before
+freezing the final contract.
 
 Step 9 still requires the corrected committed revision to pass the GitHub
 platform, sanitizer, and canonical coverage jobs.

@@ -229,3 +229,26 @@ correction is one exact Ubuntu LLVM 18 admission contract bound to verified
 toolchain identity. MinGW coverage remains diagnostic only. Unioning both
 sets, automatic profile inference, or accepting the corrupt non-zero counters
 is prohibited.
+
+A second Ubuntu run then falsified the remaining assumption: merging profiles
+from five separately linked executables produced a different miss set despite
+identical source and tests. Mapping that mixed profdata through one executable
+does not make the counters compatible.
+
+The independently approved correction separates evidence:
+
+- `profiles/canonical` contains only
+  `resonith_partial_graph_test` and is the sole semantic coverage input;
+- `profiles/supplemental` contains allocation-tripwire, allocation-ordinal,
+  concurrency, and fuzz-smoke executions;
+- both inventories are non-empty, retained, and hashed separately;
+- supplemental profiles remain mandatory behavior gates but never enter
+  semantic merge, report, export, or show;
+- misleading `all-linked` artifact names are prohibited;
+- one Ubuntu LLVM 18 canonical run may seed a candidate contract, but two
+  independent runs must have identical missing line/outcome sets and count
+  totals before that contract is frozen.
+
+Local single-profile evidence predicts 95.79% adjusted lines and 91.59%
+adjusted branches. Cross-binary normalization and a monolithic-runner rewrite
+are rejected.

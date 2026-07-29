@@ -205,17 +205,39 @@ jobs:
 
       - name: Execute focused coverage corpus
         shell: bash
-        env:
-          LLVM_PROFILE_FILE: build/linux-coverage/profiles/%m-%p.profraw
         run: |
           set -euo pipefail
-          mkdir -p build/linux-coverage/profiles
+          mkdir -p build/linux-coverage/profiles/canonical
+          mkdir -p build/linux-coverage/profiles/supplemental
           mkdir -p build/linux-coverage/evidence
-          build/linux-coverage/resonith_partial_graph_test
-          build/linux-coverage/resonith_partial_graph_allocation_tripwire_test
-          build/linux-coverage/resonith_partial_graph_allocation_ordinal_test
-          build/linux-coverage/resonith_partial_graph_concurrency_test 1000
-          build/linux-coverage/resonith_partial_graph_fuzz_smoke 100000
+          LLVM_PROFILE_FILE='build/linux-coverage/profiles/canonical/%m-%p.profraw' \
+            build/linux-coverage/resonith_partial_graph_test
+          LLVM_PROFILE_FILE='build/linux-coverage/profiles/supplemental/%m-%p.profraw' \
+            build/linux-coverage/resonith_partial_graph_allocation_tripwire_test
+          LLVM_PROFILE_FILE='build/linux-coverage/profiles/supplemental/%m-%p.profraw' \
+            build/linux-coverage/resonith_partial_graph_allocation_ordinal_test
+          LLVM_PROFILE_FILE='build/linux-coverage/profiles/supplemental/%m-%p.profraw' \
+            build/linux-coverage/resonith_partial_graph_concurrency_test 1000
+          LLVM_PROFILE_FILE='build/linux-coverage/profiles/supplemental/%m-%p.profraw' \
+            build/linux-coverage/resonith_partial_graph_fuzz_smoke 100000
+          find build/linux-coverage/profiles/canonical \
+            -type f -name '*.profraw' -printf '%P\t%s\n' \
+            | sort > build/linux-coverage/evidence/canonical-profile-inventory.txt
+          find build/linux-coverage/profiles/supplemental \
+            -type f -name '*.profraw' -printf '%P\t%s\n' \
+            | sort > build/linux-coverage/evidence/supplemental-profile-inventory.txt
+          test -s build/linux-coverage/evidence/canonical-profile-inventory.txt
+          test -s build/linux-coverage/evidence/supplemental-profile-inventory.txt
+          find build/linux-coverage/profiles/canonical \
+            -type f -name '*.profraw' -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > build/linux-coverage/evidence/canonical-profile-sha256.txt
+          find build/linux-coverage/profiles/supplemental \
+            -type f -name '*.profraw' -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > build/linux-coverage/evidence/supplemental-profile-sha256.txt
 
       - name: Enforce public-entry 95/90 coverage floor
         shell: bash
@@ -227,21 +249,29 @@ jobs:
           llvm_profdata="${llvm_bin}/llvm-profdata"
           test -x "$llvm_cov"
           test -x "$llvm_profdata"
-          "$llvm_profdata" merge -sparse \
-            build/linux-coverage/profiles/*.profraw \
+          mapfile -d '' canonical_profiles < <(
+            find build/linux-coverage/profiles/canonical \
+              -type f -name '*.profraw' -print0 | sort -z
+          )
+          mapfile -d '' supplemental_profiles < <(
+            find build/linux-coverage/profiles/supplemental \
+              -type f -name '*.profraw' -print0 | sort -z
+          )
+          test "${#canonical_profiles[@]}" -gt 0
+          test "${#supplemental_profiles[@]}" -gt 0
+          "$llvm_profdata" merge -sparse "${canonical_profiles[@]}" \
             -o build/linux-coverage/evidence/coverage.profdata
-          # Every focused driver statically links the same instrumented Core.
-          # The merged profile already aggregates their counters. Supplying
-          # five duplicate coverage mappings to llvm-cov can select mismatched
-          # counter layouts and manufacture false zero-count branches, so one
-          # canonical executable is the sole mapping authority.
+          # Separately linked executables can assign incompatible counter
+          # layouts to the same static Core. Only the canonical conformance
+          # executable may contribute semantic counters; supplemental profiles
+          # remain retained behavior evidence and never enter this merge.
           objects=(
             build/linux-coverage/resonith_partial_graph_test
           )
           "$llvm_cov" export "${objects[@]}" \
             -instr-profile=build/linux-coverage/evidence/coverage.profdata \
             -summary-only \
-            > build/linux-coverage/evidence/coverage-summary-all-linked.json
+            > build/linux-coverage/evidence/coverage-summary-canonical.json
           "$llvm_cov" export "${objects[@]}" \
             -instr-profile=build/linux-coverage/evidence/coverage.profdata \
             native/src/partial_graph.cpp \

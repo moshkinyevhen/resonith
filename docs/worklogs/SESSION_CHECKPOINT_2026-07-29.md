@@ -123,5 +123,12 @@ explicit version binding. Canonical artifact replay and negative
 hash/stale-entry/toolchain gates pass; independent corrected-design audit is
 GO with zero blockers. A replacement CI run is required.
 
+The replacement run also failed safely: its mixed cross-binary profdata had a
+different miss set with identical source and tests. Independent audit returned
+GO for canonical/supplemental separation. Only the conformance executable may
+feed semantic counters; four supplemental executables remain mandatory and
+are inventoried and hashed separately. Two independent identical Ubuntu LLVM
+18 canonical runs are required before freezing the replacement contract.
+
 No codec algorithm generation was changed in this session segment, so the
 R-198 full music/Opus corpus gate was not triggered.
