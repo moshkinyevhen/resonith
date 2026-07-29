@@ -252,3 +252,42 @@ The independently approved correction separates evidence:
 Local single-profile evidence predicts 95.79% adjusted lines and 91.59%
 adjusted branches. Cross-binary normalization and a monolithic-runner rewrite
 are rejected.
+
+## First canonical-only artifact red-team
+
+GitHub run `30452280336`, attempt 1, produced the first honest
+canonical-only Ubuntu LLVM 18.1.3 artifact. Its exact target-function identity
+hash is:
+
+```text
+9EC256698895A2219B4DFFE01676E9CCC9B7E9A2D9DAC2483ED8B4DDC1368C55
+```
+
+It exposed three reachable conformance cases that the earlier mixed profile
+had concealed:
+
+- the R-190 environmental-OOM translation at lines 1352--1354;
+- invalid-observation rejection after a valid manifest at branch
+  1285:16--1292:14, true;
+- entry-only insufficient capacity at branch 7829:16--7829:67, true.
+
+Alternatives considered before changing tests:
+
+- add them as tracked gaps: rejected because all three are cheap, reachable
+  public-ABI behavior;
+- mark them unreachable: rejected by source inspection and independent audit;
+- merge supplemental profiles again: rejected because separately linked
+  counters are not a valid semantic profile;
+- cover them in the canonical conformance executable: selected.
+
+The falsifiable prediction is that three focused transactional cases cover
+exactly these locations without changing production source, syntax, output,
+or the four audited unreachable exclusions. Each test must verify status,
+caller-buffer immutability, and the applicable count/report fields. A failed
+transactional assertion, a new sanitizer finding, or a new/stale miss outside
+the predicted delta kills the change.
+
+The first artifact cannot seed the final contract. After the canonical tests
+change, two independent Ubuntu LLVM 18.1.3 canonical-only runs must reproduce
+identical target-function totals and exact missing line/outcome sets before
+any contract update.

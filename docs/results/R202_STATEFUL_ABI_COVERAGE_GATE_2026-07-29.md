@@ -122,6 +122,29 @@ The first Ubuntu canonical-only artifact may seed a replacement exact
 line/outcome contract. A second independent run must reproduce the complete
 set and count totals before the contract can be frozen.
 
+The first canonical-only GitHub artifact, run `30452280336` attempt 1,
+correctly failed the older mixed-profile contract. Its exact candidate
+identity was
+`9EC256698895A2219B4DFFE01676E9CCC9B7E9A2D9DAC2483ED8B4DDC1368C55`.
+It exposed three reachable canonical omissions: R-190 environmental OOM,
+invalid observations after a valid manifest, and entry-only insufficient v3
+capacity. Independent review returned NO-GO for recording any of them as a
+tracked or unreachable gap.
+
+The canonical conformance test now exercises all three and verifies return
+status, output-count/report state, and complete caller-payload immutability.
+The unchanged production source builds with warnings-as-errors and all five
+focused partial-graph gates pass:
+
+| Toolchain | Result | Focused time |
+|---|---:|---:|
+| Clang 22 / C++23 | 5 / 5 | 10.28 s |
+| GCC 16 / C++23 | 5 / 5 | 11.89 s |
+
+These local results do not freeze a coverage profile. Two independent
+post-test-change Ubuntu LLVM 18.1.3 canonical-only artifacts with identical
+target-function totals and exact missing line/outcome sets remain mandatory.
+
 ## Rejected MinGW admission evidence
 
 LLVM-MinGW 22 remains useful for build and diagnostic coverage, but it is not

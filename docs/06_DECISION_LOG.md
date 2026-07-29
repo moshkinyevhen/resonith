@@ -7962,6 +7962,14 @@ i32 end_gain_q15
     as mandatory supplemental evidence but cannot enter semantic counters;
   - the first canonical Ubuntu artifact seeds only a candidate contract; two
     independent identical canonical runs are required before freezing it;
+  - the first canonical-only artifact exposed three reachable cases hidden by
+    the former mixed profile: R-190 environmental OOM, invalid observations
+    after a valid manifest, and entry-only v3 insufficient capacity;
+  - independent review returned NO-GO for allowlisting them; focused
+    transactional tests now cover all three, and Clang 22/GCC 16 each pass
+    all five partial-graph gates;
+  - the pre-test artifact is invalid as a contract seed; two independent
+    post-test-change Ubuntu LLVM 18.1.3 canonical runs remain mandatory;
   - raw coverage is 93.3702% lines and 90.8696% branches;
   - proof-adjusted coverage is 96.1320% lines and 92.4779% branches;
   - independent post-implementation verdict is **GO with zero local design

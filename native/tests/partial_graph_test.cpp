@@ -160,6 +160,8 @@ int main() {
   std::memset(edge_canary.data(), 0xa5,
               edge_canary.size() * sizeof(resonith_partial_edge));
   const auto edge_canary_before = edge_canary;
+  const std::size_t count_canary =
+      std::numeric_limits<std::size_t>::max() - 17U;
   std::size_t rejected_edge_count = 0U;
   if (resonith_partial_graph_edges_cpu(
           &resolution, 1U, observations.data(), observations.size(), &manifest,
@@ -170,11 +172,22 @@ int main() {
                   edge_canary.size() * sizeof(resonith_partial_edge)) != 0) {
     fail("R-190 capacity failure partially wrote semantic output");
   }
+  auto malformed_observations = observations;
+  malformed_observations[0].struct_size = 0U;
+  rejected_edge_count = count_canary;
+  if (resonith_partial_graph_edges_cpu(
+          &resolution, 1U, malformed_observations.data(),
+          malformed_observations.size(), &manifest, edge_canary.data(),
+          edge_canary.size(),
+          &rejected_edge_count) != RESONITH_STATUS_INVALID_ARGUMENT ||
+      rejected_edge_count != count_canary ||
+      std::memcmp(edge_canary.data(), edge_canary_before.data(),
+                  edge_canary.size() * sizeof(resonith_partial_edge)) != 0) {
+    fail("R-202 invalid observation was not rejected transactionally");
+  }
   resonith_partial_graph_manifest oversized_manifest = manifest;
   oversized_manifest.maximum_edge_records =
       std::numeric_limits<std::uint64_t>::max();
-  const std::size_t count_canary =
-      std::numeric_limits<std::size_t>::max() - 17U;
   rejected_edge_count = count_canary;
   if (resonith_partial_graph_edges_cpu(
           &resolution, 1U, observations.data(), observations.size(),
@@ -316,6 +329,10 @@ int main() {
   fail_allocation_resource failed_upstream;
   resonith::internal::partial_graph_set_test_upstream_resource(
       &failed_upstream);
+  rejected_edge_count = count_canary;
+  const resonith_status edge_oom_status = resonith_partial_graph_edges_cpu(
+      &resolution, 1U, observations.data(), observations.size(), &manifest,
+      edge_canary.data(), edge_canary.size(), &rejected_edge_count);
   resonith_partial_path_report_v3 oom_v3{};
   oom_v3.struct_size = sizeof(oom_v3);
   oom_v3.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
@@ -324,7 +341,11 @@ int main() {
       first.size(), &manifest, &path_manifest_v3, nullptr, 0U, nullptr, 0U,
       &oom_v3);
   resonith::internal::partial_graph_set_test_upstream_resource(nullptr);
-  if (oom_status != RESONITH_STATUS_OUT_OF_MEMORY ||
+  if (edge_oom_status != RESONITH_STATUS_OUT_OF_MEMORY ||
+      rejected_edge_count != count_canary ||
+      std::memcmp(edge_canary.data(), edge_canary_before.data(),
+                  edge_canary.size() * sizeof(resonith_partial_edge)) != 0 ||
+      oom_status != RESONITH_STATUS_OUT_OF_MEMORY ||
       oom_v3.termination !=
           RESONITH_PARTIAL_PATH_TERMINATION_ENVIRONMENTAL_OOM ||
       oom_v3.reserved_host_bytes == 0U || oom_v3.committed_host_bytes != 0U ||
@@ -508,6 +529,27 @@ int main() {
                   entries_v3.size() * sizeof(resonith_partial_path_entry_v3)) !=
           0) {
     fail("R-197 v3 capacity failure published partial payload");
+  }
+  resonith_partial_path_report_v3 small_entries_v3{};
+  small_entries_v3.struct_size = sizeof(small_entries_v3);
+  small_entries_v3.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+  if (resonith_partial_graph_paths_cpu_v3(
+          &resolution, 1U, observations.data(), observations.size(),
+          first.data(), first.size(), &manifest, &path_manifest_v3,
+          paths_v3.data(), paths_v3.size(), entries_v3.data(), 1U,
+          &small_entries_v3) != RESONITH_STATUS_OUTPUT_TOO_SMALL ||
+      small_entries_v3.termination !=
+          RESONITH_PARTIAL_PATH_TERMINATION_OUTPUT_TOO_SMALL ||
+      small_entries_v3.required_path_count != paths_v3.size() ||
+      small_entries_v3.required_entry_count != entries_v3.size() ||
+      small_entries_v3.written_path_count != 0U ||
+      small_entries_v3.written_entry_count != 0U ||
+      std::memcmp(paths_v3.data(), paths_v3_before.data(),
+                  paths_v3.size() * sizeof(resonith_partial_path_v3)) != 0 ||
+      std::memcmp(entries_v3.data(), entries_v3_before.data(),
+                  entries_v3.size() *
+                      sizeof(resonith_partial_path_entry_v3)) != 0) {
+    fail("R-202 entry-only capacity failure was not transactional");
   }
 
   auto changed_observations = observations;
