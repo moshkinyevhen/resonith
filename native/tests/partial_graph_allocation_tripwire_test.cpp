@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <memory_resource>
 #include <new>
 
 #if defined(_WIN32)
@@ -72,6 +73,34 @@ void release_aligned(void* pointer) noexcept {
 void set_upstream_permit(bool permitted) noexcept {
     upstream_permitted = permitted;
 }
+
+class tripwire_upstream_resource final : public std::pmr::memory_resource {
+private:
+    void* do_allocate(std::size_t bytes, std::size_t alignment) override {
+        if (alignment <= alignof(std::max_align_t)) {
+            return ::operator new(bytes);
+        }
+        return ::operator new(bytes, std::align_val_t{alignment});
+    }
+
+    void do_deallocate(
+        void* pointer,
+        std::size_t,
+        std::size_t alignment
+    ) override {
+        if (alignment <= alignof(std::max_align_t)) {
+            ::operator delete(pointer);
+            return;
+        }
+        ::operator delete(pointer, std::align_val_t{alignment});
+    }
+
+    bool do_is_equal(
+        const std::pmr::memory_resource& other
+    ) const noexcept override {
+        return this == &other;
+    }
+};
 
 [[noreturn]] void fail(const char* message) {
     tripwire_armed = false;
@@ -244,6 +273,9 @@ namespace resonith::internal {
 void partial_graph_set_test_allocation_permit_callback(
     void (*callback)(bool) noexcept
 ) noexcept;
+void partial_graph_set_test_upstream_resource(
+    std::pmr::memory_resource* resource
+) noexcept;
 }
 
 int main() {
@@ -380,6 +412,10 @@ int main() {
     resonith::internal::partial_graph_set_test_allocation_permit_callback(
         &set_upstream_permit
     );
+    tripwire_upstream_resource tripwire_upstream;
+    resonith::internal::partial_graph_set_test_upstream_resource(
+        &tripwire_upstream
+    );
     tripwire_armed = true;
     for (std::uint32_t pass = 0U; pass < 2U; ++pass) {
         const std::uint64_t before_r190_preflight = permitted_allocations;
@@ -493,6 +529,7 @@ int main() {
         }
     }
     tripwire_armed = false;
+    resonith::internal::partial_graph_set_test_upstream_resource(nullptr);
     resonith::internal::partial_graph_set_test_allocation_permit_callback(
         nullptr
     );
