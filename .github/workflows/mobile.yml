@@ -215,7 +215,7 @@ jobs:
           build/linux-coverage/resonith_partial_graph_allocation_tripwire_test
           build/linux-coverage/resonith_partial_graph_allocation_ordinal_test
           build/linux-coverage/resonith_partial_graph_concurrency_test 1000
-          build/linux-coverage/resonith_partial_graph_fuzz_smoke
+          build/linux-coverage/resonith_partial_graph_fuzz_smoke 100000
 
       - name: Enforce public-entry 95/90 coverage floor
         shell: bash
@@ -244,12 +244,17 @@ jobs:
           "$llvm_cov" report "${objects[@]}" \
             -instr-profile=build/linux-coverage/evidence/coverage.profdata \
             -show-functions \
-            -name-regex='^resonith_partial_graph_(edges_cpu|paths_cpu_v3)$' \
             native/src/partial_graph.cpp \
             > build/linux-coverage/evidence/coverage-report.txt
+          "$llvm_cov" show "${objects[@]}" \
+            -instr-profile=build/linux-coverage/evidence/coverage.profdata \
+            -name-regex='^resonith_partial_graph_(edges_cpu|paths_cpu_v3)$' \
+            -show-line-counts-or-regions \
+            -show-branches=count \
+            native/src/partial_graph.cpp \
+            > build/linux-coverage/evidence/coverage-annotated.txt
           python3 - <<'PY'
           import json
-          import re
           from pathlib import Path
 
           report_path = Path(
@@ -260,34 +265,44 @@ jobs:
               "resonith_partial_graph_edges_cpu",
               "resonith_partial_graph_paths_cpu_v3",
           )
-          for function in required:
-              if function not in report:
-                  raise SystemExit(f"coverage function missing: {function}")
-          total_rows = [
-              line for line in report.splitlines()
-              if line.lstrip().startswith("TOTAL")
-          ]
-          if len(total_rows) != 1:
+          rows = {}
+          for line in report.splitlines():
+              fields = line.split()
+              if fields and fields[0] in required:
+                  if len(fields) != 10:
+                      raise SystemExit(
+                          "unexpected llvm-cov function row: " + line
+                      )
+                  rows[fields[0]] = {
+                      "regions": int(fields[1]),
+                      "missed_regions": int(fields[2]),
+                      "lines": int(fields[4]),
+                      "missed_lines": int(fields[5]),
+                      "branches": int(fields[7]),
+                      "missed_branches": int(fields[8]),
+                  }
+          missing = [name for name in required if name not in rows]
+          if missing:
               raise SystemExit(
-                  f"expected one filtered TOTAL row, got {len(total_rows)}"
+                  "coverage functions missing: " + ", ".join(missing)
               )
-          percentages = [
-              float(value)
-              for value in re.findall(
-                  r"([0-9]+(?:\.[0-9]+)?)%",
-                  total_rows[0],
-              )
-          ]
-          if len(percentages) < 3:
-              raise SystemExit(
-                  "coverage TOTAL row has fewer than three percentages: "
-                  + total_rows[0]
-              )
-          lines = percentages[-2]
-          branches = percentages[-1]
+          line_count = sum(row["lines"] for row in rows.values())
+          missed_lines = sum(
+              row["missed_lines"] for row in rows.values()
+          )
+          branch_count = sum(
+              row["branches"] for row in rows.values()
+          )
+          missed_branches = sum(
+              row["missed_branches"] for row in rows.values()
+          )
+          lines = 100.0 * (line_count - missed_lines) / line_count
+          branches = (
+              100.0 * (branch_count - missed_branches) / branch_count
+          )
           gate = {
               "schema": "resonith-r202-public-entry-coverage-1",
-              "functions": list(required),
+              "functions": rows,
               "line_percent": lines,
               "line_floor": 95.0,
               "branch_percent": branches,
