@@ -988,23 +988,27 @@ int main() {
     constexpr std::uintptr_t synthetic_v3_entry_address =
         UINT64_C(0x0000550000000000);
     enum class v3_count_cap_case {
-      resolutions,
-      observations,
-      edges,
-      paths,
-      entries,
+      resolution_count,
+      observation_count,
+      edge_count,
+      path_capacity,
+      entry_capacity,
     };
     constexpr std::array v3_count_cap_cases{
-        v3_count_cap_case::resolutions, v3_count_cap_case::observations,
-        v3_count_cap_case::edges,       v3_count_cap_case::paths,
-        v3_count_cap_case::entries,
+        v3_count_cap_case::resolution_count,
+        v3_count_cap_case::observation_count,
+        v3_count_cap_case::edge_count,
+        v3_count_cap_case::path_capacity,
+        v3_count_cap_case::entry_capacity,
     };
     for (const v3_count_cap_case row : v3_count_cap_cases) {
-      const bool cap_resolutions = row == v3_count_cap_case::resolutions;
-      const bool cap_observations = row == v3_count_cap_case::observations;
-      const bool cap_edges = row == v3_count_cap_case::edges;
-      const bool cap_paths = row == v3_count_cap_case::paths;
-      const bool cap_entries = row == v3_count_cap_case::entries;
+      const bool cap_resolutions =
+          row == v3_count_cap_case::resolution_count;
+      const bool cap_observations =
+          row == v3_count_cap_case::observation_count;
+      const bool cap_edges = row == v3_count_cap_case::edge_count;
+      const bool cap_paths = row == v3_count_cap_case::path_capacity;
+      const bool cap_entries = row == v3_count_cap_case::entry_capacity;
       resonith_partial_path_report_v3 row_report{};
       row_report.struct_size = sizeof(row_report);
       row_report.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
