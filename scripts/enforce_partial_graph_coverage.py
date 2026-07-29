@@ -209,12 +209,24 @@ def main() -> None:
     parser.add_argument("--export", dest="export_path", type=Path, required=True)
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--contract", type=Path, required=True)
+    parser.add_argument("--llvm-cov-version", required=True)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
 
     contract = read_json(arguments.contract)
     if contract.get("schema") != SCHEMA:
         fail(f"unsupported coverage contract schema: {contract.get('schema')}")
+    toolchain = contract.get("admission_toolchain", {})
+    toolchain_pattern = toolchain.get("llvm_cov_version_pattern", "")
+    if (
+        not toolchain.get("id")
+        or not toolchain_pattern
+        or re.fullmatch(toolchain_pattern, arguments.llvm_cov_version) is None
+    ):
+        fail(
+            "coverage admission toolchain mismatch: "
+            f"{arguments.llvm_cov_version!r}"
+        )
     required = tuple(contract.get("functions", []))
     if not required or len(set(required)) != len(required):
         fail("coverage contract requires unique target functions")
@@ -296,6 +308,10 @@ def main() -> None:
 
     result = {
         "schema": SCHEMA,
+        "admission_toolchain": {
+            "id": toolchain["id"],
+            "llvm_cov_version": arguments.llvm_cov_version,
+        },
         "source_sha256": actual_source_hash,
         "functions": rows,
         "raw": {

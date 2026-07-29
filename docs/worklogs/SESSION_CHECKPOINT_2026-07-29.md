@@ -104,8 +104,8 @@ commit/push only after the independent Step-9 post-audit passes.
 
 - direct overflow/exact-limit/over-limit tests of the pure staging-budget
   helper: passed;
-- refreshed isolated LLVM coverage: 96.1320% adjusted lines and 92.4779%
-  adjusted branches, passed;
+- canonical Ubuntu LLVM 18 coverage artifact replay: 96.1320% adjusted lines
+  and 92.4779% adjusted branches, passed;
 - exact semantic branch/line contract with source/helper/proof hashes and
   stale/new-entry rejection: passed;
 - Clang and GCC warnings-as-errors focused gates: 5/5 each, passed;
@@ -113,6 +113,15 @@ commit/push only after the independent Step-9 post-audit passes.
 - independent local-design audit: GO with zero blockers; final same-revision
   platform evidence remains pending;
 - English result record and decision-log update.
+
+The first pushed coverage job correctly failed because its contract was
+derived from corrupt LLVM-MinGW 22 counters. The downloaded Ubuntu LLVM 18
+artifact exposed false positive, false negative, and `2^63 - 1` branch
+counters in the MinGW export. Independent audit rejected dual-profile
+inference. The corrected sole admission contract is Ubuntu LLVM 18 with an
+explicit version binding. Canonical artifact replay and negative
+hash/stale-entry/toolchain gates pass; independent corrected-design audit is
+GO with zero blockers. A replacement CI run is required.
 
 No codec algorithm generation was changed in this session segment, so the
 R-198 full music/Opus corpus gate was not triggered.

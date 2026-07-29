@@ -264,6 +264,7 @@ jobs:
             --export build/linux-coverage/evidence/coverage-export.json \
             --source native/src/partial_graph.cpp \
             --contract native/tests/partial_graph_coverage_contract.json \
+            --llvm-cov-version "$("$llvm_cov" --version | head -n 1)" \
             --output build/linux-coverage/evidence/coverage-gate.json
 
       - name: Record coverage evidence

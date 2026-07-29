@@ -213,3 +213,19 @@ The independent verdict is:
 
 The failed large fixture must be removed. No report may claim that a public
 R-191 input reached the wrapper guard.
+
+## Cross-toolchain coverage correction
+
+The first local strict contract used LLVM-MinGW 22 branch counters. The
+canonical GitHub Ubuntu LLVM 18 artifact falsified their reliability:
+
+- two explicitly exercised edge outcomes were falsely reported as zero;
+- one invariant-impossible snapshot failure was falsely reported as covered;
+- another invariant-impossible outcome had count `2^63 - 1`.
+
+The independent auditor returned **NO-GO** for treating MinGW as an alternate
+admission profile or selecting a profile from the observed miss set. The safe
+correction is one exact Ubuntu LLVM 18 admission contract bound to verified
+toolchain identity. MinGW coverage remains diagnostic only. Unioning both
+sets, automatic profile inference, or accepting the corrupt non-zero counters
+is prohibited.

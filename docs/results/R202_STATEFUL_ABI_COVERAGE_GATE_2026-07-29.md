@@ -1,4 +1,4 @@
-# R-202 Stateful ABI and Semantic Coverage Local Gate
+# R-202 Stateful ABI and Semantic Coverage Gate
 
 Date: 2026-07-29
 
@@ -6,7 +6,7 @@ Scope: Step-9 R-190/R-191 ABI, allocation, fuzz, and coverage infrastructure
 
 Codec algorithm or bitstream change: **no**
 
-Status: **local gate passed; GitHub platform gate pending**
+Status: **canonical Ubuntu LLVM 18 replay passed; replacement CI run pending**
 
 ## Corrected staging-boundary evidence
 
@@ -51,13 +51,13 @@ native/tests/partial_graph_test.cpp
 196FD48B0BE99190BA5FE4CED0A3780EA8D5A6247DB30F2554FEA0334B376AAD
 
 native/tests/partial_graph_coverage_contract.json
-47EE7993E063F22A9CF18849EFA7A94538C12842FC12929BC349B8131EF0DDF6
+D86F698B1C1052B84BD8E74E220C88C07D86F224D386B7270FD31A8BB10F315B
 
 scripts/enforce_partial_graph_coverage.py
-013A87096C18CBEA4269E7BF098EA91FDA2E68D10C4FF29C263C1A9E9D3903D9
+FC91579F5D5E35C6304F12F796D16CC3D334A600769E67F7CA71EA2DCC30E146
 
 .github/workflows/mobile.yml
-3F81851CA903FE6310B5280D2AB637399915869C65D020D4BAD871A7D8A37667
+B52A1569C48C27B0DD61C61CA7EDE3067E94C08B7AB4D3CC04B31C04C4FF04D6
 ```
 
 ## Native focused gates
@@ -99,11 +99,13 @@ The contract freezes:
 - every uncovered true or false branch outcome;
 - a disposition and reason for every gap.
 
-Any new miss, stale miss, source drift, helper drift, or proof-range drift
-fails the gate before percentages are evaluated. Negative tests confirmed
-rejection of a changed source hash and a stale uncovered-line entry.
+Admission is bound to Ubuntu 24.04 and the exact
+`Ubuntu LLVM version 18.1.3` identity. Any toolchain mismatch, new miss, stale
+miss, source drift, helper drift, or proof-range drift fails before
+percentages are evaluated. Negative tests confirmed rejection of a changed
+source hash, a stale uncovered-line entry, and a non-admission toolchain.
 
-Measured local coverage:
+Canonical Ubuntu LLVM 18 artifact replay:
 
 | Metric | Raw | Proof-adjusted | Floor |
 |---|---:|---:|---:|
@@ -117,11 +119,29 @@ locations remain in the denominator as explicit tracked gaps.
 Generated gate:
 
 ```text
-build/local-coverage/evidence-r202-helper/coverage-gate.json
-202D4C7ECDD2E5BE86103FB6F29421E383776DB7E3A9AF926CD9CF19D71F4E34
+build/github-r202-coverage-30450722814/coverage-gate-corrected.json
+A25BEDFE50174D780E51AFDF43B8D86996811D7C89A06413046AACA7557F8BDD
 ```
 
 `actionlint`, Python syntax validation, and `git diff --check` pass.
+
+## Rejected MinGW admission evidence
+
+LLVM-MinGW 22 remains useful for build and diagnostic coverage, but it is not
+an admission authority. Its export reported both false negatives and a
+corrupt counter:
+
+```text
+edges 1224:9 true = 0 despite an explicit exercised test
+edges 1234:9 true = 0 despite an explicit exercised test
+paths 7465:12 true = 1 for an invariant-impossible snapshot failure
+paths 7466:12 true = 9,223,372,036,854,775,807
+```
+
+The independent auditor rejected both automatic dual-profile inference and a
+union of outcomes. A regression must not be able to impersonate another
+toolchain profile. The exact Ubuntu LLVM 18 set is therefore the sole
+admission contract; MinGW results are non-admission diagnostics.
 
 ## Acceptance boundary
 
@@ -136,7 +156,8 @@ the final R-191 conformance and admission audit.
 
 ## Independent post-implementation audit
 
-Verdict: **GO — zero blocking defects for the local R-202 design**.
+Initial verdict: **GO — zero blocking defects for the semantic exclusions and
+strict missing-set design**.
 
 The auditor independently verified:
 
@@ -154,5 +175,15 @@ explicitly notes that the misaligned-pointer rejection is caller-reachable
 and must not be excluded, while the R-190 managed-bound catch remains tracked
 until a valid witness or complete upper-bound proof exists.
 
-This GO applies to the local design and evidence. Step 9 still requires the
-same committed revision to pass the GitHub platform and sanitizer matrix.
+Cross-toolchain verdict: **NO-GO for LLVM-MinGW 22 admission and automatic
+dual-profile selection**. The sole-acceptance Ubuntu LLVM 18 contract and
+explicit version binding implement the auditor's required safe correction.
+
+Corrected-design verdict: **GO — zero blocking defects**. The auditor verified
+the workflow platform binding, exact version `re.fullmatch`, fail-closed check
+ordering, exact 21-outcome and 60-line Ubuntu profiles, unchanged four-branch
+and 26-line semantic exclusions, recorded toolchain identity, and canonical
+96.1320%/92.4779% replay.
+
+Step 9 still requires the corrected committed revision to pass the GitHub
+platform, sanitizer, and canonical coverage jobs.

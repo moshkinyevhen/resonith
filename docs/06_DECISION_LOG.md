@@ -7950,13 +7950,21 @@ i32 end_gain_q15
   - Clang 22 and GCC 16 each pass all five focused partial-graph tests;
   - strict source/helper/proof hashes and exact missing-set equality reject
     stale, new, or silently covered contract entries;
+  - LLVM-MinGW 22 is rejected as an admission authority after reporting both
+    false negatives and an impossible `2^63 - 1` branch counter;
+  - the sole admission contract is bound to Ubuntu 24.04 and exact LLVM
+    18.1.3 toolchain identity; automatic profile inference and unioned outcome
+    sets are prohibited;
   - raw coverage is 93.3702% lines and 90.8696% branches;
   - proof-adjusted coverage is 96.1320% lines and 92.4779% branches;
   - independent post-implementation verdict is **GO with zero local design
     blockers**;
+  - independent cross-toolchain audit rejected MinGW admission, then returned
+    **GO with zero blockers** for the sole Ubuntu LLVM 18 contract and explicit
+    version binding;
   - GitHub platform and sanitizer results remain required before Step 9 closes.
-- Local evidence:
-  [R-202 Stateful ABI and Semantic Coverage Local Gate](results/R202_STATEFUL_ABI_LOCAL_GATE_2026-07-29.md).
+- Evidence:
+  [R-202 Stateful ABI and Semantic Coverage Gate](results/R202_STATEFUL_ABI_COVERAGE_GATE_2026-07-29.md).
 - Evidence boundary:
   this is test and coverage infrastructure only. It does not trigger the R-198
   music/Opus gate and does not admit R-191.
