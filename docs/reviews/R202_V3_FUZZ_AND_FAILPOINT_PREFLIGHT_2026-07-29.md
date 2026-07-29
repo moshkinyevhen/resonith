@@ -90,9 +90,11 @@ Capacity and deterministic resource boundaries are tested separately at
 
 ## Platform evidence
 
-- Linux Clang: ASan+UBSan+LSan CTest; structured fuzz for both 2,000,000 inputs
-  and 15 minutes; stateful/fault fuzz for both 1,000,000 sequences and 10
-  minutes; exhaustive ordinal campaign.
+- Linux Clang: ASan+UBSan+LSan CTest; four fixed structured-fuzz seeds with
+  exactly 500,000 inputs and at least 15 minutes per seed; direct eleven-branch
+  reachability evidence; and an exhaustive 952-point allocation-ordinal
+  campaign with 2,864 calls, deterministic trace identity, transactional
+  retries, and zero terminal allocations.
 - Linux Clang TSan: 100,000 independent concurrent-call sequences with no
   shared caller buffers.
 - Windows x64 MSVC: warnings-as-errors, ASan CTest, v3 corpus, and exhaustive
@@ -291,3 +293,68 @@ The first artifact cannot seed the final contract. After the canonical tests
 change, two independent Ubuntu LLVM 18.1.3 canonical-only runs must reproduce
 identical target-function totals and exact missing line/outcome sets before
 any contract update.
+
+## Quantitative sanitizer-fuzz timeout audit
+
+GitHub run `30454668805` proved that the current two-phase fuzz schedule cannot
+complete inside its declared 45-minute job:
+
+- all sanitized CTests passed in 24.72 seconds;
+- four count shards completed exactly 500,000 units each, for 2,000,000 total;
+- those shards took 1,938--1,971 seconds each at 253--257 units per second;
+- peak per-process RSS was 469--481 MiB;
+- all four subsequent 900-second shards were still running at about
+  124,000--128,000 units when the job timeout canceled them;
+- the retained artifact has zero sanitizer error lines, zero crash artifacts,
+  and a valid 10-file SHA-256 inventory.
+
+The count campaign itself already ran each deterministic seed for more than
+32 minutes, so a second independent 15-minute campaign over the same harness,
+maximum input length, sanitizer set, and operation is duplicative rather than
+an additional duration guarantee.
+
+Alternatives under independent review:
+
+- raise the job timeout and retain both campaigns;
+- reduce the fixed-count or duration floors;
+- split count and duration into separately built jobs;
+- run count and duration processes concurrently on the same runner;
+- use one unified four-seed campaign that retains all 2,000,000 executions,
+  proves at least 900 seconds per shard from the final logs, and separately
+  records the deterministic eleven-index reachability gate.
+
+The independent auditor returned **GO** for one unified campaign because it
+preserves the stronger observed count and duration floors while removing only
+duplicate work. It keeps four fixed seeds, exactly 500,000 units per seed,
+`max_len=96`, ASan/UBSan/LSan, a five-second per-input timeout, exact
+executed-unit checks, and the 45-minute outer kill boundary. The workflow must
+parse exactly four completed duration rows, require each duration to be at
+least 900 seconds, retain every log and crash directory, and capture a
+machine-readable reachability record showing all eleven semantic outcomes at
+least 100 times.
+
+The old requirement for a separate `1,000,000 sequences plus 10 minutes per
+stateful fault target` is explicitly **revoked and superseded**. The present
+libFuzzer executable does not implement a distinct stateful/fault grammar, so
+repeating random inputs would not prove that claim. Fault behavior is instead
+covered exactly by all 952 reachable allocation ordinals across R-190
+preflight/fill and v3 preflight/fill. The campaign makes 2,864 calls, repeats
+the failed trace, retries every ordinal without injection, requires identical
+trace identity, proves caller-buffer transactionality, and terminates with
+zero live allocations. The separate TSan job retains eight threads and 100,000
+independent preflight/fill sequences.
+
+The removed four-seed 900-second phase used the same executable, grammar,
+maximum input length, sanitizer set, and empty corpus as the count phase. It
+closed no independent property after every count seed had already run for
+1,938--1,971 seconds. Removing it saves approximately 15 minutes of wall time,
+60 CPU-minutes, and up to 1.9 GiB of aggregate concurrent RSS without reducing
+the frozen count or duration floors.
+
+One final complete GitHub run is sufficient. The candidate is killed if the
+sanitizer job exceeds 40 minutes, any seed is below 500,000 units or 900
+seconds, a sanitizer/crash artifact appears, exact reachability or
+allocation-ordinal JSON changes, the TSan sequence/hash gate fails, or
+source/toolchain/hash/platform evidence does not pass on one revision. No
+codec algorithm, syntax, encoded output, decoded PCM, or RDO behavior is in
+scope, so the R-198 music/Opus gate is not triggered.

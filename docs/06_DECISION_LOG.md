@@ -7980,8 +7980,24 @@ i32 end_gain_q15
   - independent audit returned GO for canonical/supplemental separation with
     predicted canonical-only adjusted coverage of 95.79% lines and 91.59%
     branches;
-  - GitHub platform, reproducible canonical coverage, and sanitizer results
-    remain required before Step 9 closes.
+  - two independent post-fix Ubuntu LLVM 18.1.3 canonical artifacts now have
+    identical target totals, exact missing sets, profile identity, raw
+    93.3702%/90.8696% and adjusted 96.1320%/92.4779% line/branch coverage;
+  - GitHub run 30454668805 proved all sanitized CTests and all four
+    500,000-input fuzz shards, but falsified the redundant two-phase schedule:
+    the count shards already ran 1,938--1,971 seconds each before four
+    equivalent 900-second shards caused the 45-minute timeout;
+  - independent audit returned GO to retain one four-seed 2,000,000-input
+    campaign, require at least 900 seconds per seed, capture exact eleven-branch
+    reachability, retain the exhaustive 952-ordinal/2,864-call failpoint gate
+    and the eight-thread/100,000-sequence TSan gate, and remove only the
+    duplicate time phase;
+  - the former `1,000,000 sequences plus 10 minutes per stateful fault target`
+    requirement is revoked: no distinct stateful/fault mutation grammar
+    existed. Exhaustive ordinal injection and deterministic retry prove the
+    fault space directly instead of relabeling duplicate random fuzz;
+  - one final complete GitHub run must pass all platform jobs and finish the
+    sanitizer job within 40 minutes before Step 9 closes.
 - Evidence:
   [R-202 Stateful ABI and Semantic Coverage Gate](results/R202_STATEFUL_ABI_COVERAGE_GATE_2026-07-29.md).
 - Evidence boundary:

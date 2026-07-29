@@ -63,6 +63,75 @@ jobs:
             --no-tests=error \
             2>&1 | tee build/linux-sanitized/evidence/ctest.log
 
+      - name: Capture exact ABI-v3 stateful and failpoint evidence
+        shell: bash
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: |
+          set -euo pipefail
+          evidence="$PWD/build/linux-sanitized/evidence"
+          mkdir -p "$evidence"
+          build/linux-sanitized/resonith_partial_graph_fuzz_smoke \
+            2>&1 | tee "$evidence/reachability.json"
+          build/linux-sanitized/resonith_partial_graph_allocation_ordinal_test \
+            2>&1 | tee "$evidence/allocation-ordinal.json"
+          python3 - "$evidence" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          evidence = pathlib.Path(sys.argv[1])
+          reachability = json.loads(
+              (evidence / "reachability.json").read_text(encoding="utf-8")
+          )
+          expected_reachability = {
+              "schema": "resonith-r202-v3-reachability-1",
+              "branches": 11,
+              "minimum_hits": 100,
+              "v2_mutation_fuzz": False,
+              "stress_inputs": 0,
+              "device_bytes": 0,
+          }
+          if reachability != expected_reachability:
+              raise SystemExit(
+                  "unexpected ABI-v3 reachability evidence: "
+                  f"{reachability!r}"
+              )
+
+          ordinal = json.loads(
+              (evidence / "allocation-ordinal.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          expected_ordinal = {
+              "schema": "resonith-r202-allocation-ordinal-1",
+              "r190_preflight": 10,
+              "r190_fill": 16,
+              "v3_preflight": 313,
+              "v3_fill": 613,
+              "campaign_calls": 2864,
+              "trace_hash": "56204c224ae7c4c3",
+              "terminal_live_allocations": 0,
+              "device_bytes": 0,
+          }
+          if ordinal != expected_ordinal:
+              raise SystemExit(
+                  "unexpected allocation-ordinal evidence: "
+                  f"{ordinal!r}"
+              )
+
+          summary = {
+              "schema": "resonith-r202-sanitized-stateful-gate-1",
+              "reachability": reachability,
+              "allocation_ordinal": ordinal,
+          }
+          (evidence / "stateful-gate.json").write_text(
+              json.dumps(summary, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
       - name: Run quantitative ABI-v3 partial-graph fuzz floors
         shell: bash
         env:
@@ -72,7 +141,7 @@ jobs:
           set -euo pipefail
           executable="$PWD/build/linux-sanitized/resonith_partial_graph_fuzz"
           evidence="$PWD/build/linux-sanitized/evidence"
-          mkdir -p "$evidence/count" "$evidence/time"
+          mkdir -p "$evidence/count"
           pids=()
           for shard in 0 1 2 3; do
             crashes="$evidence/count/crashes-${shard}"
@@ -91,36 +160,45 @@ jobs:
           for pid in "${pids[@]}"; do
             wait "$pid"
           done
-          pids=()
-          for shard in 0 1 2 3; do
-            crashes="$evidence/time/crashes-${shard}"
-            mkdir -p "$crashes"
-            "$executable" \
-              -runs=-1 \
-              -max_total_time=900 \
-              -max_len=96 \
-              -timeout=5 \
-              -seed="$((202700 + shard))" \
-              -print_final_stats=1 \
-              -artifact_prefix="${crashes}/" \
-              > "$evidence/time/shard-${shard}.log" 2>&1 &
-            pids+=("$!")
-          done
-          for pid in "${pids[@]}"; do
-            wait "$pid"
-          done
           grep -h "stat::number_of_executed_units:" \
             "$evidence"/count/shard-*.log \
             > "$evidence/count-executed-units.txt"
           test "$(wc -l < "$evidence/count-executed-units.txt")" -eq 4
           awk '
-            { total += $2 }
+            {
+              if ($2 != 500000) exit 1
+              total += $2
+            }
             END {
               print "total_executed_units=" total
-              if (total < 2000000) exit 1
+              if (total != 2000000) exit 1
             }
           ' "$evidence/count-executed-units.txt" \
             > "$evidence/count-gate.txt"
+          grep -hE '^Done 500000 runs in [0-9]+ second\(s\)$' \
+            "$evidence"/count/shard-*.log \
+            > "$evidence/count-duration.txt"
+          test "$(wc -l < "$evidence/count-duration.txt")" -eq 4
+          awk '
+            {
+              if ($5 < 900) exit 1
+              total += $5
+              if (minimum == 0 || $5 < minimum) minimum = $5
+              if ($5 > maximum) maximum = $5
+            }
+            END {
+              print "minimum_seconds=" minimum
+              print "maximum_seconds=" maximum
+              print "aggregate_cpu_seconds=" total
+            }
+          ' "$evidence/count-duration.txt" \
+            > "$evidence/duration-gate.txt"
+          if find "$evidence/count" \
+              -path '*/crashes-*/*' -type f -print -quit \
+              | grep -q .; then
+            echo "libFuzzer produced a crash artifact" >&2
+            exit 1
+          fi
 
       - name: Record sanitizer evidence
         if: always()
@@ -161,7 +239,7 @@ jobs:
             echo "### Linux sanitizer evidence"
             echo "- Artifact ID: ${{ steps.upload-sanitizer-evidence.outputs.artifact-id }}"
             echo "- Service digest: \`${{ steps.upload-sanitizer-evidence.outputs.artifact-digest }}\`"
-            echo "- Scope: all native tests under ASan/UBSan plus the current bounded partial-graph fuzzer"
+            echo "- Scope: all native tests under ASan/UBSan, exhaustive allocation ordinals, exact ABI-v3 reachability, and 4 x 500000 structured fuzz inputs with at least 900 seconds per seed"
           } >> "$GITHUB_STEP_SUMMARY"
 
   linux-coverage:
