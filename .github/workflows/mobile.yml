@@ -2,6 +2,8 @@ name: Mobile Core Evidence
 
 on:
   push:
+    branches:
+      - main
   pull_request:
   workflow_dispatch:
 
@@ -195,7 +197,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          llvm-profdata merge -sparse \
+          llvm_major="$(clang -dumpversion | cut -d. -f1)"
+          llvm_bin="/usr/lib/llvm-${llvm_major}/bin"
+          llvm_cov="${llvm_bin}/llvm-cov"
+          llvm_profdata="${llvm_bin}/llvm-profdata"
+          test -x "$llvm_cov"
+          test -x "$llvm_profdata"
+          "$llvm_profdata" merge -sparse \
             build/linux-coverage/profiles/*.profraw \
             -o build/linux-coverage/evidence/coverage.profdata
           objects=(
@@ -205,12 +213,12 @@ jobs:
             -object=build/linux-coverage/resonith_partial_graph_concurrency_test
             -object=build/linux-coverage/resonith_partial_graph_fuzz_smoke
           )
-          llvm-cov export "${objects[@]}" \
+          "$llvm_cov" export "${objects[@]}" \
             -instr-profile=build/linux-coverage/evidence/coverage.profdata \
             -summary-only \
             -name-regex='^resonith_partial_graph_(edges_cpu|paths_cpu_v3)$' \
             > build/linux-coverage/evidence/coverage-summary.json
-          llvm-cov report "${objects[@]}" \
+          "$llvm_cov" report "${objects[@]}" \
             -instr-profile=build/linux-coverage/evidence/coverage.profdata \
             -show-functions \
             -name-regex='^resonith_partial_graph_(edges_cpu|paths_cpu_v3)$' \
@@ -253,8 +261,11 @@ jobs:
             echo "run_id=${GITHUB_RUN_ID}"
             echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
             clang --version | head -n 1
-            llvm-cov --version | head -n 1
-            llvm-profdata --version | head -n 1
+            llvm_major="$(clang -dumpversion | cut -d. -f1)"
+            "/usr/lib/llvm-${llvm_major}/bin/llvm-cov" --version \
+              | head -n 1
+            "/usr/lib/llvm-${llvm_major}/bin/llvm-profdata" --version \
+              | head -n 1
           } > build/linux-coverage/evidence/BUILD-METADATA.txt
           find build/linux-coverage/evidence \
             -type f ! -name SHA256SUMS -print0 \
