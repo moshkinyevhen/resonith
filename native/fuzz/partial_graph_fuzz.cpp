@@ -419,7 +419,7 @@ extern "C" int LLVMFuzzerTestOneInput(
             path.expected_input_fingerprint[0] ^= 1U;
             break;
         case 1U:
-            observations[0].phase_turn_u32 ^= 1U;
+            observations[0].potential_node_value_q8 ^= 1;
             break;
         case 2U:
             if (path_capacity != 0U) {

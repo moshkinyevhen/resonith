@@ -16,9 +16,10 @@ extern "C" std::uint64_t resonith_partial_graph_fuzz_reachability(
 ) noexcept;
 
 int main() {
-    constexpr std::array<std::array<std::uint8_t, 96>, 8> cases = {{
+    constexpr std::array<std::array<std::uint8_t, 96>, 9> cases = {{
         {},
         {1U, 0U, 0U, 0U, 0U, 0U, 0U, 0U},
+        {0x7eU, 0x15U, 0x00U, 0x2bU, 0x2bU, 0x21U, 0x00U, 0x0aU},
         {8U, 1U, 3U, 0xffU, 0U, 0x80U, 0x7fU, 0x55U},
         {8U, 2U, 4U, 1U, 2U, 3U, 4U, 5U},
         {8U, 3U, 5U, 0xffU, 0xffU, 0xffU, 0xffU, 0xffU},
