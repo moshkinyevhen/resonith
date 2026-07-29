@@ -1,7 +1,7 @@
 # R-202 Stateful ABI-v3 Fuzz and Failpoint Preflight
 
 Date: 2026-07-29
-Status: **DESIGN GO; implementation required**
+Status: **IMPLEMENTED — INDEPENDENT STEP-9 GO**
 
 ## Independent red-team finding
 
@@ -358,3 +358,26 @@ allocation-ordinal JSON changes, the TSan sequence/hash gate fails, or
 source/toolchain/hash/platform evidence does not pass on one revision. No
 codec algorithm, syntax, encoded output, decoded PCM, or RDO behavior is in
 scope, so the R-198 music/Opus gate is not triggered.
+
+## Implemented outcome
+
+GitHub evidence run
+[`30471669754`](https://github.com/moshkinyevhen/resonith/actions/runs/30471669754)
+passed every declared Step-9 kill gate on source revision
+`ecfee1a3ed4a2a62848da91c91acc098f873cbd6`:
+
+- sanitizer/fuzz wall time was 32 minutes 49 seconds;
+- 20/20 sanitized CTests passed;
+- all four seeds completed exactly 500,000 units and at least 900 seconds;
+- semantic reachability covered all eleven declared outcomes at least 100
+  times;
+- all 952 reachable allocation ordinals and 2,864 calls passed deterministic
+  failure/retry, transactionality, trace-hash, and zero-live-allocation gates;
+- TSan passed eight threads and 100,000 sequences;
+- all Android, Apple, Linux, coverage, and aggregate jobs passed;
+- no sanitizer, leak, race, canary, crash, hash, platform, or coverage blocker
+  remained.
+
+The final independent post-implementation verdict is **GO for Step 9**. It is
+not a codec-admission verdict; the final R-191 conformance decision remains
+Step 10.

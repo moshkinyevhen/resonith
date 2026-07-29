@@ -7886,7 +7886,7 @@ i32 end_gain_q15
 
 ## R-202 — Stateful ABI-v3 Fuzz, Coverage, and Staging-Guard Evidence
 
-- Status: **IMPLEMENTATION IN PROGRESS — STAGING GUARD PROOF ACCEPTED**
+- Status: **ACCEPTED — INDEPENDENT STEP-9 GO**
 - Date: 2026-07-29
 - Problem:
   the output-staging managed-memory guard at the v3 publication boundary is
@@ -7996,8 +7996,27 @@ i32 end_gain_q15
     requirement is revoked: no distinct stateful/fault mutation grammar
     existed. Exhaustive ordinal injection and deterministic retry prove the
     fault space directly instead of relabeling duplicate random fuzz;
-  - one final complete GitHub run must pass all platform jobs and finish the
-    sanitizer job within 40 minutes before Step 9 closes.
+  - final GitHub run
+    [`30471669754`](https://github.com/moshkinyevhen/resonith/actions/runs/30471669754)
+    passed all nine evidence jobs and the aggregate mobile gate on source
+    revision `ecfee1a3ed4a2a62848da91c91acc098f873cbd6`;
+  - the sanitizer/fuzz job completed in 32 minutes 49 seconds, 20/20 sanitized
+    CTests passed, and four fixed seeds completed exactly 500,000 units each,
+    at least 900 seconds each, and 2,000,000 total with zero sanitizer findings
+    or crash artifacts;
+  - exact reachability covered all eleven outcomes at least 100 times; all 952
+    allocation ordinals and 2,864 calls reproduced trace hash
+    `56204c224ae7c4c3` and terminated with zero live allocations;
+  - the eight-thread/100,000-sequence TSan gate, Android, Apple, Linux,
+    canonical semantic coverage, and final aggregate gates passed;
+  - the sanitizer artifact's 13/13 and coverage artifact's 11/11 SHA-256
+    inventories matched locally;
+  - companion test run
+    [`30471677677`](https://github.com/moshkinyevhen/resonith/actions/runs/30471677677)
+    passed all ten repository test jobs;
+  - the final independent auditor returned **GO with zero remaining Step-9
+    blockers**. Step 10 remains the final R-191 conformance and admission
+    decision.
 - Evidence:
   [R-202 Stateful ABI and Semantic Coverage Gate](results/R202_STATEFUL_ABI_COVERAGE_GATE_2026-07-29.md).
 - Evidence boundary:

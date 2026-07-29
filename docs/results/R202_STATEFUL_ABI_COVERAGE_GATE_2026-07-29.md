@@ -6,7 +6,7 @@ Scope: Step-9 R-190/R-191 ABI, allocation, fuzz, and coverage infrastructure
 
 Codec algorithm or bitstream change: **no**
 
-Status: **canonical profile separation implemented; reproducibility runs pending**
+Status: **ACCEPTED — INDEPENDENT STEP-9 GO**
 
 ## Corrected staging-boundary evidence
 
@@ -48,7 +48,7 @@ native/src/partial_graph_stage_budget.hpp
 0E9250CA66A6EB884D47B20DC065804766C3FA269DF03C81665835E508A11D41
 
 native/tests/partial_graph_test.cpp
-196FD48B0BE99190BA5FE4CED0A3780EA8D5A6247DB30F2554FEA0334B376AAD
+BCB33EDE520D0605130837AEA2172328F62F35FC7C8231B5CC0CF0AEC205D3B0
 
 native/tests/partial_graph_coverage_contract.json
 D86F698B1C1052B84BD8E74E220C88C07D86F224D386B7270FD31A8BB10F315B
@@ -57,7 +57,7 @@ scripts/enforce_partial_graph_coverage.py
 FC91579F5D5E35C6304F12F796D16CC3D334A600769E67F7CA71EA2DCC30E146
 
 .github/workflows/mobile.yml
-1B11957463FB39641E6A29538682F3E19B1E6DF61D42C2DD65747BB50FB0A854
+AE104082453749077BA375A9AF16937EB80AE6656D69DB5D6947EBF0EE275263
 ```
 
 ## Native focused gates
@@ -173,10 +173,11 @@ This is a focused analyzer-infrastructure gate. It changes no codec syntax,
 encoded bytes, decoded samples, PCM, entropy policy, or RDO behavior, so the
 complete music/Opus generation gate is not triggered.
 
-Step 9 remains open until the same revision passes the GitHub sanitizer,
-thread-sanitizer, Android, Apple, Linux, Windows, fuzz, and semantic-coverage
-jobs and receives final independent post-implementation GO. Step 10 remains
-the final R-191 conformance and admission audit.
+Step 9 is accepted on source revision
+`ecfee1a3ed4a2a62848da91c91acc098f873cbd6`. The same revision passed the
+GitHub sanitizer, thread-sanitizer, Android, Apple, Linux, Windows, fuzz, and
+semantic-coverage jobs and received final independent post-implementation GO.
+Step 10 remains the final R-191 conformance and admission audit.
 
 ## Independent post-implementation audit
 
@@ -215,5 +216,47 @@ mandatory, inventoried, and hashed but cannot enter semantic counters. Two
 independent identical Ubuntu LLVM 18 canonical-only runs are required before
 freezing the final contract.
 
-Step 9 still requires the corrected committed revision to pass the GitHub
-platform, sanitizer, and canonical coverage jobs.
+Final Step-9 verdict: **GO — zero remaining Step-9 blockers**.
+
+The complete GitHub evidence run
+[`30471669754`](https://github.com/moshkinyevhen/resonith/actions/runs/30471669754)
+passed all nine evidence jobs and the aggregate mobile gate:
+
+- the sanitizer/fuzz job completed in 32 minutes 49 seconds, below the
+  40-minute admission ceiling;
+- 20/20 sanitized CTests passed with zero ASan, UBSan, LSan, or crash findings;
+- four fixed libFuzzer seeds completed exactly 500,000 units each and
+  2,000,000 total, with per-seed durations of 1,701--1,748 seconds, coverage
+  `4178--4179`, feature counts `14431--14475`, and peak RSS `473--478 MiB`;
+- exact semantic reachability covered all eleven declared branches at least
+  100 times;
+- exhaustive allocation injection covered `10 + 16 + 313 + 613 = 952`
+  reachable ordinals and 2,864 calls, reproduced trace hash
+  `56204c224ae7c4c3`, and terminated with zero live allocations;
+- TSan passed eight threads and 100,000 independent transactional sequences;
+- iOS device arm64, iOS simulator arm64/x86_64, macOS, Android arm64
+  compile/link, Android x86_64 API-26 runtime, Linux canonical coverage, and
+  the aggregate gate all passed;
+- the canonical Ubuntu LLVM 18.1.3 report measured raw
+  93.37016574585635% line and 90.8695652173913% branch coverage, then exact
+  proof-adjusted 96.13196814562002% line and 92.47787610619469% branch
+  coverage;
+- the sanitizer artifact's 13/13 SHA-256 inventory and the coverage artifact's
+  11/11 SHA-256 inventory matched locally.
+
+The companion repository test run
+[`30471677677`](https://github.com/moshkinyevhen/resonith/actions/runs/30471677677)
+passed all ten Windows, Linux, macOS, Android, sanitizer/libFuzzer, reference,
+and decoder-in-loop jobs. The accepted GitHub merge revision is
+`9e0691c88b1b07515e921060dc8f143b698299c3`.
+
+Retained local evidence:
+
+- `build/github-r202-final-30471669754-sanitizers-a1`;
+- `build/github-r202-final-30471669754-coverage-a1`;
+- `build/github-r202-final-30471669754-index-a1`.
+
+The final independent auditor reproduced the exact count, duration,
+reachability, ordinal, transactionality, sanitizer, TSan, platform, coverage,
+and inventory gates and returned binary **GO** for Step 9. This verdict does
+not admit R-191 codec behavior; that decision remains Step 10.

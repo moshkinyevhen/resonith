@@ -533,8 +533,12 @@ and cannot be replaced by the three principal references.
 R-201 completed the fourth implementation dependency above with an independent
 Step-8 GO: exact reserved/committed/live host provenance, checked page
 transitions, an immutable work ceiling, a pre-entry global-allocation
-tripwire, and truthful CPU device zeros. R-191 remains unadmitted while Step 9
-runs allocation-ordinal, structured-fuzz, sanitizer, and platform evidence and
+tripwire, and truthful CPU device zeros. R-202 then completed Step 9 with
+independent GO on source revision
+`ecfee1a3ed4a2a62848da91c91acc098f873cbd6`: exhaustive 952-ordinal
+transactional failure injection, four-seed/two-million-input sanitizer fuzzing,
+eight-thread/100,000-sequence TSan, canonical semantic coverage, and the full
+Android/Apple/Linux evidence matrix passed. R-191 remains unadmitted until
 Step 10 performs the final independent conformance decision.
 
 ## 15. R-195 integrated MAF-first generation

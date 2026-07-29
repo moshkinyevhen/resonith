@@ -34,6 +34,7 @@
 | [reviews/R199_R197_PRECEDENCE_AMENDMENT_2026-07-29.md](reviews/R199_R197_PRECEDENCE_AMENDMENT_2026-07-29.md) | Caller-bounded, earliest-determinable failure precedence amendment for transactional path ABI v3 |
 | [reviews/R200_GENERATION_SAFE_ARENA_DESIGN_2026-07-29.md](reviews/R200_GENERATION_SAFE_ARENA_DESIGN_2026-07-29.md) | Audited generation-tagged ownership, rank/link invariants, rollback, and rejected overengineering |
 | [reviews/R201_MEMORY_PROVENANCE_PREFLIGHT_2026-07-29.md](reviews/R201_MEMORY_PROVENANCE_PREFLIGHT_2026-07-29.md) | Independent counter semantics, allocation-tripwire scope, rollback obligations, and rejected fake device accounting |
+| [reviews/R202_V3_FUZZ_AND_FAILPOINT_PREFLIGHT_2026-07-29.md](reviews/R202_V3_FUZZ_AND_FAILPOINT_PREFLIGHT_2026-07-29.md) | Independent ABI-v3 structured-fuzz, failpoint, timeout, sanitizer, and final Step-9 admission audit |
 | [results/EXTENDED_AUDIO_CORPUS_2026-07-27.md](results/EXTENDED_AUDIO_CORPUS_2026-07-27.md) | R-111 heterogeneous corpus acquisition, coverage, and preparation evidence |
 | [results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md](results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md) | R-107 gain-shape results against Opus across all 16 R-111 classes |
 | [results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md](results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md) | R-107 complete speech, piano, and full-Mozart admission result |
@@ -62,7 +63,7 @@
 | [results/R199_WORK_LEDGER_FINGERPRINT_GATE_2026-07-29.md](results/R199_WORK_LEDGER_FINGERPRINT_GATE_2026-07-29.md) | Exact 22-event work law, canonical fingerprints, R-199 precedence pipeline, and focused evidence |
 | [results/R200_GENERATION_SAFE_ARENA_GATE_2026-07-29.md](results/R200_GENERATION_SAFE_ARENA_GATE_2026-07-29.md) | Generation-safe ownership, multi-slot ABA/LIFO, rollback, and focused conformance evidence |
 | [results/R201_MEMORY_PROVENANCE_GATE_2026-07-29.md](results/R201_MEMORY_PROVENANCE_GATE_2026-07-29.md) | Independent host high-water counters, checked page transitions, armed global-allocation tripwire, and truthful CPU device-zero evidence |
-| [results/R202_STATEFUL_ABI_COVERAGE_GATE_2026-07-29.md](results/R202_STATEFUL_ABI_COVERAGE_GATE_2026-07-29.md) | Stateful ABI focused tests, checked staging arithmetic, toolchain-bound semantic coverage, and pending platform evidence |
+| [results/R202_STATEFUL_ABI_COVERAGE_GATE_2026-07-29.md](results/R202_STATEFUL_ABI_COVERAGE_GATE_2026-07-29.md) | Accepted Step-9 stateful ABI, exhaustive failpoint, sanitizer/fuzz, platform, and semantic-coverage evidence |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
