@@ -1,4 +1,5 @@
 #include "resonith/partial_graph.h"
+#include "partial_graph_stage_budget.hpp"
 
 #include <algorithm>
 #include <array>
@@ -718,7 +719,9 @@ int main() {
     null_resolutions,
     zero_resolution_count,
     null_observations_with_count,
+    null_observations_without_count,
     null_edges_with_count,
+    null_edges_without_count,
     null_graph_manifest,
     null_path_manifest,
     null_report,
@@ -731,7 +734,9 @@ int main() {
       v3_topology_case::null_resolutions,
       v3_topology_case::zero_resolution_count,
       v3_topology_case::null_observations_with_count,
+      v3_topology_case::null_observations_without_count,
       v3_topology_case::null_edges_with_count,
+      v3_topology_case::null_edges_without_count,
       v3_topology_case::null_graph_manifest,
       v3_topology_case::null_path_manifest,
       v3_topology_case::null_report,
@@ -770,9 +775,17 @@ int main() {
       row_observations = nullptr;
       row_observation_count = 1U;
       break;
+    case v3_topology_case::null_observations_without_count:
+      row_observations = nullptr;
+      row_observation_count = 0U;
+      break;
     case v3_topology_case::null_edges_with_count:
       row_edges = nullptr;
       row_edge_count = 1U;
+      break;
+    case v3_topology_case::null_edges_without_count:
+      row_edges = nullptr;
+      row_edge_count = 0U;
       break;
     case v3_topology_case::null_graph_manifest:
       row_graph = nullptr;
@@ -796,13 +809,16 @@ int main() {
       row_entry_capacity = 1U;
       break;
     }
+    const bool reaches_late_validation =
+        row == v3_topology_case::null_observations_without_count ||
+        row == v3_topology_case::null_edges_without_count;
     if (resonith_partial_graph_paths_cpu_v3(
             row_resolutions, row_resolution_count, row_observations,
             row_observation_count, row_edges, row_edge_count, row_graph,
             row_path_manifest, row_paths, row_path_capacity, row_entries,
             row_entry_capacity,
             row_report_pointer) != RESONITH_STATUS_INVALID_ARGUMENT ||
-        (row_report_pointer != nullptr &&
+        (!reaches_late_validation && row_report_pointer != nullptr &&
          std::memcmp(&row_report, &row_report_before, sizeof(row_report)) !=
              0)) {
       fail("R-202 v3 pointer-topology matrix failed");
@@ -812,6 +828,41 @@ int main() {
   resonith_partial_path_report_v3 matrix_report{};
   matrix_report.struct_size = sizeof(matrix_report);
   matrix_report.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+
+  /*
+   * The report starts eight bytes into the path-manifest object. Both ABI
+   * headers are independently valid, so rejection must come from the range
+   * overlap itself rather than from the earlier header-precedence checks.
+   */
+  alignas(std::max_align_t)
+      std::array<std::byte, sizeof(resonith_partial_path_manifest_v3) + 8U>
+          overlap_storage{};
+  std::memcpy(
+      overlap_storage.data(),
+      &path_manifest_v3,
+      sizeof(path_manifest_v3));
+  resonith_partial_path_report_v3 overlap_report_header{};
+  overlap_report_header.struct_size = sizeof(overlap_report_header);
+  overlap_report_header.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+  std::memcpy(
+      overlap_storage.data() + 8U,
+      &overlap_report_header,
+      sizeof(overlap_report_header));
+  const auto overlap_storage_before = overlap_storage;
+  if (resonith_partial_graph_paths_cpu_v3(
+          &resolution, 1U, observations.data(), observations.size(),
+          first.data(), first.size(), &manifest,
+          reinterpret_cast<const resonith_partial_path_manifest_v3 *>(
+              overlap_storage.data()),
+          nullptr, 0U, nullptr, 0U,
+          reinterpret_cast<resonith_partial_path_report_v3 *>(
+              overlap_storage.data() + 8U)) != RESONITH_STATUS_INVALID_ARGUMENT ||
+      std::memcmp(
+          overlap_storage.data(),
+          overlap_storage_before.data(),
+          overlap_storage.size()) != 0) {
+    fail("R-202 v3 overlapping valid ABI objects were not rejected");
+  }
 
   /*
    * Header, semantic, and reserved-field validation use one-field mutations
@@ -1131,6 +1182,52 @@ int main() {
   }
 
   /*
+   * The public wrapper's over-limit outcome is allocation-invariant
+   * unreachable after successful preflight. Exercise the shared checked
+   * arithmetic directly without manufacturing wrapper reachability.
+   */
+  constexpr std::uint64_t stage_path_bytes =
+      sizeof(resonith_partial_path) + sizeof(resonith_partial_path_v3);
+  constexpr std::uint64_t stage_entry_bytes =
+      sizeof(resonith_partial_path_entry) +
+      sizeof(resonith_partial_path_entry_v3);
+  constexpr std::uint64_t exact_stage_bytes =
+      3U * stage_path_bytes + 1542U * stage_entry_bytes;
+  constexpr auto exact_stage =
+      resonith::internal::checked_partial_graph_stage_budget(
+          3U, 1542U, exact_stage_bytes);
+  constexpr auto over_limit_stage =
+      resonith::internal::checked_partial_graph_stage_budget(
+          3U, 1542U, exact_stage_bytes - 1U);
+  constexpr auto path_overflow_stage =
+      resonith::internal::checked_partial_graph_stage_budget(
+          std::numeric_limits<std::uint64_t>::max() / stage_path_bytes + 1U,
+          0U, std::numeric_limits<std::uint64_t>::max());
+  constexpr auto entry_overflow_stage =
+      resonith::internal::checked_partial_graph_stage_budget(
+          0U,
+          std::numeric_limits<std::uint64_t>::max() / stage_entry_bytes + 1U,
+          std::numeric_limits<std::uint64_t>::max());
+  constexpr auto additive_overflow_stage =
+      resonith::internal::checked_partial_graph_stage_budget(
+          std::numeric_limits<std::uint64_t>::max() / stage_path_bytes,
+          std::numeric_limits<std::uint64_t>::max() / stage_entry_bytes,
+          std::numeric_limits<std::uint64_t>::max());
+  static_assert(!exact_stage.overflow && !exact_stage.over_limit);
+  static_assert(exact_stage.bytes == exact_stage_bytes);
+  static_assert(!over_limit_stage.overflow && over_limit_stage.over_limit);
+  static_assert(path_overflow_stage.overflow);
+  static_assert(entry_overflow_stage.overflow);
+  static_assert(additive_overflow_stage.overflow);
+  if (exact_stage.bytes != exact_stage_bytes ||
+      exact_stage.overflow || exact_stage.over_limit ||
+      over_limit_stage.overflow || !over_limit_stage.over_limit ||
+      !path_overflow_stage.overflow || !entry_overflow_stage.overflow ||
+      !additive_overflow_stage.overflow) {
+    fail("R-202 checked stage-budget boundary failed");
+  }
+
+  /*
    * Integer work-budget sweep: preflight discovers identity at every viable
    * budget, then fill reuses that exact identity. This reaches every
    * resource-ledger prefix without test-only failpoint hooks in production.
@@ -1199,6 +1296,7 @@ int main() {
               "\"committed_host_bytes\":%llu,"
               "\"peak_live_host_bytes\":%llu,"
               "\"device_bytes\":0,\"work_sweep_max\":%llu,"
+              "\"stage_budget_helper\":true,"
               "\"deterministic\":true,"
               "\"predictor_integrated\":false}\n",
               first_count,

@@ -62,6 +62,7 @@
 | [results/R199_WORK_LEDGER_FINGERPRINT_GATE_2026-07-29.md](results/R199_WORK_LEDGER_FINGERPRINT_GATE_2026-07-29.md) | Exact 22-event work law, canonical fingerprints, R-199 precedence pipeline, and focused evidence |
 | [results/R200_GENERATION_SAFE_ARENA_GATE_2026-07-29.md](results/R200_GENERATION_SAFE_ARENA_GATE_2026-07-29.md) | Generation-safe ownership, multi-slot ABA/LIFO, rollback, and focused conformance evidence |
 | [results/R201_MEMORY_PROVENANCE_GATE_2026-07-29.md](results/R201_MEMORY_PROVENANCE_GATE_2026-07-29.md) | Independent host high-water counters, checked page transitions, armed global-allocation tripwire, and truthful CPU device-zero evidence |
+| [results/R202_STATEFUL_ABI_LOCAL_GATE_2026-07-29.md](results/R202_STATEFUL_ABI_LOCAL_GATE_2026-07-29.md) | Stateful ABI focused tests, checked staging arithmetic, strict semantic coverage, and pending platform evidence |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |

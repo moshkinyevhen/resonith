@@ -1,0 +1,395 @@
+{
+  "schema": "resonith-r202-semantic-coverage-1",
+  "source": "native/src/partial_graph.cpp",
+  "source_sha256": "F7EBB9ADFA4B49B96368C189EC4A5980A7CB14EF3D1CAD08E1A08AC2E970A415",
+  "functions": [
+    "resonith_partial_graph_edges_cpu",
+    "resonith_partial_graph_paths_cpu_v3"
+  ],
+  "line_floor": 95.0,
+  "branch_floor": 90.0,
+  "bound_files": [
+    {
+      "path": "native/src/partial_graph_stage_budget.hpp",
+      "sha256": "0E9250CA66A6EB884D47B20DC065804766C3FA269DF03C81665835E508A11D41"
+    }
+  ],
+  "proof_guards": [
+    {
+      "id": "checked-stage-budget-wrapper",
+      "start": 7837,
+      "end": 7854,
+      "sha256": "E321E49B55C9E99EAD94671EAEAFC5B2842F0A2856AD6F8BABB600B8BA1A120C"
+    },
+    {
+      "id": "counting-resource-limit-and-oom-translation",
+      "start": 370,
+      "end": 433,
+      "sha256": "C72852D52900619BC34DE0F7CA21380822B05E6E3C867111201B984FECA42507"
+    },
+    {
+      "id": "edge-raw-allocation-catch",
+      "start": 1350,
+      "end": 1357,
+      "sha256": "D561FB3BD53472CB5B2B685C2210F486ECBCB4DD2DE4CD395C52C4FF59FFF2F9"
+    },
+    {
+      "id": "initial-ledger-reservation",
+      "start": 7555,
+      "end": 7578,
+      "sha256": "4E1EBB3E7A069682D4939AB68D9BDBB8829D740CA7DF132C69E5898B1D758297"
+    },
+    {
+      "id": "post-call-peak-defense",
+      "start": 7892,
+      "end": 7900,
+      "sha256": "F663DB2FCDB72611A4307B60F3E1577AB02065FEA5EF4040847B7382653593C1"
+    },
+    {
+      "id": "v3-raw-allocation-catch",
+      "start": 8030,
+      "end": 8045,
+      "sha256": "3EA2AED96A7510D9EEE64F93DEC96DCDE36D1C8B28A573732B1C937C39BC9CEC"
+    }
+  ],
+  "uncovered_line_ranges": [
+    {
+      "function": "resonith_partial_graph_edges_cpu",
+      "start": 1248,
+      "end": 1249,
+      "disposition": "tracked-gap",
+      "reason": "Managed-limit rejection remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_edges_cpu",
+      "start": 1343,
+      "end": 1346,
+      "disposition": "tracked-gap",
+      "reason": "Second-pass enumeration mismatch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_edges_cpu",
+      "start": 1351,
+      "end": 1351,
+      "disposition": "tracked-gap",
+      "reason": "Managed-profile exception remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_edges_cpu",
+      "start": 1355,
+      "end": 1355,
+      "disposition": "exclude-unreachable",
+      "reason": "The counting resource translates every upstream bad_alloc before it reaches the public wrapper."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 7448,
+      "end": 7449,
+      "disposition": "tracked-gap",
+      "reason": "Invalid byte-range rejection remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 7468,
+      "end": 7469,
+      "disposition": "tracked-gap",
+      "reason": "Snapshot work rejection remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 7471,
+      "end": 7472,
+      "disposition": "tracked-gap",
+      "reason": "Graph-header work rejection remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 7480,
+      "end": 7481,
+      "disposition": "tracked-gap",
+      "reason": "Manifest-header work rejection remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 7490,
+      "end": 7491,
+      "disposition": "tracked-gap",
+      "reason": "Report-header work rejection remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 7573,
+      "end": 7578,
+      "disposition": "exclude-unreachable",
+      "reason": "No mutation occurs between successful stage reservation and its first reserved emission."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 7844,
+      "end": 7848,
+      "disposition": "exclude-unreachable",
+      "reason": "Hard profile counts make checked stage-budget overflow unreachable after successful preflight."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 7850,
+      "end": 7854,
+      "disposition": "exclude-unreachable",
+      "reason": "The audited 108E+272P preflight lower bound dominates the 96E+272P stage budget."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 7896,
+      "end": 7900,
+      "disposition": "exclude-unreachable",
+      "reason": "The counting resource rejects before any live-byte transition can exceed its immutable limit."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 7987,
+      "end": 7991,
+      "disposition": "tracked-gap",
+      "reason": "Path commit-ledger invariant failure remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 8001,
+      "end": 8005,
+      "disposition": "tracked-gap",
+      "reason": "Entry commit-ledger invariant failure remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 8009,
+      "end": 8013,
+      "disposition": "tracked-gap",
+      "reason": "Allocator or work-ledger health failure remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 8025,
+      "end": 8026,
+      "disposition": "tracked-gap",
+      "reason": "Final report commit-ledger invariant failure remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "start": 8042,
+      "end": 8045,
+      "disposition": "exclude-unreachable",
+      "reason": "Every in-try dynamic container uses the counting PMR, which translates upstream bad_alloc."
+    }
+  ],
+  "uncovered_branch_outcomes": [
+    {
+      "function": "resonith_partial_graph_edges_cpu",
+      "line_start": 1224,
+      "column_start": 9,
+      "line_end": 1224,
+      "column_end": 66,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Profile ceiling branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_edges_cpu",
+      "line_start": 1234,
+      "column_start": 9,
+      "line_end": 1234,
+      "column_end": 67,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "ABI header branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_edges_cpu",
+      "line_start": 1241,
+      "column_start": 9,
+      "line_end": 1246,
+      "column_end": 10,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Managed-limit branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_edges_cpu",
+      "line_start": 1340,
+      "column_start": 16,
+      "line_end": 1340,
+      "column_end": 42,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Second-pass count mismatch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_edges_cpu",
+      "line_start": 1341,
+      "column_start": 16,
+      "line_end": 1341,
+      "column_end": 41,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Second-pass staging mismatch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_edges_cpu",
+      "line_start": 1343,
+      "column_start": 20,
+      "line_end": 1343,
+      "column_end": 53,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Mismatch status selector remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_edges_cpu",
+      "line_start": 1343,
+      "column_start": 20,
+      "line_end": 1343,
+      "column_end": 53,
+      "outcome": "false",
+      "disposition": "tracked-gap",
+      "reason": "Mismatch status selector remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7446,
+      "column_start": 9,
+      "line_end": 7447,
+      "column_end": 31,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Invalid range branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7464,
+      "column_start": 9,
+      "line_end": 7464,
+      "column_end": 70,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Snapshot work branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7470,
+      "column_start": 9,
+      "line_end": 7470,
+      "column_end": 60,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Graph-header work branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7479,
+      "column_start": 9,
+      "line_end": 7479,
+      "column_end": 60,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Manifest-header work branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7489,
+      "column_start": 9,
+      "line_end": 7489,
+      "column_end": 60,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Report-header work branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7558,
+      "column_start": 12,
+      "line_end": 7558,
+      "column_end": 59,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Initial reserve branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7571,
+      "column_start": 9,
+      "line_end": 7571,
+      "column_end": 70,
+      "outcome": "true",
+      "disposition": "exclude-unreachable",
+      "reason": "No mutation occurs between successful stage reservation and its first reserved emission."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7843,
+      "column_start": 13,
+      "line_end": 7843,
+      "column_end": 34,
+      "outcome": "true",
+      "disposition": "exclude-unreachable",
+      "reason": "Hard profile counts make checked stage-budget overflow unreachable after successful preflight."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7849,
+      "column_start": 13,
+      "line_end": 7849,
+      "column_end": 36,
+      "outcome": "true",
+      "disposition": "exclude-unreachable",
+      "reason": "The audited preflight high-water lower bound dominates the complete stage budget."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7893,
+      "column_start": 13,
+      "line_end": 7894,
+      "column_end": 54,
+      "outcome": "true",
+      "disposition": "exclude-unreachable",
+      "reason": "The counting resource rejects before any live-byte transition can exceed its immutable limit."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7982,
+      "column_start": 17,
+      "line_end": 7985,
+      "column_end": 18,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Path commit invariant branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 7996,
+      "column_start": 17,
+      "line_end": 7999,
+      "column_end": 18,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Entry commit invariant branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 8008,
+      "column_start": 41,
+      "line_end": 8008,
+      "column_end": 70,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Allocator or ledger health branch remains in the raw denominator."
+    },
+    {
+      "function": "resonith_partial_graph_paths_cpu_v3",
+      "line_start": 8020,
+      "column_start": 13,
+      "line_end": 8023,
+      "column_end": 14,
+      "outcome": "true",
+      "disposition": "tracked-gap",
+      "reason": "Final report commit branch remains in the raw denominator."
+    }
+  ]
+}

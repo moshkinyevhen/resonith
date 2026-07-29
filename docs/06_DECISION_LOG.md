@@ -7883,3 +7883,82 @@ i32 end_gain_q15
     counted permit path; `1,904` permitted and zero forbidden allocations;
   - Step 9 retains ordinal fault campaigns, sanitizers, structured fuzzing and
     platform breadth.
+
+## R-202 — Stateful ABI-v3 Fuzz, Coverage, and Staging-Guard Evidence
+
+- Status: **IMPLEMENTATION IN PROGRESS — STAGING GUARD PROOF ACCEPTED**
+- Date: 2026-07-29
+- Problem:
+  the output-staging managed-memory guard at the v3 publication boundary is
+  defensive, but the first proposed coverage witness emitted only one
+  protected path and therefore could not test whether complete legacy-plus-v3
+  staging could exceed the solver's measured historical peak.
+- Rejected alternatives:
+  - increasing only `top_k_protected` from 1 to 128 is rejected: every
+    514-observation candidate has a 440 Hz median and is truncated by the
+    per-band limit before the global protected reservoir;
+  - lowering the measured peak, excluding legitimate allocations, adding a
+    test-only production bypass, or accepting a coverage percentage without a
+    semantic witness are rejected;
+  - redesigning 128 paths to have distinct median-frequency bands remains a
+    valid alternative but adds unnecessary fixture complexity.
+- Independently challenged decision:
+  - the first corrected 128-path fixture was killed after producing exactly
+    128 paths and 65,792 entries because its measured historical peak was
+    12,310,952 bytes versus 6,350,848 staging bytes;
+  - the failure is dominated by crossing the 65,536-entry geometric vector
+    capacity boundary and does not prove the guard unreachable;
+  - one final bounded witness raises both public-valid protected limits to 256,
+    uses a 4,094-observation shared prefix, 16 intermediate branches and 16
+    terminal neighbors per branch, and requires exactly 256 paths of length
+    4,096 and 1,048,576 entries;
+  - production code, ABI, algorithm, bitstream, work law, and memory
+    accounting remain unchanged;
+  - the fixture must prove exactly 256 output paths and 1,048,576 entries, a
+    protected-family population, measured historical peak below complete
+    staging, exact-peak preflight reproducibility, `PROFILE_BOUND` at fill,
+    unchanged output payload, and bounded Clang/GCC runtime and memory.
+- Falsifiable prediction:
+  the power-boundary shared-prefix fixture either produces the declared counts
+  with `historical_peak < 100,732,928` staging bytes and reaches the
+  transactional staging guard, or it is rejected without further threshold
+  tuning. Focused runtime must remain at most 10 seconds and process RSS at
+  most 512 MiB.
+- Measured falsification:
+  - the fixture produced exactly 256 paths, 1,048,576 entries and 4,365 edges
+    in 1.702 seconds;
+  - historical peak was 116,675,808 bytes, exceeding 100,732,928 staging
+    bytes by 15,942,880;
+  - no larger fixture is permitted without allocation-component evidence.
+- Final allocation proof:
+  - at the final legacy entry-vector growth boundary, old and new buffers
+    coexist and contribute at least `72E` for current supported STL growth;
+  - protected and union identities add `16E + 16E`, ownership adds `4E`, and
+    family/union object backing adds `272P`;
+  - consequently `historical_peak >= 108E + 272P`, while the later guard
+    computes `stage_bytes = 96E + 272P`;
+  - successful preflight already proves
+    `historical_peak <= maximum_managed_bytes`, so for every non-empty output
+    the wrapper predicate `stage_bytes > maximum_managed_bytes` is impossible;
+  - the independent verdict is GO for a pure checked arithmetic helper and
+    strict hash-bound semantic allowlist, and NO-GO for another public witness,
+    a manufactured failpoint, or allocation behavior changed only for
+    coverage.
+- Local implementation result:
+  - the failed 256-by-4,096 witness and diagnostic trace were removed;
+  - production and tests share one pure overflow/limit helper;
+  - Clang 22 and GCC 16 each pass all five focused partial-graph tests;
+  - strict source/helper/proof hashes and exact missing-set equality reject
+    stale, new, or silently covered contract entries;
+  - raw coverage is 93.3702% lines and 90.8696% branches;
+  - proof-adjusted coverage is 96.1320% lines and 92.4779% branches;
+  - independent post-implementation verdict is **GO with zero local design
+    blockers**;
+  - GitHub platform and sanitizer results remain required before Step 9 closes.
+- Local evidence:
+  [R-202 Stateful ABI and Semantic Coverage Local Gate](results/R202_STATEFUL_ABI_LOCAL_GATE_2026-07-29.md).
+- Evidence boundary:
+  this is test and coverage infrastructure only. It does not trigger the R-198
+  music/Opus gate and does not admit R-191.
+- Review:
+  [R-202 Stateful ABI-v3 Fuzz and Failpoint Preflight](reviews/R202_V3_FUZZ_AND_FAILPOINT_PREFLIGHT_2026-07-29.md).

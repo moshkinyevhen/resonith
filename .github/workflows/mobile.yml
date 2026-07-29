@@ -230,17 +230,22 @@ jobs:
           "$llvm_profdata" merge -sparse \
             build/linux-coverage/profiles/*.profraw \
             -o build/linux-coverage/evidence/coverage.profdata
+          # Every focused driver statically links the same instrumented Core.
+          # The merged profile already aggregates their counters. Supplying
+          # five duplicate coverage mappings to llvm-cov can select mismatched
+          # counter layouts and manufacture false zero-count branches, so one
+          # canonical executable is the sole mapping authority.
           objects=(
             build/linux-coverage/resonith_partial_graph_test
-            -object=build/linux-coverage/resonith_partial_graph_allocation_tripwire_test
-            -object=build/linux-coverage/resonith_partial_graph_allocation_ordinal_test
-            -object=build/linux-coverage/resonith_partial_graph_concurrency_test
-            -object=build/linux-coverage/resonith_partial_graph_fuzz_smoke
           )
           "$llvm_cov" export "${objects[@]}" \
             -instr-profile=build/linux-coverage/evidence/coverage.profdata \
             -summary-only \
             > build/linux-coverage/evidence/coverage-summary-all-linked.json
+          "$llvm_cov" export "${objects[@]}" \
+            -instr-profile=build/linux-coverage/evidence/coverage.profdata \
+            native/src/partial_graph.cpp \
+            > build/linux-coverage/evidence/coverage-export.json
           "$llvm_cov" report "${objects[@]}" \
             -instr-profile=build/linux-coverage/evidence/coverage.profdata \
             -show-functions \
@@ -253,71 +258,13 @@ jobs:
             -show-branches=count \
             native/src/partial_graph.cpp \
             > build/linux-coverage/evidence/coverage-annotated.txt
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-
-          report_path = Path(
-              "build/linux-coverage/evidence/coverage-report.txt"
-          )
-          report = report_path.read_text(encoding="utf-8")
-          required = (
-              "resonith_partial_graph_edges_cpu",
-              "resonith_partial_graph_paths_cpu_v3",
-          )
-          rows = {}
-          for line in report.splitlines():
-              fields = line.split()
-              if fields and fields[0] in required:
-                  if len(fields) != 10:
-                      raise SystemExit(
-                          "unexpected llvm-cov function row: " + line
-                      )
-                  rows[fields[0]] = {
-                      "regions": int(fields[1]),
-                      "missed_regions": int(fields[2]),
-                      "lines": int(fields[4]),
-                      "missed_lines": int(fields[5]),
-                      "branches": int(fields[7]),
-                      "missed_branches": int(fields[8]),
-                  }
-          missing = [name for name in required if name not in rows]
-          if missing:
-              raise SystemExit(
-                  "coverage functions missing: " + ", ".join(missing)
-              )
-          line_count = sum(row["lines"] for row in rows.values())
-          missed_lines = sum(
-              row["missed_lines"] for row in rows.values()
-          )
-          branch_count = sum(
-              row["branches"] for row in rows.values()
-          )
-          missed_branches = sum(
-              row["missed_branches"] for row in rows.values()
-          )
-          lines = 100.0 * (line_count - missed_lines) / line_count
-          branches = (
-              100.0 * (branch_count - missed_branches) / branch_count
-          )
-          gate = {
-              "schema": "resonith-r202-public-entry-coverage-1",
-              "functions": rows,
-              "line_percent": lines,
-              "line_floor": 95.0,
-              "branch_percent": branches,
-              "branch_floor": 90.0,
-          }
-          Path("build/linux-coverage/evidence/coverage-gate.json").write_text(
-              json.dumps(gate, indent=2, sort_keys=True) + "\n",
-              encoding="utf-8",
-          )
-          if lines < 95.0 or branches < 90.0:
-              raise SystemExit(
-                  f"coverage floor missed: lines={lines:.2f}, "
-                  f"branches={branches:.2f}"
-              )
-          PY
+          python3 scripts/enforce_partial_graph_coverage.py \
+            --report build/linux-coverage/evidence/coverage-report.txt \
+            --annotated build/linux-coverage/evidence/coverage-annotated.txt \
+            --export build/linux-coverage/evidence/coverage-export.json \
+            --source native/src/partial_graph.cpp \
+            --contract native/tests/partial_graph_coverage_contract.json \
+            --output build/linux-coverage/evidence/coverage-gate.json
 
       - name: Record coverage evidence
         if: always()

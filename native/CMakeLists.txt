@@ -593,6 +593,10 @@ if(BUILD_TESTING)
         resonith_partial_graph_test
         PRIVATE Resonith::Core
     )
+    target_include_directories(
+        resonith_partial_graph_test
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    )
     set_target_properties(
         resonith_partial_graph_test
         PROPERTIES CXX_EXTENSIONS OFF

@@ -1,4 +1,5 @@
 #include "resonith/partial_graph.h"
+#include "partial_graph_stage_budget.hpp"
 
 #include <algorithm>
 #include <array>
@@ -7833,32 +7834,19 @@ extern "C" resonith_status resonith_partial_graph_paths_cpu_v3(
             return RESONITH_STATUS_OUTPUT_TOO_SMALL;
         }
 
-        std::uint64_t stage_bytes =
-            legacy_report.required_path_count
-            * (
-                sizeof(resonith_partial_path)
-                + sizeof(resonith_partial_path_v3)
+        const auto stage_budget =
+            resonith::internal::checked_partial_graph_stage_budget(
+                legacy_report.required_path_count,
+                legacy_report.required_entry_count,
+                manifest_snapshot.maximum_managed_bytes
             );
-        if (
-            legacy_report.required_entry_count
-            > (
-                std::numeric_limits<std::uint64_t>::max() - stage_bytes
-            ) / (
-                sizeof(resonith_partial_path_entry)
-                + sizeof(resonith_partial_path_entry_v3)
-            )
-        ) {
+        if (stage_budget.overflow) {
             local_report.termination =
                 RESONITH_PARTIAL_PATH_TERMINATION_PROFILE_BOUND;
             publish_report();
             return RESONITH_STATUS_PROFILE_BOUND;
         }
-        stage_bytes += legacy_report.required_entry_count
-            * (
-                sizeof(resonith_partial_path_entry)
-                + sizeof(resonith_partial_path_entry_v3)
-            );
-        if (stage_bytes > manifest_snapshot.maximum_managed_bytes) {
+        if (stage_budget.over_limit) {
             local_report.termination =
                 RESONITH_PARTIAL_PATH_TERMINATION_PROFILE_BOUND;
             publish_report();

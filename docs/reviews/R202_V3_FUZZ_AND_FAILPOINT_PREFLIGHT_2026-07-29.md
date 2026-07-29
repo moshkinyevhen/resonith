@@ -117,3 +117,99 @@ metric, non-zero terminal allocation, or missing R-190/v3 export.
 Step 9 publishes source/toolchain/corpus hashes, branch-hit JSON, coverage,
 sanitizer logs, ordinal JSONL/hash, and platform results from one source
 revision. It does not admit R-191; final admission remains Step 10.
+
+## Independent staging-guard witness re-audit
+
+The first checkpoint proposed changing only `top_k_protected` from 1 to 128.
+The independent reviewer returned **NO-GO**.
+
+Every proposed terminal path contains a 512-observation 440 Hz prefix. Its
+median frequency is therefore 440 Hz, so all protected candidates occupy one
+protected band. `protected_paths_per_band = 1` discards 127 candidates before
+the later global protected reservoir can apply `top_k_protected`.
+
+The unchanged fixture can emit at most one value, one continuity, and one
+protected path: three paths and 1,542 entries. Complete legacy-plus-v3 staging
+is at most 148,848 bytes. Two 648-observation snapshots and one 647-edge
+snapshot already require at least 212,472 managed bytes before maps, arena
+state, identities, and output. The proposed single-field change therefore
+cannot satisfy `historical_peak < staging_bytes`.
+
+The reviewer initially permitted a corrected, test-only adversarial fixture
+with both protected limits set to 128. It produced the exact 128 paths and
+65,792 entries, but its measured historical peak was 12,310,952 bytes versus
+6,350,848 staging bytes. That candidate is killed.
+
+The failure does not prove the staging guard unreachable. At output
+materialization, the approximate persistent core is:
+
+```text
+legacy output                         136P + 48E
+protected-family and union identities       32E
+ownership arrays                              4E
+historical core                       136P + 84E
+complete legacy-plus-v3 staging       272P + 96E
+```
+
+Staging retains an asymptotic margin of `136P + 12E`. A fully shared prefix
+keeps arena/input growth near path length plus output count rather than
+`P × path_length`. The 65,792-entry candidate also crossed the 65,536 vector
+capacity boundary and paid for a 131,072-entry internal capacity.
+
+The independent reviewer returned **GO for one final bounded experiment only**:
+
+- 4,094 shared-prefix observations;
+- 16 intermediate branches and 16 terminal neighbors each;
+- exactly 256 protected output paths of length 4,096;
+- exactly 1,048,576 serialized entries;
+- minimum and maximum path length both 4,096;
+- value/continuity state and output limits of one;
+- protected per-band and global limits of 256;
+- common ownership to keep selection/conflict storage empty;
+- sufficient bounded frequency jump/slope to retain all terminal groups.
+
+The exact staging target is:
+
+```text
+2 × (256 × 136 + 1,048,576 × 48) = 100,732,928 bytes
+```
+
+The entry count is an exact libstdc++ power-of-two capacity and only 1,293
+entries below the corresponding MSVC-like 1.5-growth capacity. The predicted
+historical peak was 91–94 MB. The measured experiment produced the exact
+counts and 4,365 edges in 1.702 seconds, but historical peak was 116,675,808
+bytes: 15,942,880 bytes above staging. The candidate is killed.
+
+The final independent allocation audit identified the missing peak component
+and proved the wrapper branch unreachable in the current 64-bit managed
+implementation. During the final geometric growth of the 48-byte legacy entry
+vector, old and new buffers coexist. Current supported STL growth is at most
+2x, so that boundary contributes at least `72E`. Family identities, copied
+union identities, and ownership arrays contribute `16E + 16E + 4E`, while
+family-entry and union-candidate backing contributes `272P`. Therefore:
+
+```text
+historical_peak >= 108E + 272P
+stage_bytes       =  96E + 272P
+```
+
+For every non-empty output, `historical_peak >= stage_bytes + 12E`; for an
+empty output, staging is zero. Successful preflight already requires
+`historical_peak <= maximum_managed_bytes`, so the later predicate
+`stage_bytes > maximum_managed_bytes` cannot be true.
+
+The independent verdict is:
+
+- **NO-GO** for any further public-ABI witness;
+- **NO-GO** for a production failpoint that manufactures reachability;
+- **NO-GO** for allocator lifetime or reserve changes made solely for
+  coverage because they alter observable peak/work/page accounting;
+- **GO** to retain the defense-in-depth guard, factor its overflow and limit
+  arithmetic into a pure internal helper, and test synthetic overflow,
+  exact-limit, and over-limit boundaries directly;
+- exact semantic allowlisting is permitted only for the unreachable wrapper
+  outcome and its body, bound to the current source hash, guard hash, proof,
+  and stale-entry rejection.
+
+The failed large fixture must be removed. No report may claim that a public
+R-191 input reached the wrapper guard.
