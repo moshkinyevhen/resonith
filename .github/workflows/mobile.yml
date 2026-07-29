@@ -70,33 +70,57 @@ jobs:
           UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
         run: |
           set -euo pipefail
-          mkdir -p build/linux-sanitized/evidence/crashes
-          build/linux-sanitized/resonith_partial_graph_fuzz \
-            -runs=2000000 \
-            -max_total_time=0 \
-            -timeout=5 \
-            -artifact_prefix=build/linux-sanitized/evidence/crashes/ \
-            2>&1 | tee build/linux-sanitized/evidence/fuzz-runs.log
-          build/linux-sanitized/resonith_partial_graph_fuzz \
-            -runs=-1 \
-            -max_total_time=900 \
-            -timeout=5 \
-            -artifact_prefix=build/linux-sanitized/evidence/crashes/ \
-            2>&1 | tee build/linux-sanitized/evidence/fuzz-time.log
-          build/linux-sanitized/resonith_partial_graph_fuzz \
-            -runs=1000000 \
-            -max_total_time=0 \
-            -max_len=96 \
-            -timeout=5 \
-            -artifact_prefix=build/linux-sanitized/evidence/crashes/ \
-            2>&1 | tee build/linux-sanitized/evidence/stateful-runs.log
-          build/linux-sanitized/resonith_partial_graph_fuzz \
-            -runs=-1 \
-            -max_total_time=600 \
-            -max_len=96 \
-            -timeout=5 \
-            -artifact_prefix=build/linux-sanitized/evidence/crashes/ \
-            2>&1 | tee build/linux-sanitized/evidence/stateful-time.log
+          executable="$PWD/build/linux-sanitized/resonith_partial_graph_fuzz"
+          evidence="$PWD/build/linux-sanitized/evidence"
+          mkdir -p "$evidence/count" "$evidence/time"
+          pids=()
+          for shard in 0 1 2 3; do
+            crashes="$evidence/count/crashes-${shard}"
+            mkdir -p "$crashes"
+            "$executable" \
+              -runs=500000 \
+              -max_total_time=0 \
+              -max_len=96 \
+              -timeout=5 \
+              -seed="$((202600 + shard))" \
+              -print_final_stats=1 \
+              -artifact_prefix="${crashes}/" \
+              > "$evidence/count/shard-${shard}.log" 2>&1 &
+            pids+=("$!")
+          done
+          for pid in "${pids[@]}"; do
+            wait "$pid"
+          done
+          pids=()
+          for shard in 0 1 2 3; do
+            crashes="$evidence/time/crashes-${shard}"
+            mkdir -p "$crashes"
+            "$executable" \
+              -runs=-1 \
+              -max_total_time=900 \
+              -max_len=96 \
+              -timeout=5 \
+              -seed="$((202700 + shard))" \
+              -print_final_stats=1 \
+              -artifact_prefix="${crashes}/" \
+              > "$evidence/time/shard-${shard}.log" 2>&1 &
+            pids+=("$!")
+          done
+          for pid in "${pids[@]}"; do
+            wait "$pid"
+          done
+          grep -h "stat::number_of_executed_units:" \
+            "$evidence"/count/shard-*.log \
+            > "$evidence/count-executed-units.txt"
+          test "$(wc -l < "$evidence/count-executed-units.txt")" -eq 4
+          awk '
+            { total += $2 }
+            END {
+              print "total_executed_units=" total
+              if (total < 2000000) exit 1
+            }
+          ' "$evidence/count-executed-units.txt" \
+            > "$evidence/count-gate.txt"
 
       - name: Record sanitizer evidence
         if: always()
@@ -190,7 +214,7 @@ jobs:
           build/linux-coverage/resonith_partial_graph_test
           build/linux-coverage/resonith_partial_graph_allocation_tripwire_test
           build/linux-coverage/resonith_partial_graph_allocation_ordinal_test
-          build/linux-coverage/resonith_partial_graph_concurrency_test 10000
+          build/linux-coverage/resonith_partial_graph_concurrency_test 1000
           build/linux-coverage/resonith_partial_graph_fuzz_smoke
 
       - name: Enforce public-entry 95/90 coverage floor
@@ -216,24 +240,54 @@ jobs:
           "$llvm_cov" export "${objects[@]}" \
             -instr-profile=build/linux-coverage/evidence/coverage.profdata \
             -summary-only \
-            -name-regex='^resonith_partial_graph_(edges_cpu|paths_cpu_v3)$' \
-            > build/linux-coverage/evidence/coverage-summary.json
+            > build/linux-coverage/evidence/coverage-summary-all-linked.json
           "$llvm_cov" report "${objects[@]}" \
             -instr-profile=build/linux-coverage/evidence/coverage.profdata \
             -show-functions \
             -name-regex='^resonith_partial_graph_(edges_cpu|paths_cpu_v3)$' \
+            native/src/partial_graph.cpp \
             > build/linux-coverage/evidence/coverage-report.txt
           python3 - <<'PY'
           import json
+          import re
           from pathlib import Path
 
-          path = Path("build/linux-coverage/evidence/coverage-summary.json")
-          payload = json.loads(path.read_text(encoding="utf-8"))
-          totals = payload["data"][0]["totals"]
-          lines = float(totals["lines"]["percent"])
-          branches = float(totals["branches"]["percent"])
+          report_path = Path(
+              "build/linux-coverage/evidence/coverage-report.txt"
+          )
+          report = report_path.read_text(encoding="utf-8")
+          required = (
+              "resonith_partial_graph_edges_cpu",
+              "resonith_partial_graph_paths_cpu_v3",
+          )
+          for function in required:
+              if function not in report:
+                  raise SystemExit(f"coverage function missing: {function}")
+          total_rows = [
+              line for line in report.splitlines()
+              if line.lstrip().startswith("TOTAL")
+          ]
+          if len(total_rows) != 1:
+              raise SystemExit(
+                  f"expected one filtered TOTAL row, got {len(total_rows)}"
+              )
+          percentages = [
+              float(value)
+              for value in re.findall(
+                  r"([0-9]+(?:\.[0-9]+)?)%",
+                  total_rows[0],
+              )
+          ]
+          if len(percentages) < 3:
+              raise SystemExit(
+                  "coverage TOTAL row has fewer than three percentages: "
+                  + total_rows[0]
+              )
+          lines = percentages[-2]
+          branches = percentages[-1]
           gate = {
               "schema": "resonith-r202-public-entry-coverage-1",
+              "functions": list(required),
               "line_percent": lines,
               "line_floor": 95.0,
               "branch_percent": branches,

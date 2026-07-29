@@ -2,6 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 
 extern "C" int LLVMFuzzerTestOneInput(
     const std::uint8_t* data,
@@ -15,11 +16,38 @@ extern "C" std::uint64_t resonith_partial_graph_fuzz_reachability(
     std::size_t index
 ) noexcept;
 
-int main() {
-    constexpr std::array<std::array<std::uint8_t, 96>, 9> cases = {{
+std::uint64_t next_random(std::uint64_t* state) noexcept {
+    *state ^= *state << 13U;
+    *state ^= *state >> 7U;
+    *state ^= *state << 17U;
+    return *state;
+}
+
+int main(int argument_count, char** arguments) {
+    std::uint64_t stress_count = 0U;
+    if (argument_count == 2) {
+        char* end = nullptr;
+        const unsigned long long parsed = std::strtoull(
+            arguments[1],
+            &end,
+            10
+        );
+        if (
+            end == arguments[1]
+            || *end != '\0'
+            || parsed > 1'000'000ULL
+        ) {
+            return 2;
+        }
+        stress_count = static_cast<std::uint64_t>(parsed);
+    } else if (argument_count != 1) {
+        return 2;
+    }
+    constexpr std::array<std::array<std::uint8_t, 96>, 10> cases = {{
         {},
         {1U, 0U, 0U, 0U, 0U, 0U, 0U, 0U},
         {0x7eU, 0x15U, 0x00U, 0x2bU, 0x2bU, 0x21U, 0x00U, 0x0aU},
+        {0x7eU, 0x00U, 0x00U, 0x2bU, 0x2bU, 0x01U, 0x00U, 0x0aU},
         {8U, 1U, 3U, 0xffU, 0U, 0x80U, 0x7fU, 0x55U},
         {8U, 2U, 4U, 1U, 2U, 3U, 4U, 5U},
         {8U, 3U, 5U, 0xffU, 0xffU, 0xffU, 0xffU, 0xffU},
@@ -50,6 +78,25 @@ int main() {
         input[4] = bound;
         input[5] = static_cast<std::uint8_t>(bound % 7U);
         if (LLVMFuzzerTestOneInput(input.data(), input.size()) != 0) {
+            return 1;
+        }
+    }
+    std::uint64_t random_state = 0x7265736f6e697468ULL;
+    for (
+        std::uint64_t iteration = 0U;
+        iteration < stress_count;
+        ++iteration
+    ) {
+        std::array<std::uint8_t, 96> input{};
+        const std::size_t size = 1U + static_cast<std::size_t>(
+            next_random(&random_state) % input.size()
+        );
+        for (std::size_t index = 0U; index < size; ++index) {
+            input[index] = static_cast<std::uint8_t>(
+                next_random(&random_state)
+            );
+        }
+        if (LLVMFuzzerTestOneInput(input.data(), size) != 0) {
             return 1;
         }
     }
@@ -96,8 +143,10 @@ int main() {
     std::printf(
         "{\"schema\":\"resonith-r202-v3-reachability-1\","
         "\"branches\":%zu,\"minimum_hits\":100,"
-        "\"v2_mutation_fuzz\":false,\"device_bytes\":0}\n",
-        reachability
+        "\"v2_mutation_fuzz\":false,\"stress_inputs\":%llu,"
+        "\"device_bytes\":0}\n",
+        reachability,
+        static_cast<unsigned long long>(stress_count)
     );
     return 0;
 }

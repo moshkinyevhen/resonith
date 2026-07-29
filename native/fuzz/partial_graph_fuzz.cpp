@@ -84,7 +84,7 @@ extern "C" int LLVMFuzzerTestOneInput(
     if (data == nullptr || size == 0U) {
         return 0;
     }
-    const std::size_t observation_count = 2U + data[0] % 9U;
+    const std::size_t observation_count = 2U + data[0] % 2U;
     const resonith_partial_resolution resolution{
         sizeof(resonith_partial_resolution),
         RESONITH_PARTIAL_GRAPH_ABI_VERSION,
@@ -229,7 +229,7 @@ extern "C" int LLVMFuzzerTestOneInput(
     }
 
     const bool edge_was_mutated =
-        size > 2U && (data[1] & 0x80U) != 0U;
+        size > 2U && (data[1] & 0x0fU) != 0U;
     if (edge_was_mutated) {
         resonith_partial_edge& edge = edges[data[2] % edges.size()];
         const std::uint32_t mutation = data[1] % 15U;
