@@ -47,6 +47,9 @@ Numbers from papers are statements made by the authors prior to independent repr
 - [Shier et al.: Differentiable Modelling of Percussive Audio with Transient and Spectral Synthesis](https://arxiv.org/abs/2309.06649)
 - [NVIDIA CUDA Programming Guide](https://docs.nvidia.com/cuda/cuda-programming-guide/index.html)
 - [NVIDIA CUDA Guide: Deterministic Floating-Point Results](https://docs.nvidia.com/cuda/cuda-programming-guide/05-appendices/mathematical-functions.html)
+- [Microsoft: Interface between exceptional and non-exceptional code](https://learn.microsoft.com/en-us/cpp/cpp/how-to-interface-between-exceptional-and-non-exceptional-code)
+- [LLVM: libFuzzer and structure-aware custom mutators](https://llvm.org/docs/LibFuzzer.html)
+- [LLVM: Structured fuzzing with libprotobuf-mutator](https://llvm.org/docs/FuzzingLLVM.html)
 - [Khronos Vulkan 1.4 Specification: two-call enumeration and incomplete output](https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html)
 - [C++ working draft: signed arithmetic overflow is undefined](https://eel.is/c++draft/basic.types)
 - [SEI CERT INT32-C: checked signed integer arithmetic](https://wiki.sei.cmu.edu/confluence/spaces/c/pages/87152210/INT32-C.%2BEnsure%2Bthat%2Boperations%2Bon%2Bsigned%2Bintegers%2Bdo%2Bnot%2Bresult%2Bin%2Boverflow)
@@ -84,6 +87,14 @@ Numbers from papers are statements made by the authors prior to independent repr
 ## Subjective evaluation
 
 - [ITU-R BS.1534 - MUSHRA](https://www.itu.int/rec/R-REC-BS.1534/en)
+
+## Memory safety and bounded ownership
+
+- [Generational Arena: ABA problem and generation-tagged indices](https://github.com/fitzgen/generational-arena)
+- [LLVM AddressSanitizer](https://clang.llvm.org/docs/AddressSanitizer.html)
+- [C++ working draft: memory resources](https://eel.is/c++draft/mem.res)
+- [NVIDIA CUDA Runtime API: memory management](https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html)
+- [Microsoft Application Verifier: testing applications](https://learn.microsoft.com/windows-hardware/drivers/devtest/application-verifier-testing-applications)
 
 ## Reproducible audio sources
 

@@ -1,5 +1,6 @@
 #include "resonith/partial_graph.h"
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -7,6 +8,23 @@
 #include <vector>
 
 namespace {
+
+constexpr std::size_t reachability_count = 11U;
+std::array<std::uint64_t, reachability_count> reachability{};
+
+enum reachability_index : std::size_t {
+    reach_v2_stub = 0U,
+    reach_edge_rejection = 1U,
+    reach_v3_preflight = 2U,
+    reach_stale_identity = 3U,
+    reach_path_capacity = 4U,
+    reach_entry_capacity = 5U,
+    reach_work_bound = 6U,
+    reach_host_bound = 7U,
+    reach_missing_identity = 8U,
+    reach_fill_success = 9U,
+    reach_cpu_device_zero = 10U,
+};
 
 std::uint32_t read_u32(
     const std::uint8_t* data,
@@ -43,6 +61,21 @@ bool byte_equal(
 }
 
 }  // namespace
+
+extern "C" void resonith_partial_graph_fuzz_reset_reachability() noexcept {
+    reachability.fill(0U);
+}
+
+extern "C" std::size_t
+resonith_partial_graph_fuzz_reachability_count() noexcept {
+    return reachability.size();
+}
+
+extern "C" std::uint64_t resonith_partial_graph_fuzz_reachability(
+    std::size_t index
+) noexcept {
+    return index < reachability.size() ? reachability[index] : 0U;
+}
 
 extern "C" int LLVMFuzzerTestOneInput(
     const std::uint8_t* data,
@@ -195,7 +228,9 @@ extern "C" int LLVMFuzzerTestOneInput(
         return 0;
     }
 
-    if (size > 2U && (data[1] & 0x80U) != 0U) {
+    const bool edge_was_mutated =
+        size > 2U && (data[1] & 0x80U) != 0U;
+    if (edge_was_mutated) {
         resonith_partial_edge& edge = edges[data[2] % edges.size()];
         const std::uint32_t mutation = data[1] % 15U;
         switch (mutation) {
@@ -217,9 +252,9 @@ extern "C" int LLVMFuzzerTestOneInput(
         }
     }
 
-    resonith_partial_path_manifest path{};
+    resonith_partial_path_manifest_v3 path{};
     path.struct_size = sizeof(path);
-    path.abi_version = RESONITH_PARTIAL_PATH_ABI_VERSION;
+    path.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
     path.second_order_law_version = 2U;
     path.protected_band_count = 1U;
     path.k_value_per_state = 2U;
@@ -233,6 +268,7 @@ extern "C" int LLVMFuzzerTestOneInput(
     path.exact_set_candidate_limit = 12U;
     path.amplitude_floor_q16 = 1U;
     path.amplitude_residual_weight_q8 = 256U;
+    path.work_ledger_version = RESONITH_PARTIAL_PATH_WORK_LEDGER_VERSION;
     path.frequency_sigma_floor_hz_q20 = 1U;
     path.birth_cost_bits_q8 = 16 * 256;
     path.death_cost_bits_q8 = 8 * 256;
@@ -243,6 +279,7 @@ extern "C" int LLVMFuzzerTestOneInput(
     path.maximum_state_records = 4096U;
     path.maximum_work_units = 2'000'000U;
     path.maximum_managed_bytes = 4U << 20U;
+    path.maximum_device_bytes = RESONITH_PARTIAL_MAX_DEVICE_BYTES;
     if (size > 5U && (data[3] & 0x40U) != 0U) {
         switch (data[4] % 8U) {
         case 0U: path.maximum_path_records = 1U; break;
@@ -256,11 +293,39 @@ extern "C" int LLVMFuzzerTestOneInput(
         }
     }
 
-    resonith_partial_path_report preflight{};
-    preflight.struct_size = sizeof(preflight);
-    preflight.abi_version = RESONITH_PARTIAL_PATH_ABI_VERSION;
-    const resonith_status preflight_status =
+    resonith_partial_path_report retired_v2{};
+    retired_v2.struct_size = sizeof(retired_v2);
+    retired_v2.abi_version = RESONITH_PARTIAL_PATH_ABI_VERSION;
+    const resonith_partial_path_report retired_v2_before = retired_v2;
+    require(
         resonith_partial_graph_paths_cpu_v2(
+            &resolution,
+            1U,
+            observations.data(),
+            observations.size(),
+            edges.data(),
+            edges.size(),
+            &graph,
+            nullptr,
+            nullptr,
+            0U,
+            nullptr,
+            0U,
+            &retired_v2
+        ) == RESONITH_STATUS_UNSUPPORTED_VERSION
+    );
+    require(std::memcmp(
+        &retired_v2,
+        &retired_v2_before,
+        sizeof(retired_v2)
+    ) == 0);
+    ++reachability[reach_v2_stub];
+
+    resonith_partial_path_report_v3 preflight{};
+    preflight.struct_size = sizeof(preflight);
+    preflight.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+    const resonith_status preflight_status =
+        resonith_partial_graph_paths_cpu_v3(
             &resolution,
             1U,
             observations.data(),
@@ -276,24 +341,24 @@ extern "C" int LLVMFuzzerTestOneInput(
             &preflight
         );
     if (preflight_status != RESONITH_STATUS_OK) {
-        std::vector<resonith_partial_path> rejected_paths(4U);
-        std::vector<resonith_partial_path_entry> rejected_entries(8U);
+        std::vector<resonith_partial_path_v3> rejected_paths(4U);
+        std::vector<resonith_partial_path_entry_v3> rejected_entries(8U);
         std::memset(
             rejected_paths.data(),
             0xa5,
-            rejected_paths.size() * sizeof(resonith_partial_path)
+            rejected_paths.size() * sizeof(resonith_partial_path_v3)
         );
         std::memset(
             rejected_entries.data(),
             0x5a,
-            rejected_entries.size() * sizeof(resonith_partial_path_entry)
+            rejected_entries.size() * sizeof(resonith_partial_path_entry_v3)
         );
         const auto rejected_paths_before = rejected_paths;
         const auto rejected_entries_before = rejected_entries;
-        resonith_partial_path_report rejected_report{};
+        resonith_partial_path_report_v3 rejected_report{};
         rejected_report.struct_size = sizeof(rejected_report);
-        rejected_report.abi_version = RESONITH_PARTIAL_PATH_ABI_VERSION;
-        static_cast<void>(resonith_partial_graph_paths_cpu_v2(
+        rejected_report.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+        static_cast<void>(resonith_partial_graph_paths_cpu_v3(
             &resolution,
             1U,
             observations.data(),
@@ -310,36 +375,46 @@ extern "C" int LLVMFuzzerTestOneInput(
         ));
         require(byte_equal(rejected_paths, rejected_paths_before));
         require(byte_equal(rejected_entries, rejected_entries_before));
+        require(rejected_report.reserved_device_bytes == 0U);
+        require(rejected_report.committed_device_bytes == 0U);
+        require(rejected_report.peak_live_device_bytes == 0U);
+        if (edge_was_mutated) {
+            ++reachability[reach_edge_rejection];
+        }
+        ++reachability[reach_cpu_device_zero];
         return 0;
     }
+    ++reachability[reach_v3_preflight];
     std::memcpy(
         path.expected_input_fingerprint,
         preflight.input_fingerprint,
         sizeof(path.expected_input_fingerprint)
     );
-    std::vector<resonith_partial_path> output_paths(
+    std::vector<resonith_partial_path_v3> output_paths(
         preflight.required_path_count + 2U
     );
-    std::vector<resonith_partial_path_entry> output_entries(
+    std::vector<resonith_partial_path_entry_v3> output_entries(
         preflight.required_entry_count + 2U
     );
     std::memset(
         output_paths.data(),
         0xa5,
-        output_paths.size() * sizeof(resonith_partial_path)
+        output_paths.size() * sizeof(resonith_partial_path_v3)
     );
     std::memset(
         output_entries.data(),
         0x5a,
-        output_entries.size() * sizeof(resonith_partial_path_entry)
+        output_entries.size() * sizeof(resonith_partial_path_entry_v3)
     );
     const auto paths_before = output_paths;
     const auto entries_before = output_entries;
 
     std::size_t path_capacity = preflight.required_path_count;
     std::size_t entry_capacity = preflight.required_entry_count;
+    std::uint32_t fill_mutation = 8U;
     if (size > 6U) {
-        switch (data[5] % 7U) {
+        fill_mutation = data[5] % 8U;
+        switch (fill_mutation) {
         case 0U:
             path.expected_input_fingerprint[0] ^= 1U;
             break;
@@ -362,14 +437,21 @@ extern "C" int LLVMFuzzerTestOneInput(
         case 5U:
             path.maximum_managed_bytes = 1U;
             break;
+        case 6U:
+            break;
         default:
+            std::memset(
+                path.expected_input_fingerprint,
+                0,
+                sizeof(path.expected_input_fingerprint)
+            );
             break;
         }
     }
-    resonith_partial_path_report fill{};
+    resonith_partial_path_report_v3 fill{};
     fill.struct_size = sizeof(fill);
-    fill.abi_version = RESONITH_PARTIAL_PATH_ABI_VERSION;
-    const resonith_status fill_status = resonith_partial_graph_paths_cpu_v2(
+    fill.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+    const resonith_status fill_status = resonith_partial_graph_paths_cpu_v3(
         &resolution,
         1U,
         observations.data(),
@@ -387,22 +469,22 @@ extern "C" int LLVMFuzzerTestOneInput(
     require(std::memcmp(
         output_paths.data(),
         paths_before.data(),
-        sizeof(resonith_partial_path)
+        sizeof(resonith_partial_path_v3)
     ) == 0);
     require(std::memcmp(
         output_paths.data() + output_paths.size() - 1U,
         paths_before.data() + paths_before.size() - 1U,
-        sizeof(resonith_partial_path)
+        sizeof(resonith_partial_path_v3)
     ) == 0);
     require(std::memcmp(
         output_entries.data(),
         entries_before.data(),
-        sizeof(resonith_partial_path_entry)
+        sizeof(resonith_partial_path_entry_v3)
     ) == 0);
     require(std::memcmp(
         output_entries.data() + output_entries.size() - 1U,
         entries_before.data() + entries_before.size() - 1U,
-        sizeof(resonith_partial_path_entry)
+        sizeof(resonith_partial_path_entry_v3)
     ) == 0);
     if (fill_status == RESONITH_STATUS_OK) {
         require(fill.written_path_count == preflight.required_path_count);
@@ -411,5 +493,45 @@ extern "C" int LLVMFuzzerTestOneInput(
         require(byte_equal(output_paths, paths_before));
         require(byte_equal(output_entries, entries_before));
     }
+    switch (fill_mutation) {
+    case 0U:
+    case 1U:
+        require(fill_status == RESONITH_STATUS_HASH_MISMATCH);
+        ++reachability[reach_stale_identity];
+        break;
+    case 2U:
+        require(fill_status == RESONITH_STATUS_OUTPUT_TOO_SMALL);
+        ++reachability[reach_path_capacity];
+        break;
+    case 3U:
+        require(fill_status == RESONITH_STATUS_OUTPUT_TOO_SMALL);
+        ++reachability[reach_entry_capacity];
+        break;
+    case 4U:
+        require(fill_status == RESONITH_STATUS_PROFILE_BOUND);
+        ++reachability[reach_work_bound];
+        break;
+    case 5U:
+        require(fill_status == RESONITH_STATUS_PROFILE_BOUND);
+        ++reachability[reach_host_bound];
+        break;
+    case 7U:
+        require(fill_status == RESONITH_STATUS_INVALID_ARGUMENT);
+        ++reachability[reach_missing_identity];
+        break;
+    default:
+        require(fill_status == RESONITH_STATUS_OK);
+        ++reachability[reach_fill_success];
+        break;
+    }
+    require(fill.reserved_host_bytes >= fill.committed_host_bytes);
+    require(fill.committed_host_bytes >= fill.peak_live_host_bytes);
+    require(fill.reserved_device_bytes == 0U);
+    require(fill.committed_device_bytes == 0U);
+    require(fill.peak_live_device_bytes == 0U);
+    require(
+        fill.work_event_counts[RESONITH_PARTIAL_WORK_CUDA_ITEM] == 0U
+    );
+    ++reachability[reach_cpu_device_zero];
     return 0;
 }

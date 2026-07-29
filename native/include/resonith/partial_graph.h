@@ -19,6 +19,9 @@ enum {
     RESONITH_PARTIAL_OBSERVATION_LOCALLY_RESOLVABLE = 2U,
     RESONITH_PARTIAL_OBSERVATION_PROTECTED_WEAK = 4U,
     RESONITH_PARTIAL_PATH_ABI_VERSION = 2U,
+    RESONITH_PARTIAL_PATH_V3_ABI_VERSION = 3U,
+    RESONITH_PARTIAL_PATH_WORK_LEDGER_VERSION = 1U,
+    RESONITH_PARTIAL_PATH_V3_WORK_EVENT_COUNT = 22U,
     RESONITH_PARTIAL_PATH_MAX_PROTECTED_BANDS = 128U,
     RESONITH_PARTIAL_PATH_FAMILY_LOCAL_POTENTIAL = 1U,
     RESONITH_PARTIAL_PATH_FAMILY_CONTINUITY = 2U,
@@ -27,8 +30,22 @@ enum {
     RESONITH_PARTIAL_PATH_INTERNAL_OWNERSHIP_CONFLICT = 2U,
     RESONITH_PARTIAL_PATH_PHASE_EVIDENCE = 4U,
     RESONITH_PARTIAL_PATH_REPORT_BOUND_HIT = 1U,
-    RESONITH_PARTIAL_PATH_REPORT_PRUNED = 2U
+    RESONITH_PARTIAL_PATH_REPORT_PRUNED = 2U,
+    RESONITH_PARTIAL_GRAPH_MAX_OBSERVATIONS = 1048576U,
+    RESONITH_PARTIAL_GRAPH_MAX_EDGE_RECORDS = 4194304U,
+    RESONITH_PARTIAL_PATH_MAX_OBSERVATIONS = 1048576U,
+    RESONITH_PARTIAL_PATH_MAX_RECORDS = 65536U,
+    RESONITH_PARTIAL_PATH_MAX_ENTRIES = 4194304U,
+    RESONITH_PARTIAL_PATH_MAX_FRONTIER_STATES = 1048576U,
+    RESONITH_PARTIAL_PATH_MAX_STATE_RECORDS = 4194304U,
+    RESONITH_PARTIAL_PATH_MAX_EXACT_SET_CANDIDATES = 24U,
+    RESONITH_PARTIAL_CUDA_MAX_BLOCKS = 65535U,
+    RESONITH_PARTIAL_CUDA_MAX_THREADS = 1024U
 };
+
+#define RESONITH_PARTIAL_MAX_WORK_EVENTS UINT64_C(281474976710655)
+#define RESONITH_PARTIAL_MAX_HOST_BYTES UINT64_C(8589934592)
+#define RESONITH_PARTIAL_MAX_DEVICE_BYTES UINT64_C(4294967296)
 
 #define RESONITH_PARTIAL_AMBIGUITY_NONE UINT32_MAX
 #define RESONITH_PARTIAL_PATH_RANK_ABSENT UINT32_MAX
@@ -38,13 +55,39 @@ typedef enum resonith_partial_path_termination {
     RESONITH_PARTIAL_PATH_TERMINATION_PROFILE_BOUND = 1,
     RESONITH_PARTIAL_PATH_TERMINATION_STALE_INPUT = 2,
     RESONITH_PARTIAL_PATH_TERMINATION_OUTPUT_TOO_SMALL = 3,
-    RESONITH_PARTIAL_PATH_TERMINATION_ENVIRONMENTAL_OOM = 4
+    RESONITH_PARTIAL_PATH_TERMINATION_ENVIRONMENTAL_OOM = 4,
+    RESONITH_PARTIAL_PATH_TERMINATION_INTERNAL_MALFORMED = 5
 } resonith_partial_path_termination;
 
 typedef enum resonith_partial_path_solver {
     RESONITH_PARTIAL_PATH_SOLVER_EXACT_SMALL = 0,
     RESONITH_PARTIAL_PATH_SOLVER_BOUNDED_GREEDY = 1
 } resonith_partial_path_solver;
+
+typedef enum resonith_partial_path_work_event {
+    RESONITH_PARTIAL_WORK_VALIDATE_RECORD = 0,
+    RESONITH_PARTIAL_WORK_SNAPSHOT_BYTE = 1,
+    RESONITH_PARTIAL_WORK_RADIX_BUCKET = 2,
+    RESONITH_PARTIAL_WORK_RADIX_CLASSIFY = 3,
+    RESONITH_PARTIAL_WORK_RADIX_SCATTER = 4,
+    RESONITH_PARTIAL_WORK_MERGE_COMPARE = 5,
+    RESONITH_PARTIAL_WORK_MERGE_MOVE = 6,
+    RESONITH_PARTIAL_WORK_GRAPH_SOURCE = 7,
+    RESONITH_PARTIAL_WORK_GRAPH_GAP = 8,
+    RESONITH_PARTIAL_WORK_GRAPH_TARGET = 9,
+    RESONITH_PARTIAL_WORK_GRAPH_CYCLE = 10,
+    RESONITH_PARTIAL_WORK_EDGE_FIELD = 11,
+    RESONITH_PARTIAL_WORK_LOOKUP = 12,
+    RESONITH_PARTIAL_WORK_STATE = 13,
+    RESONITH_PARTIAL_WORK_REFERENCE = 14,
+    RESONITH_PARTIAL_WORK_SELECT = 15,
+    RESONITH_PARTIAL_WORK_RECONSTRUCT = 16,
+    RESONITH_PARTIAL_WORK_MEMORY_PAGE = 17,
+    RESONITH_PARTIAL_WORK_STAGE_RECORD = 18,
+    RESONITH_PARTIAL_WORK_COMMIT_RECORD = 19,
+    RESONITH_PARTIAL_WORK_FINGERPRINT_BYTE = 20,
+    RESONITH_PARTIAL_WORK_CUDA_ITEM = 21
+} resonith_partial_path_work_event;
 
 /*
  * R-190 records are a versioned in-memory C ABI, not serialized Resonith
@@ -234,6 +277,134 @@ typedef struct resonith_partial_path_report {
     uint32_t flags;
     uint32_t reserved[7];
 } resonith_partial_path_report;
+
+/*
+ * R-197 path ABI v3 is the transactional, resource-accounted successor to
+ * the quarantined v2 analyzer ABI. These are in-memory analysis records, not
+ * serialized Resonith bitstream syntax.
+ */
+typedef struct resonith_partial_path_manifest_v3 {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t second_order_law_version;
+    uint32_t protected_band_count;
+    uint32_t k_value_per_state;
+    uint32_t k_continuity_per_state;
+    uint32_t top_k_value;
+    uint32_t top_k_continuity;
+    uint32_t top_k_protected;
+    uint32_t protected_paths_per_band;
+    uint32_t minimum_path_observations;
+    uint32_t maximum_path_observations;
+    uint32_t exact_set_candidate_limit;
+    uint32_t amplitude_floor_q16;
+    uint32_t amplitude_residual_weight_q8;
+    uint32_t work_ledger_version;
+    uint64_t frequency_sigma_floor_hz_q20;
+    int64_t birth_cost_bits_q8;
+    int64_t death_cost_bits_q8;
+    int64_t score_saturation;
+    uint64_t maximum_path_records;
+    uint64_t maximum_total_entries;
+    uint64_t maximum_frontier_states;
+    uint64_t maximum_state_records;
+    uint64_t maximum_work_units;
+    uint64_t maximum_managed_bytes;
+    uint64_t maximum_device_bytes;
+    uint64_t expected_input_fingerprint[4];
+    int64_t protected_band_upper_hz_q20[
+        RESONITH_PARTIAL_PATH_MAX_PROTECTED_BANDS - 1U
+    ];
+    uint32_t reserved[8];
+} resonith_partial_path_manifest_v3;
+
+typedef struct resonith_partial_path_v3 {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint64_t path_id;
+    uint64_t entry_offset;
+    uint32_t entry_count;
+    uint32_t family_flags;
+    uint64_t terminal_observation_id;
+    int64_t continuity_score_q8;
+    int64_t potential_node_value_q8;
+    int64_t uncertainty_leakage_penalty_q8;
+    int64_t provisional_program_cost_q8;
+    int64_t selection_score_q8;
+    uint64_t phase_error_sum_u64;
+    uint32_t phase_error_count;
+    uint32_t ownership_conflict_count;
+    uint32_t protected_band_id;
+    uint32_t value_rank;
+    uint32_t continuity_rank;
+    uint32_t protected_rank;
+    uint32_t flags;
+    uint32_t reserved[5];
+} resonith_partial_path_v3;
+
+typedef struct resonith_partial_path_entry_v3 {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint64_t observation_id;
+    uint64_t incoming_edge_candidate_id;
+    uint32_t ownership_component;
+    int32_t second_order_cost_q8;
+    uint32_t flags;
+    uint32_t reserved[3];
+} resonith_partial_path_entry_v3;
+
+typedef struct resonith_partial_path_report_v3 {
+    uint32_t struct_size;
+    uint32_t abi_version;
+    uint32_t termination;
+    uint32_t solver;
+    uint64_t required_path_count;
+    uint64_t required_entry_count;
+    uint64_t written_path_count;
+    uint64_t written_entry_count;
+    uint64_t raw_state_count;
+    uint64_t frontier_peak;
+    uint64_t work_units;
+    uint64_t peak_live_managed_bytes;
+    uint64_t selected_candidate_count;
+    uint64_t selected_path_count;
+    uint64_t internal_conflict_count;
+    uint64_t cross_path_conflict_count;
+    uint64_t score_saturation_count;
+    uint64_t value_family_count;
+    uint64_t continuity_family_count;
+    uint64_t protected_family_count;
+    uint64_t duplicate_state_count;
+    uint64_t terminal_retained_state_count;
+    uint64_t state_k_discarded_count;
+    uint64_t state_arena_peak;
+    uint64_t value_family_presented_count;
+    uint64_t continuity_family_presented_count;
+    uint64_t protected_family_presented_count;
+    uint64_t value_family_discarded_count;
+    uint64_t continuity_family_discarded_count;
+    uint64_t protected_family_discarded_count;
+    uint64_t output_deduplicated_count;
+    uint64_t bound_rejected_count;
+    uint64_t input_fingerprint[4];
+    uint64_t output_fingerprint[4];
+    uint64_t work_event_counts[RESONITH_PARTIAL_PATH_V3_WORK_EVENT_COUNT];
+    /*
+     * Per-call high-water provenance. Reserved counts profile-admitted
+     * outstanding bytes before the upstream outcome; committed counts bytes
+     * backed by successful upstream allocations; peak-live counts bytes made
+     * available to the analyzer. Therefore reserved >= committed >=
+     * peak-live. The CPU implementation reports all device fields as zero.
+     */
+    uint64_t reserved_host_bytes;
+    uint64_t committed_host_bytes;
+    uint64_t peak_live_host_bytes;
+    uint64_t reserved_device_bytes;
+    uint64_t committed_device_bytes;
+    uint64_t peak_live_device_bytes;
+    uint32_t flags;
+    uint32_t reserved[7];
+} resonith_partial_path_report_v3;
 
 #pragma pack(pop)
 
@@ -430,6 +601,31 @@ RESONITH_PARTIAL_OFFSET_ASSERT(
 RESONITH_PARTIAL_OFFSET_ASSERT(
     resonith_partial_path_report, reserved, 308U);
 
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, work_ledger_version, 60U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, maximum_work_units, 128U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, maximum_managed_bytes, 136U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, maximum_device_bytes, 144U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, expected_input_fingerprint, 152U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, protected_band_upper_hz_q20, 184U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, reserved, 1200U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, work_event_counts, 304U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, reserved_host_bytes, 480U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, reserved_device_bytes, 504U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, flags, 528U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, reserved, 532U);
+
 #undef RESONITH_PARTIAL_OFFSET_ASSERT
 
 /*
@@ -472,6 +668,27 @@ RESONITH_API resonith_status resonith_partial_graph_paths_cpu_v2(
     resonith_partial_path_report* report
 );
 
+/*
+ * Builds the transactional R-197 v3 path union. No path or entry byte is
+ * published until complete validation, bounded staging, and commit reservation
+ * succeed. Preflight passes null path/entry pointers and zero capacities.
+ */
+RESONITH_API resonith_status resonith_partial_graph_paths_cpu_v3(
+    const resonith_partial_resolution* resolutions,
+    size_t resolution_count,
+    const resonith_partial_observation* observations,
+    size_t observation_count,
+    const resonith_partial_edge* edges,
+    size_t edge_count,
+    const resonith_partial_graph_manifest* graph_manifest,
+    const resonith_partial_path_manifest_v3* path_manifest,
+    resonith_partial_path_v3* paths,
+    size_t path_capacity,
+    resonith_partial_path_entry_v3* entries,
+    size_t entry_capacity,
+    resonith_partial_path_report_v3* report
+);
+
 #ifdef __cplusplus
 }
 
@@ -483,6 +700,10 @@ static_assert(sizeof(resonith_partial_path_manifest) == 1224U);
 static_assert(sizeof(resonith_partial_path) == 136U);
 static_assert(sizeof(resonith_partial_path_entry) == 48U);
 static_assert(sizeof(resonith_partial_path_report) == 336U);
+static_assert(sizeof(resonith_partial_path_manifest_v3) == 1232U);
+static_assert(sizeof(resonith_partial_path_v3) == 136U);
+static_assert(sizeof(resonith_partial_path_entry_v3) == 48U);
+static_assert(sizeof(resonith_partial_path_report_v3) == 560U);
 #endif
 
 #endif

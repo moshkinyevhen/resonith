@@ -12,6 +12,9 @@ from reference.maf_p0.partial_graph_fixed import (
     LOCALLY_RESOLVABLE,
     MAX_PROTECTED_BANDS,
     PATH_ABI_VERSION,
+    PATH_V3_ABI_VERSION,
+    PATH_V3_WORK_EVENT_COUNT,
+    PATH_WORK_EVENT_NAMES,
     PATH_FAMILY_PROTECTED_WEAK,
     PATH_FLAG_INTERNAL_OWNERSHIP_CONFLICT,
     PATH_FLAG_SELECTED,
@@ -25,6 +28,10 @@ from reference.maf_p0.partial_graph_fixed import (
     PartialPathEntry,
     PartialPathManifest,
     PartialPathReport,
+    PartialPathEntryV3,
+    PartialPathManifestV3,
+    PartialPathReportV3,
+    PartialPathV3,
     PartialResolution,
     build_paths_fixed,
     enumerate_edges_fixed,
@@ -34,6 +41,7 @@ from reference.maf_p0.partial_graph_fixed import (
     make_observation,
     make_path_manifest,
     make_resolution,
+    upgrade_path_manifest_v3,
 )
 
 
@@ -138,6 +146,35 @@ def test_fixed_abi_sizes_and_integer_log_law() -> None:
     assert ctypes.sizeof(PartialEdge) == 80
     assert log2_one_plus_ratio_q8(0, 1) == 0
     assert log2_one_plus_ratio_q8(1, 1) == 256
+
+
+def test_transactional_path_v3_abi_layout() -> None:
+    assert PATH_V3_ABI_VERSION == 3
+    assert PATH_V3_WORK_EVENT_COUNT == 22
+    assert ctypes.sizeof(PartialPathManifestV3) == 1232
+    assert ctypes.sizeof(PartialPathV3) == 136
+    assert ctypes.sizeof(PartialPathEntryV3) == 48
+    assert ctypes.sizeof(PartialPathReportV3) == 560
+    assert PartialPathManifestV3.work_ledger_version.offset == 60
+    assert PartialPathManifestV3.maximum_device_bytes.offset == 144
+    assert PartialPathManifestV3.expected_input_fingerprint.offset == 152
+    assert PartialPathReportV3.work_event_counts.offset == 304
+    assert PartialPathReportV3.reserved_host_bytes.offset == 480
+    assert PartialPathReportV3.reserved_device_bytes.offset == 504
+    assert PartialPathReportV3.flags.offset == 528
+
+    legacy = make_path_manifest(
+        protected_band_upper_hz_q20=(500 << 20,),
+    )
+    upgraded = upgrade_path_manifest_v3(
+        legacy,
+        maximum_device_bytes=123456,
+    )
+    assert upgraded.struct_size == 1232
+    assert upgraded.abi_version == PATH_V3_ABI_VERSION
+    assert upgraded.maximum_device_bytes == 123456
+    assert upgraded.maximum_managed_bytes == legacy.maximum_managed_bytes
+    assert upgraded.protected_band_upper_hz_q20[0] == 500 << 20
     assert log2_one_plus_ratio_q8(3, 1) == 512
     assert (
         log2_one_plus_ratio_q8(1, 2)
@@ -405,13 +442,81 @@ def test_cpp23_path_union_is_bit_exact_to_python_oracle() -> None:
     assert actual.report["output_deduplicated_count"] > 0
     assert actual.report["bound_rejected_count"] == 0
     assert actual.report["flags"] & 2
+    assert actual.report["input_fingerprint"] == (
+        14681656237124231420,
+        14217794624446866229,
+        3318052838151244206,
+        15337156228999464508,
+    )
+    assert actual.report["output_fingerprint"] == (
+        533898623865692396,
+        9232259795300133137,
+        5802264844233550618,
+        5931678949044348120,
+    )
+    assert (
+        actual.report["input_fingerprint"]
+        == permuted_actual.report["input_fingerprint"]
+    )
+    assert (
+        actual.report["output_fingerprint"]
+        == permuted_actual.report["output_fingerprint"]
+    )
+    assert actual.report["work_units"] == permuted_actual.report["work_units"]
+    assert (
+        actual.report["work_event_counts"]
+        == permuted_actual.report["work_event_counts"]
+    )
+    assert (
+        actual.report["peak_live_managed_bytes"]
+        == permuted_actual.report["peak_live_managed_bytes"]
+    )
+    assert (
+        actual.report["reserved_host_bytes"]
+        >= actual.report["committed_host_bytes"]
+        >= actual.report["peak_live_host_bytes"]
+        > 0
+    )
+    assert actual.report["reserved_device_bytes"] == 0
+    assert actual.report["committed_device_bytes"] == 0
+    assert actual.report["peak_live_device_bytes"] == 0
+    event_counts = dict(zip(
+        PATH_WORK_EVENT_NAMES,
+        actual.report["work_event_counts"],
+        strict=True,
+    ))
+    assert actual.report["work_units"] == sum(event_counts.values())
+    assert event_counts == {
+        "VALIDATE_RECORD": 60,
+        "SNAPSHOT_BYTE": 12760,
+        "RADIX_BUCKET": 36 * 2 * 256,
+        "RADIX_CLASSIFY": 4 + 5 * 32,
+        "RADIX_SCATTER": 4 + 5 * 32,
+        "MERGE_COMPARE": 298,
+        "MERGE_MOVE": 636,
+        "GRAPH_SOURCE": 15,
+        "GRAPH_GAP": 30,
+        "GRAPH_TARGET": 150,
+        "GRAPH_CYCLE": 27,
+        "EDGE_FIELD": 405,
+        "LOOKUP": 2312,
+        "STATE": 438,
+        "REFERENCE": 710,
+        "SELECT": 3538,
+        "RECONSTRUCT": 190,
+        "MEMORY_PAGE": 1839,
+        "STAGE_RECORD": 129,
+        "COMMIT_RECORD": 33,
+        "FINGERPRINT_BYTE": 9632,
+        "CUDA_ITEM": 0,
+    }
 
 
 @pytest.mark.skipif(
     not os.environ.get("RESONITH_NATIVE_CORE"),
     reason="set RESONITH_NATIVE_CORE to the shared C++23 library",
 )
-def test_v2_managed_memory_work_and_state_limits_are_exact() -> None:
+def test_v3_managed_memory_work_and_state_limits_are_exact() -> None:
     observations, edges, graph_manifest, path_manifest = _path_fixture()
     resolutions = (make_resolution(7, 1024, 128),)
     native = NativePartialGraph(os.environ["RESONITH_NATIVE_CORE"])
@@ -435,7 +540,15 @@ def test_v2_managed_memory_work_and_state_limits_are_exact() -> None:
     ):
         rejected = PartialPathManifest.from_buffer_copy(bytes(path_manifest))
         setattr(rejected, field, measured - 1)
-        with pytest.raises(RuntimeError, match="preflight failed: 6"):
+        failure_stage = (
+            "fill"
+            if field in ("maximum_managed_bytes", "maximum_work_units")
+            else "preflight"
+        )
+        with pytest.raises(
+            RuntimeError,
+            match=rf"{failure_stage} failed: 6",
+        ):
             native.paths(
                 resolutions,
                 observations,

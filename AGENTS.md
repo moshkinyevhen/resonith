@@ -66,6 +66,42 @@ Never present a **TARGET** or **HYPOTHESIS** as a measured result.
     resource limits; assign an independent red-team subagent; resolve its
     blocking findings in writing; record the decision and kill gates; only
     then implement. Pre-audit exploratory code is non-admitted scratch.
+16. Treat every passing diagnostic, architecture gate, alpha, beta, and
+    release candidate as a checkpoint rather than a stopping condition.
+    Continue with the next dependency-ready item in
+    `docs/20_LSPF_MASTER_EXECUTION_PLAN.md` through Resonith 1.0 and its Orkela
+    integration unless the project owner stops the work or a genuine external
+    blocker prevents useful progress.
+17. Apply R-196 acceptance timing. A material step is the smallest
+    independently falsifiable work package that can alter syntax, decoded
+    samples/state, an admitted encoder language or RDO policy, resource or
+    security behavior, shipped compatibility/API/platform behavior, evidence
+    semantics, or a public claim. Before admitted implementation, freeze the
+    incumbent, brainstorm and falsify materially different alternatives,
+    review current primary sources and project evidence, declare byte,
+    quality, resource, compatibility and stopping gates, and obtain a written
+    binary GO from an independent auditor subagent that did not author the
+    proposal. An unresolved blocking finding is NO-GO.
+18. No codec or player change is an accepted improvement until its full
+    comparative acceptance gate and report pass. Tightly coupled edits may
+    remain inside one reviewed experimental generation while its frozen model,
+    scope, bounds and kill gates remain unchanged; use focused tests during
+    implementation, then run the complete acceptance gate before retaining the
+    generation, default, version, release, or improvement claim. Audit control
+    work is not recursively audited. Mechanical identical-output refactors,
+    formatting, typo corrections, invariant tests, and non-normative
+    documentation receive focused validation only.
+19. After every codec algorithm change, run the complete registered music
+    corpus before starting the next algorithm generation. Decode actual
+    Resonith outputs and compare every file against both the immediately
+    preceding Resonith generation and the current maximum-effort official Opus
+    anchor from identical PCM. Publish a detailed English per-file and
+    aggregate report covering complete bytes, bitrate, objective quality,
+    spectral/phase/transient/stereo behavior, encode/decode time, CPU/GPU,
+    memory, hashes, fallbacks and regressions. The corpus is the full
+    versioned music manifest, not a hand-picked three-file subset. A mechanical
+    refactor qualifies for the focused identical-output exception only when
+    bitstream and decoded PCM identity are proven.
 
 ## Repository language
 
@@ -123,3 +159,7 @@ After a change, verify:
 14. a rate-only or quality-only win receives a bounded refinement of the
     missing axis before generation freeze, and real-audio comparisons use the
     maximum-effort official Opus frontier.
+15. every algorithm generation runs and publishes the complete registered
+    music-manifest comparison against the immediately preceding Resonith
+    generation and maximum-effort official Opus before another algorithm
+    generation begins.

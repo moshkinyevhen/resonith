@@ -61,7 +61,7 @@ jobs:
             --no-tests=error \
             2>&1 | tee build/linux-sanitized/evidence/ctest.log
 
-      - name: Run bounded current-scope partial-graph fuzzing
+      - name: Run quantitative ABI-v3 partial-graph fuzz floors
         shell: bash
         env:
           ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
@@ -70,11 +70,17 @@ jobs:
           set -euo pipefail
           mkdir -p build/linux-sanitized/evidence/crashes
           build/linux-sanitized/resonith_partial_graph_fuzz \
-            -runs=50000 \
-            -max_total_time=120 \
+            -runs=2000000 \
+            -max_total_time=0 \
             -timeout=5 \
             -artifact_prefix=build/linux-sanitized/evidence/crashes/ \
-            2>&1 | tee build/linux-sanitized/evidence/fuzz.log
+            2>&1 | tee build/linux-sanitized/evidence/fuzz-runs.log
+          build/linux-sanitized/resonith_partial_graph_fuzz \
+            -runs=-1 \
+            -max_total_time=900 \
+            -timeout=5 \
+            -artifact_prefix=build/linux-sanitized/evidence/crashes/ \
+            2>&1 | tee build/linux-sanitized/evidence/fuzz-time.log
 
       - name: Record sanitizer evidence
         if: always()
@@ -251,6 +257,8 @@ jobs:
             resonith_maf_test
             resonith_maf_typed_test
             resonith_partial_graph_test
+            resonith_partial_graph_allocation_tripwire_test
+            resonith_partial_graph_allocation_ordinal_test
             resonith_partial_graph_fuzz_smoke
             resonith_maf_fuzz_smoke
             resonith_maf_typed_fuzz_smoke
@@ -271,9 +279,12 @@ jobs:
             "$build/libresonith_core_shared.dynamic.txt"
           "$llvm_root/llvm-nm" -D --defined-only "$shared" \
             > "$build/shared-exported-symbols.txt"
-          grep -Fq \
-            "resonith_partial_graph_paths_cpu_v2" \
-            "$build/shared-exported-symbols.txt"
+          for symbol in \
+            resonith_partial_graph_edges_cpu \
+            resonith_partial_graph_paths_cpu_v2 \
+            resonith_partial_graph_paths_cpu_v3; do
+            grep -Fq "$symbol" "$build/shared-exported-symbols.txt"
+          done
           for test_name in "${tests[@]}"; do
             test -x "$build/$test_name"
             "$llvm_root/llvm-readelf" -h "$build/$test_name" \
@@ -354,6 +365,8 @@ jobs:
             resonith_maf_test
             resonith_maf_typed_test
             resonith_partial_graph_test
+            resonith_partial_graph_allocation_tripwire_test
+            resonith_partial_graph_allocation_ordinal_test
             resonith_partial_graph_fuzz_smoke
             resonith_maf_fuzz_smoke
             resonith_maf_typed_fuzz_smoke
@@ -398,6 +411,8 @@ jobs:
             resonith_maf_test
             resonith_maf_typed_test
             resonith_partial_graph_test
+            resonith_partial_graph_allocation_tripwire_test
+            resonith_partial_graph_allocation_ordinal_test
             resonith_partial_graph_fuzz_smoke
             resonith_maf_fuzz_smoke
             resonith_maf_typed_fuzz_smoke
@@ -567,6 +582,8 @@ jobs:
             resonith_maf_test
             resonith_maf_typed_test
             resonith_partial_graph_test
+            resonith_partial_graph_allocation_tripwire_test
+            resonith_partial_graph_allocation_ordinal_test
             resonith_partial_graph_fuzz_smoke
             resonith_maf_fuzz_smoke
             resonith_maf_typed_fuzz_smoke

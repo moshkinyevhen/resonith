@@ -269,6 +269,7 @@ jobs:
           resonith_lapped_packet_fuzz
           resonith_lapped_compact_fuzz
           resonith_lapped_finite_fuzz
+          resonith_partial_graph_fuzz
           --parallel
       - name: Generate deterministic valid corpus
         run: python scripts/generate_fuzz_corpus.py artifacts/fuzz_corpus
@@ -320,4 +321,10 @@ jobs:
           artifacts/fuzz_corpus/lapped_finite
           -runs=5000
           -max_len=65536
+          -timeout=10
+      - name: Run ABI-v3 partial-graph mutation smoke test
+        run: >
+          build/fuzz/resonith_partial_graph_fuzz
+          -runs=5000
+          -max_len=4096
           -timeout=10

@@ -1,11 +1,19 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 
 extern "C" int LLVMFuzzerTestOneInput(
     const std::uint8_t* data,
     std::size_t size
 );
+extern "C" void
+resonith_partial_graph_fuzz_reset_reachability() noexcept;
+extern "C" std::size_t
+resonith_partial_graph_fuzz_reachability_count() noexcept;
+extern "C" std::uint64_t resonith_partial_graph_fuzz_reachability(
+    std::size_t index
+) noexcept;
 
 int main() {
     constexpr std::array<std::array<std::uint8_t, 96>, 8> cases = {{
@@ -44,5 +52,51 @@ int main() {
             return 1;
         }
     }
+    resonith_partial_graph_fuzz_reset_reachability();
+    for (std::uint32_t repetition = 0U; repetition < 100U; ++repetition) {
+        std::array<std::uint8_t, 96> baseline{};
+        baseline[0] = 8U;
+        baseline[5] = 6U;
+        if (
+            LLVMFuzzerTestOneInput(baseline.data(), baseline.size()) != 0
+        ) {
+            return 1;
+        }
+        for (std::uint8_t mutation = 0U; mutation < 15U; ++mutation) {
+            std::array<std::uint8_t, 96> input{};
+            input[0] = 8U;
+            input[1] = static_cast<std::uint8_t>(
+                0x80U + ((mutation + 7U) % 15U)
+            );
+            input[2] = mutation;
+            if (LLVMFuzzerTestOneInput(input.data(), input.size()) != 0) {
+                return 1;
+            }
+        }
+        for (std::uint8_t mutation = 0U; mutation < 8U; ++mutation) {
+            std::array<std::uint8_t, 96> input{};
+            input[0] = 8U;
+            input[5] = mutation;
+            if (LLVMFuzzerTestOneInput(input.data(), input.size()) != 0) {
+                return 1;
+            }
+        }
+    }
+    const std::size_t reachability =
+        resonith_partial_graph_fuzz_reachability_count();
+    if (reachability != 11U) {
+        return 1;
+    }
+    for (std::size_t index = 0U; index < reachability; ++index) {
+        if (resonith_partial_graph_fuzz_reachability(index) < 100U) {
+            return 1;
+        }
+    }
+    std::printf(
+        "{\"schema\":\"resonith-r202-v3-reachability-1\","
+        "\"branches\":%zu,\"minimum_hits\":100,"
+        "\"v2_mutation_fuzz\":false,\"device_bytes\":0}\n",
+        reachability
+    );
     return 0;
 }

@@ -467,3 +467,102 @@ No anchor opcode is admitted until the complete R-118, maximum-effort Opus,
 native deterministic synthesis, checkpoint, corruption, and listening gates
 pass. The complete adversarial record is
 [R-193 Phase-Innovation Anchor Audit](reviews/R193_PHASE_INNOVATION_ANCHOR_AUDIT_2026-07-28.md).
+
+## 14. Continuous completion train through Resonith 1.0
+
+R-194 makes this plan continuous through a public Resonith 1.0 release and its
+native Orkela integration. Sections 1 through 13 are architecture checkpoints,
+not terminal project states.
+
+The remaining dependency order is:
+
+1. finish R-191 through four separately visible dependency gates:
+   - hard maxima, bounded snapshot, no-alias and exact canonical-edge
+     verification;
+   - transactional count/stage/commit publication for R-190 edges and R-191
+     paths without partial caller writes;
+   - exact work-law v1 plus generation-safe arena ownership;
+   - complete PMR provenance, pre-entry allocation tripwire and separate
+     host/device accounting;
+   then obtain the required independent post-remediation GO;
+   R-199 amends only the impossible absolute ordering between semantic rows
+   6–8 and resource row 9: after rows 1–5, the earliest determinable semantic
+   failure wins, while exhaustion wins if the caller bound is reached first;
+2. admit R-192 only as decoder-domain hypotheses generated from the audited
+   anonymous partial graph;
+3. execute the R-193 free exact-phase oracle, then implement sparse
+   phase-innovation anchors only if its byte/quality kill gates pass;
+4. integrate arbitrary-interval gridless multiscale search, CompoundBasis and
+   bounded gap laws across time, frequency and channels;
+5. integrate immutable transformed-Basis instances with phase, pitch, time,
+   envelope, filter and route laws plus one exact or quantized final
+   TruthCorrection;
+6. assign coherent, bounded-inharmonic, transient, stochastic and route
+   structures to separately owned lanes so no energy is paid twice;
+7. integrate persistent state/entropy and one global
+   byte-quality-decoder-compute RDO over all lanes and direct Truth;
+8. move full proposer/search batches to CUDA or another available compute GPU,
+   retain a deterministic CPU fallback, and keep normative decoding on the
+   bounded integer CPU/DSP core;
+9. expose optional Gemini/local-model proposals without allowing semantic
+   labels, cloud availability, or AI output to decide syntax;
+10. optimize the native C++23 Studio and Foundry encoders, the decoder SDK and
+    CLI; retain Python solely as an unshipped oracle/control plane;
+11. run long-first generations against the maximum-effort official Opus
+    frontier, perform the required missing-axis refinement, then tune short
+    material without deleting the long incumbent;
+12. freeze Resonith bitstream v1 only after conformance, corruption, random
+    access, packet loss, resource, determinism, platform and listening gates;
+13. publish Resonith 1.0 with encoder, decoder, SDK, CLI, specification,
+    corpus evidence, reproducible reports, listening assets and Orkela
+    integration.
+
+Focused validation follows every implementation change. The full R-118,
+platform and listening unions execute only at a declared generation,
+release-candidate or release boundary unless a focused failure demonstrates
+that a broad rerun is required. Passing an intermediate item advances
+immediately to the next dependency-ready item.
+
+Every codec algorithm change is a declared evidence generation. Before the next
+algorithm change begins, it runs every item in the versioned registered-music
+manifest and publishes a detailed per-file and aggregate comparison against
+the immediately preceding Resonith generation and the current maximum-effort
+official Opus anchor. This music gate is additional to the complete R-118 union
+and cannot be replaced by the three principal references.
+
+R-201 completed the fourth implementation dependency above with an independent
+Step-8 GO: exact reserved/committed/live host provenance, checked page
+transitions, an immutable work ceiling, a pre-entry global-allocation
+tripwire, and truthful CPU device zeros. R-191 remains unadmitted while Step 9
+runs allocation-ordinal, structured-fuzz, sanitizer, and platform evidence and
+Step 10 performs the final independent conformance decision.
+
+## 15. R-195 integrated MAF-first generation
+
+Before non-blocking Orkela product expansion, build one integrated candidate
+union containing all of the following:
+
+- remediated R-191 anonymous multi-partial graph;
+- persistent source/resonator/excitation/route lifetimes;
+- R-193 continuous/phase-locked oracle alternatives;
+- content-defined exact motifs at arbitrary sample boundaries;
+- gridless multiscale approximate patterns and cross-channel relationships;
+- CompoundBasis with sparse bounded gap laws;
+- transformed immutable Basis instances;
+- Cached Integer Basis Synthesis for per-file learned immutable atoms;
+- separately owned coherent, bounded-inharmonic, transient, stochastic and
+  route lanes;
+- source-filter/resonator, stochastic-law, transient-event and inter-channel
+  route candidates;
+- persistent entropy/allocation state;
+- one global complete-byte, decoded-quality, decoder-work and memory RDO;
+- full GPU proposer/search batching, deterministic CPU fallback, and
+  CPU/DSP-only normative decode;
+- optional Gemini/local-model proposals and Foundry-to-consumer router
+  distillation, neither of which can override exact local RDO.
+
+The generation is measured long-first, then on the complete R-118 union
+against the preceding Resonith release, direct Truth and maximum-effort
+official Opus. Any one-axis win receives its bounded missing-axis refinement
+before the generation freezes. Orkela is changed only as required to decode,
+inspect and audition this generation until that evidence is complete.

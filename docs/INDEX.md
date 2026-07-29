@@ -31,6 +31,9 @@
 | [reviews/R191_POST_IMPLEMENTATION_RED_TEAM_2026-07-28.md](reviews/R191_POST_IMPLEMENTATION_RED_TEAM_2026-07-28.md) | Post-implementation NO-GO, reproduced blockers, rejected shortcuts, and bounded remediation package |
 | [reviews/R192_MULTI_PARTIAL_PREDICTOR_PREFLIGHT_2026-07-28.md](reviews/R192_MULTI_PARTIAL_PREDICTOR_PREFLIGHT_2026-07-28.md) | Pre-audit alternatives, source evidence, phase laws, and kill gates for decoder-domain multi-partial prediction |
 | [reviews/R193_PHASE_INNOVATION_ANCHOR_AUDIT_2026-07-28.md](reviews/R193_PHASE_INNOVATION_ANCHOR_AUDIT_2026-07-28.md) | Independent prior-art correction, counterexamples, ablations, and kill gates for persistent phase innovations |
+| [reviews/R199_R197_PRECEDENCE_AMENDMENT_2026-07-29.md](reviews/R199_R197_PRECEDENCE_AMENDMENT_2026-07-29.md) | Caller-bounded, earliest-determinable failure precedence amendment for transactional path ABI v3 |
+| [reviews/R200_GENERATION_SAFE_ARENA_DESIGN_2026-07-29.md](reviews/R200_GENERATION_SAFE_ARENA_DESIGN_2026-07-29.md) | Audited generation-tagged ownership, rank/link invariants, rollback, and rejected overengineering |
+| [reviews/R201_MEMORY_PROVENANCE_PREFLIGHT_2026-07-29.md](reviews/R201_MEMORY_PROVENANCE_PREFLIGHT_2026-07-29.md) | Independent counter semantics, allocation-tripwire scope, rollback obligations, and rejected fake device accounting |
 | [results/EXTENDED_AUDIO_CORPUS_2026-07-27.md](results/EXTENDED_AUDIO_CORPUS_2026-07-27.md) | R-111 heterogeneous corpus acquisition, coverage, and preparation evidence |
 | [results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md](results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md) | R-107 gain-shape results against Opus across all 16 R-111 classes |
 | [results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md](results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md) | R-107 complete speech, piano, and full-Mozart admission result |
@@ -55,6 +58,10 @@
 | [results/CAUSAL_BASIS_TRUTH_R176_2026-07-28.md](results/CAUSAL_BASIS_TRUTH_R176_2026-07-28.md) | R-176 complete CBF1 plus final-Truth rejection and R-177 analyzer pivot |
 | [results/COMPLEX_PARTIAL_R187_2026-07-28.md](results/COMPLEX_PARTIAL_R187_2026-07-28.md) | Audited canonical-peak, crossing-chirp, weak-line, phase, and finite-resource analyzer gate |
 | [results/NATIVE_PARTIAL_GRAPH_R190_R191_2026-07-28.md](results/NATIVE_PARTIAL_GRAPH_R190_R191_2026-07-28.md) | Native C++23/Python/CUDA exact partial-edge and K-best path parity gate |
+| [results/R197_TRANSACTIONAL_ABI_V3_GATE_2026-07-29.md](results/R197_TRANSACTIONAL_ABI_V3_GATE_2026-07-29.md) | Transactional path ABI v3, no-write failure precedence, v2 retirement, and cross-language gate |
+| [results/R199_WORK_LEDGER_FINGERPRINT_GATE_2026-07-29.md](results/R199_WORK_LEDGER_FINGERPRINT_GATE_2026-07-29.md) | Exact 22-event work law, canonical fingerprints, R-199 precedence pipeline, and focused evidence |
+| [results/R200_GENERATION_SAFE_ARENA_GATE_2026-07-29.md](results/R200_GENERATION_SAFE_ARENA_GATE_2026-07-29.md) | Generation-safe ownership, multi-slot ABA/LIFO, rollback, and focused conformance evidence |
+| [results/R201_MEMORY_PROVENANCE_GATE_2026-07-29.md](results/R201_MEMORY_PROVENANCE_GATE_2026-07-29.md) | Independent host high-water counters, checked page transitions, armed global-allocation tripwire, and truthful CPU device-zero evidence |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |

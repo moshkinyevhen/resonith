@@ -107,6 +107,33 @@ class PartialEdge(ctypes.Structure):
 
 
 PATH_ABI_VERSION = 2
+PATH_V3_ABI_VERSION = 3
+PATH_WORK_LEDGER_VERSION = 1
+PATH_V3_WORK_EVENT_COUNT = 22
+PATH_WORK_EVENT_NAMES = (
+    "VALIDATE_RECORD",
+    "SNAPSHOT_BYTE",
+    "RADIX_BUCKET",
+    "RADIX_CLASSIFY",
+    "RADIX_SCATTER",
+    "MERGE_COMPARE",
+    "MERGE_MOVE",
+    "GRAPH_SOURCE",
+    "GRAPH_GAP",
+    "GRAPH_TARGET",
+    "GRAPH_CYCLE",
+    "EDGE_FIELD",
+    "LOOKUP",
+    "STATE",
+    "REFERENCE",
+    "SELECT",
+    "RECONSTRUCT",
+    "MEMORY_PAGE",
+    "STAGE_RECORD",
+    "COMMIT_RECORD",
+    "FINGERPRINT_BYTE",
+    "CUDA_ITEM",
+)
 MAX_PROTECTED_BANDS = 128
 PATH_FAMILY_LOCAL_POTENTIAL = 1
 PATH_FAMILY_CONTINUITY = 2
@@ -236,6 +263,106 @@ class PartialPathReport(ctypes.Structure):
         ("bound_rejected_count", ctypes.c_uint64),
         ("input_fingerprint", ctypes.c_uint64 * 4),
         ("output_fingerprint", ctypes.c_uint64 * 4),
+        ("flags", ctypes.c_uint32),
+        ("reserved", ctypes.c_uint32 * 7),
+    ]
+
+
+class PartialPathManifestV3(ctypes.Structure):
+    """Packed transactional R-197 path policy; never serialized."""
+
+    _pack_ = 1
+    _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("abi_version", ctypes.c_uint32),
+        ("second_order_law_version", ctypes.c_uint32),
+        ("protected_band_count", ctypes.c_uint32),
+        ("k_value_per_state", ctypes.c_uint32),
+        ("k_continuity_per_state", ctypes.c_uint32),
+        ("top_k_value", ctypes.c_uint32),
+        ("top_k_continuity", ctypes.c_uint32),
+        ("top_k_protected", ctypes.c_uint32),
+        ("protected_paths_per_band", ctypes.c_uint32),
+        ("minimum_path_observations", ctypes.c_uint32),
+        ("maximum_path_observations", ctypes.c_uint32),
+        ("exact_set_candidate_limit", ctypes.c_uint32),
+        ("amplitude_floor_q16", ctypes.c_uint32),
+        ("amplitude_residual_weight_q8", ctypes.c_uint32),
+        ("work_ledger_version", ctypes.c_uint32),
+        ("frequency_sigma_floor_hz_q20", ctypes.c_uint64),
+        ("birth_cost_bits_q8", ctypes.c_int64),
+        ("death_cost_bits_q8", ctypes.c_int64),
+        ("score_saturation", ctypes.c_int64),
+        ("maximum_path_records", ctypes.c_uint64),
+        ("maximum_total_entries", ctypes.c_uint64),
+        ("maximum_frontier_states", ctypes.c_uint64),
+        ("maximum_state_records", ctypes.c_uint64),
+        ("maximum_work_units", ctypes.c_uint64),
+        ("maximum_managed_bytes", ctypes.c_uint64),
+        ("maximum_device_bytes", ctypes.c_uint64),
+        ("expected_input_fingerprint", ctypes.c_uint64 * 4),
+        (
+            "protected_band_upper_hz_q20",
+            ctypes.c_int64 * (MAX_PROTECTED_BANDS - 1),
+        ),
+        ("reserved", ctypes.c_uint32 * 8),
+    ]
+
+
+class PartialPathV3(ctypes.Structure):
+    _pack_ = 1
+    _fields_ = PartialPath._fields_
+
+
+class PartialPathEntryV3(ctypes.Structure):
+    _pack_ = 1
+    _fields_ = PartialPathEntry._fields_
+
+
+class PartialPathReportV3(ctypes.Structure):
+    _pack_ = 1
+    _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("abi_version", ctypes.c_uint32),
+        ("termination", ctypes.c_uint32),
+        ("solver", ctypes.c_uint32),
+        ("required_path_count", ctypes.c_uint64),
+        ("required_entry_count", ctypes.c_uint64),
+        ("written_path_count", ctypes.c_uint64),
+        ("written_entry_count", ctypes.c_uint64),
+        ("raw_state_count", ctypes.c_uint64),
+        ("frontier_peak", ctypes.c_uint64),
+        ("work_units", ctypes.c_uint64),
+        ("peak_live_managed_bytes", ctypes.c_uint64),
+        ("selected_candidate_count", ctypes.c_uint64),
+        ("selected_path_count", ctypes.c_uint64),
+        ("internal_conflict_count", ctypes.c_uint64),
+        ("cross_path_conflict_count", ctypes.c_uint64),
+        ("score_saturation_count", ctypes.c_uint64),
+        ("value_family_count", ctypes.c_uint64),
+        ("continuity_family_count", ctypes.c_uint64),
+        ("protected_family_count", ctypes.c_uint64),
+        ("duplicate_state_count", ctypes.c_uint64),
+        ("terminal_retained_state_count", ctypes.c_uint64),
+        ("state_k_discarded_count", ctypes.c_uint64),
+        ("state_arena_peak", ctypes.c_uint64),
+        ("value_family_presented_count", ctypes.c_uint64),
+        ("continuity_family_presented_count", ctypes.c_uint64),
+        ("protected_family_presented_count", ctypes.c_uint64),
+        ("value_family_discarded_count", ctypes.c_uint64),
+        ("continuity_family_discarded_count", ctypes.c_uint64),
+        ("protected_family_discarded_count", ctypes.c_uint64),
+        ("output_deduplicated_count", ctypes.c_uint64),
+        ("bound_rejected_count", ctypes.c_uint64),
+        ("input_fingerprint", ctypes.c_uint64 * 4),
+        ("output_fingerprint", ctypes.c_uint64 * 4),
+        ("work_event_counts", ctypes.c_uint64 * PATH_V3_WORK_EVENT_COUNT),
+        ("reserved_host_bytes", ctypes.c_uint64),
+        ("committed_host_bytes", ctypes.c_uint64),
+        ("peak_live_host_bytes", ctypes.c_uint64),
+        ("reserved_device_bytes", ctypes.c_uint64),
+        ("committed_device_bytes", ctypes.c_uint64),
+        ("peak_live_device_bytes", ctypes.c_uint64),
         ("flags", ctypes.c_uint32),
         ("reserved", ctypes.c_uint32 * 7),
     ]
@@ -720,6 +847,54 @@ def make_path_manifest(
     value.maximum_managed_bytes = maximum_managed_bytes
     for index, upper in enumerate(protected_band_upper_hz_q20):
         value.protected_band_upper_hz_q20[index] = upper
+    return value
+
+
+def upgrade_path_manifest_v3(
+    source: PartialPathManifest,
+    *,
+    maximum_device_bytes: int = 0,
+) -> PartialPathManifestV3:
+    """Promote an R-191 policy to the transactional R-197 ABI."""
+
+    value = PartialPathManifestV3()
+    value.struct_size = ctypes.sizeof(value)
+    value.abi_version = PATH_V3_ABI_VERSION
+    value.second_order_law_version = source.second_order_law_version
+    value.protected_band_count = source.protected_band_count
+    value.k_value_per_state = source.k_value_per_state
+    value.k_continuity_per_state = source.k_continuity_per_state
+    value.top_k_value = source.top_k_value
+    value.top_k_continuity = source.top_k_continuity
+    value.top_k_protected = source.top_k_protected
+    value.protected_paths_per_band = source.protected_paths_per_band
+    value.minimum_path_observations = source.minimum_path_observations
+    value.maximum_path_observations = source.maximum_path_observations
+    value.exact_set_candidate_limit = source.exact_set_candidate_limit
+    value.amplitude_floor_q16 = source.amplitude_floor_q16
+    value.amplitude_residual_weight_q8 = source.amplitude_residual_weight_q8
+    value.work_ledger_version = PATH_WORK_LEDGER_VERSION
+    value.frequency_sigma_floor_hz_q20 = (
+        source.frequency_sigma_floor_hz_q20
+    )
+    value.birth_cost_bits_q8 = source.birth_cost_bits_q8
+    value.death_cost_bits_q8 = source.death_cost_bits_q8
+    value.score_saturation = source.score_saturation
+    value.maximum_path_records = source.maximum_path_records
+    value.maximum_total_entries = source.maximum_total_entries
+    value.maximum_frontier_states = source.maximum_frontier_states
+    value.maximum_state_records = source.maximum_state_records
+    value.maximum_work_units = source.maximum_work_units
+    value.maximum_managed_bytes = source.maximum_managed_bytes
+    value.maximum_device_bytes = maximum_device_bytes
+    for index in range(4):
+        value.expected_input_fingerprint[index] = (
+            source.expected_input_fingerprint[index]
+        )
+    for index in range(MAX_PROTECTED_BANDS - 1):
+        value.protected_band_upper_hz_q20[index] = (
+            source.protected_band_upper_hz_q20[index]
+        )
     return value
 
 
@@ -1557,10 +1732,10 @@ class NativePartialGraph:
             ctypes.POINTER(ctypes.c_size_t),
         ]
         self._function.restype = ctypes.c_int
-        self._path_function = (
-            self._library.resonith_partial_graph_paths_cpu_v2
+        self._path_function_v3 = (
+            self._library.resonith_partial_graph_paths_cpu_v3
         )
-        self._path_function.argtypes = [
+        self._path_function_v3.argtypes = [
             ctypes.POINTER(PartialResolution),
             ctypes.c_size_t,
             ctypes.POINTER(PartialObservation),
@@ -1568,14 +1743,14 @@ class NativePartialGraph:
             ctypes.POINTER(PartialEdge),
             ctypes.c_size_t,
             ctypes.POINTER(PartialGraphManifest),
-            ctypes.POINTER(PartialPathManifest),
-            ctypes.POINTER(PartialPath),
+            ctypes.POINTER(PartialPathManifestV3),
+            ctypes.POINTER(PartialPathV3),
             ctypes.c_size_t,
-            ctypes.POINTER(PartialPathEntry),
+            ctypes.POINTER(PartialPathEntryV3),
             ctypes.c_size_t,
-            ctypes.POINTER(PartialPathReport),
+            ctypes.POINTER(PartialPathReportV3),
         ]
-        self._path_function.restype = ctypes.c_int
+        self._path_function_v3.restype = ctypes.c_int
 
     def edges(
         self,
@@ -1669,10 +1844,11 @@ class NativePartialGraph:
             native_edges.append(value)
         edge_array = (PartialEdge * len(native_edges))(*native_edges)
 
-        preflight_report = PartialPathReport()
+        preflight_manifest = upgrade_path_manifest_v3(path_manifest)
+        preflight_report = PartialPathReportV3()
         preflight_report.struct_size = ctypes.sizeof(preflight_report)
-        preflight_report.abi_version = PATH_ABI_VERSION
-        status = self._path_function(
+        preflight_report.abi_version = PATH_V3_ABI_VERSION
+        status = self._path_function_v3(
             resolution_array,
             len(resolutions),
             observation_array,
@@ -1680,7 +1856,7 @@ class NativePartialGraph:
             edge_array,
             len(native_edges),
             ctypes.byref(graph_manifest),
-            ctypes.byref(path_manifest),
+            ctypes.byref(preflight_manifest),
             None,
             0,
             None,
@@ -1690,23 +1866,23 @@ class NativePartialGraph:
         if status != 0:
             raise RuntimeError(f"native path preflight failed: {status}")
 
-        fill_manifest = PartialPathManifest.from_buffer_copy(
-            bytes(path_manifest)
+        fill_manifest = PartialPathManifestV3.from_buffer_copy(
+            bytes(preflight_manifest)
         )
         for index in range(4):
             fill_manifest.expected_input_fingerprint[index] = (
                 preflight_report.input_fingerprint[index]
             )
         path_array = (
-            PartialPath * preflight_report.required_path_count
+            PartialPathV3 * preflight_report.required_path_count
         )()
         entry_array = (
-            PartialPathEntry * preflight_report.required_entry_count
+            PartialPathEntryV3 * preflight_report.required_entry_count
         )()
-        fill_report = PartialPathReport()
+        fill_report = PartialPathReportV3()
         fill_report.struct_size = ctypes.sizeof(fill_report)
-        fill_report.abi_version = PATH_ABI_VERSION
-        status = self._path_function(
+        fill_report.abi_version = PATH_V3_ABI_VERSION
+        status = self._path_function_v3(
             resolution_array,
             len(resolutions),
             observation_array,
@@ -1723,6 +1899,13 @@ class NativePartialGraph:
         )
         if status != 0:
             raise RuntimeError(f"native path fill failed: {status}")
+        if (
+            tuple(preflight_report.output_fingerprint)
+            != tuple(fill_report.output_fingerprint)
+        ):
+            raise RuntimeError(
+                "native path preflight/fill output fingerprint mismatch"
+            )
 
         records = []
         selected = []
@@ -1776,11 +1959,12 @@ class NativePartialGraph:
             paths=tuple(records),
             selected_path_ids=tuple(selected),
             report={
-                "schema": "resonith-r191-native-path-1",
+                "schema": "resonith-r197-native-path-v3-1",
                 "raw_state_count": fill_report.raw_state_count,
                 "frontier_peak": fill_report.frontier_peak,
                 "work_units": fill_report.work_units,
-                "peak_live_managed_bytes": (
+                "peak_live_managed_bytes": fill_report.peak_live_host_bytes,
+                "legacy_peak_live_managed_bytes": (
                     fill_report.peak_live_managed_bytes
                 ),
                 "path_count": fill_report.written_path_count,
@@ -1837,6 +2021,13 @@ class NativePartialGraph:
                     fill_report.output_deduplicated_count
                 ),
                 "bound_rejected_count": fill_report.bound_rejected_count,
+                "work_event_counts": tuple(fill_report.work_event_counts),
+                "reserved_host_bytes": fill_report.reserved_host_bytes,
+                "committed_host_bytes": fill_report.committed_host_bytes,
+                "peak_live_host_bytes": fill_report.peak_live_host_bytes,
+                "reserved_device_bytes": fill_report.reserved_device_bytes,
+                "committed_device_bytes": fill_report.committed_device_bytes,
+                "peak_live_device_bytes": fill_report.peak_live_device_bytes,
                 "input_fingerprint": tuple(
                     fill_report.input_fingerprint
                 ),

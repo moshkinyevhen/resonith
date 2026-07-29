@@ -603,6 +603,52 @@ if(BUILD_TESTING)
         COMMAND resonith_partial_graph_test
     )
 
+    add_executable(resonith_partial_graph_allocation_tripwire_test
+        tests/partial_graph_allocation_tripwire_test.cpp
+    )
+    target_compile_features(
+        resonith_partial_graph_allocation_tripwire_test
+        PRIVATE cxx_std_23
+    )
+    target_link_libraries(
+        resonith_partial_graph_allocation_tripwire_test
+        PRIVATE Resonith::Core
+    )
+    set_target_properties(
+        resonith_partial_graph_allocation_tripwire_test
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(
+        resonith_partial_graph_allocation_tripwire_test
+    )
+    add_test(
+        NAME partial_graph_allocation_tripwire
+        COMMAND resonith_partial_graph_allocation_tripwire_test
+    )
+
+    add_executable(resonith_partial_graph_allocation_ordinal_test
+        tests/partial_graph_allocation_ordinal_test.cpp
+    )
+    target_compile_features(
+        resonith_partial_graph_allocation_ordinal_test
+        PRIVATE cxx_std_23
+    )
+    target_link_libraries(
+        resonith_partial_graph_allocation_ordinal_test
+        PRIVATE Resonith::Core
+    )
+    set_target_properties(
+        resonith_partial_graph_allocation_ordinal_test
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(
+        resonith_partial_graph_allocation_ordinal_test
+    )
+    add_test(
+        NAME partial_graph_allocation_ordinal
+        COMMAND resonith_partial_graph_allocation_ordinal_test
+    )
+
     add_executable(resonith_partial_graph_fuzz_smoke
         fuzz/partial_graph_fuzz.cpp
         tests/partial_graph_fuzz_smoke.cpp

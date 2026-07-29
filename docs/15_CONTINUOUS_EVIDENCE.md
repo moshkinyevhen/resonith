@@ -6,6 +6,27 @@ This protocol turns every material Resonith milestone into a reproducible
 compression, quality, portability, and playback experiment. It applies before
 an improvement claim, version, tag, or public release.
 
+## 0. Material-step review and acceptance timing
+
+R-196 governs when implementation and full evidence occur.
+
+Before admitted implementation, every independently falsifiable material step
+freezes its incumbent, compares materially different alternatives, attempts
+falsification, reviews current primary sources and project measurements,
+declares byte/quality/resource/compatibility budgets and stopping rules, and
+receives a written binary GO from an independent auditor subagent.
+
+Focused tests guide tightly coupled implementation edits inside that one
+reviewed experimental generation. The change becomes an accepted improvement
+only after the full comparative gate in this document passes and its report is
+published. Thus "full test after every improvement" is literal: before that
+gate the candidate remains an experiment, not an improvement.
+
+Audit control activity is not recursively audited. Mechanical identical-output
+refactors, formatting, typo corrections, invariant tests, and non-normative
+documentation receive focused validation only. A normative documentation or
+acceptance-semantics change is a material step.
+
 ## 1. Mandatory 19-item gate
 
 The long-form portion uses:
@@ -146,3 +167,28 @@ Unchanged-algorithm performance work MUST prove exact stream or decoded-PCM
 identity as applicable, record complete wall time and realtime factor, and
 identify the source revision, compiler, host, and executable hash. A possible
 improvement may not remain only in chat or an unmeasured backlog.
+
+## 9. Algorithm-change music gate
+
+Every codec algorithm change is one evidence generation and SHALL complete the
+entire versioned registered-music manifest before the next algorithm change
+begins. The gate SHALL:
+
+- encode identical source PCM with the challenger, the immediately preceding
+  Resonith generation, and the current maximum-effort official Opus anchor;
+- decode the codec outputs through their actual decoders;
+- publish per-file and aggregate complete bytes/bitrate, objective quality,
+  log-spectral, phase, transient and stereo/channel metrics, encode/decode wall
+  time, CPU/GPU use, peak memory, hashes, fallbacks, losses and regressions;
+- retain the original, encoded files, decoded evaluation signals, commands,
+  manifests, versions and machine-readable results;
+- identify every win, tie, loss and missing-axis refinement without averaging
+  away a failed music class.
+
+The registered-music manifest means every project-pinned music asset available
+to the generation across short and long duration, solo, ensemble, dense
+orchestra, transient-rich, tonal, stochastic, stereo and multichannel
+material. A three-reference subset is never sufficient for this gate.
+
+Only a mechanical refactor with proven identical bitstream and decoded PCM may
+use the focused identical-output exception.

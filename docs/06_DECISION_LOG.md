@@ -7337,3 +7337,549 @@ i32 end_gain_q15
   - it does not bypass the active R-191 quarantine or R-192 predictor gate;
   - successful results amend R-192 instead of creating a parallel codec
     architecture.
+
+## R-194 — Continuous MAF-to-1.0 Completion Train
+
+- Status: **ACCEPTED PROJECT EXECUTION CONTRACT**
+- Date: 2026-07-29
+- Decision:
+  - a passing diagnostic, architecture gate, alpha, beta, release candidate,
+    or Orkela integration checkpoint is not a project stopping condition while
+    a dependency-ready Resonith 1.0 item remains;
+  - continue in the dependency order recorded in
+    `docs/20_LSPF_MASTER_EXECUTION_PLAN.md` until Resonith 1.0 and its native
+    Orkela integration are publicly released, unless the project owner stops
+    the work or a genuine external blocker prevents useful progress;
+  - the active technical spine remains the anonymous causal MAF model:
+    persistent multi-source partial/resonator/excitation/route states,
+    gridless multiscale patterns, transformed immutable Basis instances,
+    separately owned coherent, bounded-inharmonic, transient, stochastic and
+    route lanes, one final Truth, global decoder-in-loop RDO, GPU proposer
+    search, and a bounded integer decoder;
+  - R-191 remediation remains first. R-192 prediction and R-193 phase
+    innovations cannot bypass its quarantine;
+  - focused tests follow each change. The complete R-118, maximum-effort Opus,
+    cross-platform, listening, and Orkela matrices run at declared generation
+    and release boundaries, or earlier only when a focused failure proves that
+    the broad gate is necessary;
+  - every test names the risk it controls and the decision its pass enables.
+    Testing without a release or architecture decision is not progress.
+- Completion order:
+  1. publish the accepted Orkela alpha needed for listening evidence;
+  2. remediate and re-audit R-191;
+  3. implement and measure R-192 persistent anonymous multi-partial synthesis;
+  4. run the R-193 free phase oracle before any new anchor syntax;
+  5. integrate gridless patterns, transformed Basis, separated causal lanes,
+     persistent entropy/state, and global byte-quality-compute RDO;
+  6. move exhaustive proposer/search kernels to GPU with a complete CPU
+     fallback while retaining a CPU-only bounded decoder;
+  7. run long-first Pareto generations against the maximum-effort official
+     Opus frontier, then refine short inputs without deleting the long
+     incumbent;
+  8. freeze the v1 bitstream only after conformance, corruption, random access,
+     packet loss, resource, deterministic synthesis, and cross-platform gates;
+  9. publish Resonith 1.0 encoder, decoder, SDK, CLI, specification,
+     reproducible benchmark corpus, and Orkela integration.
+- Rejected:
+  - treating one successful test as completion;
+  - repeatedly rerunning the full corpus after isolated implementation edits;
+  - bypassing analyzer quarantine to create parallel syntax;
+  - preserving a mechanism merely because implementation effort was spent;
+  - stopping at a target or hypothesis without measured decoder output.
+
+## R-195 — MAF-First Architecture Jump
+
+- Status: **ACCEPTED PRIORITY AMENDMENT**
+- Date: 2026-07-29
+- Supersedes:
+  - R-194 completion-order item 1 only. Publishing an existing Orkela alpha is
+    no longer a prerequisite for the next Resonith architecture generation.
+    R-194's continuous-completion contract remains active.
+- Decision:
+  - complete one integrated MAF architecture generation before returning to
+    non-blocking Orkela product expansion;
+  - Orkela work during this interval is limited to the exact listening,
+    visualization, A/B, and conformance support required by the current codec
+    generation;
+  - implement the architecture as one decoder-in-loop candidate union rather
+    than a sequence of isolated percentage tweaks.
+- Required integrated mechanisms:
+  1. remediated anonymous multi-partial graph and persistent causal
+     source/resonator/excitation/route states;
+  2. objective continuous and phase-locked trajectories plus the R-193 free
+     phase oracle;
+  3. content-defined exact motif cache at arbitrary sample starts and lengths;
+  4. gridless multiscale approximate-pattern search across time, frequency,
+     fixed analysis tiles, and channels;
+  5. CompoundBasis and sparse gap laws that compose useful distant events;
+  6. immutable transformed-Basis orbits covering bounded alignment, phase,
+     pitch, time, gain, envelope, filter, crop, reverse, polarity, delay, and
+     route laws;
+  7. Cached Integer Basis Synthesis for encoder-learned per-file atoms,
+     materialized once by the bounded decoder and then immutable;
+  8. separately owned coherent, bounded-inharmonic, transient, stochastic,
+     and room/channel-route lanes plus one final TruthCorrection;
+  9. source-filter and resonator lifetime models for slowly changing
+     excitation, vocal-tract/instrument response, room tail, and gain/envelope
+     state;
+  10. exact inter-channel delay, phase, polarity, attenuation, common-source,
+      and route reuse;
+  11. persistent entropy and allocation state;
+  12. one complete-byte, decoded-quality, decoder-compute and memory RDO over
+      every model candidate and direct Truth;
+  13. full GPU proposer/search batching without reducing the declared
+      candidate union, with deterministic CPU fallback and a CPU/DSP-only
+      normative decoder;
+  14. optional Gemini and local-model proposals that may expand search but
+      never label the bitstream or override local RDO;
+  15. Foundry decision-trace capture and distillation into a compact consumer
+      top-K router, with exact local RDO retaining final authority.
+- Evidence order:
+  - long speech, music, stochastic ambience, transient-rich and multichannel
+    material first;
+  - complete R-118 union at the integrated generation boundary;
+  - maximum-effort official Opus frontier, preceding Resonith and direct Truth
+    anchors from the identical PCM;
+  - missing-axis refinement for any rate-only or quality-only win;
+  - short-input tuning only after the long frontier is frozen.
+- Kill rule:
+  - each mechanism remains optional in the RDO union and is rejected for an
+    input when its Basis, state, events, transforms, checkpoints, entropy,
+    correction, decoder work and memory cost exceed direct Truth;
+  - loss on one class cannot delete a proven Pareto win on another class;
+  - no semantic source name, cloud response, hidden stem, or manual annotation
+    is required for decoding or default encoding.
+
+## R-196 — Material-Step Audit and Full Improvement Acceptance
+
+- Status: **ACCEPTED AFTER INDEPENDENT AUDIT**
+- Date: 2026-07-29
+- Audit verdict:
+  - **NO-GO** for literal review of every source edit and a complete corpus
+    and platform rerun after every commit;
+  - **GO** when a step means one independently falsifiable material work
+    package and an improvement becomes accepted only after its full
+    comparative gate.
+- Material-step boundary:
+  - a material step can change normative syntax, decoded samples/state,
+    compatibility, an admitted encoder candidate/search/RDO/default/quality
+    floor, bounded resource/security/seek/loss/mobile/ASIC behavior, a shipped
+    ABI/API/platform or observable Orkela behavior, evidence semantics, corpus,
+    anchor, metric, threshold, or public claim;
+  - a source file, function, commit, test case, or ordinary implementation
+    phase is not automatically a material step;
+  - tightly coupled edits MAY form one step only when they share one frozen
+    model and evidence plan, cannot be evaluated meaningfully in isolation,
+    and retain individual ablations. Unrelated changes cannot be bundled;
+  - changing the reviewed signal model, admitted scope, normative behavior,
+    resource bounds, risk, or kill gate starts a new material step.
+- Mandatory pre-implementation protocol:
+  1. freeze the observed failure, incumbent, and reproducible baseline;
+  2. compare direct Truth/incumbent, the simplest bounded correction, at least
+     one materially different alternative, and the strongest plausible
+     combined design;
+  3. attempt to falsify every alternative against theory, identifiability and
+     information limits, counterexamples, prior measurements, complete bytes,
+     decoder resources, security, seek, loss, latency, mobile and ASIC
+     consequences as applicable;
+  4. review current primary research, standards, working implementations,
+     negative evidence, and project measurements;
+  5. declare byte, quality, resource and compatibility budgets, stopping rule,
+     focused tests, and the full promotion evidence plan;
+  6. obtain a written binary GO or NO-GO from an independent auditor subagent
+     that did not author the proposal.
+- Audit semantics:
+  - GO authorizes only the reviewed bounded implementation and declared gate;
+  - every unresolved blocking finding is NO-GO until resolved or the proposal
+    is rejected;
+  - exploratory calculations and code may exist only as marked non-admitted
+    scratch before GO;
+  - audit preparation, execution, remediation, verification, and publication
+    are control activities and are not recursively material steps;
+  - the same auditor may close findings in one case. A new audit is required
+    when the proposal materially changes, independence is lost, a prior
+    decision requires post-implementation audit, or this acceptance policy
+    changes.
+- Codec improvement acceptance:
+  - an improvement is not accepted, retained as an admitted generation or
+    default, versioned, released, or publicly claimed until its full gate
+    executes long inputs first, freezes the long frontier, then encodes and
+    decodes the complete R-118 union;
+  - identical PCM is compared against the preceding Resonith generation,
+    direct Truth/fallback, and the current maximum-effort official Opus
+    frontier with complete-file byte accounting;
+  - the report publishes all per-item bytes, actual-decoder quality metrics,
+    resource results, hashes, source revision, versions, wall times, losses,
+    fallbacks and retained incumbents;
+  - affected corruption, determinism, seek/reset, packet loss, transient,
+    stereo/spatial, latency, memory, throughput, listening, ABI and conformance
+    gates are mandatory;
+  - the complete supported-platform matrix is mandatory when bitstream,
+    decoder, ABI/shared runtime or portability changes, and at every
+    release-candidate and release boundary.
+- Player improvement acceptance:
+  - an Orkela user-visible or released improvement is not accepted until the
+    Player Acceptance Gate compares it with the preceding Orkela version on
+    every platform claimed by that version;
+  - the report includes pinned short speech, full Mozart, backward
+    compatibility and affected formats; real transport, seek, visualization,
+    resize/DPI/settings behavior; startup/seek latency, underruns, PCM identity
+    where applicable, CPU/GPU, peak memory and A/V synchronization; malformed
+    inputs, associations, screenshots/traces, binaries, hashes and
+    regressions;
+  - a player-only UI improvement does not rerun codec compression R-118 unless
+    it changes decoding, PCM delivery, codec integration or listening
+    evidence. A codec-only encoder-search change does not run the complete
+    Orkela product matrix unless it changes stream, decoder, compatibility or
+    the listening package.
+- Exclusions:
+  - mechanical refactors with proven identical stream and PCM, formatting,
+    typo fixes, tests of an accepted invariant, and non-normative
+    documentation receive focused validation only;
+  - performance-only refactors additionally publish identical output and a
+    reproducible before/after resource report;
+  - a failed or unpromoted hypothesis receives a scoped negative report but
+    not an automatic full matrix unless that matrix was its declared decision
+    boundary;
+  - a defect fix restoring already specified behavior receives focused
+    regression evidence; changing specified behavior, compatibility,
+    resource/security bounds, or a released claim is a material step.
+
+## R-197 — R-191 Transactional Remediation Preflight
+
+- Status: **INDEPENDENT PRE-IMPLEMENTATION GO**
+- Date: 2026-07-29
+- Final independent verdict:
+  - **GO** after closure of the exact-work, ABI, alias, transaction, bounded
+    memory, case-generator and quantitative-gate findings;
+  - implementation authority is limited to the frozen R-190/R-191 analyzer
+    remediation. Predictor, syntax, compression, Opus and product claims remain
+    blocked until the post-implementation evidence closes R-197.
+- Frozen incumbent:
+  - R-191 predictor admission remains NO-GO;
+  - current work accounting omits repeated enumeration, sorting, scanning and
+    reconstruction work;
+  - R-190 edge fill retains unbounded default-resource containers and an
+    exception/partial-write C-ABI risk;
+  - fuzz dispatch and boundary/oracle/platform evidence are incomplete.
+- Independently audited alternatives:
+  - bounded materialized canonical edge vector: retained as an oracle and
+    fallback, not the default;
+  - hash-only validation: rejected because collision or stale data cannot
+    replace field-for-field canonical comparison;
+  - formula-only global work precharge: rejected as the sole meter;
+  - hybrid per-operation charging with deterministic sort precharge: accepted;
+  - monotonic arena: permitted only when total reserved allocation is reported
+    as the memory cost;
+  - reclaiming arena: preferred only with checked generation-tagged lifetime
+    proof.
+- Transactional fill contract:
+  1. validate ABI, reserved fields, input/output non-overlap, bounds and
+     immutable-input ownership;
+  2. regenerate and compare the complete canonical edge stream field-for-field
+     while computing exact count, diagnostic fingerprint and deterministic
+     work ledger, with zero semantic caller writes;
+  3. validate capacities and every declared work, managed-byte, state, path,
+     frontier, entry and exact-small bound;
+  4. stage all fallible output in bounded managed storage;
+  5. commit caller arrays only after every fallible operation succeeds.
+  - an allocation-free third emission pass may replace staging only after a
+    proof that no failure remains possible and the API forbids overlapping or
+    concurrently mutated inputs and outputs;
+  - every non-success status preserves caller output and canaries byte-for-byte.
+- Work-ledger contract:
+  - work units are a platform-independent specified ledger, not measured CPU
+    instructions;
+  - charge before every validation pass, edge enumeration pair, field
+    comparison, target-list construction, bucket scan, state creation, pair
+    test, traversal, reconstruction, selector comparison, staging traversal
+    and commit traversal;
+  - use a specified deterministic sort or precharge a published conservative
+    comparison bound. Runtime `std::sort` comparison counts are not normative;
+  - repeated passes are charged independently;
+  - arithmetic overflow returns the declared overflow status before the
+    affected operation. Exact totals never saturate.
+  - work-law v1 is a versioned per-event ledger for validation, input snapshot
+    and canonical serialization, every fixed-pass radix operation, graph
+    enumeration and comparison, table/bucket work, state and reference work,
+    selection, reconstruction, allocation/reclamation, staging/commit,
+    fingerprint bytes and synchronized CUDA enqueue/transfer/completion;
+  - the 22 event kinds, multiplicity, 4,096-byte page, canonical 8-bit LSD
+    radix keys/passes, signed-key mapping, stable bottom-up merge order and
+    tie rule are frozen in the R-197 preflight review;
+  - pass 1 consumes actual work, then reserves the exact stage-and-commit tail
+    atomically before any semantic caller write; every event boundary has a
+    reproducible `k-1` rejection case.
+- Hard analyzer ceilings:
+  - at most 1,048,576 observations, 4,194,304 edges, 65,536 paths,
+    4,194,304 entries, 1,048,576 frontier states, 4,194,304 arena states and
+    path depth 1,048,576;
+  - at most `2^48-1` work events, 8 GiB counted host storage, 4 GiB counted
+    device storage and checked output products;
+  - one CUDA launch is capped at 65,535 blocks by 1,024 threads and uses
+    checked 64-bit logical indices over at most 4,194,304 records;
+  - all caller limits only reduce these ceilings. Raising a ceiling requires a
+    new reviewed profile version.
+- Storage and C-ABI contract:
+  - every project-controlled dynamic allocation uses one bounded counting PMR
+    resource; no default-resource vector, unordered map or hidden dynamic sort
+    storage is permitted inside the C boundary;
+  - catch `std::bad_alloc`, `std::exception`, and all other exceptions and map
+    them to declared statuses;
+  - report reserved arena bytes, committed arena bytes, allocator peak-live
+    bytes and peak-live state slots separately;
+  - snapshot bounded caller inputs before semantic processing; input and output
+    ranges cannot overlap and caller mutation during the call is forbidden;
+  - fingerprints serialize named integer fields in fixed little-endian order;
+    raw padding, floating object representations, NaNs, signed zero and
+    toolchain-dependent bytes never enter identity or scoring;
+  - parent references use checked index plus generation identity. A slot cannot
+    be reused while a child, terminal bucket or reconstruction cursor can
+    reference its previous generation;
+  - refcount overflow/underflow, stale generation, ownership mismatch and rank
+    inversion are recoverable errors; no analyzer path calls `terminate`;
+  - a post-initialization global-allocation tripwire proves that every
+    project-controlled allocation flows through the counted resource;
+  - reconstruction is iterative and bounded.
+- Failure semantics:
+  - null/pair/version/size precedes alignment/range, overlap, reserved/hard
+    profile, canonical input, stale identity, capacity, resource, OOM and
+    internal-state errors;
+  - path and entry payloads are never changed on failure. After its own valid
+    header, the report may be committed once with zero written counts and
+    required counts, termination, consumed work, memory and fingerprints;
+  - CUDA work synchronizes before returning and maps asynchronous errors to a
+    declared status.
+  - the review freezes pairwise disjoint ranges for every input, output and
+    report object, exact first-failure precedence, status/termination mapping
+    and which report diagnostics may change;
+  - fingerprint law v1 freezes domain bytes, ordered logical fields, integer
+    widths, two's-complement signed encoding, little-endian byte order, hash
+    states/primes and output ordering; no implementation object bytes enter it;
+  - the allocation tripwire is armed before the first ABI entry and permits
+    upstream allocation only from explicitly counted host/device scopes.
+  - R-190 stages its complete edge stream and atomically reserves edge payload
+    plus `output_count`; only success and `OUTPUT_TOO_SMALL` may publish the
+    exact required count, while every other failure preserves it and payload;
+  - one R-191 report-stage token and one report-commit token are reserved before
+    fallible analysis; staging is consumed immediately and publication retains
+    the commit token. If both cannot be reserved, the report remains unchanged;
+  - R-197 introduces path ABI v3 and
+    `resonith_partial_graph_paths_cpu_v3`, 22 event counters, separate
+    host/device reserved/committed/peak metrics and
+    `INTERNAL_MALFORMED`; v2 remains a no-write `UNSUPPORTED_VERSION` stub for
+    one migration cycle. R-190 ABI/record layout remains version 1.
+- Fuzz and exact kill gates:
+  - every mutation opcode has an independently addressable deterministic test,
+    including `candidate_id`, `gap_hops` and `flags`;
+  - canaries remain unchanged for every invalid ABI/reserved field,
+    stale/missing fingerprint, forged edge field, insufficient capacity,
+    resource bound, injected allocation failure, overflow and corrupt-parent
+    result;
+  - `limit-1` fails and `limit` succeeds for work, managed bytes, states,
+    entries, frontier, path length and exact-small count;
+  - an independent arbitrary-precision brute-force oracle matches IDs, order
+    and totals for exhaustive small graphs, randomized ties and scalar extrema;
+  - observation and resolution permutations are byte-identical; missing,
+    duplicate, extra, forged and permuted supplied edges fail;
+  - arena release/reuse covers every boundary without stale-parent access and
+    preserves truthful reserved/peak-live reporting;
+  - CPU results are repeat- and order-invariant; CUDA matches for randomized
+    cases and tile sizes 1, 31, 32, 255, 256 and 1024;
+  - sanitizer fuzzing checks statuses and output canaries in addition to crash
+    freedom;
+  - structure-aware fuzz repairs dependent IDs/sizes/fingerprints, publishes
+    per-branch reachability, exercises stateful preflight/fill and allocator
+    faults, and guards both host and device memory;
+  - exact work/fingerprint golden vectors, global-allocation tripwire,
+    null/alignment/range/overlap/version/status-precedence matrices and
+    cross-compiler fixed-point/serialization parity are required;
+  - quantitative floors are fixed by the hashed R-197 case manifest: every
+    observation permutation through five observations, 64 deterministic
+    SplitMix permutations for six and seven, 10,000 seeded CPU cases, 10,000 seeded
+    CPU/CUDA cases per tile, 2,000,000 inputs plus 15 minutes per structured
+    parser/API target, 1,000,000 sequences plus 10 minutes per stateful fault
+    target, 100,000 TSan sequences, at least 100 hits per semantic reachability
+    counter and at least 95% line/90% branch coverage of both exported analyzer
+    functions;
+  - every hard-profile dimension is tested at ceiling-minus-one, ceiling and
+    ceiling-plus-one by the pure checked ceiling validator in addition to
+    end-to-end declared-profile boundaries;
+  - the exact finite value alphabet, topology enumeration and deterministic
+    random-case generator are frozen and hashed in the R-197 case manifest
+    before admitted implementation.
+  - Windows MSVC/Clang/GCC, Linux GCC/Clang ASan+UBSan, Android NDK
+    ARM64/x86-64 and Apple-SDK iOS compile gates run on one exact commit.
+- Claim boundary:
+  - a passing R-197 result proves bounded analyzer infrastructure only;
+  - predictor, bitstream, compression, Opus and product claims remain blocked.
+
+### R-197 implementation checkpoint A
+
+- Status: **FOCUSED GATE PASSED — R-197 REMAINS OPEN**
+- Hard ceilings, checked ranges, pairwise no-alias validation and bounded input
+  snapshots are active in the R-190 edge call and quarantined R-191 analyzer.
+- R-190 failure count preservation, empty-input preflight, payload/report
+  overlap rejection, deterministic native output and the independent
+  fixed-point oracle passed.
+- Focused evidence:
+  - Clang 22 C++23 native conformance executable: passed;
+  - independent Python suite: 39 passed in 2.27 seconds.
+- Result:
+  [R-197 Hard-Profile and Snapshot Gate](results/R197_HARD_PROFILE_SNAPSHOT_GATE_2026-07-29.md).
+- This checkpoint admits no predictor, syntax, compression or product claim.
+  The next dependency is the separately visible transactional v3
+  count/stage/commit API.
+
+## R-198 — Every Algorithm Change Runs the Complete Music Manifest
+
+- Status: **ACCEPTED**
+- Date: 2026-07-29
+- Rule:
+  - every codec algorithm change is a separate evidence generation;
+  - before another algorithm generation begins, encode and decode every item in
+    the complete versioned registered-music manifest;
+  - compare per file against both the immediately preceding Resonith generation
+    and the current maximum-effort official Opus anchor from identical PCM;
+  - publish detailed English human- and machine-readable per-file and aggregate
+    bytes, bitrate, objective quality, spectral/phase/transient/channel
+    behavior, encode/decode time, CPU/GPU, memory, hashes, fallbacks, wins,
+    losses and regressions;
+  - retain originals, encoded alternatives, actual decoded evaluation signals,
+    commands, versions and reports.
+- Scope:
+  - all pinned music files and duration/structure classes, not only the three
+    principal references;
+  - this gate is additional to the non-negotiable R-118 union;
+  - only a mechanical refactor with proven bitstream and PCM identity receives
+    the focused identical-output exception.
+
+### R-197 implementation checkpoint B
+
+- Status: **FOCUSED GATE PASSED — R-197 REMAINS OPEN**
+- Transactional path ABI v3 now owns the public native and Python bridge:
+  - complete preflight, bounded staging and one semantic commit;
+  - exact no-write behavior for precedence rows one through five;
+  - no path/entry mutation on missing or stale identity, insufficient
+    capacity, profile failure, allocation failure or malformed input;
+  - packed cross-language layouts and deterministic successful output;
+  - ABI v2 is a no-write `UNSUPPORTED_VERSION` compatibility stub.
+- Focused evidence:
+  - Clang 22 C++23 warnings-as-errors native gate: passed;
+  - independent Python native/oracle suite: 40 passed in 1.87 seconds.
+- Result:
+  [R-197 Transactional Path ABI v3 Gate](results/R197_TRANSACTIONAL_ABI_V3_GATE_2026-07-29.md).
+- This checkpoint changes analyzer infrastructure only, so R-198's
+  algorithm-change music gate is not triggered.
+- The next dependency is the exact 22-event ledger and canonical ABI v3
+  fingerprint law; no predictor or compression claim is admitted.
+
+## R-199 — Caller-Bounded Failure Precedence
+
+- Status: **ACCEPTED AMENDMENT — R-197 REMAINS OPEN**
+- Date: 2026-07-29
+- Finding:
+  - the original absolute precedence of semantic rows 6 through 8 over
+    resource row 9 was impossible under arbitrary caller work/memory limits;
+  - discovering a later malformed, stale, or insufficient-capacity result may
+    itself require more than the caller budget;
+  - continuing only to discover that result would create hidden uncounted work.
+- Decision:
+  - rows 1 through 5 remain absolute and ordered;
+  - after the report reservation transition, rows 6 through 8 are semantic
+    checkpoints and row 9 is a per-operation guard;
+  - a known semantic failure wins, but resource exhaustion wins if it occurs
+    before that predicate is determinable;
+  - no ABI, record-layout, fingerprint-domain, or bitstream change is made.
+- Required implementation order:
+  - bounded canonical snapshot and semantic validation;
+  - missing expected identity on fill;
+  - canonical fingerprint and stale identity;
+  - pass-one solver and exact capacity;
+  - complete staging, payload commit reservation, payload commit, report
+    commit.
+- Evidence boundary:
+  - this is analyzer-infrastructure remediation, not a codec algorithm change,
+    so R-198's full music gate is not triggered;
+  - R-191 stays blocked pending exact boundary tests and independent GO/NO-GO.
+- Review:
+  [R-199 R-197 Failure-Precedence Amendment](reviews/R199_R197_PRECEDENCE_AMENDMENT_2026-07-29.md).
+- Focused implementation evidence:
+  [R-199 Exact Work-Ledger and Fingerprint Gate](results/R199_WORK_LEDGER_FINGERPRINT_GATE_2026-07-29.md).
+- Independent result:
+  - **GO for Step 6** on `partial_graph.cpp` SHA-256
+    `B3B893D70828C6813C8B3ECD696AB648E9EF0C142051604BC8E1733123B0597D`;
+  - no blocker was found in the R-199 phase order, exact typed ledger,
+    canonical fingerprints, transactional publication, or focused claims;
+  - Steps 7 through 10 retain arena-completeness, memory-provenance,
+    broad-fuzz/platform, and final R-191 obligations.
+
+## R-200 — Generation-Safe Arena Ownership
+
+- Status: **ACCEPTED — IMPLEMENTED — INDEPENDENT STEP-7 GO**
+- Date: 2026-07-29
+- Decision:
+  - only the arena may manufacture an owning path-state reference;
+  - owning creation/retention use RAII and one typed release reservation per
+    live reference;
+  - raw handles are generation-checked non-owning borrows;
+  - roots have rank two; children match parent generation, rank, first
+    observation, and previous/current linkage before refcount mutation;
+  - zero-ref release is iterative and uses a deterministic LIFO free list;
+  - solver success requires zero live states and zero arena-owned outstanding
+    reference reservations.
+- Red-team additions:
+  - remove public raw-handle adoption;
+  - prove parent/owner/PMR failure rollback;
+  - prove multi-slot ABA/LIFO and no reuse under retained/child ownership;
+  - audit refcount/reservation equality and complete free-list integrity.
+- Rejected:
+  arena UUIDs, hazard pointers, shared ownership, lock-free reclamation, and a
+  production provenance graph.
+- Design:
+  [R-200 Generation-Safe Arena Design](reviews/R200_GENERATION_SAFE_ARENA_DESIGN_2026-07-29.md).
+- Focused evidence:
+  [R-200 Generation-Safe Arena Focused Gate](results/R200_GENERATION_SAFE_ARENA_GATE_2026-07-29.md).
+- This is ownership infrastructure only; it makes no predictor, bitstream,
+  compression, Opus, or product claim.
+- Independent result:
+  - **GO, zero blockers** on `partial_graph.cpp` SHA-256
+    `D5E960011F78609AE7B0FA83820DECADCB4AEDF1A9E26BA2AA6BA687E670E413`;
+  - Steps 8 through 10 retain full memory provenance, broad fuzz/platform
+    coverage, and final R-191 admission.
+
+## R-201 — Exact Host/Device Memory Provenance
+
+- Status: **ACCEPTED — IMPLEMENTED — INDEPENDENT STEP-8 GO**
+- Date: 2026-07-29
+- Decision:
+  - reserved, committed, and live memory are independent per-call high-water
+    transitions, ordered `reserved >= committed >= peak-live`;
+  - admitted upstream OOM raises only reserved high-water provenance and rolls
+    current state back;
+  - page prepare/commit/cancel/release transitions are checked against one
+    immutable work ceiling;
+  - every reachable project-controlled R-190/R-191 allocation uses one
+    counting PMR resource;
+  - a test-only permit surrounds only its checked upstream calls;
+  - the CPU path reports device bytes and CUDA work as exactly zero rather
+    than estimating unavailable device activity.
+- Rejected:
+  fake CUDA accounting, a production-wide replacement allocator, a shared
+  ownership rewrite, and deletion of unreachable legacy code without evidence.
+- Preflight:
+  [R-201 Memory Provenance Preflight](reviews/R201_MEMORY_PROVENANCE_PREFLIGHT_2026-07-29.md).
+- Focused evidence:
+  [R-201 Memory Provenance Focused Gate](results/R201_MEMORY_PROVENANCE_GATE_2026-07-29.md).
+- Evidence boundary:
+  this is analyzer infrastructure only; allocation-ordinal fuzzing, sanitizers,
+  platform breadth, and final R-191 admission remain Steps 9 and 10.
+- Independent result:
+  - **GO, zero Step-8 blockers** on `partial_graph.cpp` SHA-256
+    `79C66C04CA270E5942A06263AAC713B531726964BC4C80DB611BC911B522F369`;
+  - tripwire SHA-256
+    `42992C32EAD0A940BAB4C9E0A569084A66AAE6B4CBBCBF7F6A88936114D4FDC8`;
+  - all eight individual first/repeated R-190/R-191 entries exercised the
+    counted permit path; `1,904` permitted and zero forbidden allocations;
+  - Step 9 retains ordinal fault campaigns, sanitizers, structured fuzzing and
+    platform breadth.

@@ -2027,6 +2027,22 @@ attempted counterexamples, negative results, decoder and resource stress,
 complete-byte accounting, explicit accepted/rejected/unresolved claims, and
 resolution of every blocking finding before implementation or promotion.
 
+A material step is the smallest independently falsifiable work package capable
+of changing syntax, decoded samples or state, compatibility, an admitted
+encoder/search/RDO/default, bounded resource or security behavior, a shipped
+API/platform contract, evidence semantics, or a public claim. Tightly coupled
+edits MAY remain one material step only while the frozen model, scope, bounds,
+risks, kill gates, and ablation plan remain unchanged. A commit, source file,
+function, test, or ordinary implementation phase is not inherently a material
+step.
+
+Before admitted implementation, the material step SHALL freeze its incumbent,
+review materially different alternatives and current primary evidence, attempt
+falsification, declare byte, quality, resource, compatibility and stopping
+gates, and obtain a written binary GO from an independent auditor that did not
+author the proposal. Unresolved blocking findings are NO-GO. Audit control
+activities are not recursively material steps.
+
 An encoder MAY train or adapt an unlabeled model on the complete input PCM.
 Per-track learning MAY infer anonymous emitters, partial trajectories,
 excitation, resonator and route state, stochastic laws, transient events, and
@@ -2170,6 +2186,99 @@ authoritatively resolved partial, and the group SHALL NOT be collapsed to one
 representative unless an independently specified and audited observation
 hypothesis authorizes that operation.
 
+### 14.29 Transactional analyzer failure precedence
+
+The reference anonymous partial-path analyzer is non-normative encoder
+infrastructure, but its public C ABI SHALL remain bounded and transactional.
+Before fallible analysis it SHALL validate pointer/header/profile conditions
+and atomically reserve the typed stage and commit events needed to publish one
+diagnostic report.
+
+Pointer/header/profile failures have absolute precedence through the reservation
+transition. After that transition, malformed canonical input, missing or stale
+preflight identity, and insufficient exact output capacity are semantic
+checkpoints. Declared work and counted-memory limits are per-operation guards.
+A semantic failure SHALL win when it is determinable before the next bounded
+operation would exceed the caller declaration. Resource exhaustion SHALL win
+when the bound is reached before that semantic predicate can be determined.
+The analyzer MUST NOT use hidden work or memory to discover a later failure.
+
+The required phase order is:
+
+1. stack-only pointer/header/profile checks and typed report reservation;
+2. bounded snapshot, canonicalization, and semantic relation validation;
+3. missing expected-identity rejection on fill;
+4. canonical named-field fingerprinting and stale-identity rejection;
+5. exact pass-one solve and output-capacity rejection;
+6. complete staging, typed payload-commit reservation, payload commit, and one
+   report commit.
+
+Non-success SHALL NOT modify path or entry payloads. Rows after the report
+reservation transition MAY publish one diagnostic report with zero written
+counts. Preflight and fill over identical logical input SHALL expose identical
+canonical fingerprints.
+
+### 14.30 Generation-safe analyzer state ownership
+
+The reference partial-path analyzer SHALL identify every reclaimable state by
+an `(index, generation)` pair. Reusing an index SHALL increment its non-zero
+generation and every lookup SHALL reject a generation mismatch.
+
+Only the arena may manufacture an owning state reference. Each live owner or
+parent edge SHALL hold one checked reference and one pre-reserved typed release
+event. Raw handles are non-owning borrows and SHALL NOT be convertible into an
+owner without a checked retain operation.
+
+A root state has length two. Before a child acquires its parent, the analyzer
+SHALL validate parent occupancy and generation, child rank equal to parent rank
+plus one, identical first observation, and child previous observation equal to
+parent current observation. Failed creation/acquire SHALL roll back every
+partial slot, parent reference, and reservation.
+
+Zero-ref reclamation SHALL be iterative and deterministic. Generation or
+refcount wrap, underflow, stale access, invalid rank/linkage, and free-list
+corruption SHALL fail without aliasing another state or committing output. A
+successful solver transaction SHALL leave no live arena state or outstanding
+arena-owned release reservation.
+
+### 14.31 Analyzer host/device memory provenance
+
+The R-191 v3 memory fields are per-call historical high-water marks:
+
+- `reserved_host_bytes` is the maximum outstanding byte count admitted by the
+  caller's host profile before the upstream allocation outcome is known;
+- `committed_host_bytes` is the maximum outstanding byte count backed by
+  successful upstream allocations;
+- `peak_live_host_bytes` is the maximum outstanding byte count made available
+  to the analyzer.
+
+Every report SHALL satisfy:
+
+```text
+reserved_host_bytes >= committed_host_bytes >= peak_live_host_bytes
+```
+
+An upstream allocation failure after profile admission MAY raise reserved
+high-water bytes but SHALL NOT raise committed or live high-water bytes. Every
+failed allocation SHALL roll current reservation back, and destruction SHALL
+return current reserved, committed, and live host bytes to zero.
+
+Every project-controlled dynamic allocation reachable from the R-190 or R-191
+C ABI SHALL use the one checked counting resource. An implementation test SHALL
+arm a global-allocation tripwire before the first ABI call; only the checked
+upstream allocation/deallocation scope may temporarily permit a global
+allocation. First-use lazy allocation outside that scope is non-conforming.
+
+Page prepare, commit, cancel, and release transitions SHALL be checked. Their
+typed work events use one immutable per-call work ceiling; later passes SHALL
+NOT reinterpret already consumed work against a reduced ceiling.
+
+The device fields use the corresponding reserved/committed/live high-water
+law. A CPU path that makes no device, pinned-host, or managed-memory allocation
+SHALL report all three device fields and all CUDA work events as exactly zero,
+irrespective of a non-zero caller device ceiling. Device usage SHALL NOT be
+estimated or fabricated.
+
 ## 15. Security
 
 Decoder MUST:
@@ -2229,6 +2338,39 @@ A normative syntax or decoder-behavior change MUST declare bitstream and ABI
 compatibility and increment the appropriate version. An unversioned change
 without reproducible before/after evidence remains an experiment and MUST NOT
 be presented as a released improvement.
+
+For project execution, every diagnostic, architecture gate, alpha, beta,
+release candidate, and player-integration result is a checkpoint rather than
+a terminal state while a dependency-ready Resonith 1.0 item remains. Focused
+validation SHALL guide edits inside one reviewed experimental generation. No
+candidate becomes an accepted improvement, admitted generation, default,
+version, release, or public improvement claim until the complete R-118,
+maximum-effort Opus, actual-decoder, affected platform, listening, resource,
+security and Orkela acceptance gates pass and their comparative report is
+published. Each gate SHALL state the risk it controls and the decision enabled
+by a pass. The authoritative completion order is recorded in R-194 through
+R-196 and `docs/20_LSPF_MASTER_EXECUTION_PLAN.md`.
+
+Every change to the codec algorithm SHALL define a new evidence generation and
+SHALL execute the complete versioned registered-music manifest before another
+algorithm generation begins. For every music item, the report SHALL compare
+the actual decoded challenger against both the actual decoded immediately
+preceding Resonith generation and the current maximum-effort official Opus
+anchor encoded from identical source PCM.
+
+The English human-readable and machine-readable reports SHALL publish complete
+file bytes, bitrate, all applicable objective quality, log-spectral, phase,
+transient and channel/stereo metrics, encode/decode wall time, CPU/GPU,
+peak-memory, source/stream/decoded hashes, commands, tool versions, fallbacks,
+losses, wins and regressions per file and in aggregate. The original, encoded
+alternatives and decoded evaluation signals SHALL remain in the generation
+evidence directory.
+
+The registered-music manifest SHALL contain every project-pinned music file
+available to the generation, including all short/long and structural classes.
+A selected three-file subset SHALL NOT satisfy this gate. A mechanical
+implementation refactor MAY omit recompression only when identical bitstream
+and decoded PCM are proven.
 
 The complete operational procedure is defined by
 [`docs/15_CONTINUOUS_EVIDENCE.md`](../docs/15_CONTINUOUS_EVIDENCE.md).
