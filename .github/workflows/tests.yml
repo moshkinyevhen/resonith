@@ -97,6 +97,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
+      - name: Install R-203 replay dependency
+        run: python -m pip install "numpy==2.5.1"
       - name: Configure
         run: >
           cmake -S native -B build/native
