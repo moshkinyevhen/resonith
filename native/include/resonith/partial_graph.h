@@ -408,15 +408,16 @@ typedef struct resonith_partial_path_report_v3 {
 
 #pragma pack(pop)
 
-#if defined(__cplusplus)
-#define RESONITH_PARTIAL_OFFSET_ASSERT(type, field, expected) \
-    static_assert(offsetof(type, field) == (expected))
-#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-#define RESONITH_PARTIAL_OFFSET_ASSERT(type, field, expected) \
-    _Static_assert(offsetof(type, field) == (expected), #type "." #field)
-#else
-#define RESONITH_PARTIAL_OFFSET_ASSERT(type, field, expected)
-#endif
+/*
+ * A negative-bound typedef is intentionally used instead of C11
+ * _Static_assert. It keeps every public offset guard active in C89/C11,
+ * MSVC C, C++23, and embedded toolchains that do not define
+ * __STDC_VERSION__ consistently.
+ */
+#define RESONITH_PARTIAL_OFFSET_ASSERT(type, field, expected)              \
+    typedef char resonith_offset_guard_##type##_##field[                   \
+        offsetof(type, field) == (expected) ? 1 : -1                       \
+    ]
 
 RESONITH_PARTIAL_OFFSET_ASSERT(
     resonith_partial_path_manifest, struct_size, 0U);
@@ -602,7 +603,53 @@ RESONITH_PARTIAL_OFFSET_ASSERT(
     resonith_partial_path_report, reserved, 308U);
 
 RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, struct_size, 0U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, abi_version, 4U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, second_order_law_version, 8U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, protected_band_count, 12U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, k_value_per_state, 16U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, k_continuity_per_state, 20U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, top_k_value, 24U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, top_k_continuity, 28U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, top_k_protected, 32U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, protected_paths_per_band, 36U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, minimum_path_observations, 40U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, maximum_path_observations, 44U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, exact_set_candidate_limit, 48U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, amplitude_floor_q16, 52U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, amplitude_residual_weight_q8, 56U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
     resonith_partial_path_manifest_v3, work_ledger_version, 60U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, frequency_sigma_floor_hz_q20, 64U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, birth_cost_bits_q8, 72U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, death_cost_bits_q8, 80U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, score_saturation, 88U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, maximum_path_records, 96U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, maximum_total_entries, 104U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, maximum_frontier_states, 112U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_manifest_v3, maximum_state_records, 120U);
 RESONITH_PARTIAL_OFFSET_ASSERT(
     resonith_partial_path_manifest_v3, maximum_work_units, 128U);
 RESONITH_PARTIAL_OFFSET_ASSERT(
@@ -615,12 +662,153 @@ RESONITH_PARTIAL_OFFSET_ASSERT(
     resonith_partial_path_manifest_v3, protected_band_upper_hz_q20, 184U);
 RESONITH_PARTIAL_OFFSET_ASSERT(
     resonith_partial_path_manifest_v3, reserved, 1200U);
+
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, struct_size, 0U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, abi_version, 4U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, path_id, 8U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, entry_offset, 16U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, entry_count, 24U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, family_flags, 28U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, terminal_observation_id, 32U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, continuity_score_q8, 40U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, potential_node_value_q8, 48U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, uncertainty_leakage_penalty_q8, 56U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, provisional_program_cost_q8, 64U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, selection_score_q8, 72U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, phase_error_sum_u64, 80U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, phase_error_count, 88U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, ownership_conflict_count, 92U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, protected_band_id, 96U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, value_rank, 100U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, continuity_rank, 104U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, protected_rank, 108U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, flags, 112U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_v3, reserved, 116U);
+
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_entry_v3, struct_size, 0U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_entry_v3, abi_version, 4U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_entry_v3, observation_id, 8U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_entry_v3, incoming_edge_candidate_id, 16U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_entry_v3, ownership_component, 24U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_entry_v3, second_order_cost_q8, 28U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_entry_v3, flags, 32U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_entry_v3, reserved, 36U);
+
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, struct_size, 0U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, abi_version, 4U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, termination, 8U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, solver, 12U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, required_path_count, 16U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, required_entry_count, 24U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, written_path_count, 32U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, written_entry_count, 40U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, raw_state_count, 48U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, frontier_peak, 56U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, work_units, 64U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, peak_live_managed_bytes, 72U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, selected_candidate_count, 80U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, selected_path_count, 88U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, internal_conflict_count, 96U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, cross_path_conflict_count, 104U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, score_saturation_count, 112U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, value_family_count, 120U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, continuity_family_count, 128U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, protected_family_count, 136U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, duplicate_state_count, 144U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, terminal_retained_state_count, 152U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, state_k_discarded_count, 160U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, state_arena_peak, 168U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, value_family_presented_count, 176U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3,
+    continuity_family_presented_count,
+    184U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, protected_family_presented_count, 192U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, value_family_discarded_count, 200U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3,
+    continuity_family_discarded_count,
+    208U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, protected_family_discarded_count, 216U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, output_deduplicated_count, 224U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, bound_rejected_count, 232U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, input_fingerprint, 240U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, output_fingerprint, 272U);
 RESONITH_PARTIAL_OFFSET_ASSERT(
     resonith_partial_path_report_v3, work_event_counts, 304U);
 RESONITH_PARTIAL_OFFSET_ASSERT(
     resonith_partial_path_report_v3, reserved_host_bytes, 480U);
 RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, committed_host_bytes, 488U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, peak_live_host_bytes, 496U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
     resonith_partial_path_report_v3, reserved_device_bytes, 504U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, committed_device_bytes, 512U);
+RESONITH_PARTIAL_OFFSET_ASSERT(
+    resonith_partial_path_report_v3, peak_live_device_bytes, 520U);
 RESONITH_PARTIAL_OFFSET_ASSERT(
     resonith_partial_path_report_v3, flags, 528U);
 RESONITH_PARTIAL_OFFSET_ASSERT(
@@ -645,12 +833,9 @@ RESONITH_API resonith_status resonith_partial_graph_edges_cpu(
 );
 
 /*
- * Builds the experimental R-191 v2 K-best analyzer path union over immutable
- * R-190 edges. The edge array must be the complete canonical candidate-ID
- * stream generated from the supplied resolutions, observations, and graph
- * manifest. A null/null output performs exact preflight. A fill call requires
- * the preflight fingerprint in `path_manifest`; capacity or stale-input
- * failure never writes either semantic output arena.
+ * Retained R-191 v2 migration symbol. It always returns
+ * RESONITH_STATUS_UNSUPPORTED_VERSION and never reads or writes caller
+ * payload/report storage. Use resonith_partial_graph_paths_cpu_v3().
  */
 RESONITH_API resonith_status resonith_partial_graph_paths_cpu_v2(
     const resonith_partial_resolution* resolutions,

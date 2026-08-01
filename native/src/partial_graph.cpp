@@ -27,6 +27,19 @@ constexpr std::uint32_t ratio_fraction_bits = 16U;
 constexpr std::uint32_t score_fraction_bits = 8U;
 constexpr std::uint64_t ratio_integer_cap = 65535U;
 
+static_assert(
+    std::is_trivially_copyable_v<resonith_partial_path_v3>
+    && std::is_nothrow_copy_assignable_v<resonith_partial_path_v3>
+);
+static_assert(
+    std::is_trivially_copyable_v<resonith_partial_path_entry_v3>
+    && std::is_nothrow_copy_assignable_v<resonith_partial_path_entry_v3>
+);
+static_assert(
+    std::is_trivially_copyable_v<resonith_partial_path_report_v3>
+    && std::is_nothrow_copy_assignable_v<resonith_partial_path_report_v3>
+);
+
 template <typename Value>
 bool reserved_zero(const Value& value) noexcept {
     for (const std::uint32_t item : value.reserved) {
@@ -360,6 +373,10 @@ public:
         return live_;
     }
 
+    [[nodiscard]] std::uint64_t pending_release_pages() const noexcept {
+        return pending_release_pages_;
+    }
+
     [[nodiscard]] bool healthy() const noexcept {
         return healthy_
             && reserved_ == committed_
@@ -380,6 +397,14 @@ private:
         peak_reserved_ = std::max(peak_reserved_, reserved_);
         const std::uint64_t pages =
             requested / 4096U + (requested % 4096U != 0U ? 1U : 0U);
+        if (
+            pages
+            > std::numeric_limits<std::uint64_t>::max()
+                - pending_release_pages_
+        ) {
+            reserved_ = committed_;
+            throw managed_profile_bound{};
+        }
         if (prepare_pages_ != nullptr) {
             try {
                 prepare_pages_(page_context_, pages);
@@ -431,6 +456,7 @@ private:
         peak_committed_ = std::max(peak_committed_, committed_);
         live_ = candidate;
         peak_live_ = std::max(peak_live_, live_);
+        pending_release_pages_ += pages;
         return result;
     }
 
@@ -449,7 +475,8 @@ private:
         const auto released = static_cast<std::uint64_t>(bytes);
         const bool valid_counts = released <= reserved_
             && released <= committed_
-            && released <= live_;
+            && released <= live_
+            && pages <= pending_release_pages_;
         if (!valid_counts) {
             healthy_ = false;
         }
@@ -467,6 +494,7 @@ private:
             reserved_ -= released;
             committed_ -= released;
             live_ -= released;
+            pending_release_pages_ -= pages;
         }
     }
 
@@ -489,6 +517,7 @@ private:
     std::uint64_t peak_reserved_ = 0U;
     std::uint64_t peak_committed_ = 0U;
     std::uint64_t peak_live_ = 0U;
+    std::uint64_t pending_release_pages_ = 0U;
     bool healthy_ = true;
 };
 
@@ -2186,9 +2215,11 @@ bool fingerprint_raw_v1(
             return false;
         }
         for (std::size_t lane = 0U; lane < state->size(); ++lane) {
-            (*state)[lane] ^= static_cast<std::uint64_t>(
-                bytes[byte] + static_cast<std::uint8_t>(lane * 53U)
+            const auto lane_byte = static_cast<std::uint8_t>(
+                static_cast<unsigned>(bytes[byte])
+                + static_cast<unsigned>(lane * 53U)
             );
+            (*state)[lane] ^= static_cast<std::uint64_t>(lane_byte);
             (*state)[lane] *= primes[lane];
         }
     }
@@ -6380,6 +6411,7 @@ bool partial_graph_memory_provenance_probe() noexcept {
             || trace.committed != 2U
             || trace.cancelled != 0U
             || trace.released != 2U
+            || traced.pending_release_pages() != 0U
             || traced.reserved_bytes() != 5000U
             || traced.committed_bytes() != 5000U
             || traced.peak_bytes() != 5000U
@@ -6387,6 +6419,69 @@ bool partial_graph_memory_provenance_probe() noexcept {
             || traced.current_committed_bytes() != 0U
             || traced.current_live_bytes() != 0U
             || !traced.healthy()
+        ) {
+            return false;
+        }
+
+        /*
+         * A published report accounts for reserved cleanup events before PMR
+         * destruction. Destruction converts those reservations to consumed
+         * events, so the externally visible total and per-kind sums must stay
+         * invariant while every reservation reaches zero.
+         */
+        resonith_partial_path_manifest cleanup_manifest{};
+        cleanup_manifest.maximum_work_units = 64U;
+        resonith_partial_path_report cleanup_report{};
+        work_ledger_v1 cleanup_ledger{
+            .maximum = cleanup_manifest.maximum_work_units,
+        };
+        bounded_work_meter cleanup_work(
+            cleanup_manifest,
+            &cleanup_report,
+            &cleanup_ledger
+        );
+        counting_memory_resource cleanup_memory(
+            8192U,
+            nullptr,
+            &cleanup_work,
+            &account_host_page_prepare,
+            &account_host_page_commit,
+            &account_host_page_cancel,
+            &account_host_page_release
+        );
+        constexpr std::size_t cleanup_event_count =
+            RESONITH_PARTIAL_PATH_V3_WORK_EVENT_COUNT;
+        std::uint64_t published_total = 0U;
+        std::array<std::uint64_t, cleanup_event_count> published_counts{};
+        {
+            std::pmr::vector<std::uint8_t> values(&cleanup_memory);
+            values.reserve(5000U);
+            if (
+                cleanup_memory.pending_release_pages() != 2U
+                || cleanup_ledger.reserved_counts[
+                    RESONITH_PARTIAL_WORK_MEMORY_PAGE
+                ] != 2U
+            ) {
+                return false;
+            }
+            published_total = cleanup_ledger.total + cleanup_ledger.reserved;
+            for (
+                std::size_t index = 0U;
+                index < cleanup_event_count;
+                ++index
+            ) {
+                published_counts[index] =
+                    cleanup_ledger.counts[index]
+                    + cleanup_ledger.reserved_counts[index];
+            }
+        }
+        if (
+            cleanup_memory.pending_release_pages() != 0U
+            || cleanup_ledger.reserved != 0U
+            || cleanup_ledger.total != published_total
+            || cleanup_ledger.counts != published_counts
+            || !cleanup_memory.healthy()
+            || !cleanup_work.healthy()
         ) {
             return false;
         }
@@ -7961,6 +8056,38 @@ extern "C" resonith_status resonith_partial_graph_paths_cpu_v3(
             local_report.output_fingerprint
         );
 
+        if (!shared_memory.healthy() || !shared_memory_work.healthy()) {
+            local_report.termination =
+                RESONITH_PARTIAL_PATH_TERMINATION_INTERNAL_MALFORMED;
+            publish_report();
+            return RESONITH_STATUS_MALFORMED;
+        }
+        local_report.reserved_host_bytes = shared_memory.reserved_bytes();
+        local_report.committed_host_bytes = shared_memory.committed_bytes();
+        local_report.peak_live_host_bytes = shared_memory.peak_bytes();
+        local_report.written_path_count = staged_paths_v3.size();
+        local_report.written_entry_count = staged_entries_v3.size();
+
+        const std::uint64_t pending_release_pages =
+            shared_memory.pending_release_pages();
+        const auto memory_event_index = static_cast<std::size_t>(
+            RESONITH_PARTIAL_WORK_MEMORY_PAGE
+        );
+        const auto commit_event_index = static_cast<std::size_t>(
+            RESONITH_PARTIAL_WORK_COMMIT_RECORD
+        );
+        if (
+            ledger.reserved_counts[memory_event_index]
+                != pending_release_pages
+            || ledger.reserved_counts[commit_event_index] != 1U
+            || ledger.reserved != pending_release_pages + 1U
+        ) {
+            local_report.termination =
+                RESONITH_PARTIAL_PATH_TERMINATION_INTERNAL_MALFORMED;
+            publish_report();
+            return RESONITH_STATUS_MALFORMED;
+        }
+
         const std::uint64_t payload_commit_count =
             static_cast<std::uint64_t>(staged_paths_v3.size())
             + static_cast<std::uint64_t>(staged_entries_v3.size());
@@ -7977,54 +8104,29 @@ extern "C" resonith_status resonith_partial_graph_paths_cpu_v3(
             return RESONITH_STATUS_PROFILE_BOUND;
         }
 
-        for (std::size_t index = 0U; index < staged_paths_v3.size(); ++index) {
-            if (
-                !ledger.emit_reserved(
-                    RESONITH_PARTIAL_WORK_COMMIT_RECORD,
-                    1U
-                )
-            ) {
-                local_report.termination =
-                    RESONITH_PARTIAL_PATH_TERMINATION_INTERNAL_MALFORMED;
-                publish_report();
-                return RESONITH_STATUS_MALFORMED;
-            }
-            paths[index] = staged_paths_v3[index];
-        }
-        for (std::size_t index = 0U; index < staged_entries_v3.size(); ++index) {
-            if (
-                !ledger.emit_reserved(
-                    RESONITH_PARTIAL_WORK_COMMIT_RECORD,
-                    1U
-                )
-            ) {
-                local_report.termination =
-                    RESONITH_PARTIAL_PATH_TERMINATION_INTERNAL_MALFORMED;
-                publish_report();
-                return RESONITH_STATUS_MALFORMED;
-            }
-            entries[index] = staged_entries_v3[index];
-        }
-        if (!shared_memory.healthy() || !shared_memory_work.healthy()) {
+        if (
+            payload_commit_count
+                == std::numeric_limits<std::uint64_t>::max()
+            || !ledger.emit_reserved(
+                RESONITH_PARTIAL_WORK_COMMIT_RECORD,
+                payload_commit_count + 1U
+            )
+        ) {
             local_report.termination =
                 RESONITH_PARTIAL_PATH_TERMINATION_INTERNAL_MALFORMED;
             publish_report();
             return RESONITH_STATUS_MALFORMED;
         }
-        local_report.reserved_host_bytes = shared_memory.reserved_bytes();
-        local_report.committed_host_bytes = shared_memory.committed_bytes();
-        local_report.peak_live_host_bytes = shared_memory.peak_bytes();
-        local_report.written_path_count = staged_paths_v3.size();
-        local_report.written_entry_count = staged_entries_v3.size();
-        if (
-            !ledger.emit_reserved(
-                RESONITH_PARTIAL_WORK_COMMIT_RECORD,
-                1U
-            )
-        ) {
-            return RESONITH_STATUS_MALFORMED;
-        }
         sync_ledger();
+
+        /*
+         * Commit tail: every fallible operation and every work reservation has
+         * completed. These packed records are trivially copyable, ranges were
+         * proven disjoint during phase one, and no branch, allocation, ledger
+         * call, or exception remains after the first caller payload write.
+         */
+        std::copy(staged_paths_v3.begin(), staged_paths_v3.end(), paths);
+        std::copy(staged_entries_v3.begin(), staged_entries_v3.end(), entries);
         *report = local_report;
         return RESONITH_STATUS_OK;
     } catch (const managed_profile_bound&) {

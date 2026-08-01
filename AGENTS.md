@@ -102,6 +102,45 @@ Never present a **TARGET** or **HYPOTHESIS** as a measured result.
     versioned music manifest, not a hand-picked three-file subset. A mechanical
     refactor qualifies for the focused identical-output exception only when
     bitstream and decoded PCM identity are proven.
+20. Apply R-204 continuous execution and resumable-plan rules. The accepted
+    derived panel is `R204-63-V1` in
+    `docs/23_CONTINUOUS_63_STEP_EXECUTION_PANEL.md`, SHA-256
+    `6b2d1e21436e22231538d1b362657375c3699892b5290d17843ae025f510684e`.
+    It contains exactly 63 stable IDs and must not be silently shortened,
+    regrouped, renumbered, reordered, or reconstructed from memory. While the
+    owner-authorized continuous plan remains active, a passing subtask is a
+    checkpoint, not project completion; continue with the earliest
+    dependency-ready, safe, in-scope item. The canonical master plan,
+    accepted decisions, dependencies, quarantines, audits, safety and authority
+    gates always control. Continuation never expands authority or implicitly
+    authorizes credentials, destructive actions, pushes, publication, releases,
+    paid services, or unrelated work. Honor any clear owner instruction to
+    stop, pause, wait, reprioritize, supersede, or narrow work. On every pause,
+    blocker, or execution-boundary yield, update the durable R-204 checkpoint
+    with all 63 states, identities, evidence, blocker, clearance condition, and
+    next safe action. Focused tests follow each implementation edit; the
+    complete R-198 comparison is mandatory before an algorithm generation is
+    accepted or a later algorithm generation begins.
+21. Apply R-211 minimal sufficient evidence to every gate. Before code, record
+    a claim ledger that maps every proposed test to an existing production
+    claim or publicly observable behavior, the controlled risk, current
+    identity-bound evidence, expected result, and failure consequence. Reuse
+    current public-ABI and existing conformance/comparison/security/release/
+    platform gates first; create infrastructure only for a written public-
+    observability gap. Never add a private or test-only ABI, semantic backdoor,
+    friend hook, patched production binary, or harness whose sole purpose is
+    checking another harness. Freeze one cumulative budget for human and
+    generated files/lines, runtime, peak memory, retained storage, CI/device/
+    cloud/API cost, and remediation iterations; splitting or renaming work does
+    not reset it. Numeric case/run counts require structural, boundary,
+    mutation, convergence, or statistical rationale. The first budget breach
+    or remediation permits one bounded redesign; a repeated breach or second
+    remediation cycle for the same claim stops the gate for independent
+    redesign or scope reduction. Hash/schema validation and repeated public
+    execution terminate evidence-integrity checking and never spawn another
+    meta-gate. Negative research evidence blocks only dependent claims. This
+    rule never weakens R-198 or mandatory runtime, concurrency, security,
+    release, compatibility, or platform gates.
 
 ## Repository language
 

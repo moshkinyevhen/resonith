@@ -33,6 +33,18 @@ typedef char resonith_entry_size_must_match[
 typedef char resonith_report_size_must_match[
     sizeof(resonith_partial_path_report) == 336U ? 1 : -1
 ];
+typedef char resonith_manifest_v3_size_must_match[
+    sizeof(resonith_partial_path_manifest_v3) == 1232U ? 1 : -1
+];
+typedef char resonith_path_v3_size_must_match[
+    sizeof(resonith_partial_path_v3) == 136U ? 1 : -1
+];
+typedef char resonith_entry_v3_size_must_match[
+    sizeof(resonith_partial_path_entry_v3) == 48U ? 1 : -1
+];
+typedef char resonith_report_v3_size_must_match[
+    sizeof(resonith_partial_path_report_v3) == 560U ? 1 : -1
+];
 
 int main(void) {
     resonith_container_view view = {

@@ -653,6 +653,29 @@ if(BUILD_TESTING)
         COMMAND resonith_partial_graph_allocation_ordinal_test
     )
 
+    add_executable(resonith_r203_state_arena_hostile_witness
+        tests/r203_state_arena_hostile_witness.cpp
+    )
+    target_compile_features(
+        resonith_r203_state_arena_hostile_witness
+        PRIVATE cxx_std_23
+    )
+    target_link_libraries(
+        resonith_r203_state_arena_hostile_witness
+        PRIVATE Resonith::Core
+    )
+    set_target_properties(
+        resonith_r203_state_arena_hostile_witness
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(
+        resonith_r203_state_arena_hostile_witness
+    )
+    add_test(
+        NAME r203_state_arena_hostile
+        COMMAND resonith_r203_state_arena_hostile_witness
+    )
+
     find_package(Threads REQUIRED)
     add_executable(resonith_partial_graph_concurrency_test
         tests/partial_graph_concurrency_test.cpp

@@ -8024,3 +8024,2506 @@ i32 end_gain_q15
   music/Opus gate and does not admit R-191.
 - Review:
   [R-202 Stateful ABI-v3 Fuzz and Failpoint Preflight](reviews/R202_V3_FUZZ_AND_FAILPOINT_PREFLIGHT_2026-07-29.md).
+
+## R-203 — Final R-191 Admission Remediation
+
+- Status: **INDEPENDENT REMEDIATION GO — CURRENT ADMISSION NO-GO**
+- Date: 2026-07-29
+- Problem:
+  Step 9 proves sanitizer, fuzz, allocation, concurrency, platform, and
+  semantic-coverage properties, but the frozen R-197 final-admission corpus
+  has not been executed. The current evidence therefore cannot admit R-191
+  path output even as bounded analyzer infrastructure.
+- Independently confirmed blockers:
+  - the frozen case-generator document has the correct SHA-256
+    `10e24fa8721dfe69c2e1be82f9ffcc83e5dc7b32da0a038d29ec46b943d761bc`,
+    but no versioned executable generator, JSONL corpus, expected-status
+    artifact, or admission runner exists;
+  - exhaustive permutations through five observations, 64 deterministic
+    permutations at six and seven observations, the 10,000-case SplitMix CPU
+    campaign, and 10,000 identical CPU/CUDA cases on each tile
+    `1/31/32/255/256/1024` have not run;
+  - GitHub reference jobs use `unittest discover`, so the free pytest
+    functions in `test_partial_graph_fixed.py` are not CI authority;
+  - the independent oracle does not yet cover the complete ABI-v3 report,
+    22-event ledger, field-wise input/output fingerprint law, and every
+    precedence status;
+  - the exact-small brute-force test currently selects from native-produced
+    candidate paths and therefore does not independently prove completeness of
+    the native family union;
+  - v3 layout assertions cover only selected offsets, while the frozen
+    contract requires every field across C, C++, and Python;
+  - the public v2 comment describes a working analyzer although the retained
+    symbol is an unconditional no-write `UNSUPPORTED_VERSION` migration stub;
+  - the fixed hostile corpus does not yet cover every status, event kind,
+    hard-ceiling boundary, maximal depth, arena transition, and CUDA error
+    class;
+  - successful payload publication still contains ledger/health failure
+    branches after the first caller path byte is written;
+  - no single semantic JSONL/hash has been compared across the admitted
+    Clang, GCC, MSVC, Apple, and Android implementations, and the old v2 result
+    remains stale without an explicit supersession.
+- Alternatives rejected:
+  - declaring Step 9 sufficient is rejected because R-202 explicitly excludes
+    final R-191 admission;
+  - adding more undirected fuzz iterations is rejected because random
+    reachability does not prove the frozen finite oracle, every ABI field, or
+    exact CUDA tile parity;
+  - using one native implementation as generator, oracle, and comparator is
+    rejected as circular;
+  - reducing the frozen 10,000-case or six-tile floors is rejected because it
+    would silently change the audited R-197 hypothesis.
+- Accepted remediation package:
+  1. create one versioned orchestrator around separate independent case
+     generator/oracle, native ABI/transaction runner, CUDA runner, and
+     cross-toolchain comparator;
+  2. publish the exact generated JSONL and its hash, execute the complete
+     frozen finite, CPU, CUDA, hostile, boundary, and two-pass campaigns, and
+     retain raw outputs;
+  3. make the Python oracle an explicit pytest CI authority and remove circular
+     candidate reuse from exact-small proof;
+  4. assert every packed v2/v3 C/C++/ctypes size and offset and exhaustively
+     prove the v2 no-write stub;
+  5. independently serialize every fingerprint field, compare preflight/fill
+     twice, mutate every serialized field one at a time, and compare complete
+     paths, entries, reports, event counts, statuses, and output hashes;
+  6. before the first caller payload write, finish all staging, fingerprint,
+     resource-health, report, and cleanup-reservation checks, then consume
+     payload-plus-report commit tokens once. The remaining copy tail must be
+     branch-free, allocation-free, ledger-free, and statically
+     no-throw/trivially-copyable;
+  7. publish one twice-replayed semantic hash across every admitted toolchain
+     and supersede all stale v2/pending evidence.
+- Falsifiable prediction and kill gate:
+  Step 10 remains NO-GO on any corpus-hash mismatch, oracle/native payload or
+  status difference, v2 write, v3 layout difference, fingerprint omission,
+  preflight/fill mismatch, CUDA tile difference, toolchain semantic-hash
+  difference, post-write failure path, sanitizer/leak/race/canary finding,
+  resource-ceiling breach, or incomplete frozen campaign.
+- R-198 boundary:
+  this package changes analyzer safety and evidence infrastructure, not
+  Resonith syntax, the released encoder default, encoded bytes, decoded PCM,
+  or RDO. The structural publication refactor receives the focused
+  identical-output exception only if successful analyzer paths, entries,
+  reports, current encoded streams, and decoded PCM are proven identical
+  before/after. Any semantic analyzer-output change or integration into
+  typed-stream/RDO/codec behavior triggers the complete registered-music and
+  maximum-effort Opus gate before acceptance.
+- Independent verdict:
+  **GO to implement this exact remediation package; NO-GO for R-191 admission
+  until every gate passes.**
+- Pre-implementation oracle finding:
+  - the first independent field serializer reproduced native fingerprint lane
+    zero but falsified lanes one through three;
+  - the frozen law reduces `byte + 53 * lane` modulo 256 before XOR, while the
+    C++ expression currently promotes both operands to `int` and can XOR a
+    value through 510;
+  - changing the frozen document is rejected because its reviewed SHA-256 is
+    an admission input; accepting lane zero alone is rejected because all four
+    lanes are normative;
+  - the proposed correction is one explicit unsigned-eight-bit reduction in
+    native code, followed by independent golden vectors, every-field mutation,
+    twice-replayed identity, and cross-toolchain hashes;
+  - independent R-198 audit requires correction of native code, not amendment
+    of the frozen law. The explicit reduction remains fingerprint-law version
+    one because ABI-v3/R-191 is quarantined and unadmitted;
+  - no dual acceptance is allowed: old native vectors are retained only as
+    rejected non-normative evidence, and an old expected fingerprint must
+    produce `HASH_MISMATCH` without payload writes;
+  - the correction does not trigger the music/Opus gate only if final evidence
+    proves identical paths, entries, counts, scores, statuses, ledgers,
+    released-encoder bitstreams and decoded PCM, plus no released encoder/RDO
+    consumer of R-191. Any failure of that proof triggers the complete R-198
+    gate;
+  - required regression vectors cover bytes
+    `0/96/97/149/150/202/203/255`, zero/one/extrema/signed/multi-record
+    serializers, two preflights and two fills, stale old tokens, every
+    serialized-field mutation, and exact cross-toolchain hashes;
+  - the final R-203 revision must rerun the affected Step-9 sanitizer, fuzz,
+    ordinal, allocation and TSan matrix. Until that and the complete Step-10
+    campaign pass, R-191 remains NO-GO.
+- Exact-small executable evidence:
+  - the first complete independent corpus contains 9,024 cases and is
+    twice-replayed through the public ABI;
+  - Clang 22 and GCC 16 agree on corpus SHA-256
+    `1bf354dafa223f4350b79719e9e138df2262c52f22ce51a6d028eb4e56d3a306`
+    and semantic SHA-256
+    `cf48eaa45b901934803b76c827f135f03278884ee25617995985cc3aca31ec2a`;
+  - the corpus falsifies its usefulness as a candidate-union proof: every
+    frozen case has zero canonical edges, paths, and entries because
+    `detector_id` cycles across adjacent observations while the only
+    same-detector gap has an insufficient frequency bound;
+  - the frozen corpus remains mandatory ABI, fingerprint, status and
+    permutation evidence and SHALL NOT be edited or relabeled;
+  - a separate candidate-rich supplemental exact domain is blocked pending an
+    independent design audit. It must supplement, never replace, the frozen
+    corpus and must receive its own version and hash.
+- Candidate-rich supplement verdict:
+  - independent review returned GO for
+    `R203-CANDIDATE-RICH-EXACT-1`, a separate 288-case finite corpus;
+  - five topology profiles cover cycle chains, a branch/merge diamond and the
+    exact `559/560/561 Hz` frequency boundary, crossed with unique/conflicting
+    ownership, no/zero/nonzero phase, protected evidence and every
+    observation permutation;
+  - the supplement requires an independently coded graph-theoretic checker
+    that cannot import the production ABI or the existing Python edge/path
+    oracle and cannot receive native candidates;
+  - closed-form edge/path counts, conflict, phase, protected-family, exact
+    solver and permutation invariants are generator kill gates;
+  - the frozen R-197 corpus and this supplement are conjunctive. Neither may
+    replace the other.
+- Review:
+  [R-203 Candidate-Rich Exact Supplement](reviews/R203_CANDIDATE_RICH_EXACT_SUPPLEMENT_2026-07-29.md).
+- Candidate-rich post-implementation audit:
+  - independent review reproduced the 288-case corpus and its SHA-256 but
+    returned NO-GO for admission;
+  - blockers are incomplete raw ABI/report/22-event parity, an Authority B
+    that does not yet independently judge the selected optimum, a
+    non-fail-closed inventory/replay, and missing identical replay across all
+    admitted toolchains;
+  - the corpus and frozen contract remain unchanged; remediation is limited
+    to evidence infrastructure and cannot waive production or R-198 gates.
+- Review:
+  [R-203 Candidate-Rich Post-Implementation Audit](reviews/R203_CANDIDATE_RICH_POST_IMPLEMENTATION_AUDIT_2026-07-29.md).
+- Complete-ledger authority audit:
+  - an independent audit rejected immediate implementation of a Python
+    authority for all 22 work-event families;
+  - eleven event families plus complete fingerprint/stage/commit laws are
+    independently derivable, but merge-site traces, solver operations,
+    arena-reference operations, selection/reconstruction, memory pages, and
+    resource high-water are not fully defined by the frozen public contract;
+  - copying C++ charge sites, importing native vectors, emulating one STL, or
+    ignoring `MEMORY_PAGE` are explicitly rejected as circular;
+  - R-191 stays NO-GO until a declarative solver-ledger schedule and a portable
+    deterministic capacity/allocation law receive independent GO, are
+    implemented, and are interpreted by a genuinely independent authority;
+  - the resulting production resource/schedule change requires the complete
+    registered-music comparison against the preceding Resonith generation and
+    maximum-effort official Opus before admission.
+- Review:
+  [R-203 Complete-Ledger Authority Audit](reviews/R203_COMPLETE_LEDGER_AUTHORITY_AUDIT_2026-07-29.md).
+- Portable-ledger proposal:
+  - status is **INDEPENDENT NO-GO; SUPERSEDED BEFORE IMPLEMENTATION**;
+  - the audit found that a witness trace cannot prove omitted operations,
+    PMR cannot force exact vendor-independent vector capacity, allocation-site
+    instances/lifetimes were incomplete, maximum reservation could change
+    statuses, and the 288-case scope was unsafe for production;
+  - no production implementation was started.
+- Preflight:
+  [R-203 Portable Ledger Schedule Preflight](reviews/R203_PORTABLE_LEDGER_SCHEDULE_PREFLIGHT_2026-07-29.md).
+- Evidence-split proposal:
+  - status is **TWO-AUDITOR GO; EVIDENCE-ONLY IMPLEMENTATION AUTHORIZED**;
+  - cross-toolchain identity remains mandatory for all semantic output and all
+    21 non-memory CPU event counts;
+  - `MEMORY_PAGE` and managed upstream-request byte telemetry remain exact,
+    bounded, twice-repeatable, and fail-closed per toolchain, but are reported
+    rather than falsely required to equal vendor-specific STL request traces;
+  - fourteen closed event laws receive independent exact derivation; seven
+    dynamic solver families receive independent conservative loop/total
+    bounds, complete charge-site inventory, remove/reclassify mutants,
+    identity, prefix-budget, coverage, and cleanup gates without an
+    unsupported exact-formula claim;
+  - resource replay uses ordered pointer-independent
+    prepare/outcome/commit/cancel/release identities and admits zero regression
+    for unchanged toolchain inputs;
+  - the no-failure-after-publication rule remains absolute. Release-callback
+    removal/reorder and release-ledger-consumption mutants are mandatory; an
+    invalid post-publication transition is evidence failure, not an accepted
+    caller-visible failure path;
+  - amendment `R203-EVIDENCE-SPLIT-1` explicitly supersedes R-197's
+    cross-toolchain resource-telemetry identity clause and the conflicting
+    R-203 complete-report/all-22-event independent-oracle clauses;
+  - the proposal changes evidence comparison only and cannot alter production
+    ABI, solver, bitstreams, decoded PCM, or player behavior.
+  - the final audit required and received one last correction: Class-A
+    cross-toolchain status identity applies only outside resource/fault
+    triggering calls; tight-budget, OOM, allocation, cleanup, release, and
+    injected-failure calls use local expected status, no-write, cleanup, and
+    repeatability gates.
+  - a second independent audit then returned NO-GO: Revision 3 now explicitly
+    supersedes the conflicting R-203 complete-report/22-ledger oracle clauses,
+    freezes all 288 ordinary fixture IDs as Class A/B before execution, and
+    retains the absolute no-failure-after-publication rule with mandatory
+    release-callback and release-ledger mutants;
+  - evidence-split code written between the two verdicts is unadmitted scratch
+    until both auditors approve the current text;
+  - both auditors returned binary GO after an exhaustive field partition was
+    added for every ABI-v3 report field; the approved preflight SHA-256 is
+    `c9f736288e67f69622812149c2ab86e5f54439c9778bcf57068acd8b6585aa74`.
+- Preflight:
+  [R-203 Semantic Ledger and Resource Telemetry Split](reviews/R203_SEMANTIC_LEDGER_TELEMETRY_SPLIT_PREFLIGHT_2026-07-29.md).
+- Interim evidence:
+  [R-203 Candidate-Rich Interim Evidence](results/R203_CANDIDATE_RICH_INTERIM_2026-07-29.md).
+- Dynamic charge-site mutation substep:
+  - the first independent audit returned NO-GO for implementation because no
+    reviewed AST inventory, witness map, independent bound table, native
+    mutant generator, or mutation CI gate existed;
+  - grep/line-number inventories, copied native logic, production site IDs and
+    automatic golden regeneration are rejected;
+  - the revised candidate is a pinned Clang-AST bijection plus test-only
+    temporary-source remove/reclassify mutants, one immutable witness per
+    helper invocation, declarative finite bounds, runtime rejection, and
+    production object/bitstream/PCM identity;
+  - current orientation finds 36 dynamic-family references and therefore 72
+    candidate mutants, but neither count is admitted until AST extraction and
+    independent audit pass;
+  - production source or object changes are outside this evidence-only
+    substep and trigger a separate audit and the applicable R-198 gate.
+- Preflight:
+  [R-203 Dynamic Charge-Site Mutation Preflight](reviews/R203_DYNAMIC_CHARGE_SITE_MUTATION_PREFLIGHT_2026-07-29.md).
+- Preflight audit:
+  - an independent auditor returned binary GO on exact preflight SHA-256
+    `253d18a9061560ab05a4650b7b36c305f85904fed114d648462ca3cbe6cb092b`;
+  - authorization is limited to the specified test-only AST inventory,
+    witnesses, finite bounds, isolated mutants, and identity evidence;
+  - no result, R-191 admission, production/native change, post-implementation
+    audit, Step-10 campaign, or R-198 obligation is waived.
+- Audit:
+  [R-203 Dynamic Charge-Site Preflight Audit](reviews/R203_DYNAMIC_CHARGE_SITE_PREFLIGHT_AUDIT_2026-07-29.md).
+
+## R-204 — Continuous Execution and Resumable 63-Step Plan
+
+- Status: **ACCEPTED PROJECT EXECUTION CONTRACT**
+- Date: 2026-07-30
+- Supersedes:
+  - ambiguous persistence wording in R-194 only where R-204 is stricter;
+  - it does not supersede R-185, R-196, R-198, dependency order, quarantine,
+    kill, safety, authority, publication, release, credential, or destructive
+    action gates.
+- Decision:
+  - while the project owner has explicitly authorized execution of the
+    continuous Resonith plan, passing a test, audit, subtask, generation,
+    alpha, beta, or release candidate is a checkpoint rather than project
+    completion;
+  - continue with the earliest dependency-ready, safe, in-scope action while
+    an authorized item remains;
+  - the canonical authority is the versioned
+    `docs/20_LSPF_MASTER_EXECUTION_PLAN.md`, accepted decisions, and their
+    dependency and quarantine gates;
+  - the complete 63-step operational panel is a derived, versioned view with
+    stable step IDs. It must not be shortened, regrouped, renumbered,
+    reordered, reconstructed from memory, or used to override the canonical
+    plan. Its definition, hash, mapping, status, evidence, and current
+    checkpoint must remain durably restorable;
+  - the accepted definition is panel `R204-63-V1` at
+    `docs/23_CONTINUOUS_63_STEP_EXECUTION_PANEL.md`, SHA-256
+    `6b2d1e21436e22231538d1b362657375c3699892b5290d17843ae025f510684e`;
+    mutable state is retained separately in
+    `docs/execution/R204_CURRENT_CHECKPOINT.md`;
+  - continuation never expands authority. Silence does not authorize pushes,
+    publication, releases, paid services, credentials, destructive or
+    irreversible actions, production or user-data mutation, or unrelated work;
+  - any clear owner instruction to stop, pause, wait, reprioritize, supersede,
+    or narrow the task controls in any language.
+- Evidence-generation rule:
+  - one materially scoped codec-algorithm hypothesis and its tightly coupled
+    edits form one frozen evidence generation;
+  - focused risk-based tests run after each implementation edit;
+  - before accepting that generation or starting another algorithm generation,
+    run the complete versioned registered-music manifest through the actual
+    decoders from identical source PCM;
+  - compare the candidate with the immediately preceding accepted Resonith
+    generation and the frozen current maximum-effort official Opus anchor;
+  - retain English machine-readable and written per-file and aggregate
+    complete bytes, bitrate, quality, spectral, phase, transient, channel,
+    runtime, CPU/GPU, memory, hash, fallback, win, loss, and regression
+    evidence;
+  - external publication remains separately authorized;
+  - only a proven bitstream- and decoded-PCM-identical mechanical refactor may
+    use the focused R-198 exception.
+- Pause conditions:
+  - an unambiguous owner stop, pause, wait, reprioritization, supersession, or
+    scope reduction;
+  - completion of the approved plan;
+  - a safety, security, privacy, legal, integrity, host-stability, storage,
+    compute, cost, or evidence-retention risk;
+  - missing authority, approval, credential, artifact, platform, or external
+    dependency without an authorized evidence-equivalent alternative;
+  - conflicting workspace changes, baseline/corpus/tool/hash drift,
+    irreproducibility, dependency or quarantine failure, mandatory audit
+    NO-GO, admission kill gate, or material ambiguity;
+  - a hard resource, tool, session, or execution-window limit.
+- Blocker behavior:
+  - never bypass authority, credentials, immutable evidence, quarantine,
+    dependency, or audit gates;
+  - a NO-GO blocks promotion and dependent work, but explicitly authorized
+    remediation or another independently dependency-ready branch may continue;
+  - a failed kill gate rejects or redirects the candidate; it does not justify
+    rescuing the same failed mechanism by uncontrolled complexity.
+- Resumable checkpoint:
+  - on every pause, blocker, or platform-imposed yield, record the panel
+    version/hash, all 63 stable step states, repository revision and worktree
+    state, active step and evidence generation, incumbent Resonith and Opus
+    identities, completed commands, tool versions, evidence paths and hashes,
+    blocker, clearance authority, invalidation conditions, and next safe
+    action;
+  - a status yield is not project completion;
+  - verify identities before resuming. An explicit owner pause requires an
+    explicit owner resume.
+- Independent audit:
+  - initial wording received **NO-GO** because it treated one stop word as
+    exclusive, left the panel unversioned, blurred edit and generation test
+    timing, implied publication authority, and incentivized bypass attempts;
+  - every blocking finding was accepted and resolved in the rule above;
+  - the corrected R-204 wording received independent binary **GO** before this
+    decision was recorded.
+
+## R-205 — Family-Separated Dynamic-Bound Authority
+
+- Status: **AUDIT CANDIDATE; PRE-IMPLEMENTATION NO-GO**
+- Date: 2026-07-30
+- Scope:
+  - evidence-only closure of the two remaining R-203 dynamic-bound authority
+    defects;
+  - no production source, header, ABI, solver, bitstream, decoded PCM, codec
+    algorithm, or player change;
+  - R-198 is not triggered unless that boundary is violated.
+- Frozen problem:
+  - the rejected runner summed `selection-pair-local` and
+    `exact-set-local` allowances before checking the shared native `SELECT`
+    event. One family could therefore exceed its own bound while unused margin
+    in the other hid the violation;
+  - only candidate-rich and exact-small corpora entered bound replay. Native
+    conformance, bounded greedy, allocation-ordinal, and state-arena
+    contributors supplied coverage but no machine-checked bound evidence;
+  - the previous hostile-greedy label replayed the ordinary greedy fixture and
+    did not create a genuinely resource-constrained rejection.
+- Considered alternatives:
+  - keep one summed `SELECT` bound: rejected because it cannot prove either
+    local family;
+  - subtract exact and greedy executions: rejected because both paths share a
+    `SELECT` prologue;
+  - reclassify whole families into spare event IDs: retained only as an
+    optional cross-check because destination events may contain unrelated
+    work;
+  - reproduce the production solver CFG in Python: rejected as copied,
+    implementation-coupled logic rather than an independent bound authority;
+  - use source coverage alone: rejected because reachability does not bind
+    charge amount, family ownership, phase passes, or per-contributor input
+    ceilings;
+  - add fixed test-only per-site accounting to a temporary source copy:
+    selected as the smallest mechanism that observes family ownership without
+    changing production behavior.
+- Authorized design:
+  1. Freeze an amendment containing a bijective partition of all 36 dynamic
+     sites, including exclusive ownership of every `SELECT` site by exactly one
+     of `selection-pair-local` or `exact-set-local`.
+  2. Generate a temporary instrumented `partial_graph.cpp` from the frozen
+     production bytes. Production source/header/library files remain untouched.
+  3. Give every site fixed-capacity checked counters for attempted, completed
+     emit, reserve, cancel, and consume units. No heap allocation, exception,
+     codec decision, semantic output, or caller-visible ABI may depend on this
+     telemetry.
+  4. Statically prove from the frozen AST that every instrumented dynamic-site
+     call charges exactly one unit. Fail closed on a non-unit amount, overflow,
+     duplicate site, missing site, operation mismatch, or source/hash drift.
+  5. Record actual analyzer-pass counts and per-call public input ceilings.
+     Check them against a versioned pass-ceiling contract instead of assuming
+     the former unlabelled `1/2` multipliers.
+  6. For every successful phase, require:
+     - completed site units grouped by event equal the native event ledger;
+     - `selection-pair-local` site units independently satisfy only their
+       formula;
+     - `exact-set-local` site units independently satisfy only their formula;
+     - their sum equals the native `SELECT` count;
+     - reserve/cancel/consume balance is valid and no telemetry overflow or
+       truncation occurred.
+  7. Replay and bind distinct contributor IDs for candidate-rich, native
+     conformance, ordinary greedy, exact-small, every allocation ordinal,
+     every state-arena subcase, and a genuinely tight-budget hostile greedy
+     rejection. No contributor may be missing, empty, duplicated under another
+     name, or silently replaced by a different fixture.
+  8. Preserve exact Class-A semantics and ordinary Class-B native output
+     between the production library and instrumented build. Telemetry is
+     implementation-conformance evidence only; independent authority remains
+     the frozen formulas, public input limits, AST bijection, contributor
+     manifest, and negative mutants.
+- Mandatory negative evidence:
+  - one wrong-family mutant for every `SELECT` site;
+  - missing, duplicated, wrong-unit, and wrong-operation site mutants;
+  - pass-count under/over-report and contributor omission/duplication mutants;
+  - ledger/site-sum disagreement and counter-overflow mutants;
+  - a tight-budget hostile-greedy case that reaches the greedy lane and returns
+    the declared typed rejection without partial publication.
+- Frozen production identities:
+  - source SHA-256:
+    `ecbc3fcbbb9cd5d38d21d93375503fc05f0b188d33273f27cd0a211010e2df05`;
+  - header SHA-256:
+    `12733d20b54be6209455800f477bfce9b84951d74699972a646dc492b803d49e`;
+  - production shared-library SHA-256:
+    `f12c6ad9061089d2d4088a5bfd2e20e845148ebcd303afaecc3bb2dc6be042ed`.
+- Kill gates:
+  - any frozen production identity changes;
+  - any site lacks exactly one local family or belongs to two local families;
+  - any contributor lacks complete bound and identity evidence;
+  - any telemetry path affects ordinary semantic or Class-B output;
+  - any local, event, aggregate, pass, prefix, transaction, or resource bound
+    is exceeded or hidden by another allowance;
+  - any automatically regenerated golden value replaces independently frozen
+    evidence.
+- Independent audit:
+  - the first orientation auditor confirmed both original defects and
+    recommended the bounded evidence-only direction;
+  - the frozen-document auditor returned **NO-GO** before implementation:
+    audit status had been pre-recorded, pass counts were bounded rather than
+    exact, the new manifest and contributor cardinalities were unfrozen,
+    telemetry API/capacity/concurrency/slot placement were ambiguous,
+    reservation and failure-prefix equations were incomplete, hostile-greedy
+    identity and threshold were unfrozen, the negative-mutant matrix had no
+    exact cardinality, and hostile production/instrumented parity was omitted;
+  - no R-205 implementation code was started;
+  - the current runner, the 72-mutant campaign, R-203 admission, S09 completion,
+    S10, predictor work, syntax work, and any compression claim remain
+    **NO-GO** until a corrected frozen design receives independent binary GO.
+
+### R-205 V2 frozen audit candidate
+
+- Status: **PRE-IMPLEMENTATION NO-GO; INDEPENDENT AUDIT PENDING**
+- Supersedes: the R-205 V1 implementation design, while retaining its NO-GO
+  findings as negative evidence.
+- Frozen V2 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V2_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `481a75b3b752ca5aac1c046d1a71843f1e62dfca9dcf08abab0733b8c9f2aa94`;
+  - `native/tests/r205_family_bound_authority_v1.json`, schema
+    `resonith-r205-family-bound-authority-1`, SHA-256
+    `d02dcdced3707b34f4902b045f5e6eb6d1e68a4d0972689236e67de9172dd509`.
+- Corrections:
+  - replaced arbitrary pass ceilings with exact validation/solver epoch
+    anchors and finite call-kind/status prefix traces;
+  - selected one private test C API, one active call, one fixed record, 36 site
+    slots, 22 event slots, and explicit no-heap/no-exception behavior;
+  - froze source-hook AST bijection, slot and sequencing proof, and the exact
+    production compile-command delta;
+  - replaced the ambiguous contributor partition with exactly 10,276 expanded
+    contributor IDs and 19,596 discovery/admission call records;
+  - froze the seven contributor classes, all 952 allocation ordinals, all nine
+    state-arena subcases, and the deterministic hostile-greedy input and
+    threshold law;
+  - defined prefix reservation, event-ledger, no-write, and hostile
+    production/instrumented parity equations;
+  - froze an exact 285-mutant negative matrix;
+  - split implementation/discovery from admission: pre-implementation GO may
+    authorize only the private evidence harness, and a second binary GO on
+    exact generated identities is required before admission replay.
+- Boundary:
+  - no R-205 implementation code exists at this checkpoint;
+  - the frozen V2 hashes are now submitted to the independent auditor;
+  - S09 remains active and every dependent action remains NO-GO until that
+    auditor returns binary GO.
+
+### R-205 V3 corrected audit candidate
+
+- Status: **PRE-IMPLEMENTATION NO-GO; INDEPENDENT AUDIT PENDING**
+- V2 self-red-team result: **NO-GO before external audit completed**.
+  - V2 modeled only V3 path validation/solver epochs even though 26 frozen
+    allocation ordinals exercise the R190 edge API;
+  - R190 has an intentional no-op work sink and no V3 report, so claiming
+    native-ledger equality for it would be false;
+  - the nine state-arena subcases were outside every V2 epoch.
+- Frozen V3 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V3_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `c49a89fb831c845e3d8d5576e68b8ab06db16cc6992a64d01ae43df00fda4ad3`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V3`, SHA-256
+    `c453495e86eed7a2912d013aaf4e096cd3264f3eb3ea51cfce775cab715df692`.
+- V3 corrections:
+  - separate exact path-validation, path-solver, edge-validation,
+    edge-enumeration, and named state-arena epoch families;
+  - honest `logical-site-formula-only` evidence for R190 rather than inventing
+    a native work ledger;
+  - native event equality remains mandatory for ledger-bearing V3 path and
+    arena evidence;
+  - one arena probe record contains exactly nine named subrecords;
+  - the corrected total is 19,588 discovery/admission call records;
+  - the exact negative matrix is 300 mutants after adding all five epoch
+    families and illegal-overlap evidence.
+- Boundary:
+  - no implementation code is authorized or present;
+  - V3 replaces V2 for the next independent pre-implementation audit;
+  - every S09-dependent action remains NO-GO until binary GO.
+
+### R-205 V4 phase-resolved audit candidate
+
+- Status: **INDEPENDENT PRE-IMPLEMENTATION NO-GO**
+- Independent V3 result: **NO-GO**.
+  - one global 36-site counter set could not identify how repeated merge sites
+    divided work between edge validation and two edge enumerations;
+  - V3 froze right-hand-side edge/arena limits without freezing every measured
+    left-hand-side numerator.
+- Frozen V4 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V4_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `54bdb12c22af946c4aef6bdaeece53e0177264d6e3adbaaa0527f23f6e3e7de8`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V4`, SHA-256
+    `6ebac9d495e9daab43ae4d249bd4a89e3de2f5ab689b63c495d8227c86c7949a`.
+- V4 corrections:
+  - fixed `epoch[17] × site[36] × operation[5]` checked counters;
+  - opening/closing `total`, `reserved`, `counts[22]`, and
+    `reserved_counts[22]` for every ledger-bearing epoch/subrecord;
+  - exact path, edge-validation, edge-enumeration, and arena left-hand-side
+    aggregation rules;
+  - canonical logical JSON serialization; raw private-struct hashing is
+    forbidden;
+  - a compile-time private-record upper bound of 65,536 bytes;
+  - eighteen new phase-resolution, snapshot, numerator, capacity, and
+    serialization mutants, for exactly 318 total.
+- Boundary:
+  - no implementation code is authorized or present;
+  - two independent auditors rejected V4:
+    - `input_fingerprint_v3` executed one frozen dynamic merge site outside
+      every declared epoch;
+    - the machine authority required global boundary `reserved=0` while
+      production intentionally retained an unrelated `COMMIT_RECORD`
+      reservation;
+  - S09 remains active and S10 remains pending.
+
+### R-205 V5 outer-fingerprint and reservation audit candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V5 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V5_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `d5f837dbdcc7df1dbc35075da984a5cbf892bfb710269e3bbf4d94d02fcf64f8`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V5`, SHA-256
+    `f414c0b9437f83c48cc065405d11bd681d7e60fe1bb685c5248be2158df33036`.
+- V5 corrections:
+  - eighteen fixed epochs: three path-validation, two path-solver, one V3
+    input-fingerprint, one edge-validation, two edge-enumeration, and nine
+    named arena subcases;
+  - an exact `F1` trace and a ledger-bearing local numerator for the
+    `input_fingerprint_v3` merge;
+  - explicit AST-falsifiable outer-region coverage: the V3 outer canonical
+    snapshot and output fingerprint invoke no frozen dynamic sites;
+  - zero boundary reservation for each dynamic event independently, while
+    retaining and permitting unrelated wrapper reservations in the full
+    snapshots;
+  - exact arena equality after dynamic-event ownership;
+  - a 65,536-byte fixed private-record ceiling;
+  - exactly 326 typed negative mutants.
+- Validation:
+  - JSON parse passed;
+  - epoch assignment is exactly `18/18`;
+  - the negative matrix recomputes to `326/326`;
+  - contributor and public-call cardinalities remain `10,276` and `19,588`;
+  - the V5 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - no telemetry or production implementation is authorized yet;
+  - the split-authority auditor accepted the runtime epoch model and arithmetic
+    but rejected the stage-2 authority because the machine artifact list
+    omitted both the complete epoch-record set and production/instrumented
+    parity set;
+  - the resource auditor rejected the full-ledger authority because it lacked
+    direct mapping and conservation laws, fixed `COMMIT_RECORD` boundary
+    semantics, and typed wrapper-reservation mutants;
+  - S09 remains active.
+
+### R-205 V6 immutable discovery and full-ledger audit candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V6 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V6_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `76ec68383948de20d61fb78c29f9b575b4e83cb65c20b7aac12e3adfd1eb618e`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V6`, SHA-256
+    `dc73384b7433e2277e6c69aed543859fb299c2110b7e4bd7a2857c2973578a10`.
+- V6 corrections:
+  - direct opening/closing copies of `total`, `reserved`, all 22 counts, and
+    all 22 reserved counts, enforced by AST validation;
+  - full-ledger `total=sum(counts)` and `reserved=sum(reserved_counts)`
+    conservation;
+  - exact `COMMIT_RECORD=1` boundary semantics for every V3 path, solver, and
+    input-fingerprint epoch;
+  - mechanically first nonzero opening and closing `MEMORY_PAGE` witnesses;
+  - exact deterministic call plan for all 19,588 records;
+  - canonical 19,588-line epoch-record and parity JSONL artifacts;
+  - ten-entry stage-2 payload manifest whose own root hash is published
+    externally, avoiding a self-referential hash;
+  - twelve new full-ledger snapshot mutants and eight immutable-freeze
+    mutants, bringing the exact total to 346.
+- Validation:
+  - JSON parse passed;
+  - epoch slots remain `18/18`;
+  - negative arithmetic is `346/346`;
+  - the call plan is `19,588/19,588`;
+  - the authority defines ten payload artifact identities plus one external
+    freeze-manifest root identity;
+  - the V6 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - the split-authority auditor rejected the impossible inclusion of the
+    post-audit admission call in the 19,588 pre-audit executed records;
+  - the resource auditor rejected a `MEMORY_PAGE` witness that identified only
+    a record, not one exact epoch/boundary/event cell or its selection proof;
+  - S09 remains active.
+
+### R-205 V7 stage-separated and cell-addressed audit candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V7 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V7_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `dd02bb90dfbf46adc0adb6dbf0ed9217b988593d9f4129ca8db1e5ddf0a29c1a`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V7`, SHA-256
+    `270f7be5ca3bf2e2d967ea116cc99efcad892070c77c2fa4bdcaa39df6255efc`.
+- V7 corrections:
+  - exactly 19,587 executed discovery records before stage-2 audit;
+  - one immutable expected-admission specification with exact budget,
+    threshold receipt, status, site deltas, and no-write result;
+  - exactly one observed post-audit admission record, kept outside and unable
+    to modify the audited discovery root;
+  - a total witness-cell order over record ordinal, epoch slot, opening/closing
+    boundary, and fixed `MEMORY_PAGE` event index 17;
+  - explicit record ordinal, slot, boundary, event, value, record hash, prefix
+    count, and zero-prefix hash for opening and closing witnesses;
+  - a third independent result audit before the original 72-mutant campaign,
+    R-203/R-191 admission, or S10;
+  - five stage-boundary and seven witness-selection mutants, bringing the
+    exact negative total to 358.
+- Validation:
+  - JSON parse passed;
+  - stage-1 call arithmetic is `19,587/19,587`;
+  - stage 1 plus one admission is `19,588`;
+  - negative arithmetic is `358/358`;
+  - stage 2 binds eleven payload artifacts under one external root hash;
+  - the V7 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors accepted the stage split and exact witness-cell proof;
+  - both rejected the underidentified admission role because it did not freeze
+    preflight versus fill, pointers, capacities, initial buffers, payload hash
+    domains, expected fingerprint, or the exact discovery source of `B`;
+  - S09 remains active.
+
+### R-205 V8 exact fill-topology audit candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V8 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V8_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `3ee15d0fc6550699fb448dffe268c5a8c7b1d2451684448971b3a72f2d96704c`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V8`, SHA-256
+    `6c47d773c4a284319af7dc7ef248e519ee226b2a6d937ab18a063ed90a16d8a3`.
+- V8 corrections:
+  - exact preflight and fill discovery topologies;
+  - threshold source fixed to the ample discovery-fill record;
+  - `B=ledger.total+ledger.reserved` at the target, plus proof that every
+    earlier operation fits and the target unit does not;
+  - admission fixed to a non-null fill using preflight-required capacities,
+    `0xA5` path bytes, `0x5A` entry bytes, and a valid frozen report header;
+  - separate exact path, entry, and report pre-call hash domains;
+  - independent no-public-ABI Python derivation of the four expected
+    fingerprint qwords for budget `B`, including exact byte order and modulo
+    \(2^{64}\) arithmetic;
+  - exact expected status, termination, flags, incomplete trace, attempted and
+    completed site deltas, and unchanged path/entry hashes;
+  - one additional stage-2 derivation receipt and eight topology mutants,
+    bringing the payload and negative totals to 12 and 366.
+- Validation:
+  - JSON parse passed;
+  - stage-1 call arithmetic remains 19,587 and the complete total remains
+    19,588;
+  - negative arithmetic is `366/366`;
+  - the V8 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors rejected the undefined threshold receipt: V8 had aggregate
+    epoch/site counters but no bounded ordered-operation capture, ordinal,
+    canonical commitment, capacity, overflow law, or independently replayable
+    prefix proof;
+  - the resource auditor additionally found that the twelve-payload root did
+    not bind the instrumented binary, transformer, validators, discovery and
+    admission runners, commands, or oracle bytes;
+  - the negative matrix could not detect a truncated, reordered, omitted, or
+    falsified earlier-operation proof or drifted evidence machinery;
+  - S09 remains active.
+
+### R-205 V9 bounded operation-trace and evidence-toolchain candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V9 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V9_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `64a2172859ce42ab51196f1acf1071701e6c60bc272a693e9477e004a3486b7d`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V9`, SHA-256
+    `df90d1f562356ac14da470b0d24e8236d8b8eb2441b3c0c79a7ca4f9e1d93af9`.
+- V9 corrections:
+  - canonical 101-byte tuples for every `emit`, `reserve`, `cancel`, and
+    `consume` ledger operation in exact zero-based ordinal order;
+  - fixed-state standard SHA-256 commitment and checked prefix summaries for
+    every record;
+  - an independently replayable, runner-owned, preallocated trace of at most
+    1,048,576 tuples and 105,906,176 bytes for only the tight discovery-fill
+    record;
+  - a 22-field threshold receipt proving state continuity, complete successful
+    prefix, `required_capacity<=B` before the target, and target
+    `required_capacity=B+1`;
+  - exact nested-meter/global-ledger equivalence obligations;
+  - a 24-payload external root that binds the actual instrumented binary,
+    transformer, validator, separate discovery/admission runners, exact
+    commands, oracle bytes, operation trace, and all result authorities;
+  - 36 new operation-commitment and evidence-toolchain mutants, bringing the
+    exact negative total to 402.
+- Validation:
+  - JSON parse passed;
+  - epoch assignment is `18/18`;
+  - negative arithmetic is `402/402`;
+  - stage-1 records remain `19,587`, followed by one separately authorized
+    admission;
+  - the root payload count is `24`;
+  - the expected admission and threshold receipt define 26 and 22 required
+    fields respectively;
+  - the V9 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors rejected the false equality between every nested meter
+    maximum and the then-current global remainder; the source retains a
+    call-entry maximum across later direct-ledger operations;
+  - the root listed 24 payloads while post-admission immutability named 23;
+  - the fixed-state layout named fourteen `uint64` values although it contained
+    twelve integers and two digests;
+  - invalid raw events and required-capacity overflow lacked unique tuple
+    encodings;
+  - S09 remains active.
+
+### R-205 V10 dominance-replay and exact-root candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V10 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V10_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `8f45a64db7f4f2c666eaeb31720ccc2c0da8e50d02a42445c2a58cf8815bf985`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V10`, SHA-256
+    `e26042f5be6c23b8a6112a84e6e7b1639968bf39b2b393bb9119b58b2f2d94fb`.
+- V10 corrections:
+  - 151-byte operation tuple V2 with full underlying-width raw event,
+    canonical arithmetic-overflow sentinels, and explicit meter context;
+  - correct dominance and replay laws over global footprint, report work,
+    private meter reservation, origin, and the replay maximum derived from
+    `B`;
+  - a bounded trace of at most 1,048,576 tuples and 158,334,976 bytes;
+  - exact 12-`uint64` plus two-digest fixed-state accounting;
+  - 25 stage-2 payloads and 25 same-order contracts with exact IDs, paths,
+    schemas, and record-count laws;
+  - pre/post admission hashes for the root plus every payload, including one
+    mutation per payload;
+  - a non-self-referential typed external root-hash slot whose only realized
+    substitution is recorded after admission;
+  - 40 new typed mutants, including audited-root substitution attacks,
+    bringing the exact negative total to 442.
+- Validation:
+  - JSON parse passed;
+  - epoch assignment remains `18/18`;
+  - negative arithmetic is `442/442`;
+  - stage-1 records remain `19,587` plus one separate admission;
+  - payload and artifact-contract identity/order is exactly `25/25`;
+  - expected admission and threshold receipt define 27 and 23 fields;
+  - the V10 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors accepted the meter-dominance direction but rejected the
+    rooted negative-matrix contract: authority declared 442 mutants while the
+    root required 437 records;
+  - direct-ledger tuples fixed absent meter integers but left
+    `meter_context_valid` ambiguous;
+  - raw-event truncation lacked an explicit non-vacuous value above 255;
+  - S09 remains active.
+
+### R-205 V11 exact-mutant and canonical-context amendment
+
+- Status: **PRE-IMPLEMENTATION NO-GO; ONE INDEPENDENT GO AND ONE INDEPENDENT NO-GO**
+- Frozen V11 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V11_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `5eeb56c40fb59ce97812f79d18d73be03390e3a1eec161a67289bb4549d02761`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V11`, SHA-256
+    `a0c5e4347d037c2b43c9adea186bd9fc4e95e79de01a7d3a6f00b57e471d828f`.
+- V11 corrections:
+  - the declared matrix, computed sum, rooted expansion, and future JSONL line
+    count are exactly `443`;
+  - direct-ledger tuples canonically require `meter_present=0`,
+    `meter_context_valid=0`, and five `UINT64_MAX` meter fields;
+  - a new mutant rejects the alternative absent-context flag;
+  - exact private canonicalization probes include raw events 256, 511, and
+    4,294,967,295, so byte-truncation mutations are non-vacuous;
+  - all 25 artifact paths advance to V11 without changing their identities,
+    schemas, order, or other cardinalities.
+- Validation:
+  - JSON parse passed;
+  - negative arithmetic and root contract are `443/443`;
+  - root IDs and contracts remain `25/25`;
+  - V11 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - the split-authority auditor returned GO;
+  - the resource/canonicalization auditor rejected label-only probe cases that
+    did not freeze complete 25-field inputs, expected hashes, or force the
+    actual instrumented encoder to process them;
+  - S09 remains active.
+
+### R-205 V12 byte-exact encoder probe amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V12 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V12_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `6185c33802a4d53b8a9a5eab8b14f886ca6909ccab25ac11d7115339ce7400d7`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V12`, SHA-256
+    `4286a880adf741c3ac6284a525dd9548b08e4f72a5a2bc62b225df4d07cfa339`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V12 corrections:
+  - twelve complete 25-field probe cases in exact tuple order;
+  - twelve independently recomputed expected SHA-256 values over exact
+    151-byte outputs;
+  - raw events 256, 511, and `UINT32_MAX`, plus global/meter overflow cases;
+  - a private C API that must call the same single C++ tuple encoder as the
+    real ledger observer;
+  - an independent Python serializer forbidden from loading the instrumented
+    library;
+  - AST rejection of a second, copied, or probe-only C++ encoder;
+  - the probe corpus as a required-hash root payload, increasing root
+    cardinality to 26;
+  - eight new root/probe mutants, bringing the exact total to 451.
+- Validation:
+  - all 12 case vectors contain 25 fields;
+  - all 12 expected hashes independently recompute;
+  - authority hash and required probe SHA-256 agree;
+  - negative arithmetic and root contract are `451/451`;
+  - root IDs and contracts are `26/26` in identical order;
+  - V12 authority, probe corpus, and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors found the same surviving implementation: the real observer
+    can truncate `event` before the shared encoder while the probe injects the
+    full-width value directly;
+  - V12 proved the encoder but did not prove pre-encoder observer field
+    construction;
+  - S09 remains active.
+
+### R-205 V13 real-ledger semantic-probe amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V13 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V13_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `134a63653c355247966b59833154b90879b6d5737a6f21377ae4192ecd259059`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V13`, SHA-256
+    `2e859a00fa9386e27fdba5f22063cf988334b19e9c9efc47a97d46c6e0345d7b`;
+  - `native/tests/r205_observer_semantic_probes_v1.json`, SHA-256
+    `015e86ab3e96743a6ab162ef9cf5e118e3c7d91180965a1e67c6c3bad932713c`.
+- V13 corrections:
+  - the probe runner supplies only fourteen semantic inputs, never tuple
+    fields, derived capacity, result, after state, or canonical bytes;
+  - the injected C API constructs a real ledger and invokes exactly one real
+    `emit`, `reserve`, `cancel_reserved`, or `emit_reserved` method;
+  - the real methods and semantic probe therefore traverse the same sole
+    observer field builder and the same sole encoder;
+  - `event_raw` is derived only inside the builder from the complete unsigned
+    enum-underlying representation, with narrow intermediates and masks
+    forbidden;
+  - the independent oracle derives all 25 fields from semantic state before
+    serializing and checking the twelve frozen hashes;
+  - fourteen observer/probe dataflow mutants bring the exact negative total to
+    465.
+- Validation:
+  - JSON parse and two independent structural passes succeeded;
+  - all 12 semantic cases independently derive the 25 expected fields and
+    frozen hashes;
+  - the frozen C++23 toolchain confirms a 32-bit enum underlying
+    representation;
+  - negative arithmetic and the root contract are `465/465`;
+  - root IDs and contracts are `26/26` in identical order;
+  - V13 authority, semantic corpus, and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors rejected the attempt to pass 255, 256, 511, and
+    `UINT32_MAX` through real C++ ledger methods because the non-fixed enum's
+    language-defined range is only 0 through 31;
+  - an out-of-range cast or reconstructed object has undefined behavior, so
+    its observed hashes cannot be evidence;
+  - R-205 is evidence-only and does not replace the mandatory S12
+    registered-music comparison after algorithm step S11;
+  - S09 remains active.
+
+### R-205 V14 defined-enum observer and typed-encoder separation
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V14 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V14_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `e0d1081b1388cdd336587b9c4ac8433ff253f7616841b774c17bfc10bf2e8f69`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V14`, SHA-256
+    `813dec26c602e67b4a4cb97a369fe996011442bc582dcd5e2e5323ed3c7406d5`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V14 corrections:
+  - real ledger calls use only defined enum values 0 through 31;
+  - valid 0/21 and defined-invalid 22/23/24/30/31 exercise the real methods,
+    observer field builder, and encoder;
+  - runner and C API both reject values above 31 before enum conversion;
+  - one active record produces immutable ordinals 0 through 11;
+  - exact AST/dataflow laws prove the absence of narrow intermediates even
+    when current defined values would make an eight-bit truncation
+    behaviorally invisible;
+  - a separate typed `uint64` encoder probe retains 256, 511, and
+    `UINT32_MAX` without constructing an enum or claiming observer
+    equivalence;
+  - the second root payload and out-of-range-enum mutant bring exact root and
+    negative totals to 27 and 467.
+- Validation:
+  - both probe authorities parse and contain 12 exact cases each;
+  - all semantic cases independently derive their 25 fields and hashes;
+  - machine authority, matrix, and root invariants are `467/467` and
+    `27/27`;
+  - every stage-2 artifact path is V14 and unique;
+  - V14 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - one auditor found an impossible call-graph contract: all direct encoder
+    calls were forbidden while the typed encoder probe required one;
+  - the other found a value-domain hole: finite probes omitted epochs 9
+    through 17, allowing a branchless encoder corruption to pass;
+  - S09 remains active.
+
+### R-205 V15 exact encoder-template and two-caller amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V15 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V15_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `6256f3b1701b7997af1764301bf0e1b97c36e3ca8f63f8e973d7954c46edbad3`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V15`, SHA-256
+    `12c0afe87df77ece65e04c55e6320e5362021b65982bf64913e506708b3b73a1`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V15 corrections:
+  - the sole encoder has exactly two callers: the field builder and one named
+    test-only typed probe;
+  - the test-only direct caller is unreachable from all production,
+    discovery, admission, ledger, observer, and semantic-probe graphs;
+  - the encoder tuple type, 25 direct member writes, fixed offsets, `uint8`
+    copy, and eight-byte little-endian helper are closed AST templates;
+  - encoder values cannot enter arithmetic, masks, aliases, lookups, branches,
+    or data-dependent addresses;
+  - the source-template proof covers the complete `uint8` and `uint64`
+    domains, including arena epochs 9 through 17;
+  - one caller mutant and 86 encoder-dataflow mutants bring the exact total to
+    554.
+- Validation:
+  - machine authority parses with `554/554` negative arithmetic;
+  - root IDs and contracts remain `27/27` with unique V15 paths;
+  - both unchanged probe hashes remain bound;
+  - V15 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors found that a caller-supplied output span could overlap the
+    tuple only for unprobed field values, allowing early writes to corrupt
+    later exact reads while the encoder template still passed;
+  - one auditor's separate 544-mutant arithmetic claim was rejected because
+    it counted the 11-member wrong-SELECT-family group as one; the exact V15
+    sum remains 554;
+  - S09 remains active.
+
+### R-205 V16 by-value encoder-output ownership amendment
+
+- Status: **PRE-IMPLEMENTATION NO-GO; ONE INDEPENDENT GO AND ONE INDEPENDENT NO-GO**
+- Frozen V16 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V16_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `dfe750d19c61b966ccdfe8092205fcea1c0278d5876071b2623e23f686e22fe0`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V16`, SHA-256
+    `f06a5ec1b13dcde4042b8435b6b0b81b87880c4b9d0a4b6ae20f3d345cf9cf53`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V16 corrections:
+  - the encoder accepts only a const tuple reference and returns one
+    `std::array<uint8_t,151>` by value;
+  - its only output storage is one local zero-initialized array;
+  - output parameters, spans, pointers, views, external storage, placement
+    construction, storage selection, and reference/view returns are forbidden;
+  - the builder constructs one const tuple aggregate and never mutates or
+    aliases it;
+  - five ownership mutants bring the exact negative total to 559.
+- Validation:
+  - machine authority parses with independent negative arithmetic `559/559`;
+  - root IDs and contracts remain `27/27` with unique V16 paths;
+  - both unchanged probe hashes remain bound;
+  - V16 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - one auditor returned GO;
+  - the other showed that the builder could mutate the returned array after
+    the exact encoder and before commitment because V16 did not const-bind or
+    trace that post-return dataflow;
+  - S09 remains active.
+
+### R-205 V17 immutable encoder-to-commit dataflow amendment
+
+- Status: **PRE-IMPLEMENTATION NO-GO; ONE INDEPENDENT GO AND ONE INDEPENDENT NO-GO**
+- Frozen V17 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V17_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `0df8a8710eea773c92248824c0479b759ac744df96a5620890f38afe5a375b0d`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V17`, SHA-256
+    `fb5ab04397893ca0d5674c8439ade4b4074dde36a5bbf2ec88cd19dd5b1e8b05`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V17 corrections:
+  - the builder binds encoder output exactly as `const auto encoded`;
+  - the sole immediate next action is
+    `commit_operation_tuple_bytes(encoded)`;
+  - the commit function consumes a const array reference and feeds the same
+    exact pointer and literal 151 bytes to SHA-256 and optional trace copy;
+  - no intervening statement, mutable alias, substitution, offset, length
+    drift, transform, or divergent hash/trace source is permitted;
+  - four commit-dataflow mutants bring the exact negative total to 563.
+- Validation:
+  - machine authority parses with independent negative arithmetic `563/563`;
+  - root IDs and contracts remain `27/27` with unique V17 paths;
+  - both unchanged probe hashes remain bound;
+  - V17 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - one auditor returned GO;
+  - the other supplied a valid conforming counterexample containing an
+    unrelated enormous fixed loop or automatic stack object inside the commit
+    function while preserving every frozen byte and SHA/trace dataflow law;
+  - V17 did not freeze the commit signature, body, address lifetime, or rooted
+    resource envelope tightly enough;
+  - S09 remains active.
+
+### R-205 V18 closed commit and rooted resource amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V18 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V18_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `e32bd23b883a2b3dc66c7052b85e80995827ad15500db309d5b39dac75d5f3e8`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V18`, SHA-256
+    `3d6a3be3743b46ca48bd6159b0377e554d6fba62bfde6a09af9262af4132c155`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V18 corrections:
+  - the sole commit has an exact `void ... noexcept` signature and a closed
+    body containing only the required SHA-256 update and optional trace copy;
+  - additional locals, statements, calls, control flow, side effects,
+    recursion, mutable access, persistence, and address escape are forbidden;
+  - the complete rooted builder/encoder/commit/SHA/copy graph has a
+    conservative source-declared automatic-storage ceiling of 4,096 bytes,
+    at most 4,096 dynamic loop iterations per 151-byte commit, zero heap
+    allocation, and no recursion;
+  - eight resource and source-shape mutants bring the exact negative total to
+    571.
+- Validation:
+  - machine authority parses with independent negative arithmetic `571/571`;
+  - root IDs and contracts remain `27/27` in identical order with unique V18
+    paths;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V18 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors independently showed that source-declared automatic storage
+    omits actual ABI frames, return addresses, shadow space, alignment, spills,
+    and stack probes;
+  - a deep acyclic direct-call chain could therefore exhaust the machine stack
+    without recursion, loops, heap use, or source-declared local objects;
+  - a correct SHA implementation could also use arbitrarily large static
+    tables or straight-line code while preserving every V18 byte and source
+    law;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V19 compiled-resource receipt amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V19 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V19_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `d9c0e36fbd55325d4c7d63f6e6ef8372fb2eb261b2581cf8a88c738f6aef7f1b`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V19`, SHA-256
+    `037782719ed7d59c0a4887ab2046cea45516d4a9cac0289399e21f426e86ae17`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V19 corrections:
+  - the exact compiled instrumented PE, not only C++ source, becomes part of
+    the resource proof;
+  - complete sections, imports, relocations, reachable disassembly, and x64
+    unwind/prologue data bound direct-call depth, actual ABI stack, machine
+    instructions, text, static storage, file size, and `SizeOfImage`;
+  - a fresh-process 100,000-commit trial binds elapsed time, peak working set,
+    exit status, SHA-256, and trace identity;
+  - one new resource receipt expands the ordered root to 28 payloads;
+  - eleven compiled-resource mutants plus one new payload-rewrite mutant bring
+    the exact negative total to 583.
+- Validation:
+  - machine authority parses with independent negative arithmetic `583/583`;
+  - root IDs and contracts are `28/28` in identical order with unique V19
+    paths;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V19 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors found that runtime inputs and independent expected hashes
+    were not frozen, permitting an untested rare slow path;
+  - executable hashes did not bind loaded native dependencies or retain raw
+    LLVM outputs as root payload bytes;
+  - stack accounting began at the telemetry suffix and omitted production
+    caller ancestry already occupying the stack;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V20 closed machine-dependency and public-ancestry amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V20 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V20_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `3111c93db6c1ae7e32bd69c69c6bd5f73764b721ed6936826c09f958bb607e12`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V20`, SHA-256
+    `48338e41beec1a08b8d06fe25c45a6a03f09bec8658d1e043d805d26d6a42fcf`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V20 corrections:
+  - tuple values may affect arithmetic data but cannot affect machine control
+    flow, loop bounds, call targets, memory addresses, allocation, stack
+    adjustment, or exception paths;
+  - worst-case dynamic instructions are derived from the complete finite CFG
+    and fixed loop bounds rather than inferred from a sample;
+  - actual stack accounting starts at all three real production public ABI
+    roots and reaches every frozen observer site;
+  - a canonical raw evidence bundle roots LLVM stdout/stderr/argv, Python and
+    native loaded-module identities, OS loader, CPU, affinity, and timer facts;
+  - the runtime stream is fixed as 12 semantic cases repeated 10,000 times,
+    with independent case-index, tuple-cycle, full-stream, SHA, and trace
+    hashes;
+  - one evidence-bundle payload expands the ordered root to 29;
+  - fourteen closure mutants plus one new payload-rewrite mutant bring the
+    exact negative total to 598.
+- Validation:
+  - machine authority parses with independent negative arithmetic `598/598`;
+  - root IDs and contracts are `29/29` in identical order with unique V20
+    paths;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V20 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - V20 required one live 120,000-operation record but froze bytes whose
+    ordinal reset to zero every twelve operations;
+  - the independently correct continuous-ordinal stream hash differs from the
+    frozen repeated-cycle hash, so no implementation could satisfy both laws;
+  - V20 also permitted tuple-tainted arithmetic to enter variable-latency
+    opcodes even when control flow and instruction count remained fixed;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V21 continuous ordinal and operand-latency amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V21 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V21_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `067920cd9e87560a91d2419c1d9eb3a35e36480d1b5d9048421d1d3644028101`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V21`, SHA-256
+    `2f7c1e8a6088066ec999b83eaa3dd348320c4c9bbaf52abf264af943e3442d3e`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V21 corrections:
+  - one active telemetry record now emits continuous ordinals zero through
+    119,999 with no reset, gap, or duplicate;
+  - the independently recomputed 18,120,000-byte expected SHA/trace hash is
+    `d51859d69cc2200d87bdb1a534fd90466c90aae8c67eb20eb88021cccc1e8c58`;
+  - tuple-tainted operands are restricted to a closed constant-latency integer
+    opcode set;
+  - division, multiplication, floating/vector divide or square root,
+    tainted-repeat, gather/scatter, and undocumented variable-latency or
+    microcoded operations are forbidden;
+  - the frozen-CPU table bounds worst-case instructions and cycles per
+    commitment;
+  - two new mutants bring the exact negative total to 600.
+- Validation:
+  - machine authority parses with independent negative arithmetic `600/600`;
+  - root IDs and contracts remain `29/29` in identical order with unique V21
+    paths;
+  - the continuous-ordinal stream hash was independently reproduced;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V21 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors confirmed the continuous ordinal stream and exact
+    `d518...8c58` hash;
+  - both rejected the absolute cycle-WCET claim because ordinary Windows
+    cache, TLB, paging, interrupt, and scheduling latency is not bounded by the
+    implementation;
+  - the operand allowlist also used the ambiguous term `MOV-family` rather
+    than exact decoded mnemonics and forms;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V22 implementation-owned resource boundary amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION GO VERDICTS; STAGE-1 IMPLEMENTATION AUTHORIZED**
+- Frozen V22 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V22_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `6abf4b0d5a136b110bf875a3ac76908c7cf594d91799752f4643884e1804f0e8`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V22`, SHA-256
+    `83d8968226b0e92860f0713ed8cbf1f902ac17ea824e8006db9e65b9e7fda823`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V22 corrections:
+  - normative bounds cover implementation-owned code, control, addresses,
+    instructions, loads/stores, pages, bytes, stack, storage, heap, image,
+    imports, and allocation;
+  - external Windows cache, TLB, page-fault, interrupt, preemption, frequency,
+    thermal, firmware, hypervisor, driver, and scheduler latency is explicitly
+    outside the binary-WCET claim;
+  - runtime wall time remains a recorded empirical admission observation;
+  - exact decoded transfer mnemonics, operand forms, widths, prefixes, and
+    opcode bytes replace the `MOV-family` wildcard;
+  - implementation-owned memory operations, pages, and bytes receive static
+    finite bounds;
+  - two new mutants bring the exact negative total to 602.
+- Validation:
+  - machine authority parses with independent negative arithmetic `602/602`;
+  - root IDs and contracts remain `29/29` in identical order with unique V22
+    paths;
+  - the continuous-ordinal stream hash remains independently reproduced;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V22 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - two independent read-only auditors returned binary GO on all four exact
+    V22 hashes;
+  - a later read-only implementation guard found an unspecified private C ABI,
+    contradictory command-artifact shapes, and a circular pre-discovery gate;
+  - a preliminary tuple-encoder scaffold was removed immediately and no
+    retained implementation, discovery, admission, codec, bitstream, or PCM
+    change occurred;
+  - V22 is superseded by V23 before retained implementation;
+  - read-modify-write, implicit stack access, stack ancestry, and page-crossing
+    accounting are mandatory implementation-audit checks;
+  - admission, the original 72-mutant campaign, R-203 admission, and S10 remain
+    forbidden until the frozen 29-payload stage-2 root receives two fresh
+    independent GO verdicts;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V23 exact private ABI and non-circular execution amendment
+
+- Status: **PRE-IMPLEMENTATION CANDIDATE; TWO INDEPENDENT AUDITS PENDING**
+- Frozen V23 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V23_PREFLIGHT_2026-07-30.md`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V23`, SHA-256
+    `b7d823108fb28e4923232b0c4160e78f2a828272e7f9d2f7d1dd878b3263c01d`;
+  - unchanged defined-range semantic probes, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - unchanged typed encoder probes, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V23 corrections:
+  - freezes every private C type, field order, status, calling convention,
+    function signature, record-ID law, and trace-buffer law;
+  - defines one canonical command object containing exact argv, cwd,
+    allowlisted environment, executable identity, and path-sorted input hashes;
+  - splits Stage 1 into pre-discovery implementation gates, exactly 19,587
+    discovery calls, and post-discovery validation/root freeze;
+  - adds three authority-closure mutants for a total of 605.
+- Validation:
+  - machine authority parses with independent negative arithmetic `605/605`;
+  - root IDs and contracts are `29/29`, unique, ordered, and all use V23 paths;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V23 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both independent auditors returned NO-GO;
+  - the blockers were unfrozen private-structure layouts, missing status
+    transitions and precedence, a forbidden admission record ID, no observed
+    runtime trace route, and an admission-root self-reference gap;
+  - V23 is superseded by V24 before retained implementation;
+  - admission, the original 72-mutant campaign, R-203 admission, and S10 remain
+    forbidden;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V24 byte-exact ABI and external-root amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V24 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V24_PREFLIGHT_2026-07-30.md`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V24`, SHA-256
+    `954215c985b83bf2917cd8cff86375c9a5a0dda2658967688addd4c20d99ad8d`;
+  - unchanged semantic probes, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - unchanged typed probes, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V24 corrections:
+  - freezes exact size, alignment, and every offset of both private C input
+    structures and requires matching compile-time assertions;
+  - defines a complete five-state status and error-precedence machine;
+  - admits the later admission record ID without adding it to discovery;
+  - adds a distinct 18,120,000-byte measured-runtime trace mode;
+  - replaces the cyclic admission input with one exact out-of-band
+    SHA-bound-file slot and transient argv substitution;
+  - adds five closure mutants for an exact total of 610.
+- Validation:
+  - machine authority parses with independent arithmetic `610/610`;
+  - root IDs/contracts are `29/29`, unique, ordered, and all use V24 paths;
+  - unchanged probes and production identities remain bound;
+  - V24 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both independent auditors returned NO-GO;
+  - the blockers were the contradictory trace-retention law, a
+    `r205_record_read` output-alias route, an incomplete semantic initial-state
+    predicate, and command/root identity ambiguity;
+  - V24 is superseded by V25 before retained implementation;
+  - admission, the original 72-mutant campaign, R-203 admission, and S10 remain
+    forbidden;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V25 observable-probe and rooted-execution amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V25 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V25_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `483c0bab6c5356e976ac5419105121bea451760dc84355956bf586df886b0c09`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V25`, SHA-256
+    `d6739d80437531a1ac936976792c26a394dc3e58b500d2ca08afb21e2d95ed8e`;
+  - unchanged semantic probes, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - unchanged typed probes, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V25 corrections:
+  - freezes three independently persisted trace modes with one identical
+    SHA/copy byte source and dedicated non-aliasing runner spans;
+  - makes the twelve real-ledger semantic tuples directly observable;
+  - records exact branchless arithmetic-validity summaries `1,2` for one
+    semantic cycle and `10000,20000` for the measured runtime;
+  - freezes the complete valid semantic initial-state predicate;
+  - rejects `required_bytes`/JSON output range aliasing before any read output;
+  - binds every evidence command to the actual rooted source, interpreter,
+    argv, cwd, environment, and inputs that execute it;
+  - adds eight V25 input/observability mutants plus one command-executor
+    closure mutant for an exact total of 619.
+- Validation:
+  - machine authority parses with independent arithmetic `619/619`;
+  - all twelve semantic inputs pass the frozen domain predicate;
+  - derived validity summaries are exactly `1,2` and `10000,20000`;
+  - root IDs/contracts are `29/29`, unique, ordered, and all use V25 paths;
+  - unchanged probes and production identities remain bound;
+  - V25 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both independent auditors returned NO-GO on the 619-versus-616 rooted
+    negative-matrix contradiction;
+  - one auditor additionally found that admission compared its realized argv
+    against the immutable placeholder template instead of a derived realized
+    vector;
+  - V25 is superseded by V26 before retained implementation;
+  - admission, the original 72-mutant campaign, R-203 admission, and S10 remain
+    forbidden;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V26 exact matrix and realized-argv amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION GO VERDICTS; EVIDENCE-ONLY
+  STAGE-1 IMPLEMENTATION AUTHORIZED**
+- Frozen V26 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V26_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `12c82b89c5c21f36f1cca5ad63ba1db6664643ebbc48c1655fe4f9efc8de20a2`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V26`, SHA-256
+    `a31dc407a2ae6812ff0f42be023c0fe7d70a5d42307070ff0ff4a8da36603341`;
+  - unchanged semantic probes, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - unchanged typed probes, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V26 corrections:
+  - the declared sum, expected total, Phase-C requirement, and rooted JSONL
+    contract now all require exactly 619 negative mutants;
+  - ordinary commands compare observed argv with the immutable template;
+  - admission derives one exact realized argv from the unchanged template and
+    supplied external root before comparing the observed process vectors;
+  - every stage-2 output path advances to V26.
+- Validation:
+  - matrix closure is `619/619/619/619`;
+  - root IDs/contracts are `29/29`, unique, ordered, and all use V26 paths;
+  - the 18,120,000-byte runtime stream still hashes to `d518...8c58`;
+  - unchanged probes and production identities remain bound;
+  - V26 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - two independent binary GO verdicts cover the exact V26 hashes;
+  - only evidence-only Stage-1 implementation and Phase-A gates are now
+    authorized;
+  - discovery remains blocked until Phase A passes;
+  - admission, the original 72-mutant campaign, R-203 admission, and S10 remain
+    forbidden;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V26 record/state-matrix V10 independent rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V10 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V10_CRASH_CLOSED_BOOTSTRAP_2026-08-01.md`;
+  - 13,819 bytes;
+  - SHA-256
+    `b4bf3237b0b1d8a87841208d45af073f6e7a56e6f8c3c3423e14352562e7e719`.
+- Accepted V10 correction:
+  - controller/watchdog death no longer produced false Job-accounting or
+    cleanup claims; `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` remained
+    defense-in-depth only.
+- Blocking findings:
+  - the declared 256-byte WAL record could not contain its fields;
+  - torn-tail handling contradicted crash reconciliation;
+  - the plan mapping had no closed writer/publication/authorization path;
+  - recovery required parent-root handles owned only by the dead process;
+  - the seven-operation Python validator delta omitted substantial system
+    behavior;
+  - `CancelSynchronousIo` could not guarantee bounded worker completion;
+  - Phase-0 residue, evolving output content, and pre/post-code freezes were
+    incomplete.
+- Boundary:
+  - V10 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - all prior artifacts remain negative evidence;
+  - all nine Phase-A gates remain unresolved and S09 remains active.
+
+### R-205 V26 record/state-matrix V11 minimal native-controller candidate
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V11 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V11_MINIMAL_NATIVE_CONTROLLER_2026-08-01.md`;
+  - 22,459 bytes;
+  - SHA-256
+    `b3c57025a44f0f16b30b5ab571d04a0c3274b272237080de2915c44fcf638c90`.
+- Selected architecture:
+  - one minimal C++23 controller is the sole lifecycle authority;
+  - a broker and tool run in distinct zero-capability sibling AppContainers;
+  - the existing Python validator only invokes the exact controller from its
+    existing `state_matrix_gate` and validates bounded atomic output;
+  - no automatic recovery runs after controller death;
+  - one exact 512-byte append-only WAL and explicit short-tail law replace the
+    impossible V10 record;
+  - controller-owned plan publication, Phase-0 residue, output lease/content
+    evolution, provisional data EOF, fixed receipt, sibling isolation, and
+    stuck-I/O self-termination are explicit;
+  - pre-code authority and post-implementation identity freezes are separate.
+- Alternatives rejected before implementation:
+  - expanding the 2,605-line Python validator into a lifecycle authority;
+  - handle-escrow or path-reopening recovery processes;
+  - combining hostile parsing with lifecycle authority;
+  - rescuing V10 through incremental hidden behavior.
+- Prediction and kill gate:
+  - the smaller native trust root should close V10 ownership contradictions;
+  - V11 is killed if Python must own mutation handles, controller must parse raw
+    records, a worker can overlap cleanup, identity must be weakened, or the
+    complete cost fails to close a proof gap.
+- Boundary:
+  - independent audit rejected V11 because synchronous I/O could make even
+    process termination unbounded, future identity lacked a separate observed
+    commitment, output and terminal states were incomplete, profile storage was
+    unbounded, write/flush failures and handle ownership were open, and the
+    validator/build trust chain was not closed;
+  - V11 authority and inert fixtures are forbidden;
+  - no implementation, build, process, profile, ACL, discovery, admission, S10,
+    codec, bitstream, or PCM change is authorized;
+  - the registered-music/Opus comparison remains scheduled at S12 after the
+    next actual codec-algorithm change in S11.
+
+### R-205 V26 record/state-matrix V12 overlapped-LPAC rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V12 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V12_OVERLAPPED_LPAC_CONTROLLER_2026-08-01.md`;
+  - 23,940 bytes;
+  - SHA-256
+    `03e4a49e1057654a1fbeba8442bdf0e2320ba93f19d5e247831ea96d9ca5a0cd`.
+- Selected corrections:
+  - one controller thread and five `FILE_FLAG_OVERLAPPED` channels replace
+    blocking workers and anonymous pipes;
+  - controller passes already-open child handles, retains each OVERLAPPED/event
+    until observed completion, and makes no absolute OS completion-time claim;
+  - the 1 MiB structural result remains in precommitted memory until all
+    child/I/O and cleanup states are terminal;
+  - distinct zero-capability LPAC profiles contain copied frozen closures and
+    are recursively changed to read/execute-only before launch; registry,
+    network, and filesystem writes are denied and probed;
+  - the 512-byte WAL adds exact observed-state and observed-identity fields and
+    closes no/short/full/flush outcomes;
+  - result publication occurs after cleanup and distinguishes
+    `FINAL_PRESENT_UNATTESTED`;
+  - an exact 1,024-byte controller receipt binds WAL head, cleanup, result,
+    resources, profiles, images, run nonce, and required process exit;
+  - the current 179-line `state_matrix_gate` replacement and noncircular
+    pre-code/native/validator/post-manifest/root-command chain are explicit.
+- Rejected alternative:
+  - experimental `CreateProcessInSandbox` is not normative because Microsoft
+    marks it unstable, it forbids inherited handles, has no public header, and
+    still creates an AppContainer profile.
+- Boundary:
+  - independent audit rejected V12 because Phase 0 contradicted result timing,
+    the real one-main plus four-child helper interface was incompatible,
+    profile population and result publication lacked closed WAL transitions,
+    the persistent-state hash was circular, LPAC registry/delete accounting and
+    post-timeout monotonicity were incomplete, the broker receipt was open, and
+    pre-exit resource samples were misnamed as complete process time;
+  - V12 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no implementation/build/process/profile/ACL/discovery/admission/S10 action
+    is authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - no codec algorithm changed, so the full music/Opus gate remains S12.
+
+### R-205 V26 record/state-matrix V13 framed-LPAC transaction rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V13 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V13_FRAMED_LPAC_TRANSACTION_2026-08-01.md`;
+  - 33,246 bytes;
+  - SHA-256
+    `1a18839b53e7d2ab6e761f6a590d8bd5d7cd2a242e05069ff3934bf534b22644`.
+- Selected corrections:
+  - an evidence-only `--output-stdio` helper delta preserves path-mode bytes
+    while supporting the actual one-main plus four-child invocation graph;
+  - controller frames five sequential streams for one bounded hostile-parser
+    broker without parsing state-matrix rows itself;
+  - Phase 0 contains only run root, plan, and journal;
+  - profile create/populate/seal and result create/finalize/promote have closed
+    aggregate WAL ownership and inverse rules;
+  - timeout irreversibly enters `POISONED_WAIT_ONLY`, so late completion cannot
+    resume persistent mutation;
+  - broker and controller receipts are exact contiguous 512- and 1,024-byte
+    layouts; the 256-byte frame and 512-byte WAL layouts also pass machine
+    contiguity checks;
+  - pre-receipt persistent-state hashing explicitly excludes receipt leaves,
+    and resource cutoff samples are distinct from post-exit totals.
+- Boundary:
+  - independent audit rejected V13 because its structural result was not
+    byte-closed, pre-receipt attestation was circularly named, profile monikers
+    were underidentified, rebuild/inspection subprocesses lost an owner, deny
+    canaries contradicted process accounting, partial populate rollback lacked
+    terminal WAL behavior, frame hashing was ambiguous, and pre-delete resource
+    closure was incomplete;
+  - V13 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source, build, process, profile, ACL, discovery, admission, S10, codec,
+    bitstream, or PCM change is authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the next codec algorithm remains S11 and its full registered comparison
+    remains S12.
+
+### R-205 V26 record/state-matrix V14 byte-closed transaction rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V14 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V14_BYTE_CLOSED_TRANSACTION_2026-08-01.md`;
+  - 27,906 bytes;
+  - SHA-256
+    `b7decd83e9d1e7d6787a0e5edae6afb4bcd8ffad4a5401e924cc025db48a3f05`.
+- Selected corrections:
+  - exact 256-byte frame header, 256-byte structural header, 320-byte row
+    header, 512-byte WAL/canary/broker receipts, and 1,024-byte controller
+    receipt all pass independent contiguity arithmetic;
+  - controller result state is `FINAL_PRESENT_CONTROLLER_VERIFIED`; only the
+    validator derives external `ATTESTED` after final receipt and exact exit;
+  - LPAC monikers are exact 60-character domain-separated lower-base32 names;
+  - current rebuild and LLVM inspection work is preserved in an immediately
+    preceding state-toolchain gate with existing bundle names;
+  - two frozen nonmutating deny canaries raise exact child count to eight;
+  - partial populate/seal rollback closes only through durable NOT_APPLIED;
+  - frame length, payload, cumulative, complete-frame, and transcript hash
+    domains are byte-exact;
+  - a fixed ownership registry and source closure prove every profile-associated
+    handle/pointer closed before public-API deletion.
+- Boundary:
+  - independent audit rejected V14 because row grammar admitted producer-
+    impossible length 192, canary plan was not byte-closed, probe targets lacked
+    immutable/WAL ownership, child-launch outcomes did not close process
+    accounting, and pre-receipt hashing included mutable directory state;
+  - V14 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V15 reproducible-canary candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V15 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V15_REPRODUCIBLE_CANARY_TRANSACTION_2026-08-01.md`;
+  - 34,024 bytes;
+  - SHA-256
+    `fe58a1383e9cd39db6b187b69ab356a7ef83ee29324035f42fdeb830eb37e910`.
+- Selected corrections:
+  - broker row label domain is exact producer range 1..191 and 192 is a mutant;
+  - canary input is an exact contiguous 2,048-byte plan;
+  - probe targets are a populate/seal-owned profile file, the pre-existing
+    frozen production source, pre-existing HKCU Software root, fixed loopback,
+    and verified canary image; no probe creates persistent state;
+  - canary emits a 384-byte raw report and controller combines post-exit Job
+    observations into a separate 512-byte receipt;
+  - both denied-before-create and created-then-Job-killed child tuples are
+    exact; complete child process count is 8..10;
+  - pre-receipt state is a domain-separated projection using exact 192-byte
+    root and 320-byte object records, excluding receipt leaves and mutable
+    directory metadata while independently checking the final entry set;
+  - all eleven declared layouts pass machine contiguity and exact-size checks.
+- Boundary:
+  - independent audit returned NO-GO because the UTF-16 maximum contradicted
+    the byte-count bound, primary launches lacked pre-resume Job confinement,
+    canary Job accounting was not reproducible, the raw report overclaimed
+    inherited-handle evidence, helper/toolchain hashes lacked owned channels,
+    and path grammar ambiguously forbade required literal dots;
+  - V15 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V16 pre-resume-confinement candidate
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V16 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V16_PRE_RESUME_CONFINEMENT_2026-08-01.md`;
+  - 45,634 bytes;
+  - SHA-256
+    `72c77a927332a6fa167c0c09835699b6963502c405cdf7748c032b802078e70b`.
+- Selected corrections:
+  - the fixed 520-byte path fields admit even byte counts through 520, with
+    exact NUL and zero-tail laws plus 518/520 boundary mutants;
+  - four distinct Jobs and an exact create-suspended, assign, verify, then
+    single-resume sequence forbid target execution before confinement;
+  - dedicated canary Jobs freeze baseline and final process arithmetic, while
+    the broker and five sequential helpers have separately identified Jobs;
+  - raw canary evidence contains only token facts queryable by the canary;
+    controller receipts separately bind startup capabilities, LPAC/child
+    policy, HANDLE_LIST, inherit-bit audit, token observation, and Job state;
+  - an exact 1,024-byte state-toolchain receipt owns source/image/tool/command/
+    inspection hashes; validator-to-controller and controller-to-broker whole-
+    argument channels bind helper and toolchain hashes noncircularly;
+  - controller rehashes the actual helper before all five launches and verifies
+    the frozen external source before/after each canary without share-deny;
+  - path grammar forbids only whole `.`/`..` components and allows the required
+    literal dots in fixed leaf names;
+  - all twelve declared layouts pass machine contiguity and exact-size checks.
+- Boundary:
+  - independent audit rejected V16 because its Job outcome matrix omitted a
+    documented limit-rejection counter state, five record hashes lacked exact
+    domains/preimages, seventeen pipe handles lacked role-visible stdio routing,
+    three image fields lacked complete producer/reconciliation channels, and
+    pre-code authority ambiguously appeared to predict future source bytes;
+  - V16 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V17 hash-closed-routing rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V17 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V17_HASH_CLOSED_ROUTING_TRANSACTION_2026-08-01.md`;
+  - 53,537 bytes;
+  - SHA-256
+    `6d499280e28ef8ee413724f4800645e483a4f91b0320d97ce9a4dd5b4c5ba414`.
+- Selected corrections:
+  - final canary classification admits pre-association denial, false-return
+    association-limit rejection, and observed created-then-limit-terminated,
+    with two distinct pre-action snapshots and all final Job counters;
+  - WAL genesis/record, raw canary report, canary receipt, broker receipt, and
+    terminal receipt have exact domain-separated zero-field preimages;
+  - all eight processes use exact STARTF_USESTDHANDLES routing and ordered
+    three-handle HANDLE_LISTs; seventeen pipe clients and seven NUL handles are
+    completely typed, inherited, counted, and closed;
+  - the rooted state-toolchain receipt supplies all four image hashes through
+    exact CLI/plan channels, while role self-checks and independent controller/
+    validator rehashes reconcile actual images rather than trusting echoes;
+  - pre-code authority binds existing identities, future paths/contracts/
+    predicates, and hash placeholders, never nonexistent future source bytes;
+  - all twelve fixed layouts and all 14 sections pass machine checks, and the
+    file contains no truncation marker.
+- Boundary:
+  - independent audit rejected V17 because it protected the four rooted source
+    images but did not bind and continuously protect the profile copies actually
+    named by `lpApplicationName`; destination replacement remained possible
+    between rehash, suspended creation, and role self-check;
+  - V17 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V18 sealed-launch-identity rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V18 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V18_SEALED_LAUNCH_IDENTITY_TRANSACTION_2026-08-01.md`;
+  - 73,617 bytes;
+  - SHA-256
+    `14222c6fcc7baedf9058446f9bacf45305f01d2b2472947dd24f43067fa22c17`.
+- Selected corrections:
+  - exact source-to-profile mapping binds four rooted images to fixed relative
+    leaves under the two runtime-created profile roots without predicting a
+    future absolute path in pre-code authority;
+  - each WAL-owned copy uses a bounded writer, flush/seal and provisional
+    identity capture, then closes the writer and reacquires the unchanged file
+    as a read-only guard denying write/delete before copy COMMITTED;
+  - each of eight launches uses exact nonnull `lpApplicationName`, quoted argv,
+    create-suspended confinement, pre-resume `QueryFullProcessImageNameW`, held-
+    guard/file-ID/hash/security/link reconciliation, and role self-check;
+  - four 512-byte sealed-copy receipts, eight 512-byte launch receipts, and five
+    256-byte helper attestations bind the terminal sealed-launch transcript;
+  - all added link/security/path/file/guard/process/transcript hashes have exact
+    domain-separated preimages, and the WAL observed-state -> committed-record
+    -> copy-receipt edge is one-way rather than circular;
+  - all sixteen fixed layouts pass contiguity and exact-size checks, all 14
+    sections are present, and the candidate is ASCII-clean with no truncation.
+- Boundary:
+  - independent audit rejected V18 because immutable pre-call command-line
+    bytes and exact nonambient Unicode environment/cwd were underdefined;
+    identity producer APIs/flags were not fixed; an early receipt predicted a
+    future guard close; canary did not attest its actual loaded copy; and no
+    late full metadata readback or loader/share/drift gate closed the guard
+    lifetime;
+  - the source -> relative leaf -> runtime profile-copy mapping and one-way
+    WAL -> receipt graph remain accepted positive evidence;
+  - V18 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+- Independent result:
+  [R-205 V18 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V18_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 record/state-matrix V19 exact launch-context candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V19 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V19_EXACT_LAUNCH_CONTEXT_GUARD_LIFETIME_2026-08-01.md`;
+  - 87,662 bytes;
+  - SHA-256
+    `4fd5eb0a13e7ed83d1570753092f87a4f6b2a40c25ca8270957a8ffbd828f31e`.
+- Selected coherent remediation:
+  - immutable canonical pre-call application/command/argv evidence is separate
+    from the disposable writable `CreateProcessW` command-line clone;
+  - every primary launch supplies exact nonnull Unicode environment and current
+    directory with a byte-closed ASCII ordering/duplicate/special-name law;
+  - exact Win32 API/flags/bounds own final handle path, FILE_ID, volume, size,
+    attributes/reparse tag, streams, hard links, security descriptor, module
+    self-path, and suspended process image path;
+  - early sealed-copy receipt contains only observed guard-open state; a late
+    terminal guard-lifetime hash records actual post-use close;
+  - canary raw report is 512 bytes and binds actual module identity, state-
+    toolchain receipt, sealed-copy receipt, and launch context before any probe;
+  - every launch receipt follows role exit with a fresh complete destination
+    identity readback, while the threat claim is limited to ordinary share-mode
+    denial plus the stated ACL boundary;
+  - later Windows loader/share and metadata-drift integration behavior is an
+    explicit kill fixture rather than a design assumption;
+  - all sixteen fixed layouts pass exact size/contiguity checks, all 14 sections
+    exist, and the candidate is ASCII-clean without a truncation marker.
+- Boundary:
+  - independent GO is requested only for permission to create later pre-code
+    authority and inert fixtures;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V19 launch-observation rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Audited immutable V19 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V19_EXACT_LAUNCH_CONTEXT_GUARD_LIFETIME_2026-08-01.md`;
+  - 87,662 bytes;
+  - SHA-256
+    `4fd5eb0a13e7ed83d1570753092f87a4f6b2a40c25ca8270957a8ffbd828f31e`.
+- Accepted evidence:
+  - immutable command-line input and disposable writable clone, exact Unicode
+    environment contract, named identity APIs, one-way guard-lifetime evidence,
+    512-byte canary report, complete mapping lists, and absence of a hash cycle
+    are structurally retained;
+  - guard/loader compatibility remains a real Windows kill fixture rather than
+    an assumed design property.
+- Boundary:
+  - independent audit rejected V19 because it mixes parent-only launch inputs
+    with role-observable context; broker/helpers cannot verify expected sealed
+    destination identity before parsing; cwd has two possible textual sources;
+    owner/group/DACL evidence is overstated as a complete security descriptor;
+    and several Win32 in/out length states remain underdefined;
+  - V19 authority, fixtures, source, build, process, profile, and ACL actions are
+    forbidden;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+- Independent result:
+  [R-205 V19 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V19_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 record/state-matrix V20 parent/role identity candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V20 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V20_PARENT_ROLE_IDENTITY_HANDSHAKE_2026-08-01.md`;
+  - 99,612 bytes;
+  - SHA-256
+    `0766904d793768cf31df36aacee5b5c222e578b14554c764c463d843423ec4bb`.
+- Selected coherent remediation:
+  - controller-owned application/flags/inheritance/HANDLE_LIST evidence and
+    role-observed module/command/argv/cwd/environment evidence use separate
+    domains and reconcile only at the launch receipt;
+  - one shared `LAUNCH-TARGET-IDENTITY` domain permits exact expected-versus-
+    actual executable equality without comparing differently domained hashes;
+  - broker and five helpers emit a 320-byte pre-parser attestation; broker's
+    first frame and each helper's one-byte GO gate are withheld until validation;
+  - copied `GetAppContainerFolderPath` text is the sole cwd producer, while the
+    opened volume-GUID path remains a separate handle identity and round-trip is
+    a Windows kill fixture;
+  - security evidence is explicitly OWNER/GROUP/DACL only; SACL-class metadata
+    is excluded rather than silently claimed;
+  - final-path, file-information, stream, hard-link, module-path, process-image,
+    cwd, and security APIs have exact capacities, return laws, termination,
+    replay, cleanup, and reconciliation rules;
+  - all sixteen fixed layouts pass exact size/contiguity checks, all 14 sections
+    exist, and the candidate is ASCII-clean without stale V19 magic/domains.
+- Boundary:
+  - independent GO is requested only for permission to create later pre-code
+    authority and inert fixtures;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V20 deterministic-path rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Audited immutable V20 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V20_PARENT_ROLE_IDENTITY_HANDSHAKE_2026-08-01.md`;
+  - 99,612 bytes;
+  - SHA-256
+    `0766904d793768cf31df36aacee5b5c222e578b14554c764c463d843423ec4bb`.
+- Accepted evidence:
+  - parent/role evidence split, shared launch-target equality, one-way hash graph,
+    OWNER/GROUP/DACL scope, all sixteen layouts, and complete process/pipe/handle
+    counts are independently retained;
+  - loader/share behavior remains a future mandatory Windows kill fixture.
+- Boundary:
+  - V20 is rejected because helper does not observe EOF after GO, profile-root
+    grammar and per-leaf bounds are open, hard-link root/name joining is not
+    byte-exact, and helper source-delta scope contradicts its own handshake;
+  - V20 authority, fixtures, source, build, process, profile, and ACL actions are
+    forbidden;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+- Independent result:
+  [R-205 V20 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V20_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 record/state-matrix V21 deterministic path/gate candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V21 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V21_DETERMINISTIC_PATH_GATE_CLOSURE_2026-08-01.md`;
+  - 106,632 bytes;
+  - SHA-256
+    `8fc01af59fa916eef945019011c3a31f4da7045390a7e753b3faf387fc142d56`.
+- Selected bounded remediation:
+  - each helper binds the exact one-byte grant and a second terminal
+    `ERROR_BROKEN_PIPE` read to a 128-byte completion record and a complete
+    controller/helper gate transcript;
+  - `profile_cwd_text` has one strict absolute-DOS grammar, checked root/leaf
+    addition, a 259-WCHAR non-NUL ceiling, and a named pre-populate rollback
+    boundary;
+  - the hard-link reopen path is the exact validated volume-root prefix plus the
+    exact returned link name after stripping exactly one root marker;
+  - the helper-only evidence source/API delta is enumerated once and admits no
+    unstated helper behavior;
+  - all seventeen fixed layouts pass exact size/contiguity checks, all 14
+    sections exist, and the candidate is ASCII-clean without stale V20 magic.
+- Boundary:
+  - independent GO is requested only for permission to create later pre-code
+    authority and inert fixtures;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V21 state/evidence rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Audited immutable identity:
+  - 106,632 bytes;
+  - SHA-256
+    `8fc01af59fa916eef945019011c3a31f4da7045390a7e753b3faf387fc142d56`.
+- Accepted evidence:
+  - the two-read helper gate, controller/helper transcript, complete helper
+    source delta, 17 fixed layouts, process/resource counts, and deterministic
+    hard-link separator construction are retained;
+  - no new hash cycle was found.
+- Boundary:
+  - V21 is rejected because root validation requires rollback after entering an
+    irreversible poison state; the hard-link reopen bytes are not bound to a
+    domain-separated serialized evidence hash; and local named-pipe EOF behavior
+    lacks a mandatory real-Windows feasibility fixture;
+  - V22 must also clarify backslash grammar and apply the canary 520-byte fit to
+    both its profile and external source paths;
+  - no authority, fixture, source, build, process, profile, ACL, discovery,
+    admission, S10, or codec action is authorized;
+  - all nine Phase-A gates remain open and S09 remains active.
+- Independent result:
+  [R-205 V21 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V21_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 record/state-matrix V22 recoverable-root/bound-reopen candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V22 identity:
+  - 112,685 bytes;
+  - SHA-256
+    `185e42f2cb899bfedadb0c86f30a11250de47a85f4e7cfcbf2f0945cbc632f80`.
+- Selected bounded remediation:
+  - durable CREATE INTENT precedes profile creation, and root/path/handle checks
+    precede PROFILE_CREATE COMMITTED; a failed gate uses recoverable
+    uncommitted-create abort/NOT_APPLIED rather than irreversible poison;
+  - actual hard-link reopen input/name/path/raw-key evidence is domain-separated
+    inside runtime `LINK_STATE`; plan offset 296 contains only a static policy
+    template and predicts no future profile path;
+  - a mandatory pre-admission real-Windows x64/ARM64 fixture must reproduce the
+    exact local named-byte-pipe grant and EOF tuples or kill the design;
+  - backslash separator grammar and both 520-byte canary path fields are explicit;
+  - all seventeen fixed layouts are contiguous, all 14 sections exist, and the
+    candidate is ASCII-clean without stale V21 magic/domain.
+- Boundary:
+  - no authority, fixture, source, build, process, profile, ACL, discovery,
+    admission, S10, or codec action is authorized before a separate design GO;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V22 commit-publication rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Audited immutable identity:
+  - 112,685 bytes;
+  - SHA-256
+    `185e42f2cb899bfedadb0c86f30a11250de47a85f4e7cfcbf2f0945cbc632f80`.
+- Accepted evidence:
+  - pre-COMMITTED root/canary validation, hard-link evidence binding, static
+    plan policy, Windows pipe feasibility gate, all 17 layouts, resource counts,
+    and authority boundary are retained.
+- Boundary:
+  - V22 is rejected only because a torn/unreadable/unflushed COMMITTED append is
+    routed through a recoverable branch that would append behind an uncertain
+    WAL tail;
+  - V23 must split the state at first COMMITTED issuance and make every uncertain
+    publication terminal/nonmutating;
+  - no authority, fixture, source, build, process, profile, ACL, discovery,
+    admission, S10, or codec action is authorized;
+  - all nine Phase-A gates remain open and S09 remains active.
+- Independent result:
+  [R-205 V22 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V22_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 record/state-matrix V23 commit-publication candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V23 identity:
+  - 114,421 bytes;
+  - SHA-256
+    `411dc72617a5c67714ec36b45ee62e99e92c556c7f8568484e485dca0466cfc6`.
+- Selected sole remediation:
+  - recoverable root-gate abort is reachable only before COMMITTED issuance;
+  - the controller enters `COMMIT_PUBLICATION_IN_FLIGHT` before issuing the
+    append;
+  - only exact full write/readback/flush/readback reaches
+    PROFILE_CREATE_COMMITTED;
+  - every no/short/invalid/readback/flush/ambiguous outcome reaches terminal
+    `UNPROVEN_COMMIT_PUBLICATION` and permits no later persistent mutation;
+  - explicit transition mutants cover no-write, 1..511-byte tails, invalid full
+    records, both readbacks, flush ambiguity, and chain mismatch;
+  - all seventeen layouts and all prior accepted V22 mechanisms are unchanged.
+- Boundary:
+  - no authority, fixture, source, build, process, profile, ACL, discovery,
+    admission, S10, or codec action is authorized before design GO;
+  - all nine Phase-A gates remain open and S09 remains active.
+
+### R-205 V26 record/state-matrix V23 design admission
+
+- Status: **INDEPENDENT DESIGN GO; PRE-CODE AUTHORITY/FIXTURE DRAFT ONLY**
+- Audited immutable identity:
+  - 114,421 bytes;
+  - SHA-256
+    `411dc72617a5c67714ec36b45ee62e99e92c556c7f8568484e485dca0466cfc6`.
+- Accepted evidence:
+  - exact pre-issuance abort versus COMMIT_PUBLICATION_IN_FLIGHT split;
+  - terminal zero-mutation state for every uncertain COMMITTED result;
+  - retained root/canary, hard-link, named-pipe, layout, resource, hash-graph,
+    cleanup, and authority closures.
+- Authorization:
+  - one pre-code authority/schema draft and inert fixture/mutant definitions may
+    now be created and frozen;
+  - future source/image bytes may not be predicted;
+  - no implementation source edit, fixture executable, build, process, profile,
+    ACL, discovery, admission, S10, codec, or publication action is authorized;
+  - the frozen authority/fixture draft requires a separate independent GO;
+  - all nine Phase-A gates remain open and S09 remains active.
+- Independent result:
+  [R-205 V23 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V23_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 V23 pre-code authority and inert-fixture candidate
+
+- Status: **IMMUTABLE PRE-CODE CANDIDATE; INDEPENDENT AUTHORITY AUDIT IN PROGRESS**
+- Frozen inert fixture/mutant contract:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V23_INERT_FIXTURE_MUTANT_CONTRACT_2026-08-01.md`;
+  - 19,506 bytes;
+  - SHA-256
+    `6fccb932e0a5bb5239f9298b811c19c99fe2ef3b6b77d32fb1b35b376e855692`.
+- Frozen pre-code authority candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V23_PRECODE_AUTHORITY_2026-08-01.md`;
+  - 28,381 bytes;
+  - SHA-256
+    `273f29d87dcffb811f24c2a90ac126dd766e2990e2a5682593bff4af2a458d42`.
+- Closed candidate surface:
+  - exact 17-layout and 52-domain registries;
+  - 22 closed fixture families, including all 1..511-byte COMMITTED tails,
+    hard-link reopen evidence, helper terminal EOF, sealed-loader/share, and
+    Windows x64/ARM64 feasibility kill gates;
+  - exact existing and future source paths without any future source/image
+    digest;
+  - one-way V23 -> fixture -> authority -> source -> toolchain receipt ->
+    post-code-manifest graph;
+  - exact four-role source contracts, source/AST/dataflow predicates, 16-command
+    toolchain order, 24 inspection outputs, and 32 bounded command streams.
+- Boundary:
+  - the same independent adversarial auditor must return a separate authority
+    GO before any source/vector implementation, build, fixture process, profile,
+    or ACL action;
+  - no runtime/post-code/Phase-A/discovery/admission/S10/codec/player/release or
+    publication authority is implied;
+  - S09 remains active and all nine Phase-A gates remain open.
+
+### R-205 V26 V23 pre-code authority rejection
+
+- Status: **INDEPENDENT PRE-CODE NO-GO; NO IMPLEMENTATION**
+- Audited immutable identities:
+  - inert contract: 19,506 bytes, SHA-256
+    `6fccb932e0a5bb5239f9298b811c19c99fe2ef3b6b77d32fb1b35b376e855692`;
+  - authority: 28,381 bytes, SHA-256
+    `273f29d87dcffb811f24c2a90ac126dd766e2990e2a5682593bff4af2a458d42`.
+- Seven independent blockers:
+  - the helper source closure omits the actual local stage-budget header;
+  - the claimed existing helper path/stdio semantic baseline does not exist;
+  - fixture families are prose-open rather than an immutable expanded oracle;
+  - no frozen producer exists for the mandatory AST/CFG/dataflow proof;
+  - the claimed PE import allowlist is absent;
+  - Windows ARM64 role/fixture build and receipt ownership are not closed;
+  - the integration fixture has no byte-exact authority-rooted plan/result
+    transport.
+- Boundary:
+  - V23 authority, source/vector generation, build, fixture execution, profile,
+    ACL, runtime, discovery, admission, S10, and codec work remain forbidden;
+  - V24 is design-only and must close all seven blockers before another
+    independent authority audit;
+  - S09 remains active and all nine Phase-A gates remain open.
+- Independent result:
+  [R-205 V23 Pre-code Authority Independent Audit](reviews/R205_V26_RECORD_STATE_MATRIX_V23_PRECODE_AUTHORITY_INDEPENDENT_AUDIT_2026-08-01.md).
+
+### R-205 V26 V24 byte-closed pre-code candidate
+
+- Status: **IMMUTABLE DESIGN/AUTHORITY CANDIDATE; INDEPENDENT AUDIT IN PROGRESS**
+- Frozen V24 design:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V24_BYTE_CLOSED_PRECODE_REMEDIATION_2026-08-01.md`;
+  - 27,965 bytes;
+  - SHA-256
+    `8f76b8e5bd0e37e75c0084f1117410f9d82a6c80da600b0436e5a7e97b13b204`.
+- Frozen inert manifest:
+  - `native/tests/r205_v24_fixture_vectors_v1.json`;
+  - 2,077,815 bytes;
+  - SHA-256
+    `c28c364ce30ed5e060833530edc67f297d1508d472bda43762e20cbbb0f4c37c`;
+  - 4,896 fixed records, seven compact ranges, ten exact post-build prefix
+    formulas, 7,224 known expanded IDs, ID SHA-256
+    `faef90ca341ed7f53418a4b7c61007ba65b98790e501f45afdb63c9aa46cb9c6`.
+- Frozen V24 pre-code authority:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V24_PRECODE_AUTHORITY_2026-08-01.md`;
+  - 22,046 bytes;
+  - SHA-256
+    `c6f58500f3f65d0a5ba6685d803762760026bab2892b86f2eec1e98f390cbb6e`.
+- Selected remediation:
+  - new honest five-partition helper and complete five-file local closure;
+  - exact 192-row semantic commitment and no fictional path mode;
+  - pinned Clang AST/CFG source-proof producer, six-source receipt, and 22
+    uniquely anchored source mutants;
+  - finite 20-name PE import set;
+  - primary x64 plus six-image x64/ARM64 build graph;
+  - fixed 4,096-byte integration plan, 512-byte native-runner record, and
+    2,048-byte result through inherited pipes.
+- Boundary:
+  - design and authority both require independent GO before future sources,
+    build, fixtures, profiles, or ACLs;
+  - runtime/post-code/Phase-A/discovery/admission/S10/codec/player/release and
+    publication remain closed;
+  - S09 remains active and all nine Phase-A gates remain open.
+
+### R-205 V26 V24 design and pre-code authority rejection
+
+- Status: **INDEPENDENT DUAL NO-GO; NO IMPLEMENTATION**
+- Audited immutable identities:
+  - design: 27,965 bytes, SHA-256
+    `8f76b8e5bd0e37e75c0084f1117410f9d82a6c80da600b0436e5a7e97b13b204`;
+  - inert manifest: 2,077,815 bytes, SHA-256
+    `c28c364ce30ed5e060833530edc67f297d1508d472bda43762e20cbbb0f4c37c`;
+  - pre-code authority: 22,046 bytes, SHA-256
+    `c6f58500f3f65d0a5ba6685d803762760026bab2892b86f2eec1e98f390cbb6e`.
+- Eight independent blockers:
+  - all 192 runtime rows omit concrete production-call tuples;
+  - source, integration, layout, and domain operators remain symbolic rather
+    than byte-exact inputs or deterministic formal transforms;
+  - the modified Python validator is excluded from the source proof and the
+    receipt has a temporal self-proof contradiction;
+  - Clang proof flags do not match `-DNDEBUG` executable behavior and omit the
+    ARM64 parsed configuration;
+  - the integration plan omits path counts, exact timeout/policy preimages,
+    runner transport, and a consistent named-pipe grammar;
+  - the x64 sealed plan does not bind primary x64 build-receipt provenance;
+  - post-build ranges enumerate artifacts rather than all four V23 mapping/copy
+    operations;
+  - per-case and aggregate/post-build results have no canonical serialization,
+    path, ordering, hash, or ceiling contract.
+- Retained positive evidence:
+  - the five-file helper closure, honest new-helper baseline, physical manifest
+    identities/counts, finite import commitment, real x64/ARM64 wrappers, and
+    one-way absence of predicted future hashes remain useful inputs.
+- Boundary:
+  - V24 remains immutable negative evidence and authorizes no source edit,
+    build, fixture, profile, ACL, runtime, discovery, admission, S10, codec,
+    player, release, or publication action;
+  - V25 must resolve B1 through B8 together and receive a fresh independent
+    verdict;
+  - S09 remains active and all nine Phase-A gates remain open.
+- Independent result:
+  [R-205 V24 Dual Independent Audit](reviews/R205_V26_RECORD_STATE_MATRIX_V24_PRECODE_DUAL_INDEPENDENT_AUDIT_2026-08-01.md).
+
+### R-205 V26 V25-A V1 staged-authority early rejection
+
+- Status: **EARLY INDEPENDENT NO-GO; ORACLE/AUTHORITY NOT AUTHORIZED**
+- Audited V1 design:
+  - 16,453 bytes;
+  - SHA-256
+    `44de3a408532ecb8d7a274580fc78ae261d2127a1ddbab15df8ce8a452e3c759`.
+- Blocking result:
+  - helper-visible expected values created a self-oracle;
+  - instruction bytes and range construction were incomplete;
+  - post-source mutation-manifest authority and exact source-freeze
+    publication were absent;
+  - the property/mutant map and Python-adapter contract were incomplete;
+  - future checkers were not independently closed;
+  - nominal sources remained under active build/import roots.
+- Boundary:
+  - V1 is immutable negative design evidence;
+  - no oracle, authority, staged source, patch, import, build, or runtime action
+    is authorized under it;
+  - S09 remains active.
+- Independent result:
+  [R-205 V25-A V1 Early Red-Team](reviews/R205_V26_RECORD_STATE_MATRIX_V25A_V1_EARLY_REDTEAM_2026-08-01.md).
+
+### R-205 V26 V25-A V2 split-oracle inert-staging candidate
+
+- Status: **DESIGN REMEDIATION CANDIDATE; INDEPENDENT REVIEW REQUIRED**
+- Immutable V2 identity:
+  - 23,712 bytes;
+  - SHA-256
+    `bf1c062695233fa56bede7304f7a027b60b3ac47658767f33aca0bd97c46d751`.
+- Selected correction:
+  - helper receives stimulus bytes only; expectations remain outer-oracle-only;
+  - all program/instruction headers, opcodes, operands, hashes, states, pointer,
+    write, and residue registries are finite and byte-defined;
+  - forty source-independent predicates and negative directions are frozen
+    before source;
+  - Stage A writes only `.candidate.txt` payloads under a non-build docs root;
+  - exact source inventory, independent byte-patch manifest, and terminal
+    inventory use an explicit FROZEN transaction;
+  - Python facts come from pinned Python 3.14 built-in AST/dis tools and are
+    checked with independently retained raw outputs plus a bounded native
+    checker;
+  - V24 B4 through B8 remain mandatory actual oracle values, not deferred
+    prose.
+- Boundary:
+  - V2 authorizes only creation of a complete non-source oracle candidate and
+    design validation receipt;
+  - it authorizes no staging/source/patch/import/proof/build/runtime action;
+  - S09 and all nine Phase-A gates remain open.
+
+### R-205 V26 V25-A V2 early independent rejection
+
+- Status: **INDEPENDENT NO-GO BEFORE ORACLE AUTHORING**
+- Frozen audit identity:
+  - 6,014 bytes;
+  - SHA-256
+    `5645dfcd0f807d45402cc5b1a1c91abe2fbbaf3f0d0687114a3107ccb6f0d033`.
+- Blocking findings:
+  - stimulus and expectations are logically but not physically separated, and
+    helper-visible ordinal/partition/hash bytes still permit keyed imitation;
+  - exact production-call and observation provenance is not proven;
+  - BEGIN has a 193/192-byte contradiction, operand combinations and raw
+    observation bytes are incomplete, and the fabricated pointer is unsafe;
+  - typed-mutant, source-inventory, no-reference, and receipt authority is not
+    closed;
+  - the adapter AST delta, original-validator identity, Python runtime closure,
+    and a genuinely independent semantic verifier are not frozen;
+  - the oracle itself is proposed under an active test root.
+- Decision:
+  - V2 is immutable negative design evidence;
+  - no V2 oracle may be authored;
+  - create a V3 design with physically separate artifacts, no helper-visible
+    case identity, post-source unpredictable challenges, exact ABI-call
+    provenance, valid owned pointer cases, explicit typed/source inventories,
+    complete Python closure, and inert oracle placement;
+  - obtain another independent GO before oracle creation.
+- Evidence:
+  [R-205 V25-A V2 Early Red-Team](reviews/R205_V26_RECORD_STATE_MATRIX_V25A_V2_EARLY_REDTEAM_2026-08-01.md).
+
+### R-206 S09 compact-conformance scope correction
+
+- Status: **ACCEPTED EXECUTION CORRECTION; S09 REMAINS ACTIVE**
+- Problem and measured baseline:
+  - R-205 review/result history contains 76 files, 1,426,165 bytes, and
+    24,813 lines; the decision log has also grown by 2,289 working-tree lines;
+  - the LPAC, randomized-oracle, recursively checked authority branch defends
+    against a deliberately colluding test author rather than the production
+    behavior that S09 must admit;
+  - this is disproportionate test-of-tests recursion and delays the MAF work.
+- Alternatives:
+  - continue V25-A V3 with a sandboxed randomized ABI VM: rejected for scope;
+  - rely only on the existing replay: rejected because the record/state matrix
+    and caller-buffer effects still need direct coverage;
+  - use one direct bounded C++ state-matrix test plus independent review:
+    selected as the smallest coherent gate;
+  - make no change: rejected because it preserves the stalled recursion.
+- Accepted compact gate:
+  - freeze expected status, state, and write effects from the ABI contract,
+    never from production output;
+  - execute a generic table loop against the actual production ABI;
+  - compare complete caller-owned buffers before and after every call;
+  - cover every state and operation equivalence class, null/alias/capacity
+    boundaries, invalid transitions, finish, reset, and failure atomicity;
+  - include a deliberately wrong synthetic expectation proving comparator
+    rejection;
+  - run MSVC and Clang x64, ARM64 compile/run where available, sanitizer and
+    repeated replay, followed by the retained R-203 exact-small,
+    candidate-rich, and complete corpus gates;
+  - obtain one independent source/result GO before S09 completes.
+- Claims explicitly dropped:
+  - no defense against a malicious or colluding test author, compromised
+    compiler/OS/framework, or hostile third-party fixture execution;
+  - no cryptographic function-call provenance, formal state-space completeness,
+    recursive checker-independence proof, or sandbox certification.
+- Hard budget from this decision forward:
+  - at most five changed/new human-authored files and 1,000 non-generated lines;
+  - C++ test at most 500 lines, scope records at most 200 combined, final audit
+    report at most 250 lines, and one index row;
+  - at most two repair iterations and no further preflight version series;
+  - if the compact gate cannot pass inside the budget, leave the sub-gate
+    NO-GO instead of rebuilding an oracle-authority hierarchy.
+- Evidence-first result:
+  - an independent scope audit concluded that this compact gate honestly
+    satisfies S09/R-203 if production never generates expectations, the
+    independent candidate-rich oracle is retained, and final toolchain/corpus
+    replay remains mandatory.
+- Boundary:
+  - all R-205 V1-V25 artifacts remain immutable negative/research evidence;
+  - this correction changes no production source, ABI, codec syntax, bitstream,
+    or PCM and therefore does not trigger the R-198 music/Opus gate;
+  - the next action is the compact C++ test, not V25-A V3.
+
+### R-207 S09 unimplemented private-ABI withdrawal and closure
+
+- Status: **INDEPENDENT GO; S09 COMPLETE; S10 ACTIVE**
+- New falsification result:
+  - the proposed `r205_record_*`, semantic-probe, typed-probe, telemetry macro,
+    and operation-tuple symbols have zero definitions in compiled native C/C++
+    source;
+  - R-205 was evidence-only, and its preliminary scaffold was already removed
+    without a retained production implementation;
+  - the first compact-test proposal was rejected because it tested the
+    unrelated `work_ledger_v1` bookkeeping state rather than the proposed
+    private record lifecycle.
+- Decision:
+  - withdraw, do not implement, and do not claim passage of the entire R-205
+    private telemetry ABI, record-ID grammar, operation-tuple, LPAC harness,
+    randomized oracle, and recursive authority chain;
+  - retain every R-205 artifact as immutable negative research evidence;
+  - make no source change and proceed directly to S10 public-ABI conformance.
+- Honest claim boundary:
+  - no private-state, record-ID, sandbox, anti-hardcoding, hostile test-author,
+    cryptographic call-provenance, or formal state-space claim is permitted;
+  - S09 is complete only as an independently reviewed remediation-design and
+    scope-correction step;
+  - R-191/R-203 admission, public failure atomicity, determinism, portability,
+    and resource claims remain blocked until S10 evidence and final audit pass;
+  - no codec, syntax, bitrate, quality, bitstream, PCM, or player improvement is
+    implied.
+- S10 minimum:
+  - freeze actual source/header/corpus/toolchain/command identities;
+  - run retained exact-small, candidate-rich, finite, hostile, boundary,
+    two-pass, allocation/OOM, concurrency, CPU/CUDA, public-ABI, and available
+    sanitizer/platform gates;
+  - retain commands, raw outputs, hashes, time, memory, cleanup, released
+    bitstream and decoded-PCM identity;
+  - obtain one independent final source/result GO/NO-GO.
+- Independent verdict: **GO**. Implementing a private ABI solely to test it was
+  rejected as disproportionate test-of-tests recursion.
+
+### R-208 S10 structural parity correction
+
+- Status: **INDEPENDENT NO-GO FOR S10 CLOSURE; LOCAL PASS RETAINED**
+- Evidence retained:
+  - two-pass exact-small and candidate-rich public-ABI replay agrees across
+    Clang 22 and GCC 16;
+  - focused native and Python gates pass;
+  - a narrow 32-case CUDA CPU/GPU parity run passes on RTX 2080 Super;
+  - retained speech and Mozart 3-second bitstreams and decoded WAVs are
+    byte-identical to their frozen counterparts.
+- Falsification and correction:
+  - the inherited `10,000` CPU plus six `10,000` CUDA campaign has no recorded
+    power analysis, coverage-convergence evidence, mutation-score relation, or
+    defect-detection rationale;
+  - it is superseded rather than treated as a proof obligation;
+  - the 32-case CUDA result remains a narrow local result and is not relabeled
+    as complete coverage.
+- Replacement CUDA admission gate:
+  - twice-run CPU equality to all 288 frozen canonical unions;
+  - twice-run CUDA parity at all six thread values for the 252 nonzero cases,
+    with expected `INVALID_ARGUMENT` for the 36 zero-edge cases;
+  - CPU-produced public-valid boundary unions around each tile boundary,
+    using exact reachable or deterministic nearest lower/upper counts and a
+    structural cap of 2049 rather than an undefined maximum;
+  - no-match, single-chain, branch/merge, ownership-conflict, phase, protected,
+    threads `0/1025`, capacity-precedence, malformed-input, and valid
+    candidate-permutation profiles;
+  - twice-run bit-exact outputs, stable hashes, and an honest status/failure-
+    mutation reachability registry;
+  - the true resource maximum remains a separate resource-limit gate.
+- Remaining S10 blockers:
+  - current-source remote MSVC x64, Windows/Linux ARM64, Apple ARM64, Android
+    ARM64, and iOS simulator public-ABI evidence;
+  - Linux ASan/UBSan/TSan/libFuzzer evidence;
+  - the replacement structural CUDA campaign;
+  - explicit ABI-layout, v2 no-write, fingerprint-mutation, and
+    publication-atomicity obligation evidence;
+  - final independently audited artifact inventory and GO/NO-GO.
+- Boundary:
+  - no production or codec algorithm changed, so R-198 is not triggered;
+  - no private R-205 ABI is authorized;
+  - S10 remains active and S11 remains blocked.
+
+### R-209 R-208 structural CUDA admission
+
+- Status: **INDEPENDENT GO; CUDA STRUCTURAL OBLIGATION COMPLETE**
+- Result:
+  - the 495-line standalone evidence harness passed locally in 19.264 seconds;
+  - an independent clean rerun passed in 16.557 seconds and reproduced every
+    semantic hash;
+  - all 288 CPU/frozen cases, 252 nonzero all-six-thread CUDA cases, 36
+    zero-edge failures, 33 public-CPU boundary pairs, negative precedence,
+    mutation laws, and status reachability passed as frozen by R-208;
+  - batching preserved all 936 nonzero original edges without cross-case edges.
+- Scope:
+  - production source and codec outputs are unchanged;
+  - the random `10,000 + 6 x 10,000` target remains superseded;
+  - S10 remains active for remote platform, sanitizer/fuzzer, explicit ABI
+    obligations, final inventory, and independent final admission.
+
+### R-210 focused local ABI obligation admission
+
+- Status: **INDEPENDENT GO; LOCAL S10 OBLIGATIONS COMPLETE**
+- Existing coverage, without new test code, proves:
+  - C/C++/Python ABI size and offset agreement;
+  - all 8192 retired-v2 pointer/count/capacity no-write combinations;
+  - missing/stale/changed-input fingerprint behavior;
+  - failure publication atomicity and successful bit-exact replay.
+- Results:
+  - Clang 7/7, GCC 7/7, Python layout 1/1;
+  - the earlier incomplete GCC attempt is rejected evidence.
+- Remaining S10 scope:
+  - current-source remote platform and Linux sanitizer/fuzzer receipts;
+  - final bound artifact inventory;
+  - one final independent source/result GO/NO-GO.
+
+### R-211 minimal sufficient evidence and anti-recursion rule
+
+- Status: **ACCEPTED OWNER REQUIREMENT; INDEPENDENT PRE-EDIT GO**
+- Problem:
+  - S09 expanded into recursive authority and harness validation for an
+    unimplemented private ABI;
+  - the resulting file, line, storage, and elapsed-time cost was not
+    proportional to the production claim being tested;
+  - arbitrary round case counts were retained without coverage, convergence,
+    mutation, statistical, or defect-detection justification.
+- Alternatives:
+  - retain unrestricted evidence depth: rejected as test-of-tests recursion;
+  - weaken conformance, comparison, security, release, or platform gates:
+    rejected because those gates control real production risks;
+  - require the minimum sufficient evidence tied to exact production identity:
+    accepted.
+- Rule:
+  - every evidence gate requires a pre-code claim ledger mapping each test to
+    an existing production claim or public behavior, controlled risk, current
+    evidence, expected result, and failure consequence;
+  - reuse identity-current public-ABI, conformance, comparison, security,
+    release, and platform gates before creating infrastructure;
+  - a new harness requires a written public-observability gap;
+  - private/test-only ABI, semantic backdoors, friend hooks, patched production
+    binaries, and a harness whose sole purpose is checking another harness are
+    prohibited;
+  - independent hashes, schema validation, and repeated public execution are
+    the terminal integrity checks and do not create a new meta-gate;
+  - freeze one cumulative budget for changed/generated lines and files,
+    runtime, peak memory, retained storage, CI/device/cloud/API cost, and all
+    remediation iterations; splitting or renaming does not reset it;
+  - every numeric case/run count requires structural, boundary, mutation,
+    convergence, or statistical rationale;
+  - direct structural public-ABI evidence is preferred but cannot replace a
+    required dynamic concurrency, runtime, security, or platform observation.
+- Admission and kill rule:
+  - admit only when the ledger is covered within budget, reproducibly, against
+    the exact source/binary/command/input identity;
+  - the first budget breach or remediation permits one bounded redesign;
+  - a repeated breach or second remediation cycle for the same claim/gate
+    stops that gate for independent redesign or scope reduction;
+  - changing names, files, generations, or harnesses does not reset the count;
+  - negative evidence blocks only explicitly dependent claims.
+- Non-regression boundary:
+  - R-198 comparisons and mandatory release, security, compatibility, and
+    platform gates remain fully binding.

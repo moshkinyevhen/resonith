@@ -11,17 +11,14 @@ version.
 
 ### Research
 
-- Accepted audited R-190/R-191 native graph contracts. The immutable edge ABI
-  now has bit-exact Python/C++23 parity, while dependent K-best paths receive a
-  separate transactional CSR ABI with explicit frontier/work/memory bounds,
-  canonical ownership and tie rules, protected weak-line reservations, and a
-  frozen overflow-safe integer second-order frequency/amplitude law. This is
-  analyzer infrastructure only; predictor, syntax, compression, Opus, release,
-  and player claims remain blocked. The measured gate passes 32 randomized
-  Python/C++ graphs, input-permutation parity, 30 analyzer/tracker/path tests,
-  and exact CPU/GPU edge scoring on an RTX 2080 Super across six internal tile
-  sizes. An independently audited negative-odd half-score discrepancy was
-  corrected by freezing floor-toward-negative-infinity division.
+- Accepted the R-190 edge analyzer contract and retained the remediated R-191
+  path ABI as quarantined infrastructure pending its final R-203 admission
+  gate. Existing evidence proves bit-exact Python/C++23 edge/path fixtures,
+  bounded transactional v3 safety, sanitizers, exhaustive allocation
+  failpoints, and broad platform compilation, but it does not yet execute the
+  frozen R-197 finite/10,000-case/six-tile corpus or admit R-191 output.
+  Predictor, syntax, compression, Opus, release, and player claims remain
+  blocked.
 - Accepted R-182 through R-189 as a quarantined whole-track causal-analysis
   sequence: anonymous complex partials now precede source grouping; canonical
   spectral peaks precede half-open band allocation; continuity, local

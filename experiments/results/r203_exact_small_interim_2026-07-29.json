@@ -1,0 +1,64 @@
+{
+  "schema": "resonith-r203-exact-small-interim-1",
+  "date": "2026-07-29",
+  "status": "INTERIM_PASS_WITH_CANDIDATE_COVERAGE_BLOCKER",
+  "admission": "NO-GO",
+  "baseline_revision": "69c0d341b626d29dff6d951ec3485a437d42e767",
+  "frozen_contract_sha256": "10e24fa8721dfe69c2e1be82f9ffcc83e5dc7b32da0a038d29ec46b943d761bc",
+  "corpus": {
+    "path": "artifacts/r197/r197-exact-small-valid-v1.jsonl",
+    "bytes": 55085390,
+    "case_count": 9024,
+    "sha256": "1bf354dafa223f4350b79719e9e138df2262c52f22ce51a6d028eb4e56d3a306",
+    "twice_replayed": true,
+    "total_edge_records": 0,
+    "total_path_records": 0,
+    "total_entry_records": 0
+  },
+  "native_semantics": {
+    "sha256": "cf48eaa45b901934803b76c827f135f03278884ee25617995985cc3aca31ec2a",
+    "maximum_work_units": 33479,
+    "maximum_reserved_host_bytes": 2104,
+    "maximum_committed_host_bytes": 2104,
+    "maximum_peak_live_host_bytes": 2104
+  },
+  "toolchains": [
+    {
+      "name": "Clang 22 C++23",
+      "native_core_sha256": "f12c6ad9061089d2d4088a5bfd2e20e845148ebcd303afaecc3bb2dc6be042ed",
+      "semantic_sha256": "cf48eaa45b901934803b76c827f135f03278884ee25617995985cc3aca31ec2a",
+      "wall_seconds": 10.312516400001186
+    },
+    {
+      "name": "GCC 16 C++23",
+      "native_core_sha256": "425a58feefc34cead230dbdc838d1b8c24aa29fecc269b96e4a700c47df784e7",
+      "semantic_sha256": "cf48eaa45b901934803b76c827f135f03278884ee25617995985cc3aca31ec2a",
+      "wall_seconds": 10.419727199998306
+    }
+  ],
+  "fingerprint_correction": {
+    "law": "(byte + 53 * lane) mod 256",
+    "version": 1,
+    "old_vectors": "rejected_non_normative",
+    "path_entry_score_status_and_work_change": false,
+    "fingerprint_lanes_1_to_3_change": true,
+    "old_expected_token_status": "HASH_MISMATCH",
+    "old_expected_token_payload_immutable": true
+  },
+  "local_tests": {
+    "pytest": "62 passed",
+    "clang_partial_graph": "passed",
+    "clang_c_header": "passed",
+    "gcc_partial_graph": "passed",
+    "gcc_c_header": "passed"
+  },
+  "r198": {
+    "registered_music_and_opus_run": false,
+    "reason": "quarantined analyzer identity correction; released encoder non-consumption and golden bitstream/PCM identity still require final proof"
+  },
+  "blocking_findings": [
+    "The frozen exact-small value alphabet produces no canonical edges, paths, or entries.",
+    "A separately versioned and independently audited candidate-rich supplemental exact domain is required.",
+    "The frozen randomized, boundary, hostile, CUDA, sanitizer, TSan, Apple, Android, MSVC, and final independent gates remain pending."
+  ]
+}

@@ -95,6 +95,22 @@ Numbers from papers are statements made by the authors prior to independent repr
 - [C++ working draft: memory resources](https://eel.is/c++draft/mem.res)
 - [NVIDIA CUDA Runtime API: memory management](https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html)
 - [Microsoft Application Verifier: testing applications](https://learn.microsoft.com/windows-hardware/drivers/devtest/application-verifier-testing-applications)
+- [Clang: Introduction to the Clang AST](https://clang.llvm.org/docs/IntroductionToTheClangAST.html)
+- [Clang: Source-based Code Coverage](https://clang.llvm.org/docs/SourceBasedCodeCoverage.html)
+
+## Machine timing and evidence boundaries
+
+- [Intel: Data Operand Independent Timing Instructions](https://www.intel.com/content/www/us/en/developer/articles/technical/software-security-guidance/resources/data-operand-independent-timing-instructions.html)
+
+## Windows evidence-contract APIs
+
+- [Microsoft: CreateAppContainerProfile](https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-createappcontainerprofile)
+- [Microsoft: DeleteAppContainerProfile](https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-deleteappcontainerprofile)
+- [Microsoft: ReadFile](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile)
+- [Microsoft: Named Pipe Type, Read, and Wait Modes](https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipe-type-read-and-wait-modes)
+- [Microsoft: FindFirstFileNameW](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirstfilenamew)
+- [Microsoft: GetFinalPathNameByHandleW](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfinalpathnamebyhandlew)
+- [Microsoft: GetAppContainerFolderPath](https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-getappcontainerfolderpath)
 
 ## Reproducible audio sources
 

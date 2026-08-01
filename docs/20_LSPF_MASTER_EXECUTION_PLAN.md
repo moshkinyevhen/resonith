@@ -541,6 +541,23 @@ eight-thread/100,000-sequence TSan, canonical semantic coverage, and the full
 Android/Apple/Linux evidence matrix passed. R-191 remains unadmitted until
 Step 10 performs the final independent conformance decision.
 
+R-203 candidate-rich replay now has a complete raw typed bridge, an
+independent exact-selection judge, fail-closed inventory binding, identical
+twice-run packed evidence, and GCC/Clang/MSVC/Apple/Android replay wiring.
+The independent complete-ledger audit nevertheless returned NO-GO: the frozen
+law does not enumerate every solver operation and still exposes
+implementation-dependent container growth through `MEMORY_PAGE` and resource
+high-water. A proof-carrying trace plus PMR allocation-site proposal was then
+independently rejected before implementation because it could not prove
+omitted events or force portable vector capacity without changing failure
+behavior. Step 10 now audits the smaller evidence-only correction: preserve
+exact cross-toolchain semantic output and 21 non-memory CPU events, while
+validating `MEMORY_PAGE` and managed upstream-request telemetry exactly and
+fail-closed per toolchain rather than falsely requiring vendor STL allocation
+requests to be identical. Production behavior remains frozen unless a
+separate audited change triggers the complete registered-music and
+maximum-effort Opus comparison required by R-198.
+
 ## 15. R-195 integrated MAF-first generation
 
 Before non-blocking Orkela product expansion, build one integrated candidate
@@ -570,3 +587,36 @@ against the preceding Resonith release, direct Truth and maximum-effort
 official Opus. Any one-axis win receives its bounded missing-axis refinement
 before the generation freezes. Orkela is changed only as required to decode,
 inspect and audition this generation until that evidence is complete.
+
+## 16. R-204 continuous execution and durable 63-step view
+
+The accepted operational view is panel `R204-63-V1`:
+
+- definition:
+  [`23_CONTINUOUS_63_STEP_EXECUTION_PANEL.md`](23_CONTINUOUS_63_STEP_EXECUTION_PANEL.md);
+- definition SHA-256:
+  `6b2d1e21436e22231538d1b362657375c3699892b5290d17843ae025f510684e`;
+- mutable resumable state:
+  [`execution/R204_CURRENT_CHECKPOINT.md`](execution/R204_CURRENT_CHECKPOINT.md).
+
+The panel contains exactly 63 stable IDs. It is a derived view of this master
+plan and accepted decisions, not a competing source of authority. It must not
+be silently shortened, regrouped, renumbered, reordered, or reconstructed from
+memory. Any amendment receives a new panel ID, an explicit old-to-new mapping,
+owner approval, and the evidence-first audit required by R-185/R-196.
+
+While the owner-authorized continuous execution remains active, every passing
+subtask is a checkpoint and execution advances to the earliest
+dependency-ready, safe, in-scope item. This does not waive or bypass
+dependencies, quarantine, immutable evidence, audits, kill gates, safety,
+authority, credentials, or separately governed external actions. Every pause,
+blocker, or platform-imposed yield updates the durable checkpoint before
+control is returned.
+
+Focused risk-based tests follow every implementation edit. One frozen
+materially scoped codec-algorithm hypothesis and its tightly coupled edits form
+one evidence generation. Before that generation is accepted or another
+algorithm generation begins, the complete R-198 registered-music comparison
+must run through actual Resonith and official Opus decoders against both the
+immediately preceding accepted Resonith generation and the frozen
+maximum-effort official Opus anchor.

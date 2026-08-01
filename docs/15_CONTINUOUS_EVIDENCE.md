@@ -192,3 +192,38 @@ material. A three-reference subset is never sufficient for this gate.
 
 Only a mechanical refactor with proven identical bitstream and decoded PCM may
 use the focused identical-output exception.
+
+## 10. R-204 continuous execution and resumable panel
+
+The accepted derived execution view is panel `R204-63-V1` in
+[`23_CONTINUOUS_63_STEP_EXECUTION_PANEL.md`](23_CONTINUOUS_63_STEP_EXECUTION_PANEL.md),
+SHA-256
+`6b2d1e21436e22231538d1b362657375c3699892b5290d17843ae025f510684e`.
+Its mutable state is
+[`execution/R204_CURRENT_CHECKPOINT.md`](execution/R204_CURRENT_CHECKPOINT.md).
+
+The panel's 63 stable IDs must not be silently shortened, regrouped,
+renumbered, reordered, or reconstructed from memory. The versioned master plan,
+accepted decisions, dependencies, quarantines, audits, kill gates, safety, and
+authority remain canonical.
+
+While the continuous plan remains owner-authorized, passing an intermediate
+item advances execution to the earliest dependency-ready, safe, in-scope item.
+Continuation does not imply authority for external publication, release, push,
+paid service, credential use, destructive action, production or user-data
+mutation, or unrelated work.
+
+Focused risk-based tests follow every implementation edit. Tightly coupled
+edits within one frozen material hypothesis remain one evidence generation.
+The complete Section 9 comparison runs before that generation is accepted or a
+later codec-algorithm generation begins.
+
+Every pause, blocker, or platform-imposed execution boundary updates the
+durable checkpoint with all 63 states, repository and worktree identity,
+incumbent and Opus identities, completed evidence, hashes, commands, tools,
+blocker, clearance authority, invalidation conditions, and next safe action.
+Any clear owner stop, pause, wait, reprioritization, supersession, or scope
+reduction controls. Missing authority, safety or integrity risk, drift,
+irreproducibility, mandatory audit NO-GO, dependency failure, and unavailable
+required resources fail closed; they are never bypassed in the name of
+continuity.

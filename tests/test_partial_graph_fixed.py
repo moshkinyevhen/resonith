@@ -162,6 +162,183 @@ def test_transactional_path_v3_abi_layout() -> None:
     assert PartialPathReportV3.reserved_host_bytes.offset == 480
     assert PartialPathReportV3.reserved_device_bytes.offset == 504
     assert PartialPathReportV3.flags.offset == 528
+    assert {
+        name: getattr(PartialPathManifest, name).offset
+        for name, *_ in PartialPathManifest._fields_
+    } == {
+        "struct_size": 0,
+        "abi_version": 4,
+        "second_order_law_version": 8,
+        "protected_band_count": 12,
+        "k_value_per_state": 16,
+        "k_continuity_per_state": 20,
+        "top_k_value": 24,
+        "top_k_continuity": 28,
+        "top_k_protected": 32,
+        "protected_paths_per_band": 36,
+        "minimum_path_observations": 40,
+        "maximum_path_observations": 44,
+        "exact_set_candidate_limit": 48,
+        "amplitude_floor_q16": 52,
+        "amplitude_residual_weight_q8": 56,
+        "reserved_alignment": 60,
+        "frequency_sigma_floor_hz_q20": 64,
+        "birth_cost_bits_q8": 72,
+        "death_cost_bits_q8": 80,
+        "score_saturation": 88,
+        "maximum_path_records": 96,
+        "maximum_total_entries": 104,
+        "maximum_frontier_states": 112,
+        "maximum_state_records": 120,
+        "maximum_work_units": 128,
+        "maximum_managed_bytes": 136,
+        "expected_input_fingerprint": 144,
+        "protected_band_upper_hz_q20": 176,
+        "reserved": 1192,
+    }
+    assert {
+        name: getattr(PartialPathManifestV3, name).offset
+        for name, *_ in PartialPathManifestV3._fields_
+    } == {
+        "struct_size": 0,
+        "abi_version": 4,
+        "second_order_law_version": 8,
+        "protected_band_count": 12,
+        "k_value_per_state": 16,
+        "k_continuity_per_state": 20,
+        "top_k_value": 24,
+        "top_k_continuity": 28,
+        "top_k_protected": 32,
+        "protected_paths_per_band": 36,
+        "minimum_path_observations": 40,
+        "maximum_path_observations": 44,
+        "exact_set_candidate_limit": 48,
+        "amplitude_floor_q16": 52,
+        "amplitude_residual_weight_q8": 56,
+        "work_ledger_version": 60,
+        "frequency_sigma_floor_hz_q20": 64,
+        "birth_cost_bits_q8": 72,
+        "death_cost_bits_q8": 80,
+        "score_saturation": 88,
+        "maximum_path_records": 96,
+        "maximum_total_entries": 104,
+        "maximum_frontier_states": 112,
+        "maximum_state_records": 120,
+        "maximum_work_units": 128,
+        "maximum_managed_bytes": 136,
+        "maximum_device_bytes": 144,
+        "expected_input_fingerprint": 152,
+        "protected_band_upper_hz_q20": 184,
+        "reserved": 1200,
+    }
+    common_path_offsets = {
+        "struct_size": 0,
+        "abi_version": 4,
+        "path_id": 8,
+        "entry_offset": 16,
+        "entry_count": 24,
+        "family_flags": 28,
+        "terminal_observation_id": 32,
+        "continuity_score_q8": 40,
+        "potential_node_value_q8": 48,
+        "uncertainty_leakage_penalty_q8": 56,
+        "provisional_program_cost_q8": 64,
+        "selection_score_q8": 72,
+        "phase_error_sum_u64": 80,
+        "phase_error_count": 88,
+        "ownership_conflict_count": 92,
+        "protected_band_id": 96,
+        "value_rank": 100,
+        "continuity_rank": 104,
+        "protected_rank": 108,
+        "flags": 112,
+        "reserved": 116,
+    }
+    assert {
+        name: getattr(PartialPath, name).offset
+        for name, *_ in PartialPath._fields_
+    } == common_path_offsets
+    assert {
+        name: getattr(PartialPathV3, name).offset
+        for name, *_ in PartialPathV3._fields_
+    } == common_path_offsets
+    common_entry_offsets = {
+        "struct_size": 0,
+        "abi_version": 4,
+        "observation_id": 8,
+        "incoming_edge_candidate_id": 16,
+        "ownership_component": 24,
+        "second_order_cost_q8": 28,
+        "flags": 32,
+        "reserved": 36,
+    }
+    assert {
+        name: getattr(PartialPathEntry, name).offset
+        for name, *_ in PartialPathEntry._fields_
+    } == common_entry_offsets
+    assert {
+        name: getattr(PartialPathEntryV3, name).offset
+        for name, *_ in PartialPathEntryV3._fields_
+    } == common_entry_offsets
+    report_prefix_offsets = {
+        "struct_size": 0,
+        "abi_version": 4,
+        "termination": 8,
+        "solver": 12,
+        "required_path_count": 16,
+        "required_entry_count": 24,
+        "written_path_count": 32,
+        "written_entry_count": 40,
+        "raw_state_count": 48,
+        "frontier_peak": 56,
+        "work_units": 64,
+        "peak_live_managed_bytes": 72,
+        "selected_candidate_count": 80,
+        "selected_path_count": 88,
+        "internal_conflict_count": 96,
+        "cross_path_conflict_count": 104,
+        "score_saturation_count": 112,
+        "value_family_count": 120,
+        "continuity_family_count": 128,
+        "protected_family_count": 136,
+        "duplicate_state_count": 144,
+        "terminal_retained_state_count": 152,
+        "state_k_discarded_count": 160,
+        "state_arena_peak": 168,
+        "value_family_presented_count": 176,
+        "continuity_family_presented_count": 184,
+        "protected_family_presented_count": 192,
+        "value_family_discarded_count": 200,
+        "continuity_family_discarded_count": 208,
+        "protected_family_discarded_count": 216,
+        "output_deduplicated_count": 224,
+        "bound_rejected_count": 232,
+        "input_fingerprint": 240,
+        "output_fingerprint": 272,
+    }
+    assert {
+        name: getattr(PartialPathReport, name).offset
+        for name, *_ in PartialPathReport._fields_
+    } == {
+        **report_prefix_offsets,
+        "flags": 304,
+        "reserved": 308,
+    }
+    assert {
+        name: getattr(PartialPathReportV3, name).offset
+        for name, *_ in PartialPathReportV3._fields_
+    } == {
+        **report_prefix_offsets,
+        "work_event_counts": 304,
+        "reserved_host_bytes": 480,
+        "committed_host_bytes": 488,
+        "peak_live_host_bytes": 496,
+        "reserved_device_bytes": 504,
+        "committed_device_bytes": 512,
+        "peak_live_device_bytes": 520,
+        "flags": 528,
+        "reserved": 532,
+    }
 
     legacy = make_path_manifest(
         protected_band_upper_hz_q20=(500 << 20,),
@@ -444,15 +621,15 @@ def test_cpp23_path_union_is_bit_exact_to_python_oracle() -> None:
     assert actual.report["flags"] & 2
     assert actual.report["input_fingerprint"] == (
         14681656237124231420,
-        14217794624446866229,
-        3318052838151244206,
-        15337156228999464508,
+        16015693114350306613,
+        12688061451052961966,
+        12130408235842912572,
     )
     assert actual.report["output_fingerprint"] == (
         533898623865692396,
-        9232259795300133137,
-        5802264844233550618,
-        5931678949044348120,
+        3903883425310628113,
+        4079848627775790362,
+        1587697443357714648,
     )
     assert (
         actual.report["input_fingerprint"]
@@ -967,6 +1144,12 @@ def test_randomized_exact_small_matches_independent_bruteforce() -> None:
             observations,
             graph_manifest,
         )
+        expected = build_paths_fixed(
+            observations,
+            edges,
+            graph_manifest,
+            path_manifest,
+        )
         actual = native.paths(
             resolutions,
             observations,
@@ -975,10 +1158,12 @@ def test_randomized_exact_small_matches_independent_bruteforce() -> None:
             path_manifest,
         )
         assert actual.report["solver"] == "exact-small-disjoint-heuristic"
-        assert (
-            actual.selected_path_ids
-            == _independent_exact_small_selection(actual.paths)
+        independent_selected = _independent_exact_small_selection(
+            expected.paths
         )
+        assert actual.paths == expected.paths
+        assert expected.selected_path_ids == independent_selected
+        assert actual.selected_path_ids == independent_selected
 
 
 @pytest.mark.skipif(

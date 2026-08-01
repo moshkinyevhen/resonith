@@ -1,4 +1,5 @@
 #include "resonith/partial_graph.h"
+#include "integrity.h"
 #include "partial_graph_stage_budget.hpp"
 
 #include <algorithm>
@@ -86,6 +87,388 @@ observation(std::uint64_t id, std::uint32_t frame, std::int64_t frequency_q20,
   return value;
 }
 
+struct r203_topology {
+  std::array<std::uint64_t, 4> centers;
+  std::array<std::int64_t, 4> frequencies_hz;
+  std::array<std::uint32_t, 3> gaps;
+  std::array<std::int32_t, 3> cycles;
+  std::uint32_t observation_count;
+  std::uint32_t gap_count;
+  std::uint32_t cycle_count;
+  std::uint32_t neighbors;
+  std::int64_t jump_hz;
+  std::int64_t slope_hz_per_sample;
+  std::size_t expected_edges;
+};
+
+constexpr std::array<r203_topology, 5> r203_topologies{{
+    {{{0U, 64U, 128U, 0U}},
+     {{440, 440, 440, 0}},
+     {{1U, 0U, 0U}},
+     {{-1, 0, 1}},
+     3U,
+     1U,
+     3U,
+     1U,
+     0,
+     0,
+     6U},
+    {{{0U, 64U, 64U, 128U}},
+     {{440, 439, 441, 440}},
+     {{1U, 0U, 0U}},
+     {{0, 0, 0}},
+     4U,
+     1U,
+     1U,
+     2U,
+     1,
+     0,
+     4U},
+    {{{0U, 192U, 384U, 0U}},
+     {{440, 999, 1558, 0}},
+     {{3U, 0U, 0U}},
+     {{0, 0, 0}},
+     3U,
+     1U,
+     1U,
+     1U,
+     368,
+     1,
+     2U},
+    {{{0U, 192U, 384U, 0U}},
+     {{440, 1000, 1560, 0}},
+     {{3U, 0U, 0U}},
+     {{0, 0, 0}},
+     3U,
+     1U,
+     1U,
+     1U,
+     368,
+     1,
+     2U},
+    {{{0U, 192U, 384U, 0U}},
+     {{440, 1001, 1562, 0}},
+     {{3U, 0U, 0U}},
+     {{0, 0, 0}},
+     3U,
+     1U,
+     1U,
+     1U,
+     368,
+     1,
+     0U},
+}};
+
+template <typename Value>
+void r203_hash_object(resonith::internal::Sha256Context *context,
+                      const Value &value) {
+  resonith::internal::sha256_update(
+      *context, reinterpret_cast<const std::uint8_t *>(&value), sizeof(value));
+}
+
+template <typename Value>
+void r203_hash_vector(resonith::internal::Sha256Context *context,
+                      const std::vector<Value> &values) {
+  if (!values.empty()) {
+    resonith::internal::sha256_update(
+        *context, reinterpret_cast<const std::uint8_t *>(values.data()),
+        values.size() * sizeof(Value));
+  }
+}
+
+std::array<std::uint8_t, 32> r203_candidate_rich_digest() {
+  constexpr std::int64_t q20 = 1LL << 20U;
+  const resonith_partial_resolution resolution{
+      sizeof(resonith_partial_resolution),
+      RESONITH_PARTIAL_GRAPH_ABI_VERSION,
+      0U,
+      128U,
+      64U,
+      {0U, 0U, 0U},
+  };
+  resonith::internal::Sha256Context campaign{};
+  resonith::internal::sha256_init(campaign);
+  std::size_t case_count = 0U;
+  std::uint64_t total_paths = 0U;
+  std::uint64_t total_entries = 0U;
+  std::uint64_t maximum_work = 0U;
+  std::uint64_t maximum_host = 0U;
+
+  for (const r203_topology &topology : r203_topologies) {
+    for (std::uint32_t ownership_profile = 0U; ownership_profile < 2U;
+         ++ownership_profile) {
+      for (std::uint32_t phase_profile = 0U; phase_profile < 3U;
+           ++phase_profile) {
+        std::array<resonith_partial_observation, 4> canonical{};
+        for (std::uint32_t index = 0U; index < topology.observation_count;
+             ++index) {
+          resonith_partial_observation value{};
+          value.struct_size = sizeof(value);
+          value.abi_version = RESONITH_PARTIAL_GRAPH_ABI_VERSION;
+          value.observation_id = index;
+          value.center_sample = topology.centers[index];
+          value.frequency_hz_q20 = topology.frequencies_hz[index] * q20;
+          value.frequency_uncertainty_hz_q20 = 1U << 20U;
+          value.phase_turn_u32 =
+              phase_profile == 2U ? index * 0x40000000U : 0U;
+          value.phase_step_u32 = 0U;
+          value.normalized_amplitude_q16 = 1U << 16U;
+          value.amplitude_uncertainty_q16 = 1U << 12U;
+          value.phase_uncertainty_u31 = 1U << 20U;
+          value.frame_index =
+              static_cast<std::uint32_t>(topology.centers[index] / 64U);
+          value.resolution_id = 0U;
+          value.detector_id = 0;
+          value.band_id = 0U;
+          value.ownership_component =
+              ownership_profile == 0U
+                  ? index
+                  : (index < 2U ? 0U
+                                : (topology.observation_count == 4U &&
+                                           index == 3U
+                                       ? 0U
+                                       : 1U));
+          value.ambiguity_component = RESONITH_PARTIAL_AMBIGUITY_NONE;
+          value.flags = RESONITH_PARTIAL_OBSERVATION_LOCALLY_RESOLVABLE;
+          if (phase_profile != 0U) {
+            value.flags |= RESONITH_PARTIAL_OBSERVATION_PHASE_USABLE;
+          }
+          if (phase_profile == 2U) {
+            value.flags |= RESONITH_PARTIAL_OBSERVATION_PROTECTED_WEAK;
+          }
+          value.protected_rank_q8 = 256;
+          value.neighbor_priority_q8 = 512;
+          value.potential_node_value_q8 = 4096;
+          value.uncertainty_leakage_penalty_q8 = 64;
+          canonical[index] = value;
+        }
+
+        resonith_partial_graph_manifest graph{};
+        graph.struct_size = sizeof(graph);
+        graph.abi_version = RESONITH_PARTIAL_GRAPH_ABI_VERSION;
+        graph.sample_rate = 48000U;
+        graph.resolution_count = 1U;
+        graph.gap_count = topology.gap_count;
+        graph.neighbors_per_gap = topology.neighbors;
+        graph.cycle_offset_count = topology.cycle_count;
+        graph.minimum_track_observations = 2U;
+        graph.maximum_frequency_jump_hz_q20 = topology.jump_hz * q20;
+        graph.maximum_frequency_slope_hz_per_sample_q20 =
+            topology.slope_hz_per_sample * q20;
+        graph.continuation_base_bits_q8 = 256;
+        graph.continuation_reward_q8 = 256;
+        graph.score_saturation = (1LL << 62U) - 1LL;
+        graph.maximum_edge_records = 64U;
+        graph.maximum_path_hypotheses = 64U;
+        graph.exact_set_candidate_limit = 20U;
+        std::copy_n(topology.gaps.begin(), topology.gap_count,
+                    std::begin(graph.gaps));
+        std::copy_n(topology.cycles.begin(), topology.cycle_count,
+                    std::begin(graph.cycle_offsets));
+
+        resonith_partial_path_manifest_v3 path_manifest{};
+        path_manifest.struct_size = sizeof(path_manifest);
+        path_manifest.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+        path_manifest.second_order_law_version = 2U;
+        path_manifest.protected_band_count = 1U;
+        path_manifest.k_value_per_state = 16U;
+        path_manifest.k_continuity_per_state = 16U;
+        path_manifest.top_k_value = 20U;
+        path_manifest.top_k_continuity = 20U;
+        path_manifest.top_k_protected = 20U;
+        path_manifest.protected_paths_per_band = 2U;
+        path_manifest.minimum_path_observations = 2U;
+        path_manifest.maximum_path_observations = 4U;
+        path_manifest.exact_set_candidate_limit = 20U;
+        path_manifest.amplitude_floor_q16 = 1U;
+        path_manifest.amplitude_residual_weight_q8 = 1024U;
+        path_manifest.work_ledger_version =
+            RESONITH_PARTIAL_PATH_WORK_LEDGER_VERSION;
+        path_manifest.frequency_sigma_floor_hz_q20 = 1U << 19U;
+        path_manifest.birth_cost_bits_q8 = 12288;
+        path_manifest.death_cost_bits_q8 = 2048;
+        path_manifest.score_saturation = (1LL << 62U) - 1LL;
+        path_manifest.maximum_path_records = 64U;
+        path_manifest.maximum_total_entries = 256U;
+        path_manifest.maximum_frontier_states = 64U;
+        path_manifest.maximum_state_records = 128U;
+        path_manifest.maximum_work_units = 10000000U;
+        path_manifest.maximum_managed_bytes = 1U << 20U;
+        path_manifest.maximum_device_bytes = 0U;
+
+        std::array<std::uint32_t, 4> permutation{{0U, 1U, 2U, 3U}};
+        do {
+          std::array<resonith_partial_observation, 4> presented{};
+          for (std::uint32_t index = 0U;
+               index < topology.observation_count; ++index) {
+            presented[index] = canonical[permutation[index]];
+          }
+          std::size_t edge_count = 0U;
+          if (resonith_partial_graph_edges_cpu(
+                  &resolution, 1U, presented.data(),
+                  topology.observation_count, &graph, nullptr, 0U,
+                  &edge_count) != RESONITH_STATUS_OK ||
+              edge_count != topology.expected_edges) {
+            fail("R-203 candidate-rich edge replay differs");
+          }
+          std::vector<resonith_partial_edge> edges(edge_count);
+          if (resonith_partial_graph_edges_cpu(
+                  &resolution, 1U, presented.data(),
+                  topology.observation_count, &graph, edges.data(),
+                  edges.size(), &edge_count) != RESONITH_STATUS_OK) {
+            fail("R-203 candidate-rich edge fill failed");
+          }
+
+          resonith_partial_path_manifest_v3 preflight_manifest = path_manifest;
+          resonith_partial_path_report_v3 preflight{};
+          preflight.struct_size = sizeof(preflight);
+          preflight.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+          if (resonith_partial_graph_paths_cpu_v3(
+                  &resolution, 1U, presented.data(),
+                  topology.observation_count, edges.data(), edges.size(),
+                  &graph, &preflight_manifest, nullptr, 0U, nullptr, 0U,
+                  &preflight) != RESONITH_STATUS_OK) {
+            fail("R-203 candidate-rich path preflight failed");
+          }
+          resonith_partial_path_manifest_v3 fill_manifest =
+              preflight_manifest;
+          std::copy(std::begin(preflight.input_fingerprint),
+                    std::end(preflight.input_fingerprint),
+                    std::begin(fill_manifest.expected_input_fingerprint));
+          std::vector<resonith_partial_path_v3> paths(
+              preflight.required_path_count);
+          std::vector<resonith_partial_path_entry_v3> entries(
+              preflight.required_entry_count);
+          resonith_partial_path_v3 empty_path_marker{};
+          resonith_partial_path_entry_v3 empty_entry_marker{};
+          resonith_partial_path_report_v3 fill{};
+          fill.struct_size = sizeof(fill);
+          fill.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+          if (resonith_partial_graph_paths_cpu_v3(
+                  &resolution, 1U, presented.data(),
+                  topology.observation_count, edges.data(), edges.size(),
+                  &graph, &fill_manifest,
+                  paths.empty() ? &empty_path_marker : paths.data(),
+                  paths.size(),
+                  entries.empty() ? &empty_entry_marker : entries.data(),
+                  entries.size(), &fill) !=
+                  RESONITH_STATUS_OK ||
+              fill.written_path_count != paths.size() ||
+              fill.written_entry_count != entries.size()) {
+            fail("R-203 candidate-rich path fill failed");
+          }
+
+          resonith_partial_path_manifest_v3 repeat_preflight_manifest =
+              path_manifest;
+          resonith_partial_path_report_v3 repeat_preflight{};
+          repeat_preflight.struct_size = sizeof(repeat_preflight);
+          repeat_preflight.abi_version =
+              RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+          if (resonith_partial_graph_paths_cpu_v3(
+                  &resolution, 1U, presented.data(),
+                  topology.observation_count, edges.data(), edges.size(),
+                  &graph, &repeat_preflight_manifest, nullptr, 0U, nullptr, 0U,
+                  &repeat_preflight) != RESONITH_STATUS_OK) {
+            fail("R-203 repeated candidate-rich preflight failed");
+          }
+          resonith_partial_path_manifest_v3 repeat_fill_manifest =
+              repeat_preflight_manifest;
+          std::copy(std::begin(repeat_preflight.input_fingerprint),
+                    std::end(repeat_preflight.input_fingerprint),
+                    std::begin(
+                        repeat_fill_manifest.expected_input_fingerprint));
+          std::vector<resonith_partial_path_v3> repeat_paths(
+              repeat_preflight.required_path_count);
+          std::vector<resonith_partial_path_entry_v3> repeat_entries(
+              repeat_preflight.required_entry_count);
+          resonith_partial_path_report_v3 repeat_fill{};
+          repeat_fill.struct_size = sizeof(repeat_fill);
+          repeat_fill.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+          if (resonith_partial_graph_paths_cpu_v3(
+                  &resolution, 1U, presented.data(),
+                  topology.observation_count, edges.data(), edges.size(),
+                  &graph, &repeat_fill_manifest,
+                  repeat_paths.empty() ? &empty_path_marker
+                                       : repeat_paths.data(),
+                  repeat_paths.size(),
+                  repeat_entries.empty() ? &empty_entry_marker
+                                         : repeat_entries.data(),
+                  repeat_entries.size(), &repeat_fill) !=
+                  RESONITH_STATUS_OK ||
+              repeat_fill.written_path_count != repeat_paths.size() ||
+              repeat_fill.written_entry_count != repeat_entries.size()) {
+            fail("R-203 repeated candidate-rich fill failed");
+          }
+          const bool paths_match =
+              paths.size() == repeat_paths.size() &&
+              (paths.empty() ||
+               std::memcmp(paths.data(), repeat_paths.data(),
+                           paths.size() * sizeof(paths.front())) == 0);
+          const bool entries_match =
+              entries.size() == repeat_entries.size() &&
+              (entries.empty() ||
+               std::memcmp(entries.data(), repeat_entries.data(),
+                           entries.size() * sizeof(entries.front())) == 0);
+          if (std::memcmp(&preflight_manifest, &repeat_preflight_manifest,
+                          sizeof(preflight_manifest)) != 0 ||
+              std::memcmp(&fill_manifest, &repeat_fill_manifest,
+                          sizeof(fill_manifest)) != 0 ||
+              std::memcmp(&preflight, &repeat_preflight, sizeof(preflight)) !=
+                  0 ||
+              std::memcmp(&fill, &repeat_fill, sizeof(fill)) != 0 ||
+              !paths_match || !entries_match) {
+            fail("R-203 candidate-rich transaction is not deterministic");
+          }
+
+          resonith::internal::Sha256Context case_context{};
+          resonith::internal::sha256_init(case_context);
+          r203_hash_object(&case_context, preflight_manifest);
+          r203_hash_object(&case_context, fill_manifest);
+          r203_hash_vector(&case_context, paths);
+          r203_hash_vector(&case_context, entries);
+          r203_hash_object(&case_context, preflight);
+          r203_hash_object(&case_context, fill);
+          std::array<std::uint8_t, 32> case_digest{};
+          resonith::internal::sha256_final(case_context, case_digest.data());
+          resonith::internal::sha256_update(campaign, case_digest.data(),
+                                            case_digest.size());
+
+          ++case_count;
+          total_paths += fill.written_path_count;
+          total_entries += fill.written_entry_count;
+          maximum_work = std::max(maximum_work, fill.work_units);
+          maximum_host = std::max(maximum_host, fill.peak_live_host_bytes);
+         } while (std::next_permutation(
+             permutation.begin(),
+             permutation.begin() + topology.observation_count));
+      }
+    }
+  }
+
+  if (case_count != 288U || total_paths != 1620U ||
+      total_entries != 3924U || maximum_work != 576097U ||
+      maximum_host != 25892U) {
+    fail("R-203 candidate-rich aggregate evidence differs");
+  }
+  std::array<std::uint8_t, 32> digest{};
+  resonith::internal::sha256_final(campaign, digest.data());
+  constexpr std::array<std::uint8_t, 32> expected{{
+      0x4b, 0x72, 0x96, 0x7a, 0xd2, 0x9a, 0x23, 0x72,
+      0x27, 0x24, 0xb3, 0x33, 0x86, 0x56, 0xdd, 0x45,
+      0x63, 0xd3, 0x54, 0x19, 0xd3, 0x5a, 0xc5, 0x3e,
+      0xe6, 0x5a, 0x79, 0x46, 0xb3, 0x27, 0xda, 0x22,
+  }};
+  if (digest != expected) {
+    std::fprintf(stderr, "R-203 actual packed digest: ");
+    for (const std::uint8_t byte : digest) {
+      std::fprintf(stderr, "%02x", static_cast<unsigned>(byte));
+    }
+    std::fprintf(stderr, "\n");
+    fail("R-203 candidate-rich packed semantic hash differs");
+  }
+  return digest;
+}
+
 } // namespace
 
 int main() {
@@ -101,6 +484,7 @@ int main() {
   if (!resonith::internal::partial_graph_work_ledger_probe()) {
     fail("typed work ledger violated an event-prefix boundary");
   }
+  static_cast<void>(r203_candidate_rich_digest());
   const resonith_partial_resolution resolution{
       sizeof(resonith_partial_resolution),
       RESONITH_PARTIAL_GRAPH_ABI_VERSION,
@@ -294,6 +678,63 @@ int main() {
                   sizeof(retired_v2_report)) != 0) {
     fail("retired R-191 v2 ABI was not a no-write safe stub");
   }
+  /*
+   * The retained migration symbol is an unconditional stub. Exercise every
+   * null/non-null pointer and zero/non-zero count/capacity combination so a
+   * later compatibility edit cannot accidentally begin reading or writing an
+   * old ABI layout.
+   */
+  constexpr std::uint32_t retired_v2_matrix_bits = 13U;
+  for (
+      std::uint32_t mask = 0U;
+      mask < (1U << retired_v2_matrix_bits);
+      ++mask
+  ) {
+    resonith_partial_path retired_path{};
+    resonith_partial_path_entry retired_entry{};
+    resonith_partial_path_report retired_report{};
+    std::memset(&retired_path, 0xA5, sizeof(retired_path));
+    std::memset(&retired_entry, 0x5A, sizeof(retired_entry));
+    std::memset(&retired_report, 0x3C, sizeof(retired_report));
+    const resonith_partial_path retired_path_before = retired_path;
+    const resonith_partial_path_entry retired_entry_before = retired_entry;
+    const resonith_partial_path_report retired_report_before = retired_report;
+    const resonith_status status = resonith_partial_graph_paths_cpu_v2(
+        (mask & (1U << 0U)) != 0U ? &resolution : nullptr,
+        (mask & (1U << 1U)) != 0U ? 1U : 0U,
+        (mask & (1U << 2U)) != 0U ? observations.data() : nullptr,
+        (mask & (1U << 3U)) != 0U ? observations.size() : 0U,
+        (mask & (1U << 4U)) != 0U ? first.data() : nullptr,
+        (mask & (1U << 5U)) != 0U ? first.size() : 0U,
+        (mask & (1U << 6U)) != 0U ? &manifest : nullptr,
+        (mask & (1U << 7U)) != 0U ? &path_manifest : nullptr,
+        (mask & (1U << 8U)) != 0U ? &retired_path : nullptr,
+        (mask & (1U << 9U)) != 0U ? 1U : 0U,
+        (mask & (1U << 10U)) != 0U ? &retired_entry : nullptr,
+        (mask & (1U << 11U)) != 0U ? 1U : 0U,
+        (mask & (1U << 12U)) != 0U ? &retired_report : nullptr
+    );
+    if (
+        status != RESONITH_STATUS_UNSUPPORTED_VERSION
+        || std::memcmp(
+            &retired_path,
+            &retired_path_before,
+            sizeof(retired_path)
+        ) != 0
+        || std::memcmp(
+            &retired_entry,
+            &retired_entry_before,
+            sizeof(retired_entry)
+        ) != 0
+        || std::memcmp(
+            &retired_report,
+            &retired_report_before,
+            sizeof(retired_report)
+        ) != 0
+    ) {
+      fail("retired R-191 v2 exhaustive no-write matrix failed");
+    }
+  }
 
   resonith_partial_path_manifest_v3 path_manifest_v3{};
   std::memcpy(&path_manifest_v3, &path_manifest, 144U);
@@ -325,6 +766,19 @@ int main() {
       report_v3.peak_live_device_bytes != 0U ||
       report_v3.work_event_counts[RESONITH_PARTIAL_WORK_CUDA_ITEM] != 0U) {
     fail("R-197 v3 transactional preflight failed");
+  }
+  resonith_partial_path_report_v3 repeated_preflight_v3{};
+  repeated_preflight_v3.struct_size = sizeof(repeated_preflight_v3);
+  repeated_preflight_v3.abi_version =
+      RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+  if (resonith_partial_graph_paths_cpu_v3(
+          &resolution, 1U, observations.data(), observations.size(),
+          first.data(), first.size(), &manifest, &path_manifest_v3, nullptr, 0U,
+          nullptr, 0U,
+          &repeated_preflight_v3) != RESONITH_STATUS_OK ||
+      std::memcmp(&report_v3, &repeated_preflight_v3, sizeof(report_v3)) !=
+          0) {
+    fail("R-203 repeated preflight changed report identity");
   }
   fail_allocation_resource failed_upstream;
   resonith::internal::partial_graph_set_test_upstream_resource(
@@ -513,8 +967,57 @@ int main() {
       entries_v3[0].abi_version != RESONITH_PARTIAL_PATH_V3_ABI_VERSION) {
     fail("R-197 v3 transactional fill failed");
   }
+  std::vector<resonith_partial_path_v3> repeated_paths_v3(paths_v3.size());
+  std::vector<resonith_partial_path_entry_v3> repeated_entries_v3(
+      entries_v3.size());
+  resonith_partial_path_report_v3 repeated_fill_v3{};
+  repeated_fill_v3.struct_size = sizeof(repeated_fill_v3);
+  repeated_fill_v3.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+  if (resonith_partial_graph_paths_cpu_v3(
+          &resolution, 1U, observations.data(), observations.size(),
+          first.data(), first.size(), &manifest, &path_manifest_v3,
+          repeated_paths_v3.data(), repeated_paths_v3.size(),
+          repeated_entries_v3.data(), repeated_entries_v3.size(),
+          &repeated_fill_v3) != RESONITH_STATUS_OK ||
+      std::memcmp(paths_v3.data(), repeated_paths_v3.data(),
+                  paths_v3.size() * sizeof(resonith_partial_path_v3)) != 0 ||
+      std::memcmp(
+          entries_v3.data(), repeated_entries_v3.data(),
+          entries_v3.size() * sizeof(resonith_partial_path_entry_v3)) != 0 ||
+      std::memcmp(&report_v3, &repeated_fill_v3, sizeof(report_v3)) != 0) {
+    fail("R-203 repeated fill changed payload or report identity");
+  }
   const auto paths_v3_before = paths_v3;
   const auto entries_v3_before = entries_v3;
+  auto old_fingerprint_manifest_v3 = path_manifest_v3;
+  constexpr std::array<std::uint64_t, 4> rejected_old_fingerprint{
+      14681656237124231420ULL,
+      14217794624446866229ULL,
+      3318052838151244206ULL,
+      15337156228999464508ULL,
+  };
+  std::copy(rejected_old_fingerprint.begin(), rejected_old_fingerprint.end(),
+            old_fingerprint_manifest_v3.expected_input_fingerprint);
+  resonith_partial_path_report_v3 old_fingerprint_report_v3{};
+  old_fingerprint_report_v3.struct_size =
+      sizeof(old_fingerprint_report_v3);
+  old_fingerprint_report_v3.abi_version =
+      RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
+  if (resonith_partial_graph_paths_cpu_v3(
+          &resolution, 1U, observations.data(), observations.size(),
+          first.data(), first.size(), &manifest,
+          &old_fingerprint_manifest_v3, paths_v3.data(), paths_v3.size(),
+          entries_v3.data(), entries_v3.size(),
+          &old_fingerprint_report_v3) != RESONITH_STATUS_HASH_MISMATCH ||
+      old_fingerprint_report_v3.termination !=
+          RESONITH_PARTIAL_PATH_TERMINATION_STALE_INPUT ||
+      std::memcmp(paths_v3.data(), paths_v3_before.data(),
+                  paths_v3.size() * sizeof(resonith_partial_path_v3)) != 0 ||
+      std::memcmp(entries_v3.data(), entries_v3_before.data(),
+                  entries_v3.size() *
+                      sizeof(resonith_partial_path_entry_v3)) != 0) {
+    fail("R-203 rejected legacy fingerprint changed caller payload");
+  }
   resonith_partial_path_report_v3 small_v3{};
   small_v3.struct_size = sizeof(small_v3);
   small_v3.abi_version = RESONITH_PARTIAL_PATH_V3_ABI_VERSION;
@@ -1339,6 +1842,10 @@ int main() {
               "\"peak_live_host_bytes\":%llu,"
               "\"device_bytes\":0,\"work_sweep_max\":%llu,"
               "\"stage_budget_helper\":true,"
+              "\"r203_candidate_rich_cases\":288,"
+              "\"r203_candidate_rich_twice_run\":true,"
+              "\"r203_candidate_rich_packed_sha256\":"
+              "\"4b72967ad29a23722724b3338656dd4563d35419d35ac53ee65a7946b327da22\","
               "\"deterministic\":true,"
               "\"predictor_integrated\":false}\n",
               first_count,

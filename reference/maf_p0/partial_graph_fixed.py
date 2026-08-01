@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ctypes
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -1720,6 +1721,7 @@ class NativePartialGraph:
 
     def __init__(self, library_path: str | Path):
         self._library = ctypes.CDLL(str(Path(library_path)))
+        self._last_path_evidence: dict[str, object] | None = None
         self._function = self._library.resonith_partial_graph_edges_cpu
         self._function.argtypes = [
             ctypes.POINTER(PartialResolution),
@@ -1751,6 +1753,14 @@ class NativePartialGraph:
             ctypes.POINTER(PartialPathReportV3),
         ]
         self._path_function_v3.restype = ctypes.c_int
+
+    @property
+    def last_path_evidence(self) -> dict[str, object]:
+        """Return complete logical fields from the latest successful call."""
+
+        if self._last_path_evidence is None:
+            raise RuntimeError("no native path evidence is available")
+        return self._last_path_evidence
 
     def edges(
         self,
@@ -1900,12 +1910,75 @@ class NativePartialGraph:
         if status != 0:
             raise RuntimeError(f"native path fill failed: {status}")
         if (
+            tuple(preflight_report.input_fingerprint)
+            != tuple(fill_report.input_fingerprint)
+            or preflight_report.required_path_count
+            != fill_report.required_path_count
+            or preflight_report.required_entry_count
+            != fill_report.required_entry_count
+            or fill_report.required_path_count
+            != fill_report.written_path_count
+            or fill_report.required_entry_count
+            != fill_report.written_entry_count
+            or sum(preflight_report.work_event_counts)
+            != preflight_report.work_units
+            or sum(fill_report.work_event_counts)
+            != fill_report.work_units
+            or preflight_report.reserved_device_bytes
+            or preflight_report.committed_device_bytes
+            or preflight_report.peak_live_device_bytes
+            or fill_report.reserved_device_bytes
+            or fill_report.committed_device_bytes
+            or fill_report.peak_live_device_bytes
+        ):
+            raise RuntimeError(
+                "native path preflight/fill typed evidence mismatch"
+            )
+        if (
             tuple(preflight_report.output_fingerprint)
             != tuple(fill_report.output_fingerprint)
         ):
             raise RuntimeError(
                 "native path preflight/fill output fingerprint mismatch"
             )
+
+        def logical_fields(value: object) -> object:
+            if isinstance(value, ctypes.Array):
+                return [logical_fields(item) for item in value]
+            if isinstance(value, ctypes.Structure):
+                return {
+                    name: logical_fields(getattr(value, name))
+                    for name, *_ in value._fields_
+                }
+            return value
+
+        path_bytes = bytes(path_array)
+        entry_bytes = bytes(entry_array)
+        case_payload = b"".join(
+            (
+                bytes(preflight_manifest),
+                bytes(fill_manifest),
+                path_bytes,
+                entry_bytes,
+                bytes(preflight_report),
+                bytes(fill_report),
+            )
+        )
+        self._last_path_evidence = {
+            "preflight_manifest": logical_fields(preflight_manifest),
+            "fill_manifest": logical_fields(fill_manifest),
+            "preflight_report": logical_fields(preflight_report),
+            "fill_report": logical_fields(fill_report),
+            "paths": logical_fields(path_array),
+            "entries": logical_fields(entry_array),
+            "path_payload_sha256": hashlib.sha256(path_bytes).hexdigest(),
+            "entry_payload_sha256": hashlib.sha256(entry_bytes).hexdigest(),
+            "case_payload_sha256": hashlib.sha256(
+                case_payload
+            ).hexdigest(),
+            "path_payload_bytes": len(path_bytes),
+            "entry_payload_bytes": len(entry_bytes),
+        }
 
         records = []
         selected = []
