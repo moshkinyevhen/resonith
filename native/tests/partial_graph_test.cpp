@@ -176,6 +176,50 @@ void r203_hash_vector(resonith::internal::Sha256Context *context,
   }
 }
 
+bool r203_resource_report_is_valid(
+    const resonith_partial_path_report_v3 &report,
+    const resonith_partial_path_manifest_v3 &manifest) {
+  std::uint64_t event_total = 0U;
+  for (const std::uint64_t count : report.work_event_counts) {
+    if (count > std::numeric_limits<std::uint64_t>::max() - event_total) {
+      return false;
+    }
+    event_total += count;
+  }
+  return event_total == report.work_units &&
+         report.reserved_host_bytes >= report.committed_host_bytes &&
+         report.committed_host_bytes >= report.peak_live_host_bytes &&
+         report.reserved_host_bytes <= manifest.maximum_managed_bytes &&
+         report.committed_host_bytes <= manifest.maximum_managed_bytes &&
+         report.peak_live_host_bytes <= manifest.maximum_managed_bytes &&
+         report.peak_live_managed_bytes <= manifest.maximum_managed_bytes &&
+         report.reserved_device_bytes == 0U &&
+         report.committed_device_bytes == 0U &&
+         report.peak_live_device_bytes == 0U;
+}
+
+std::uint64_t r203_non_memory_work(
+    const resonith_partial_path_report_v3 &report) {
+  constexpr auto memory_index =
+      static_cast<std::size_t>(RESONITH_PARTIAL_WORK_MEMORY_PAGE);
+  return report.work_units - report.work_event_counts[memory_index];
+}
+
+resonith_partial_path_report_v3 r203_portable_report(
+    resonith_partial_path_report_v3 report) {
+  report.work_units = 0U;
+  report.peak_live_managed_bytes = 0U;
+  std::fill(std::begin(report.work_event_counts),
+            std::end(report.work_event_counts), 0U);
+  report.reserved_host_bytes = 0U;
+  report.committed_host_bytes = 0U;
+  report.peak_live_host_bytes = 0U;
+  report.reserved_device_bytes = 0U;
+  report.committed_device_bytes = 0U;
+  report.peak_live_device_bytes = 0U;
+  return report;
+}
+
 std::array<std::uint8_t, 32> r203_candidate_rich_digest() {
   constexpr std::int64_t q20 = 1LL << 20U;
   const resonith_partial_resolution resolution{
@@ -191,8 +235,7 @@ std::array<std::uint8_t, 32> r203_candidate_rich_digest() {
   std::size_t case_count = 0U;
   std::uint64_t total_paths = 0U;
   std::uint64_t total_entries = 0U;
-  std::uint64_t maximum_work = 0U;
-  std::uint64_t maximum_host = 0U;
+  std::uint64_t maximum_non_memory_work = 0U;
 
   for (const r203_topology &topology : r203_topologies) {
     for (std::uint32_t ownership_profile = 0U; ownership_profile < 2U;
@@ -419,6 +462,10 @@ std::array<std::uint8_t, 32> r203_candidate_rich_digest() {
               !paths_match || !entries_match) {
             fail("R-203 candidate-rich transaction is not deterministic");
           }
+          if (!r203_resource_report_is_valid(preflight, path_manifest) ||
+              !r203_resource_report_is_valid(fill, path_manifest)) {
+            fail("R-203 candidate-rich resource telemetry is invalid");
+          }
 
           resonith::internal::Sha256Context case_context{};
           resonith::internal::sha256_init(case_context);
@@ -426,8 +473,10 @@ std::array<std::uint8_t, 32> r203_candidate_rich_digest() {
           r203_hash_object(&case_context, fill_manifest);
           r203_hash_vector(&case_context, paths);
           r203_hash_vector(&case_context, entries);
-          r203_hash_object(&case_context, preflight);
-          r203_hash_object(&case_context, fill);
+          const auto portable_preflight = r203_portable_report(preflight);
+          const auto portable_fill = r203_portable_report(fill);
+          r203_hash_object(&case_context, portable_preflight);
+          r203_hash_object(&case_context, portable_fill);
           std::array<std::uint8_t, 32> case_digest{};
           resonith::internal::sha256_final(case_context, case_digest.data());
           resonith::internal::sha256_update(campaign, case_digest.data(),
@@ -436,8 +485,8 @@ std::array<std::uint8_t, 32> r203_candidate_rich_digest() {
           ++case_count;
           total_paths += fill.written_path_count;
           total_entries += fill.written_entry_count;
-          maximum_work = std::max(maximum_work, fill.work_units);
-          maximum_host = std::max(maximum_host, fill.peak_live_host_bytes);
+          maximum_non_memory_work =
+              std::max(maximum_non_memory_work, r203_non_memory_work(fill));
          } while (std::next_permutation(
              permutation.begin(),
              permutation.begin() + topology.observation_count));
@@ -446,17 +495,16 @@ std::array<std::uint8_t, 32> r203_candidate_rich_digest() {
   }
 
   if (case_count != 288U || total_paths != 1620U ||
-      total_entries != 3924U || maximum_work != 576097U ||
-      maximum_host != 25892U) {
+      total_entries != 3924U || maximum_non_memory_work != 573625U) {
     fail("R-203 candidate-rich aggregate evidence differs");
   }
   std::array<std::uint8_t, 32> digest{};
   resonith::internal::sha256_final(campaign, digest.data());
   constexpr std::array<std::uint8_t, 32> expected{{
-      0x4b, 0x72, 0x96, 0x7a, 0xd2, 0x9a, 0x23, 0x72,
-      0x27, 0x24, 0xb3, 0x33, 0x86, 0x56, 0xdd, 0x45,
-      0x63, 0xd3, 0x54, 0x19, 0xd3, 0x5a, 0xc5, 0x3e,
-      0xe6, 0x5a, 0x79, 0x46, 0xb3, 0x27, 0xda, 0x22,
+      0x76, 0xf0, 0xae, 0xe8, 0x9f, 0x90, 0x3c, 0x0e,
+      0x74, 0x7e, 0x62, 0xe5, 0x8c, 0x74, 0xff, 0x07,
+      0x1f, 0x8c, 0xfd, 0x6e, 0x8e, 0x57, 0x18, 0xdb,
+      0x42, 0x83, 0x4a, 0x50, 0x3c, 0xd6, 0x69, 0x57,
   }};
   if (digest != expected) {
     std::fprintf(stderr, "R-203 actual packed digest: ");
@@ -1845,7 +1893,7 @@ int main() {
               "\"r203_candidate_rich_cases\":288,"
               "\"r203_candidate_rich_twice_run\":true,"
               "\"r203_candidate_rich_packed_sha256\":"
-              "\"4b72967ad29a23722724b3338656dd4563d35419d35ac53ee65a7946b327da22\","
+              "\"76f0aee89f903c0e747e62e58c74ff071f8cfd6e8e5718db42834a503cd66957\","
               "\"deterministic\":true,"
               "\"predictor_integrated\":false}\n",
               first_count,
