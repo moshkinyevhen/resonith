@@ -60,6 +60,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
+      - name: Install R-203 replay dependency
+        run: python -m pip install -r requirements-research.txt
       - name: Configure
         run: >
           cmake -S native -B build/native
@@ -74,6 +76,7 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/reference:${{ github.workspace }}
         run: |
+          set -euo pipefail
           mkdir -p artifacts/r203-${{ matrix.name }}
           python experiments/r203_candidate_rich_gate.py \
             | tee artifacts/r203-${{ matrix.name }}/inventory.json
@@ -119,11 +122,17 @@ jobs:
           New-Item -ItemType Directory -Force -Path artifacts/r203-msvc | Out-Null
           python experiments/r203_candidate_rich_gate.py |
             Tee-Object -FilePath artifacts/r203-msvc/inventory.json
+          if ($LASTEXITCODE -ne 0) {
+            throw "R-203 inventory producer failed with exit code $LASTEXITCODE"
+          }
           python experiments/r197_partial_graph_native_gate.py `
             --corpus artifacts/r203/r203-candidate-rich-exact-v1.jsonl `
             --inventory artifacts/r203-msvc/inventory.json `
             --native-core build/native/Release/resonith_core_shared.dll |
             Tee-Object -FilePath artifacts/r203-msvc/replay.json
+          if ($LASTEXITCODE -ne 0) {
+            throw "R-203 replay producer failed with exit code $LASTEXITCODE"
+          }
       - name: Publish R-203 MSVC replay
         uses: actions/upload-artifact@v7
         with:
@@ -157,6 +166,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
+      - name: Install R-203 replay dependency
+        run: python -m pip install -r requirements-research.txt
       - name: Configure
         run: >
           cmake -S native -B build/native
@@ -171,6 +182,7 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/reference:${{ github.workspace }}
         run: |
+          set -euo pipefail
           mkdir -p artifacts/r203-linux-arm64
           python experiments/r203_candidate_rich_gate.py \
             | tee artifacts/r203-linux-arm64/inventory.json
@@ -194,6 +206,8 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
+      - name: Install R-203 replay dependency
+        run: python -m pip install -r requirements-research.txt
       - name: Configure
         run: >
           cmake -S native -B build/native
@@ -208,6 +222,7 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/reference:${{ github.workspace }}
         run: |
+          set -euo pipefail
           mkdir -p artifacts/r203-appleclang
           python experiments/r203_candidate_rich_gate.py \
             | tee artifacts/r203-appleclang/inventory.json
@@ -242,6 +257,7 @@ jobs:
           path: artifacts/r203-replays
       - name: Require identical complete replay semantics
         run: |
+          set -euo pipefail
           mapfile -t replays < <(
             find artifacts/r203-replays -type f -name replay.json | sort
           )
@@ -384,6 +400,7 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/reference:${{ github.workspace }}
         run: |
+          set -euo pipefail
           mkdir -p artifacts/r197
           python experiments/r197_partial_graph_gate.py \
             | tee artifacts/r197/exact-small-inventory.json
@@ -404,6 +421,7 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/reference:${{ github.workspace }}
         run: |
+          set -euo pipefail
           mkdir -p artifacts/r203
           python experiments/r203_candidate_rich_gate.py \
             | tee artifacts/r203/candidate-rich-inventory.json
