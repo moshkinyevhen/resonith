@@ -1034,3 +1034,25 @@ All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
 and S16-S63 pending. Repository HEAD before this uncommitted pre-code package
 is `bc17697bfa9492172995c65c73d15e4ed85b6894`; explicit-file staging remains
 mandatory in the mixed worktree.
+
+## R-242 S15 R-232 terminal rejection and next safe action
+
+R-232 completed its one authorized execution path and is closed as rejected.
+The corrected pre-S15 EPV1-v3 incumbent identity passed; the first 120-second
+synthetic control reached its frozen 900-second worker ceiling. The exact
+atomic failure receipt is
+`G:\Resonith\artifacts\r240-s15-controls-failure.json`, SHA-256
+`02b32e80fefcb9f64f25a3b3b8551fa3c4d69504801823f955282c8edfb415f3`.
+R-242 independently returned GO-to-reject. No retry, ceiling increase, reduced
+control, real audio, Opus rerun or algorithm generation is authorized.
+
+All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
+and S16-S63 pending. S12 remains the accepted codec frontier. The next safe
+action is a new evidence-first S15 preflight for at most one bounded redesign
+that preserves the frozen decoder-domain choice and candidate lattice while
+moving its additional per-candidate synthesis/metric work into a native C++23
+batch. Implementation remains NO-GO until theory, current primary sources,
+complete resource/quality/byte gates and an independent binary pre-code audit
+are recorded. Repository HEAD before this uncommitted terminal package is
+`5aff74dbce41d7dece102a10f7ff326d7a700dda`; explicit-file staging remains
+mandatory in the mixed worktree.

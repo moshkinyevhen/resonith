@@ -11436,3 +11436,43 @@ i32 end_gain_q15
   remain blocked.
 - Detailed verdict:
   `docs/reviews/R233_S15_SOURCE_FILTER_PRECODE_AUDIT_2026-08-02.md`.
+
+## R-234 through R-240 — S15 implementation closure and exact execution authority
+
+- Date: 2026-08-02
+- Status: **CONTROL AUTHORITY CLOSED; EXECUTED ONCE**.
+- Two implementation-audit passes rejected incomplete executable closure,
+  parent-side transaction validation, retained resource evidence and live
+  state witnesses. The final controller binds 66 local sources, 84 existing
+  local bytecode files, complete Python runtime trees and every frozen file;
+  it revalidates authority after each bounded child and before trusting its
+  exact retained-file transaction.
+- Focused evidence passes 16/16. The direct command first exposed and rejected
+  a missing explicit `importlib.util` bootstrap import. The next exact run
+  rejected a stale historical EPV1-v2 stream baseline. A clean archive of
+  pre-S15 commit `5aff74dbce41d7dece102a10f7ff326d7a700dda` proved that the
+  incumbent already emitted EPV1-v3: three bounded uint16 fields add exactly
+  six bytes while decoded WAV remains bit-identical.
+- R-240 received two independent GO verdicts for one exact incumbent plus
+  four-control execution. Real audio, Opus comparison and S15 admission
+  remained blocked.
+
+## R-241 — S15 decoder-domain rescoring terminal rejection
+
+- Date: 2026-08-02
+- Status: **MEASURED REJECTION; NO ADMITTED GENERATION**.
+- The corrected incumbent identity passed in 41.904462 seconds. The first
+  120-second `stable-ar-periodic` control reached the unchanged 900-second
+  worker limit and was terminated. The atomic failure receipt SHA-256 is
+  `02b32e80fefcb9f64f25a3b3b8551fa3c4d69504801823f955282c8edfb415f3`.
+- Stop-on-first-failure prevented all three later controls. No retry, larger
+  limit, reduced candidate lattice, real audio or Opus comparison is allowed.
+- A separate 5.855-second diagnostic attributes 15.156 seconds to analysis,
+  10.580 seconds to legacy encode and 38.799 seconds to rescored encode. It
+  observed 40 changed choices and 12,371 bytes versus 12,554 bytes, but is not
+  an admitted quality or compression result.
+- R-242 independently verified the receipt, identities, task order, cleanup,
+  reconstructed run-index and kill clauses and returned GO-to-reject.
+- Accepted S12 remains unchanged. Any new S15 attempt is a new hypothesis and
+  must remove the per-candidate Python synthesis/FFT cost structurally under a
+  new audited preflight; it may not rescue R-232 by relaxing its limits.

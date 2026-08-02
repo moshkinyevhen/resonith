@@ -41,10 +41,11 @@ physical source recovery, bitstream, decoder, product or version.
   `c352f0fd2d55a9f9ad07f93ff1fe2117e05c446043dd0d2211d0d5596ab50c8f`;
 - frozen R-232 configuration:
   `experiments/fixtures/r232_s15_frozen_configuration.json`, SHA-256
-  `b89cae2d09c2c45ba1488e573009a7d822e15998ad4816c7bb45d65ad3cf5d24`;
-- R-120 eight-pulse SFT1 stream SHA-256 and size:
-  `8fb84a3a3724578385aa5a19a9bfe628ae8b1a0194057b95e318f4b503dca5d0`,
-  12,548 bytes;
+  `5fea557eb517f0e02f318e87f205ba116b0032e61b852a0dd3a8fe06a194e0fc`;
+- pre-S15 `5aff74dbce41d7dece102a10f7ff326d7a700dda` incumbent
+  eight-pulse SFT1/EPV1-v3 stream SHA-256 and size:
+  `f0c3abf0a71ee7d40bdd4f5c022291264b8e39a40c2e9bdc58f14fd23f87a8a6`,
+  12,554 bytes;
 - R-120 eight-pulse decoded WAV SHA-256:
   `b105da972c12a373c826a1fee4a6911a1dc63cb08bcfe4b87851b7d3da50d873`.
 
@@ -59,6 +60,15 @@ and log-mel RMSE 7.28469 on the 319.38-second speech item. The fixed official
 Opus 1.6.1 anchors are respectively 18,702 and 975,265 bytes, with materially
 better STOI, ESTOI and log-mel. No old fast diagnostic is substituted for the
 S12 baseline.
+
+The historical 12,548-byte R-120 artifact used EPV1 version 2. Before S15,
+commit `5aff74dbce41d7dece102a10f7ff326d7a700dda` already used the bounded
+EPV1 version-3 header, which adds three uint16 Basis fields (six bytes) while
+decoding this reference to the identical WAV hash above. R-238 exposed the
+stale envelope identity before any synthetic control ran. A clean archived
+copy of that pre-S15 commit independently reproduced the 12,554-byte stream
+and `f0c3ab...` hash, so the incumbent identity is corrected rather than
+waived or learned from the S15 implementation.
 
 ## Prior art and novelty boundary
 
@@ -212,7 +222,7 @@ future predictor state outside the decoded source-filter stream.
 | local spectral guard is causal and correctly scoped | published mel-bank implementation | future-mutation and prefix invariance witnesses plus complete R-216 execution | stop |
 | state never commits on rejected candidate | transactional Core precedent | history hash before/after forced reject | stop |
 | known stable source-filter signal is representable | existing typed/source-filter tests | 120-second deterministic stable-AR plus periodic excitation | reject hypothesis |
-| hostile unstructured signals do not regress | S12 fallback | white noise, impulse and two-component synthetic controls | require exact fallback or stop |
+| hostile unstructured signals do not regress inside the R-120 diagnostic | legacy SFT1 arm | white noise, impulse and two-component synthetic controls | reject rescoring or stop |
 | real speech frontier improves | R-120, R-220 and R-221 outputs | long-first paid stream and residual-energy proxy, then short speech | reject hypothesis |
 
 One focused test module and one experiment runner are the maximum new evidence
@@ -222,7 +232,9 @@ harness or recursive audit is allowed.
 ## Execution order and gates
 
 1. Focused structural tests and the 120-second synthetic positive/negative
-   controls.
+   controls. These controls falsify only the R-232 selector relative to the
+   legacy SFT1 diagnostic; they cannot satisfy the paid S15 gate or stand in
+   for an accepted S12 fallback.
 2. Execute the 319.38-second LibriSpeech first.
 3. Execute the 5.855-second speech item with the identical sealed
    configuration. No long-item result may alter an arm, parameter, threshold,
@@ -248,11 +260,14 @@ long and short speech, it satisfies one of these complete-stream alternatives:
    and SNR loses no more than 0.5 dB.
 
 It must also close at least 10% of the S12-to-Opus gap on at least two of STOI,
-ESTOI and log-mel on each speech duration. Synthetic white noise, impulse and
-two-component mixtures must choose an exact byte/PCM S12 fallback unless the
-paid candidate independently passes the same rule. Mozart, registered noise
-and registered transient inputs in S16 receive the same per-file fallback;
-unsupported stereo does not silently become a mono claim.
+ESTOI and log-mel on each speech duration. On synthetic white noise, impulse
+and two-component mixtures, the rescored SFT1 diagnostic must be no larger and
+must not regress any applicable complete R-216 axis beyond
+`1e-12*max(1,abs(legacy_value))`; otherwise R-232 is rejected before real
+audio. This is not an S12 comparison or fallback claim. Mozart, registered
+noise and registered transient inputs in S16 must execute the exact accepted
+S12 fallback when the paid candidate does not independently pass the same
+per-file rule; unsupported stereo does not silently become a mono claim.
 
 S16 admission additionally requires every registered item, complete bytes,
 actual decoded PCM, all R-216 axes, encode/decode wall and CPU time, peak RSS,

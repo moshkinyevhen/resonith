@@ -144,6 +144,8 @@
 | [reviews/R223_S12_COMPLETE_CORPUS_AUDIT_2026-08-02.md](reviews/R223_S12_COMPLETE_CORPUS_AUDIT_2026-08-02.md) | Independent 19/19 authority, decoder, metric, rate-controller, and aggregate GO for narrow S12 admission |
 | [reviews/R232_S15_DECODER_CLOSED_SOURCE_FILTER_PREFLIGHT_2026-08-02.md](reviews/R232_S15_DECODER_CLOSED_SOURCE_FILTER_PREFLIGHT_2026-08-02.md) | Frozen final-candidate decoder-domain source-filter rescoring hypothesis, complete cost, kill gates, and execution bounds |
 | [reviews/R233_S15_SOURCE_FILTER_PRECODE_AUDIT_2026-08-02.md](reviews/R233_S15_SOURCE_FILTER_PRECODE_AUDIT_2026-08-02.md) | Independent pre-code GO for the bounded R-232 S15 implementation only |
+| [results/R241_S15_DECODER_RESCORING_TERMINAL_RESULT_2026-08-02.md](results/R241_S15_DECODER_RESCORING_TERMINAL_RESULT_2026-08-02.md) | Corrected incumbent identity PASS followed by frozen 900-second synthetic timeout and no-generation rejection |
+| [reviews/R242_R241_TERMINAL_RESULT_AUDIT_2026-08-02.md](reviews/R242_R241_TERMINAL_RESULT_AUDIT_2026-08-02.md) | Independent receipt, task-order, cleanup, kill-gate, and GO-to-reject audit for R-241 |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |

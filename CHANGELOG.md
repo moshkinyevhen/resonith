@@ -69,6 +69,12 @@ version.
   local mel guard, deterministic Q20 selection, one immutable configuration,
   no long-to-short tuning and honest residual-energy terminology. R-233 grants
   pre-code GO only; no syntax, decoder, version or codec generation changed.
+- Closed R-232/S15 as an independently audited negative result. The corrected
+  pre-S15 EPV1-v3 incumbent identity passed, but the first 120-second synthetic
+  control reached its frozen 900-second ceiling; stop-on-first-failure blocked
+  all later controls. No retry, larger limit, real-audio run, Opus rerun,
+  syntax/default/version change or generation admission occurred. R-241/R-242
+  retain the atomic failure evidence; S12 remains the accepted frontier.
 
 ### Research
 

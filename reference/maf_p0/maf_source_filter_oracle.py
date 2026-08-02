@@ -994,6 +994,351 @@ def _desired_short_excitation_target(
     return target
 
 
+def _local_mel_filter_bank(
+    sample_rate: int,
+    fft_size: int = 256,
+    band_count: int = 40,
+) -> np.ndarray:
+    """Build the frozen R-232 local mel bank used only by encoder RDO."""
+
+    def hz_to_mel(value: np.ndarray | float) -> np.ndarray:
+        return 2595.0 * np.log10(1.0 + np.asarray(value) / 700.0)
+
+    def mel_to_hz(value: np.ndarray) -> np.ndarray:
+        return 700.0 * (10.0 ** (value / 2595.0) - 1.0)
+
+    mel_points = np.linspace(
+        hz_to_mel(0.0),
+        hz_to_mel(sample_rate / 2.0),
+        band_count + 2,
+    )
+    bins = np.floor(
+        (fft_size + 1) * mel_to_hz(mel_points) / sample_rate
+    ).astype(int)
+    bins = np.clip(bins, 0, fft_size // 2)
+    filters = np.zeros(
+        (band_count, fft_size // 2 + 1),
+        dtype=np.float64,
+    )
+    for band in range(band_count):
+        left, center, right = bins[band : band + 3]
+        if center > left:
+            filters[band, left:center] = (
+                np.arange(left, center) - left
+            ) / (center - left)
+        if right > center:
+            filters[band, center:right] = (
+                right - np.arange(center, right)
+            ) / (right - center)
+    filters.flags.writeable = False
+    return filters
+
+
+def _local_log_mel_error(
+    reference: np.ndarray,
+    degraded: np.ndarray,
+    filters: np.ndarray,
+    window: np.ndarray,
+) -> float:
+    """Return the causal R-232 mean squared 40-band log-mel error."""
+
+    reference64 = np.asarray(reference, dtype=np.float64)
+    degraded64 = np.asarray(degraded, dtype=np.float64)
+    if reference64.shape != window.shape or degraded64.shape != window.shape:
+        raise ValueError("R-232 local mel window shape mismatch")
+    reference_spectrum = np.fft.rfft(reference64 * window)
+    degraded_spectrum = np.fft.rfft(degraded64 * window)
+    reference_mel = filters @ np.square(np.abs(reference_spectrum))
+    degraded_mel = filters @ np.square(np.abs(degraded_spectrum))
+    difference = (
+        np.log(reference_mel + 1.0e-10)
+        - np.log(degraded_mel + 1.0e-10)
+    )
+    result = float(np.mean(difference * difference, dtype=np.float64))
+    if not math.isfinite(result):
+        raise RuntimeError("R-232 local mel error is non-finite")
+    return result
+
+
+def _candidate_output_window(
+    analysis: MafSourceFilterAnalysis,
+    committed_output: np.ndarray,
+    candidate_output: np.ndarray,
+    start: int,
+    stop: int,
+    window_size: int = 256,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Construct one left-padded causal reference/candidate window."""
+
+    prefix_start = max(0, stop - window_size)
+    reference_tail = analysis.source[prefix_start:stop].astype(np.float64)
+    degraded_tail = np.concatenate(
+        (
+            committed_output[prefix_start:start],
+            candidate_output,
+        )
+    ).astype(np.float64)
+    if reference_tail.size != degraded_tail.size:
+        raise RuntimeError("R-232 causal window length mismatch")
+    reference = np.zeros(window_size, dtype=np.float64)
+    degraded = np.zeros(window_size, dtype=np.float64)
+    reference[-reference_tail.size :] = reference_tail
+    degraded[-degraded_tail.size :] = degraded_tail
+    return reference, degraded
+
+
+def _synthesize_short_filter_candidate(
+    analysis: MafSourceFilterAnalysis,
+    raw_excitation: np.ndarray,
+    committed_output: np.ndarray,
+    start: int,
+    stop: int,
+) -> tuple[np.ndarray, int]:
+    """Run one realized excitation through the exact short-filter recurrence."""
+
+    raw = np.asarray(raw_excitation, dtype=np.int64)
+    if raw.size != stop - start:
+        raise ValueError("R-232 candidate excitation length mismatch")
+    excitation = np.clip(raw, -32768, 32767)
+    clipping_count = int(np.count_nonzero(excitation != raw))
+    output = np.empty(raw.size, dtype=np.int64)
+    for local, index in enumerate(range(start, stop)):
+        block = min(
+            len(analysis.filter_laws) - 1,
+            index // analysis.block_size,
+        )
+        lpc = _lpc_q14(analysis.filter_laws[block])
+        accumulator = 0
+        for order_index, coefficient in enumerate(lpc, start=1):
+            past_index = index - order_index
+            if past_index < 0:
+                continue
+            if past_index < start:
+                past = int(committed_output[past_index])
+            else:
+                past = int(output[past_index - start])
+            accumulator += coefficient * past
+        short_prediction = -_round_divide_signed(accumulator, 1 << 14)
+        pre_saturation = int(excitation[local]) + short_prediction
+        clipping_count += int(pre_saturation < -32768 or pre_saturation > 32767)
+        output[local] = np.clip(pre_saturation, -32768, 32767)
+    return output, clipping_count
+
+
+def _candidate_choice_digest(
+    subframe: int,
+    pitch_lag: int,
+    pitch_gain_q7: int,
+    adaptive: np.ndarray,
+    candidates: list[tuple],
+) -> str:
+    """Bind every causal input to one ordered realized-candidate choice."""
+
+    digest = hashlib.sha256()
+    digest.update(
+        struct.pack(
+            "<IqqI",
+            subframe,
+            pitch_lag,
+            pitch_gain_q7,
+            len(candidates),
+        )
+    )
+    adaptive_vector = np.asarray(adaptive, dtype="<i8")
+    digest.update(struct.pack("<I", adaptive_vector.size))
+    digest.update(adaptive_vector.tobytes(order="C"))
+    for distortion, bits, mode, decoded, fields in candidates:
+        mode_bytes = mode.encode("ascii")
+        digest.update(struct.pack("<QQB", distortion, bits, len(mode_bytes)))
+        digest.update(mode_bytes)
+        digest.update(struct.pack("<I", len(fields)))
+        for value in fields:
+            _update_trace_integer(digest, int(value))
+        vector = np.asarray(decoded, dtype="<i8")
+        digest.update(struct.pack("<I", vector.size))
+        digest.update(vector.tobytes(order="C"))
+    return digest.hexdigest()
+
+
+def _update_trace_integer(digest: "hashlib._Hash", value: int) -> None:
+    """Hash one arbitrary-size signed integer without a profile-side bound."""
+
+    magnitude = abs(value)
+    encoded = magnitude.to_bytes(
+        max(1, (magnitude.bit_length() + 7) // 8),
+        "little",
+    )
+    digest.update(struct.pack("<BI", int(value < 0), len(encoded)))
+    digest.update(encoded)
+
+
+def _candidate_signature(candidate: tuple) -> str:
+    """Return a compact stable identity for one selected realized candidate."""
+
+    _distortion, bits, mode, decoded, fields = candidate
+    digest = hashlib.sha256()
+    mode_bytes = mode.encode("ascii")
+    digest.update(struct.pack("<QB", bits, len(mode_bytes)))
+    digest.update(mode_bytes)
+    digest.update(struct.pack("<I", len(fields)))
+    for value in fields:
+        _update_trace_integer(digest, int(value))
+    vector = np.asarray(decoded, dtype="<i8")
+    digest.update(struct.pack("<I", vector.size))
+    digest.update(vector.tobytes(order="C"))
+    return digest.hexdigest()
+
+
+def _writer_identity(writer: _BitWriter) -> tuple[bytes, int, int, int]:
+    """Snapshot every mutable bit-writer field used by EPV1 serialization."""
+
+    return (
+        bytes(writer._bytes),
+        int(writer._current),
+        int(writer._used),
+        int(writer.bit_count),
+    )
+
+
+def _committed_state_identity(
+    vector: np.ndarray,
+    committed_count: int,
+    reachable_history: int,
+) -> tuple:
+    """Hash the current live causal history reachable by the next choice."""
+
+    if committed_count < 0 or reachable_history < 0:
+        raise ValueError("R-232 committed-state range is invalid")
+    history_start = max(0, committed_count - reachable_history)
+    live_history = np.asarray(
+        vector[history_start:committed_count],
+        dtype="<i8",
+    )
+    return (
+        int(vector.__array_interface__["data"][0]),
+        vector.shape,
+        vector.strides,
+        vector.dtype.str,
+        bool(vector.flags.writeable),
+        committed_count,
+        reachable_history,
+        hashlib.sha256(live_history.tobytes(order="C")).hexdigest(),
+    )
+
+
+def _round_half_even(value: float) -> int:
+    """Make the audited IEEE-754/Python half-even conversion explicit."""
+
+    if not math.isfinite(value):
+        raise RuntimeError("R-232 selector received a non-finite value")
+    return int(round(value))
+
+
+def _decoder_domain_quality_q20(
+    waveform_error: int,
+    mel_error: float,
+    legacy_waveform: int,
+    legacy_mel: float,
+) -> int:
+    """Return the frozen equal-weight decoder-domain distortion scalar."""
+
+    if waveform_error < 0 or legacy_waveform < 0:
+        raise ValueError("R-232 waveform SSE must be nonnegative")
+    if mel_error < 0.0 or legacy_mel < 0.0:
+        raise ValueError("R-232 mel error must be nonnegative")
+    return _round_half_even(
+        (1 << 20)
+        * (
+            waveform_error / max(1, legacy_waveform)
+            + mel_error / max(1.0e-30, legacy_mel)
+        )
+        / 2.0
+    )
+
+
+def _select_decoder_domain_candidate(
+    evaluated: list[tuple],
+    legacy_winner: tuple,
+    rate_lambda_q20: int,
+) -> tuple[tuple, np.ndarray, int, float, tuple, int]:
+    """Apply the frozen R-232 eligibility and lexicographic winner rules."""
+
+    legacy = next(
+        (item for item in evaluated if item[0] is legacy_winner),
+        None,
+    )
+    if legacy is None:
+        raise RuntimeError("R-232 evaluated set omitted its legacy winner")
+    legacy_clipping = legacy[2]
+    legacy_waveform = legacy[3]
+    legacy_mel = legacy[4]
+    ranked = []
+    rejected_count = 0
+    for item in evaluated:
+        (
+            candidate,
+            candidate_output,
+            clipping_count,
+            waveform_error,
+            mel_error,
+            bits,
+            mode,
+            fields,
+        ) = item
+        if not math.isfinite(mel_error):
+            raise RuntimeError("R-232 candidate mel error is non-finite")
+        mel_eligible = (
+            mel_error == 0.0
+            if legacy_mel == 0.0
+            else mel_error <= 1.01 * legacy_mel
+        )
+        if (
+            clipping_count > legacy_clipping
+            or 100 * waveform_error > 101 * legacy_waveform
+            or not mel_eligible
+        ):
+            rejected_count += 1
+            continue
+        quality_q20 = _decoder_domain_quality_q20(
+            waveform_error,
+            mel_error,
+            legacy_waveform,
+            legacy_mel,
+        )
+        key = (
+            quality_q20 + rate_lambda_q20 * bits,
+            quality_q20,
+            bits,
+            mel_error,
+            waveform_error,
+            mode,
+            tuple(int(value) for value in fields),
+        )
+        ranked.append(
+            (
+                key,
+                candidate,
+                candidate_output,
+                waveform_error,
+                mel_error,
+            )
+        )
+    if not ranked:
+        raise RuntimeError("R-232 eliminated its legacy candidate")
+    key, winner, output, waveform_error, mel_error = min(
+        ranked,
+        key=lambda item: item[0],
+    )
+    return (
+        winner,
+        output,
+        waveform_error,
+        mel_error,
+        key,
+        rejected_count,
+    )
+
+
 def _adaptive_vector(
     history: np.ndarray,
     start: int,
@@ -1321,6 +1666,7 @@ def _encode_excitation_pvq(
     basis_iterations: int = 4,
     basis_search_limit: int = 8,
     basis_correction_pulses: int = 0,
+    decoder_domain_rescoring: bool = False,
 ) -> _ExcitationResult:
     """Encode bounded adaptive/stochastic excitation without an MDCT layer."""
 
@@ -1344,6 +1690,8 @@ def _encode_excitation_pvq(
         raise ValueError("EPV1 quality guard exceeds the profile")
     if not 4096 <= adaptive_quality_guard_q12 <= 8192:
         raise ValueError("EPV1 adaptive quality guard exceeds the profile")
+    if decoder_domain_rescoring and source_filter_analysis is None:
+        raise ValueError("R-232 rescoring requires source-filter analysis")
 
     source = np.asarray(innovation, dtype=np.int16)
     basis_training_source = (
@@ -1383,6 +1731,27 @@ def _encode_excitation_pvq(
             writer.write_bits(rank, dictionary_width)
     reconstruction = np.zeros(source.size, dtype=np.int16)
     decoded_excitation = np.zeros(source.size, dtype=np.int64)
+    decoded_output = np.zeros(source.size, dtype=np.int64)
+    candidate_trace = hashlib.sha256()
+    candidate_choice_digests = []
+    selected_candidate_signatures = []
+    decision_changes = 0
+    candidate_evaluations = 0
+    rejected_candidate_evaluations = 0
+    scoring_transaction_checks = 0
+    local_waveform_error = 0
+    local_mel_error = 0.0
+    if decoder_domain_rescoring:
+        local_mel_filters = _local_mel_filter_bank(
+            source_filter_analysis.sample_rate,
+        )
+        local_indices = np.arange(256, dtype=np.float64)
+        local_window = 0.5 - 0.5 * np.cos(
+            2.0 * math.pi * local_indices / 256.0
+        )
+    else:
+        local_mel_filters = None
+        local_window = None
     previous_gain = 0
     previous_pitch_lag = 0
     previous_pitch_gain_q7 = 0
@@ -1629,6 +1998,15 @@ def _encode_excitation_pvq(
                 (),
             )
         )
+        choice_digest = _candidate_choice_digest(
+            subframe,
+            pitch_lag,
+            pitch_gain_q7,
+            adaptive,
+            candidates,
+        )
+        candidate_choice_digests.append(choice_digest)
+        candidate_trace.update(bytes.fromhex(choice_digest))
         pvq = next(
             (candidate for candidate in candidates if candidate[2] == "PVQ"),
             None,
@@ -1642,9 +2020,12 @@ def _encode_excitation_pvq(
                 for candidate in candidates
                 if candidate[0] <= maximum_distortion
             ]
-            winner = min(eligible, key=lambda item: (item[1], item[0], item[2]))
+            legacy_winner = min(
+                eligible,
+                key=lambda item: (item[1], item[0], item[2]),
+            )
         else:
-            winner = min(
+            legacy_winner = min(
                 candidates,
                 key=lambda item: (
                     item[0] + rate_lambda_q20 * item[1],
@@ -1653,6 +2034,115 @@ def _encode_excitation_pvq(
                     item[2],
                 ),
             )
+        winner = legacy_winner
+        selected_output = None
+        selected_waveform_error = None
+        selected_mel_error = None
+        if decoder_domain_rescoring:
+            evaluated = []
+            decoded_excitation.flags.writeable = False
+            decoded_output.flags.writeable = False
+            reachable_history = max(
+                256,
+                source_filter_analysis.sample_rate // MIN_PITCH_HZ
+                + subframe_size,
+            )
+            writer_before_scoring = _writer_identity(writer)
+            excitation_before_scoring = _committed_state_identity(
+                decoded_excitation,
+                start,
+                reachable_history,
+            )
+            output_before_scoring = _committed_state_identity(
+                decoded_output,
+                start,
+                reachable_history,
+            )
+            try:
+                for candidate in candidates:
+                    _legacy_distortion, bits, mode, decoded, fields = candidate
+                    candidate_output, clipping_count = (
+                        _synthesize_short_filter_candidate(
+                            source_filter_analysis,
+                            adaptive + decoded,
+                            decoded_output,
+                            start,
+                            stop,
+                        )
+                    )
+                    output_error = (
+                        source_filter_analysis.source[start:stop].astype(
+                            np.int64
+                        )
+                        - candidate_output
+                    )
+                    waveform_error = int(output_error @ output_error)
+                    reference_window, degraded_window = _candidate_output_window(
+                        source_filter_analysis,
+                        decoded_output,
+                        candidate_output,
+                        start,
+                        stop,
+                    )
+                    mel_error = _local_log_mel_error(
+                        reference_window,
+                        degraded_window,
+                        local_mel_filters,
+                        local_window,
+                    )
+                    evaluated.append(
+                        (
+                            candidate,
+                            candidate_output,
+                            clipping_count,
+                            waveform_error,
+                            mel_error,
+                            bits,
+                            mode,
+                            fields,
+                        )
+                    )
+            finally:
+                writer_after_scoring = _writer_identity(writer)
+                excitation_after_scoring = _committed_state_identity(
+                    decoded_excitation,
+                    start,
+                    reachable_history,
+                )
+                output_after_scoring = _committed_state_identity(
+                    decoded_output,
+                    start,
+                    reachable_history,
+                )
+                decoded_excitation.flags.writeable = True
+                decoded_output.flags.writeable = True
+            if (
+                writer_after_scoring != writer_before_scoring
+                or excitation_after_scoring != excitation_before_scoring
+                or output_after_scoring != output_before_scoring
+            ):
+                raise RuntimeError(
+                    "R-232 candidate scoring mutated writer or committed state"
+                )
+            scoring_transaction_checks += 1
+            candidate_evaluations += len(evaluated)
+            (
+                winner,
+                selected_output,
+                selected_waveform_error,
+                selected_mel_error,
+                _selected_key,
+                rejected_count,
+            ) = _select_decoder_domain_candidate(
+                evaluated,
+                legacy_winner,
+                rate_lambda_q20,
+            )
+            rejected_candidate_evaluations += rejected_count
+            decision_changes += int(winner is not legacy_winner)
+            local_waveform_error += selected_waveform_error
+            local_mel_error += selected_mel_error
+        selected_candidate_signatures.append(_candidate_signature(winner))
         _distortion, _bits, mode, decoded, fields = winner
         if mode == "PVQ":
             writer.write_bit(0)
@@ -1701,6 +2191,8 @@ def _encode_excitation_pvq(
             32767,
         ).astype(np.int16)
         decoded_excitation[start:stop] = reconstruction[start:stop]
+        if decoder_domain_rescoring:
+            decoded_output[start:stop] = selected_output
         mode_counts[mode] += 1
 
     logical_bits = writer.bit_count
@@ -1720,6 +2212,18 @@ def _encode_excitation_pvq(
     decoded = _decode_excitation_pvq(payload)
     if not np.array_equal(decoded, reconstruction):
         raise RuntimeError("EPV1 encoder and independent decoder disagree")
+    if decoder_domain_rescoring:
+        independently_synthesized = _synthesize_source_filter(
+            decoded,
+            source_filter_analysis.block_size,
+            source_filter_analysis.pitch_laws,
+            source_filter_analysis.filter_laws,
+        )
+        if not np.array_equal(
+            independently_synthesized.astype(np.int64),
+            decoded_output,
+        ):
+            raise RuntimeError("R-232 committed output differs from decoder")
     return _ExcitationResult(
         payload,
         reconstruction,
@@ -1746,6 +2250,28 @@ def _encode_excitation_pvq(
             "pitch_update_count": pitch_updates,
             "quality_guard_q12": quality_guard_q12,
             "adaptive_quality_guard_q12": adaptive_quality_guard_q12,
+            "decoder_domain_rescoring": decoder_domain_rescoring,
+            "candidate_trace_sha256": candidate_trace.hexdigest(),
+            "candidate_choice_digests": candidate_choice_digests,
+            "selected_candidate_signatures": selected_candidate_signatures,
+            "decoder_domain_decision_changes": decision_changes,
+            "decoder_domain_candidate_evaluations": (
+                candidate_evaluations if decoder_domain_rescoring else None
+            ),
+            "decoder_domain_rejected_candidate_evaluations": (
+                rejected_candidate_evaluations
+                if decoder_domain_rescoring
+                else None
+            ),
+            "decoder_domain_scoring_transaction_checks": (
+                scoring_transaction_checks if decoder_domain_rescoring else None
+            ),
+            "decoder_domain_local_waveform_sse": (
+                local_waveform_error if decoder_domain_rescoring else None
+            ),
+            "decoder_domain_local_mel_square_sum": (
+                local_mel_error if decoder_domain_rescoring else None
+            ),
         },
     )
 
@@ -1996,9 +2522,12 @@ def encode_maf_source_filter_analysis(
     excitation_basis_iterations: int = 4,
     excitation_basis_search_limit: int = 8,
     excitation_basis_correction_pulses: int = 0,
+    decoder_domain_rescoring: bool = False,
 ) -> MafSourceFilterResult:
     """Encode one complete source-filter plus unified MFC1 candidate."""
 
+    if decoder_domain_rescoring and excitation_backend != "epvq":
+        raise ValueError("R-232 rescoring requires the EPV1 backend")
     distortion_weights = (
         _synthesis_distortion_weights_q8(analysis)
         if synthesis_aware_rdo
@@ -2041,6 +2570,7 @@ def encode_maf_source_filter_analysis(
             basis_correction_pulses=(
                 excitation_basis_correction_pulses
             ),
+            decoder_domain_rescoring=decoder_domain_rescoring,
         )
         residual_kind = 1
     else:
@@ -2088,7 +2618,12 @@ def encode_maf_source_filter_analysis(
         raise RuntimeError("SFT1 decoder sample rate differs")
     report = {
         **_quality_report(analysis.source, reconstruction),
-        "status": "R-120 persistent source-filter over MFC1; non-normative",
+        "status": (
+            "R-232 decoder-domain source-filter candidate rescoring; "
+            "non-normative"
+            if decoder_domain_rescoring
+            else "R-120 persistent source-filter over MFC1; non-normative"
+        ),
         "format_profile": "prospective-SFT1-RSC1-level-5",
         "stream_bytes": len(payload),
         "stream_sha256": hashlib.sha256(payload).hexdigest(),
@@ -2101,6 +2636,7 @@ def encode_maf_source_filter_analysis(
         "filter_order": analysis.filter_order,
         "source_filter": analysis.parameter_report,
         "synthesis_aware_rdo": synthesis_aware_rdo,
+        "decoder_domain_rescoring": decoder_domain_rescoring,
         "pvq_guard_q12": pvq_guard_q12,
         "excitation_backend": excitation_backend,
         "excitation_basis_count": excitation_basis_count,
