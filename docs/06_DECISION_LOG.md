@@ -11565,3 +11565,93 @@ i32 end_gain_q15
   The focused R-198 exception is conditional on exact post-change payload,
   PCM, report, trace and golden equality plus the stated conversion, timing,
   wall and memory gates. Any mismatch is terminal NO-GO.
+
+## R-255 through R-256 — exact LPC-lifetime implementation freeze
+
+- Date: 2026-08-02
+- Status: **SUPERSEDED NO-GO; BYTECODE AUTHORITY WAS STALE**.
+- R-253 is implemented as one local immutable LPC preparation value per
+  touched subframe. Basis training, main desired excitation and all realized
+  candidates reuse that value; scalar integer arithmetic and every codec
+  output decision remain unchanged by construction.
+- R-255 freshly closes the changed oracle, focused test, compressed independent
+  golden fixture, 66 local modules, 84 local bytecode entries, runtime trees,
+  native core and frozen configuration. Historical R-234 remains unchanged.
+- The final focused module passes 18/18 in 22.48 seconds. Its negative bounds,
+  nine-law witness, both desired contexts, candidate mapping, immutability,
+  transactional behavior, imports and runtime closure are executable.
+- Two independent auditors returned GO to freeze exact hashes recorded in
+  `docs/reviews/R256_R253_IMPLEMENTATION_DUAL_AUDIT_2026-08-02.md`.
+- Authorization now extends only to creating one at-most-700-line/72-KiB
+  post-change runner and one separate authority. The runner must preserve the
+  R-250 transaction and externally prove output identity, helper-count law,
+  CPU, wall and process peak-working-set gates. Execution remains blocked
+  until another read-only dual audit returns GO.
+- This is not a codec generation or compression claim. R-198's focused
+  mechanical exception is still conditional on the unexecuted post-change
+  transaction.
+- A pre-commit reproduction without pre-exported bytecode-write suppression
+  legitimately regenerated one unchanged-source CPython 3.14 cache. R-255 then
+  failed 2/18 focused tests. All 84 declared caches were timestamp-based; 18
+  were foreign CPython 3.12 files that the frozen interpreter cannot select.
+  R-256's earlier GO is therefore superseded before commit or benchmark.
+
+## R-257 — isolated source-execution authority remediation
+
+- Date: 2026-08-02
+- Status: **PREFLIGHT DRAFT; IMPLEMENTATION NO-GO PENDING DUAL AUDIT**.
+- Official Python 3.14 documentation confirms that a non-`None`
+  `sys.pycache_prefix` reads and writes only a parallel cache tree and ignores
+  source-tree `__pycache__`; `PYTHONDONTWRITEBYTECODE` then keeps a fresh owned
+  prefix empty.
+- The selected remedy starts every authority-bound process under a distinct
+  absolute empty non-reparse prefix before local imports, binds source and
+  non-cache runtime bytes, and rejects redirected, sourceless or drifted local
+  module origins before trusting evidence.
+- Restoring stale bytes, source-only validation under default imports,
+  regenerating project caches and deleting caches are rejected. R-234 and
+  R-255 remain immutable negative history. The oracle, golden fixture, native
+  core, codec workload and all output expectations remain unchanged.
+- Implementation and post-change execution remain blocked until two
+  independent read-only audits approve the exact R-257 preflight.
+- The first R-257 draft SHA-256 `e7c1fac9...e2df61` received two independent
+  NO-GO verdicts. The amended design freezes an isolated two-stage startup,
+  pre-execution local import allowlist, handle-bound per-process prefixes,
+  canonical cache-excluding runtime hashing, exact loader/origin checks and
+  temp-only executable mutants. The first draft authorized no code.
+- V2 SHA-256 `68189aa2...e09890e` also received two independent NO-GO
+  verdicts. V3 adds a frozen-only Stage-0 prologue and separate prefix, removes
+  project roots from every search path, makes the guard terminal for all local
+  origins, authenticates production flags at the parent, and imports every
+  controller/worker target under one reserved normal module identity. V2
+  authorized no code.
+- V3 SHA-256 `4df8611a...192498e9` also received two independent NO-GO
+  verdicts. CPython loaded source-backed encoding modules before its in-script
+  prefix assignment; the named `experiments.*` target was not a regular
+  package and legacy path inserts remained. V4 moves the Stage-0 prefix into
+  the outer `-X` command through an explicitly untrusted path proposer, uses
+  the existing top-level controller identity, and removes/guards all project
+  path mutation. V3 authorized no code.
+- V4 SHA-256 `cbd53f3c...e659d99b` received one independent GO and one
+  independent NO-GO, therefore no implementation authority. The blocker was
+  exact value immutability of `sys.path_importer_cache`, which normal
+  `PathFinder` resolution must populate. V5 keeps its object identity fixed and
+  admits only guard-owned, bound-path, exact-FileFinder deltas recorded in the
+  append-only import ledger; external deletions, replacements and insertions
+  remain fail-closed.
+
+## R-258 — R-257 V5 independent dual pre-code GO
+
+- Date: 2026-08-02
+- Status: **DUAL GO FOR EVIDENCE REMEDIATION ONLY**.
+- Both independent auditors approved exact V5 SHA-256
+  `4c933257e53fe67605a612403ad0c82f43902a9ec1a21344ebdae9fa655e8538`.
+- Exact-runtime probes independently confirm alternate-prefix isolation before
+  user code and legitimate add-only FileFinder cache evolution. All startup,
+  path, loader, alias, cache, runtime, ownership, mutant and budget contracts
+  are coherent and falsifiable.
+- Implementation remains restricted to the declared evidence files and one
+  new authority. The oracle, golden fixture, native core, configuration and
+  codec/output laws remain immutable.
+- Post-change codec execution remains NO-GO. Two isolated focused runs and a
+  separate dual implementation audit are mandatory first.

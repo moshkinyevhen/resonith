@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import gzip
+import hashlib
 import json
 import os
 from pathlib import Path
+from types import SimpleNamespace
 import sys
 import tempfile
 import unittest
@@ -21,8 +24,10 @@ from maf_p0.maf_source_filter_oracle import (
     _candidate_output_window,
     _committed_state_identity,
     _decoder_domain_quality_q20,
+    _desired_short_excitation_target,
     _local_log_mel_error,
     _local_mel_filter_bank,
+    _prepare_short_filter_lpc,
     _round_half_even,
     _select_decoder_domain_candidate,
     _synthesize_short_filter_candidate,
@@ -61,6 +66,166 @@ class MafSourceFilterOracleTests(unittest.TestCase):
             32767,
         ).astype(np.int16)
         return sample_rate, source
+
+    def test_prepared_lpc_matches_frozen_scalar_golden(self) -> None:
+        fixture = (
+            PROJECT_ROOT
+            / "tests"
+            / "fixtures"
+            / "r250_s15_lpc_golden.json.gz"
+        )
+        compressed = fixture.read_bytes()
+        self.assertEqual(len(compressed), 56229)
+        self.assertEqual(
+            hashlib.sha256(compressed).hexdigest(),
+            "793bff4e748435c079668920a5a2a6cc97b932250bb1bca1df69ed2c6958cc35",
+        )
+        raw = gzip.decompress(compressed)
+        self.assertEqual(
+            hashlib.sha256(raw).hexdigest(),
+            "8fe390457f9baf5226207f2d3c3ebb71c6ba5ac968921cb7e6e145f9b4e8ccf6",
+        )
+        payload = json.loads(raw)
+        self.assertEqual(payload["schema"], "resonith-r243-golden-1")
+        self.assertEqual(payload["case_count"], 128)
+
+        for case in payload["cases"]:
+            source_size = case["source_size"]
+            block_size = case["block_size"]
+            start = case["start"]
+            stop = case["stop"]
+            law_count = (source_size + block_size - 1) // block_size
+            base = tuple(case["law_family"])
+            laws = tuple(
+                FilterLaw(
+                    (
+                        -115 + ((base[0] + 115 + 17 * block) % 231),
+                        *base[1:],
+                    )
+                )
+                for block in range(law_count)
+            )
+            alternate = np.where(
+                np.arange(source_size) % 2 == 0,
+                -32768,
+                32767,
+            ).astype(np.int16)
+            if case["pattern"] == "zero":
+                source = np.zeros(source_size, dtype=np.int16)
+                committed = np.zeros(source_size, dtype=np.int64)
+                raw_excitation = np.zeros(stop - start, dtype=np.int64)
+            elif case["pattern"] == "lcg":
+                state = 0x00524243
+                source = np.empty(source_size, dtype=np.int16)
+                for index in range(source_size):
+                    state = (1664525 * state + 1013904223) & 0xFFFF_FFFF
+                    source[index] = ((state >> 16) & 0xFFFF) - 32768
+                committed = source.astype(np.int64)
+                raw_excitation = source[start:stop].astype(np.int64)
+            else:
+                source = alternate
+                committed = alternate.astype(np.int64)
+                raw_excitation = (
+                    np.full(stop - start, 32767, dtype=np.int64)
+                    if case["pattern"] == "clipping"
+                    else alternate[start:stop].astype(np.int64)
+                )
+            analysis = SimpleNamespace(
+                source=source,
+                block_size=block_size,
+                filter_laws=laws,
+            )
+            first_block, prepared = _prepare_short_filter_lpc(
+                analysis,
+                start,
+                stop,
+            )
+            touched = case["touched_lpc_q14"]
+            self.assertEqual(first_block, touched[0]["absolute_block"])
+            self.assertEqual(
+                prepared,
+                tuple(tuple(item["lpc_q14"]) for item in touched),
+            )
+            desired = _desired_short_excitation_target(
+                analysis,
+                start,
+                stop,
+                first_block,
+                prepared,
+            )
+            output, clipping = _synthesize_short_filter_candidate(
+                analysis,
+                raw_excitation,
+                committed,
+                start,
+                stop,
+                first_block,
+                prepared,
+            )
+            np.testing.assert_array_equal(desired, case["desired_excitation"])
+            np.testing.assert_array_equal(output, case["candidate_output"])
+            self.assertEqual(clipping, case["clipping_count"])
+
+    def test_prepared_lpc_bounds_and_mapping_fail_closed(self) -> None:
+        source = np.zeros(513, dtype=np.int16)
+        laws = tuple(FilterLaw((0,)) for _ in range(9))
+        analysis = SimpleNamespace(
+            source=source,
+            block_size=64,
+            filter_laws=laws,
+        )
+        first_block, prepared = _prepare_short_filter_lpc(analysis, 1, 513)
+        self.assertEqual(first_block, 0)
+        self.assertEqual(len(prepared), 9)
+        repeated_first, repeated_prepared = _prepare_short_filter_lpc(
+            analysis,
+            1,
+            513,
+        )
+        self.assertEqual(
+            (repeated_first, repeated_prepared),
+            (first_block, prepared),
+        )
+        self.assertIsNot(repeated_prepared, prepared)
+
+        invalid_intervals = ((0, 0), (2, 1), (-1, 1), (1, 514), (0, 513))
+        for start, stop in invalid_intervals:
+            with self.assertRaises(ValueError):
+                _prepare_short_filter_lpc(analysis, start, stop)
+
+        invalid_law_sets = (
+            (63, laws),
+            (8193, laws),
+            (64, laws[:-1]),
+            (64, laws + laws[:1]),
+        )
+        for block_size, filter_laws in invalid_law_sets:
+            invalid = SimpleNamespace(
+                source=source,
+                block_size=block_size,
+                filter_laws=filter_laws,
+            )
+            with self.assertRaises(ValueError):
+                _prepare_short_filter_lpc(invalid, 1, 513)
+
+        with self.assertRaises(RuntimeError):
+            _desired_short_excitation_target(
+                analysis,
+                1,
+                513,
+                first_block + 1,
+                prepared,
+            )
+        with self.assertRaises(RuntimeError):
+            _synthesize_short_filter_candidate(
+                analysis,
+                np.zeros(512, dtype=np.int64),
+                np.zeros(513, dtype=np.int64),
+                1,
+                513,
+                first_block + 1,
+                prepared,
+            )
 
     def test_persistent_laws_preserve_exact_analysis_identity(self) -> None:
         sample_rate, source = self._source()
@@ -379,6 +544,7 @@ class MafSourceFilterOracleTests(unittest.TestCase):
             np.zeros(source.size, dtype=np.int64),
             0,
             1,
+            *_prepare_short_filter_lpc(zero_filter, 0, 1),
         )
         self.assertEqual(int(raw_clip[0]), 32767)
         self.assertEqual(raw_count, 1)
@@ -397,6 +563,7 @@ class MafSourceFilterOracleTests(unittest.TestCase):
             committed,
             1,
             2,
+            *_prepare_short_filter_lpc(predictive_filter, 1, 2),
         )
         self.assertEqual(int(output_clip[0]), 32767)
         self.assertEqual(output_count, 1)
@@ -450,6 +617,7 @@ class MafSourceFilterOracleTests(unittest.TestCase):
                 committed,
                 start,
                 stop,
+                *_prepare_short_filter_lpc(analysis, start, stop),
             )
             np.testing.assert_array_equal(before, committed)
             committed[start:stop] = candidate
@@ -719,7 +887,7 @@ class MafSourceFilterOracleTests(unittest.TestCase):
     def test_real_worker_missing_receipt_preserves_resource_evidence(self) -> None:
         authority = (
             PROJECT_ROOT
-            / "experiments/fixtures/r234_s15_implementation_authority.json"
+            / "experiments/fixtures/r255_s15_implementation_authority.json"
         )
         authority_sha256 = _sha256(authority)
         with tempfile.TemporaryDirectory() as temporary:
@@ -772,7 +940,7 @@ class MafSourceFilterOracleTests(unittest.TestCase):
     def test_authority_closes_local_and_runtime_imports(self) -> None:
         authority = (
             PROJECT_ROOT
-            / "experiments/fixtures/r234_s15_implementation_authority.json"
+            / "experiments/fixtures/r255_s15_implementation_authority.json"
         )
         os.environ.update(
             {

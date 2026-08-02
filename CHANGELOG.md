@@ -96,6 +96,40 @@ version.
   `38dfc62c...c277`. It authorizes only the bounded helper, direct private tests,
   deterministic compressed golden fixture, and one post-change evidence
   runner. No algorithm generation or product behavior is admitted.
+- Implemented and dual-audited the exact R-253 LPC-lifetime hoist. One local
+  immutable preparation now serves Basis training, main desired excitation and
+  every candidate in the same subframe; the focused module passes 18/18,
+  including all 128 independent pre-change golden cases and adversarial bounds.
+  R-256 authorizes freezing these bytes and creating one bounded post-change
+  runner, but execution and any codec-generation claim remain blocked pending
+  a separate read-only audit.
+- Retained a pre-commit falsification of that implementation audit: an ordinary
+  CPython 3.14 import regenerated stale timestamp bytecode from unchanged
+  source, and R-255 failed 2/18 authority tests. R-256 is superseded before any
+  benchmark. R-257 instead isolates every authority-bound process behind a
+  fresh empty `PYTHONPYCACHEPREFIX`, disables writes, binds source/non-cache
+  runtime bytes and rejects redirected or sourceless imports; code remains
+  blocked pending a fresh dual audit.
+  Two auditors rejected the first R-257 draft as underclosed. Its amended
+  no-code contract now specifies `-I/-S/-P/-B` startup isolation, an exact
+  source loader allowlist, handle-bound distinct prefixes, canonical filtered
+  runtime hashing and executable temporary mutants.
+  A second dual NO-GO then closed three remaining holes: Stage-0 cache reads,
+  top-level alias fall-through and ambiguous target dispatch. V3 uses a
+  frozen-only prologue with its own prefix, no project paths, a terminal finder
+  and normal imported controller/worker identities.
+  V3 was also rejected before code because CPython loads file-backed encoding
+  modules before script execution and the proposed namespaced controller does
+  not exist. V4 supplies the nonexistent first prefix in the outer `-X`
+  command, treats its path proposer as untrusted, uses the real top-level
+  controller module and removes every legacy project-path insertion.
+  V4 received a split audit rather than implementation authority: normal
+  imports legitimately populate `sys.path_importer_cache`. V5 preserves its
+  object identity while allowing only terminal-guard-owned, path-bound,
+  exact-finder deltas captured in the import ledger.
+  R-258 records the final dual pre-code GO for exact R-257 V5. Authorization is
+  evidence-only: two isolated focused runs and another implementation audit
+  remain mandatory before any post-change codec timing transaction.
 
 ### Research
 

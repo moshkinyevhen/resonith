@@ -1119,3 +1119,83 @@ and S16-S63 pending. The next safe action is the smallest R-253 helper and
 focused exactness implementation, followed by an independent changed-file and
 test-result audit before any timed post-change transaction. S12 remains the
 accepted codec generation.
+
+## R-256 S15 exact-LPC implementation-freeze checkpoint
+
+R-253 is now implemented within its exact file, line, byte, lifetime and
+resource scope. The final oracle, focused test, deterministic compressed
+golden fixture and fresh R-255 implementation authority are frozen by SHA-256
+in `docs/reviews/R256_R253_IMPLEMENTATION_DUAL_AUDIT_2026-08-02.md`.
+The complete focused module passes 18/18 in 22.48 seconds. Two independent
+auditors found complete caller coverage, immutable per-subframe ownership,
+unchanged R-234 history, fresh project/runtime/native closure and no hidden
+cache or production observer state.
+
+All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
+and S16-S63 pending. The next safe action is to create, but not execute, one
+bounded post-change runner and one separate authority derived from R-250. They
+must prove complete stream, decoded PCM, semantic report and candidate-trace
+identity; exact helper conversion counts in Basis-training and main-loop
+contexts; and the frozen CPU, wall and process peak-working-set gates. A fresh
+read-only dual GO is mandatory before the runner's single invocation. S12
+remains the accepted codec generation.
+
+## R-257 S15 bytecode-authority falsification checkpoint
+
+The pre-commit focused reproduction did not preserve R-256's GO. With
+bytecode writes normally enabled, CPython 3.14.6 regenerated one stale
+timestamp cache from unchanged audited source. R-255 then failed exactly two
+authority-dependent tests while the other sixteen passed. All 84 R-255 cache
+records used timestamp invalidation and eighteen belonged to foreign CPython
+3.12. No commit, post-change timing run, codec workload, or output change
+occurred.
+
+All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
+and S16-S63 pending. The next safe action is dual read-only review of R-257's
+isolated source-execution closure. Only after two GO verdicts may evidence
+infrastructure change; the LPC oracle remains frozen. The
+post-change runner and benchmark remain separately blocked. S12 remains the
+accepted codec generation.
+
+The first R-257 draft SHA-256 `e7c1fac9...e2df61` received two independent
+NO-GO verdicts and authorized no code. The amended draft adds an exact
+two-stage startup before site/path customization, a pre-execution local import
+allowlist, held per-process directory identities, full source/extension loader
+closure, canonical cache-filtered runtime hashing and executable temp-only
+mutants. Its exact bytes require a new dual review.
+
+R-257 V2 SHA-256 `68189aa2...e09890e` also received two independent NO-GO
+verdicts and authorized no code. V3 gives Stage 0 its own pre-source-import
+prefix, removes every project root from path resolution, makes the guard
+terminal for arbitrary aliases, corrects malformed-startup evidence semantics
+and imports controller/worker targets through the exact normal loader. The
+next action remains a new dual read-only review, not implementation.
+
+R-257 V3 SHA-256 `4df8611a...192498e9` received two independent NO-GO
+verdicts and authorized no code. The exact pinned interpreter proved that
+file-backed encoding modules load before user script code, and the proposed
+`experiments.*` controller identity was not a regular package. V4 places the
+first nonexistent prefix in the outer `-X` command, revalidates the untrusted
+path proposal, uses the real top-level controller identity and removes all
+project-root path insertion. Its exact bytes require a fresh dual review.
+
+R-257 V4 SHA-256 `cbd53f3c...e659d99b` received one GO and one blocking NO-GO,
+so it authorized no code. The remaining conflict was literal value immutability
+of `sys.path_importer_cache`, which ordinary PathFinder imports must populate.
+V5 permits only terminal-guard-owned, bound-path, exact-finder deltas and
+records each in the import ledger; all external mutation remains rejected.
+The next action is a new dual read-only review of V5.
+
+## R-258 S15 source-execution pre-code GO checkpoint
+
+Two independent auditors returned GO for exact R-257 V5 SHA-256
+`4c933257e53fe67605a612403ad0c82f43902a9ec1a21344ebdae9fa655e8538`.
+The frozen design closes startup cache reads, project path fall-through,
+loader/origin spoofing, mutable cache authority, prefix ownership, runtime
+filtering and legitimate importer-cache evolution without changing codec code.
+
+All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
+and S16-S63 pending. The next safe action is the bounded R-257 evidence-only
+implementation, followed by exactly two isolated focused runs and a separate
+dual implementation audit. The post-change codec runner and benchmark remain
+blocked. S12 remains the accepted codec generation.

@@ -967,10 +967,45 @@ def _synthesis_distortion_weights_q8(
     return weights
 
 
+def _prepare_short_filter_lpc(
+    analysis: MafSourceFilterAnalysis,
+    start: int,
+    stop: int,
+) -> tuple[int, tuple[tuple[int, ...], ...]]:
+    """Prepare the bounded immutable LPC region shared by one subframe."""
+
+    source_size = int(analysis.source.size)
+    block_size = int(analysis.block_size)
+    if not 0 <= start < stop <= source_size:
+        raise ValueError("R-253 prepared LPC interval exceeds the source")
+    if not 64 <= block_size <= 8192:
+        raise ValueError("R-253 prepared LPC block size exceeds the profile")
+    if not 1 <= stop - start <= MAX_EXCITATION_SUBFRAME:
+        raise ValueError("R-253 prepared LPC region exceeds the profile")
+
+    law_count = len(analysis.filter_laws)
+    expected_law_count = (source_size + block_size - 1) // block_size
+    if law_count != expected_law_count:
+        raise ValueError("R-253 prepared LPC law count does not cover the source")
+
+    first_block = start // block_size
+    last_block = min(law_count - 1, (stop - 1) // block_size)
+    prepared = tuple(
+        _lpc_q14(analysis.filter_laws[block])
+        for block in range(first_block, last_block + 1)
+    )
+    expected_count = last_block - first_block + 1
+    if len(prepared) != expected_count or not 1 <= len(prepared) <= 9:
+        raise RuntimeError("R-253 prepared LPC region is not bounded")
+    return first_block, prepared
+
+
 def _desired_short_excitation_target(
     analysis: MafSourceFilterAnalysis,
     start: int,
     stop: int,
+    first_filter_block: int,
+    prepared_lpc: tuple[tuple[int, ...], ...],
 ) -> np.ndarray:
     target = np.empty(stop - start, dtype=np.int64)
     for local, index in enumerate(range(start, stop)):
@@ -978,7 +1013,10 @@ def _desired_short_excitation_target(
             len(analysis.filter_laws) - 1,
             index // analysis.block_size,
         )
-        lpc = _lpc_q14(analysis.filter_laws[block])
+        prepared_offset = block - first_filter_block
+        if not 0 <= prepared_offset < len(prepared_lpc):
+            raise RuntimeError("R-253 desired target escaped prepared LPC")
+        lpc = prepared_lpc[prepared_offset]
         accumulator = 0
         for order_index, coefficient in enumerate(lpc, start=1):
             past_index = index - order_index
@@ -1093,6 +1131,8 @@ def _synthesize_short_filter_candidate(
     committed_output: np.ndarray,
     start: int,
     stop: int,
+    first_filter_block: int,
+    prepared_lpc: tuple[tuple[int, ...], ...],
 ) -> tuple[np.ndarray, int]:
     """Run one realized excitation through the exact short-filter recurrence."""
 
@@ -1107,7 +1147,10 @@ def _synthesize_short_filter_candidate(
             len(analysis.filter_laws) - 1,
             index // analysis.block_size,
         )
-        lpc = _lpc_q14(analysis.filter_laws[block])
+        prepared_offset = block - first_filter_block
+        if not 0 <= prepared_offset < len(prepared_lpc):
+            raise RuntimeError("R-253 candidate escaped prepared LPC")
+        lpc = prepared_lpc[prepared_offset]
         accumulator = 0
         for order_index, coefficient in enumerate(lpc, start=1):
             past_index = index - order_index
@@ -1552,7 +1595,18 @@ def _collect_closed_loop_excitation_targets(
     for subframe in range(subframe_count):
         start = subframe * subframe_size
         stop = min(analysis.source.size, start + subframe_size)
-        desired = _desired_short_excitation_target(analysis, start, stop)
+        first_filter_block, prepared_lpc = _prepare_short_filter_lpc(
+            analysis,
+            start,
+            stop,
+        )
+        desired = _desired_short_excitation_target(
+            analysis,
+            start,
+            stop,
+            first_filter_block,
+            prepared_lpc,
+        )
         lag, gain_q7, adaptive = _search_adaptive_state(
             desired,
             history,
@@ -1771,10 +1825,17 @@ def _encode_excitation_pvq(
         start = subframe * subframe_size
         stop = min(source.size, start + subframe_size)
         if source_filter_analysis is not None:
+            first_filter_block, prepared_lpc = _prepare_short_filter_lpc(
+                source_filter_analysis,
+                start,
+                stop,
+            )
             desired_excitation = _desired_short_excitation_target(
                 source_filter_analysis,
                 start,
                 stop,
+                first_filter_block,
+                prepared_lpc,
             )
             (
                 pitch_lag,
@@ -2068,6 +2129,8 @@ def _encode_excitation_pvq(
                             decoded_output,
                             start,
                             stop,
+                            first_filter_block,
+                            prepared_lpc,
                         )
                     )
                     output_error = (

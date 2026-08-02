@@ -154,6 +154,9 @@
 | [results/R252_S15_PHASE_A_BASELINE_RESULT_2026-08-02.md](results/R252_S15_PHASE_A_BASELINE_RESULT_2026-08-02.md) | Dual-audited 29-file Phase-A baseline proving the exact repeated-LPC bottleneck |
 | [reviews/R253_S15_EXACT_LPC_PHASE_B_PREFLIGHT_2026-08-02.md](reviews/R253_S15_EXACT_LPC_PHASE_B_PREFLIGHT_2026-08-02.md) | Pre-code bounded exact LPC-lifetime hoist, alternatives, source review, scope, budgets, and kill gates |
 | [reviews/R254_R253_PHASE_B_DUAL_AUDIT_2026-08-02.md](reviews/R254_R253_PHASE_B_DUAL_AUDIT_2026-08-02.md) | Independent dual GO for exact R-253 implementation after the omitted-caller amendment |
+| [reviews/R256_R253_IMPLEMENTATION_DUAL_AUDIT_2026-08-02.md](reviews/R256_R253_IMPLEMENTATION_DUAL_AUDIT_2026-08-02.md) | Superseded implementation GO and retained stale timestamp-bytecode authority falsification |
+| [reviews/R257_S15_SOURCE_EXECUTION_AUTHORITY_PREFLIGHT_2026-08-02.md](reviews/R257_S15_SOURCE_EXECUTION_AUTHORITY_PREFLIGHT_2026-08-02.md) | Fail-closed isolated source-execution authority after R-255 stale-cache falsification |
+| [reviews/R258_R257_SOURCE_EXECUTION_DUAL_AUDIT_2026-08-02.md](reviews/R258_R257_SOURCE_EXECUTION_DUAL_AUDIT_2026-08-02.md) | Independent dual GO for exact R-257 V5 evidence remediation only |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
