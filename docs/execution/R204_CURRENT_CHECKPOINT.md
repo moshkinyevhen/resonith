@@ -966,5 +966,6 @@ decoder changes, Opus rerun, versioning, promotion and release remain blocked
 until their declared gates.
 
 All 63 states remain individually visible: S01-S12 complete, S13 active, and
-S14-S63 pending. Repository HEAD and public branch before this uncommitted
-pre-code package are `6fbc459258dfad4961a5e5ad4011b0e4788f79ae`.
+S14-S63 pending. The audited pre-code package is public at commit
+`1c375d9f3ffe4f80b152e8015d0e25e9797f2ebf` on
+`codex/maf-r193-alpha`.

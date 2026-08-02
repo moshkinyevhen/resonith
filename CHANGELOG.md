@@ -48,7 +48,8 @@ version.
   target tiles, phase-free integer support and knot selection, paired existing-
   syntax carry/reset arms, actual complete-byte/native-decode accounting and a
   strict kill gate. R-228 authorizes only the smallest implementation; long
-  execution, syntax, versioning and release remain blocked.
+  execution, syntax, versioning and release remain blocked. The public pre-code
+  checkpoint is commit `1c375d9f3ffe4f80b152e8015d0e25e9797f2ebf`.
 
 ### Research
 
