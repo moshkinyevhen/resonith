@@ -81,6 +81,13 @@ def _read_authority(path: Path, expected_sha256: str, *, check_git: bool) -> dic
     if hashlib.sha256(raw).hexdigest() != expected_sha256.lower(): raise RuntimeError("R-243 authority SHA-256 mismatch")
     authority = json.loads(raw)
     if authority.get("schema") != "resonith-r246-s15-phase-a-authority-1": raise RuntimeError("R-246 authority schema mismatch")
+    if set(authority) != {"budgets", "environment", "files", "git_commit", "output_paths", "python", "runner", "runtime", "schema", "scope", "source"}: raise RuntimeError("R-246 authority top-level schema mismatch")
+    if authority["environment"] != ENVIRONMENT or set(authority["python"]) != {"path", "sha256", "version"} or set(authority["runtime"]) != {"numpy", "windows_build"}: raise RuntimeError("R-246 authority runtime contract mismatch")
+    if set(authority["files"]) != {"audit", "base_authority", "configuration", "implementation_audit", "native_core", "numpy_binary", "oracle", "preflight", "r232_runner", "r243_closure", "r243_preflight", "remediation", "runner", "source", "test_module"}: raise RuntimeError("R-246 authority file-set mismatch")
+    if authority["budgets"] != {"controller_wall_seconds": 510.0, "log_bytes_each": LOG_LIMIT, "profile_cpu_seconds": PROFILE_CPU_LIMIT, "profile_wall_seconds": PROFILE_WALL_LIMIT, "retained_bytes": RETAINED_LIMIT, "timing_cpu_seconds": WORKER_CPU_LIMIT, "timing_wall_seconds": TIMING_WALL_LIMIT, "worker_peak_memory_bytes": MEMORY_LIMIT}: raise RuntimeError("R-246 authority budget mismatch")
+    if authority["output_paths"] != {"failure": FAILURE_OUTPUT.as_posix(), "future_summary": FUTURE_SUMMARY.as_posix(), "staging": STAGING_OUTPUT.as_posix(), "success": FINAL_OUTPUT.as_posix()}: raise RuntimeError("R-246 authority output-path mismatch")
+    if authority["source"] != {"channels": 1, "sample_count": 93680, "sample_rate": 16000} or authority["scope"] != "one immutable short pre-change timing/profile/golden transaction only": raise RuntimeError("R-246 authority scope/source mismatch")
+    if set(authority["runner"]) != {"bytes", "lines", "maximum_bytes", "maximum_lines"} or authority["runner"]["maximum_bytes"] != 65536 or authority["runner"]["maximum_lines"] != 640: raise RuntimeError("R-246 authority runner contract mismatch")
     if Path(sys.executable).resolve(strict=True) != Path(authority["python"]["path"]).resolve(strict=True): raise RuntimeError("R-243 Python executable path mismatch")
     if platform.python_version() != authority["python"]["version"]: raise RuntimeError("R-243 Python version mismatch")
     if _sha256(Path(sys.executable).resolve(strict=True)) != authority["python"]["sha256"]: raise RuntimeError("R-243 Python executable hash mismatch")
@@ -90,8 +97,7 @@ def _read_authority(path: Path, expected_sha256: str, *, check_git: bool) -> dic
     if not sys.dont_write_bytecode or sys.flags.optimize != 0 or os.name != "nt": raise RuntimeError("R-243 interpreter mode mismatch")
     for name, record in authority["files"].items():
         candidate = Path(record["path"])
-        candidate = candidate if candidate.is_absolute() else PROJECT_ROOT / candidate
-        candidate = candidate.resolve(strict=True)
+        candidate = (candidate if candidate.is_absolute() else PROJECT_ROOT / candidate).resolve(strict=True)
         if _is_reparse(candidate) or _sha256(candidate) != record["sha256"]: raise RuntimeError(f"R-243 authority file drift: {name}")
     runner = Path(__file__).resolve(strict=True)
     authorized_runner = (PROJECT_ROOT / authority["files"]["runner"]["path"]).resolve(strict=True)
@@ -100,10 +106,7 @@ def _read_authority(path: Path, expected_sha256: str, *, check_git: bool) -> dic
     if len(runner.read_text(encoding="utf-8").splitlines()) != authority["runner"]["lines"]: raise RuntimeError("R-243 runner line count mismatch")
     if runner.stat().st_size > 65536 or authority["runner"]["lines"] > 640: raise RuntimeError("R-246 runner exceeds its audited source bound")
     if check_git:
-        observed = subprocess.run(
-            ["git", "-C", str(PROJECT_ROOT), "rev-parse", "HEAD"],
-            check=True, capture_output=True, text=True, timeout=10,
-        ).stdout.strip()
+        observed = subprocess.run(["git", "-C", str(PROJECT_ROOT), "rev-parse", "HEAD"], check=True, capture_output=True, text=True, timeout=10).stdout.strip()
         if observed != authority["git_commit"]: raise RuntimeError("R-243 Git commit drift")
     return authority
 def _load_codec(authority: dict):
@@ -111,8 +114,7 @@ def _load_codec(authority: dict):
     gate = importlib.import_module("r232_s15_source_filter_gate")
     base = authority["files"]["base_authority"]
     base_authority, files = gate._validate_authority((PROJECT_ROOT / base["path"]).resolve(strict=True), base["sha256"])
-    widened = dict(base_authority)
-    widened["local_modules"] = dict(base_authority["local_modules"])
+    widened = dict(base_authority); widened["local_modules"] = dict(base_authority["local_modules"])
     widened["local_modules"][Path(__file__).resolve().relative_to(PROJECT_ROOT).as_posix()] = _sha256(Path(__file__))
     gate._load_runtime(widened)
     oracle = importlib.import_module("maf_p0.maf_source_filter_oracle")
@@ -199,9 +201,7 @@ def _golden_vectors(gate, oracle, destination: Path) -> dict:
                 source, committed, raw = _pattern(gate.np, pattern, source_size, start, stop)
                 analysis = SimpleNamespace(source=source, block_size=block_size, filter_laws=tuple(laws))
                 desired = oracle._desired_short_excitation_target(analysis, start, stop)
-                output, clipping = oracle._synthesize_short_filter_candidate(
-                    analysis, raw, committed, start, stop
-                )
+                output, clipping = oracle._synthesize_short_filter_candidate(analysis, raw, committed, start, stop)
                 first_block = start // block_size
                 last_block = min(law_count - 1, (stop - 1) // block_size)
                 touched = [
