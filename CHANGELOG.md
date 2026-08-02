@@ -63,6 +63,12 @@ version.
   version, decoder, Opus anchor or product behavior changed. S14 is not
   applicable because no generation was admitted; S15 source-filter work starts
   from the unchanged accepted S12 baseline.
+- Froze R-232/S15 as a narrow decoder-domain final-candidate rescoring
+  experiment over the existing rejected R-120 SFT1/EPV1 path. Two hostile
+  audits forced explicit candidate scope, causal state ownership, a 256/40
+  local mel guard, deterministic Q20 selection, one immutable configuration,
+  no long-to-short tuning and honest residual-energy terminology. R-233 grants
+  pre-code GO only; no syntax, decoder, version or codec generation changed.
 
 ### Research
 

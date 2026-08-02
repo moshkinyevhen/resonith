@@ -142,6 +142,8 @@
 | [results/R224_S13_PREDECESSOR_COMPARISON_2026-08-02.md](results/R224_S13_PREDECESSOR_COMPARISON_2026-08-02.md) | Actual 19-item pre-S11 direct-Truth execution proving payload and decoded-PCM identity with every retained R-221 Resonith output |
 | [results/R227_S13_PHASE_POISONED_SHADOW_RESULT_2026-08-02.md](results/R227_S13_PHASE_POISONED_SHADOW_RESULT_2026-08-02.md) | Terminal phase-shadow evidence: zero eligible real lanes, frozen resource stop, no admitted generation, and no-change closure |
 | [reviews/R223_S12_COMPLETE_CORPUS_AUDIT_2026-08-02.md](reviews/R223_S12_COMPLETE_CORPUS_AUDIT_2026-08-02.md) | Independent 19/19 authority, decoder, metric, rate-controller, and aggregate GO for narrow S12 admission |
+| [reviews/R232_S15_DECODER_CLOSED_SOURCE_FILTER_PREFLIGHT_2026-08-02.md](reviews/R232_S15_DECODER_CLOSED_SOURCE_FILTER_PREFLIGHT_2026-08-02.md) | Frozen final-candidate decoder-domain source-filter rescoring hypothesis, complete cost, kill gates, and execution bounds |
+| [reviews/R233_S15_SOURCE_FILTER_PRECODE_AUDIT_2026-08-02.md](reviews/R233_S15_SOURCE_FILTER_PRECODE_AUDIT_2026-08-02.md) | Independent pre-code GO for the bounded R-232 S15 implementation only |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |

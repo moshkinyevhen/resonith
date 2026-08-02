@@ -11396,3 +11396,43 @@ i32 end_gain_q15
   `docs/results/R227_S13_PHASE_POISONED_SHADOW_RESULT_2026-08-02.md`.
 - Independent verdict:
   `docs/reviews/R231_R227_RESULT_AUDIT_2026-08-02.md`.
+
+## R-232 — S15 decoder-domain source-filter candidate rescoring
+
+- Date: 2026-08-02
+- Status: **FROZEN HYPOTHESIS; PRE-CODE AUDIT COMPLETE**.
+- R-120's EPV1 encoder ranks final candidates in excitation space, while the
+  independent decoder passes the selected excitation through a recursive
+  quantized source filter. The smallest S15 test therefore re-ranks only the
+  already realized PVQ, Basis, stochastic and ZERO candidates after exact
+  decoder-domain short-filter synthesis.
+- Source-filter coding, LPC/LTP, sinusoidal/HILN decomposition and vocoders are
+  prior art. R-232 claims no new physical-source recovery and no complete
+  closed-loop RDO: adaptive pitch, pulse shape, Basis shortlist, gains and
+  candidate proposal remain the existing R-120 law.
+- The exact configuration, local waveform/log-mel functional, incremental-bit
+  cost, deterministic tie breaks, fallback, long-first order, quality/rate
+  gates and resource ceilings are frozen in
+  `docs/reviews/R232_S15_DECODER_CLOSED_SOURCE_FILTER_PREFLIGHT_2026-08-02.md`
+  and `experiments/fixtures/r232_s15_frozen_configuration.json`.
+- The experiment changes no syntax or decoder. A different winner may alter
+  later arm state and candidates; that causal divergence is part of the A/B,
+  not a parameter change.
+
+## R-233 — R-232 independent pre-code GO
+
+- Date: 2026-08-02
+- Status: **GO FOR SMALLEST IMPLEMENTATION; LONG EXECUTION NO-GO**.
+- Two hostile audits rejected ambiguous drafts. The final preflight SHA-256 is
+  `28f5cddd49a9a1c97c50054533ea85c1d7370da6ff7cdf4051b6d57e5ef32310`
+  and the canonical configuration SHA-256 is
+  `b89cae2d09c2c45ba1488e573009a7d822e15998ad4816c7bb45d65ad3cf5d24`.
+- The final reviewer confirmed that scope, causal state, local metric,
+  arithmetic, configuration, no-tuning order, residual proxy and admission
+  gates are executable and returned binary GO.
+- Authorization is limited to one rescoring option, one focused test module
+  and one runner. A separate implementation audit is mandatory before long
+  speech. Syntax, SFT2, global DP, Opus rerun, versioning, promotion and release
+  remain blocked.
+- Detailed verdict:
+  `docs/reviews/R233_S15_SOURCE_FILTER_PRECODE_AUDIT_2026-08-02.md`.

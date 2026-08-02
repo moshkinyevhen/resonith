@@ -1012,3 +1012,25 @@ and S16-S63 pending. The next safe action is the evidence-first S15 source-
 filter preflight: freeze alternatives, prior art, anonymous excitation/
 resonator identifiability, complete byte-quality-resource cost, falsification
 gates, and an independent pre-code audit before implementation.
+
+## R-233 S15 pre-code GO and next safe action
+
+S15 remains active from the unchanged S12 baseline. The independently audited
+R-232 preflight is SHA-256
+`28f5cddd49a9a1c97c50054533ea85c1d7370da6ff7cdf4051b6d57e5ef32310`;
+its sealed configuration is SHA-256
+`b89cae2d09c2c45ba1488e573009a7d822e15998ad4816c7bb45d65ad3cf5d24`.
+The final reviewer returned binary GO after two rejected drafts closed every
+scope, causality, arithmetic, configuration and no-tuning blocker.
+
+The next safe action is the smallest final-candidate decoder-domain rescoring
+option in the existing experimental SFT1/EPV1 oracle, plus at most one focused
+test module and one runner. Focused tests and synthetic controls follow, then a
+separate implementation audit. Long speech, short speech, S16's complete
+registered corpus and Opus comparison remain blocked until their declared
+gates. No syntax, decoder, product, version or release behavior has changed.
+
+All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
+and S16-S63 pending. Repository HEAD before this uncommitted pre-code package
+is `bc17697bfa9492172995c65c73d15e4ed85b6894`; explicit-file staging remains
+mandatory in the mixed worktree.
