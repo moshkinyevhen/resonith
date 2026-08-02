@@ -11507,3 +11507,61 @@ i32 end_gain_q15
 - R-252 admits only the immutable Phase-A evidence. R-198 is not triggered.
   Oracle and test edits remain blocked until a separate Phase-B preflight and
   independent binary GO bind the exact helper scope and post-change gates.
+
+## R-253 — bounded exact LPC-lifetime Phase-B preflight
+
+- Date: 2026-08-02
+- Status: **PRE-CODE DRAFT; IMPLEMENTATION NO-GO PENDING DUAL AUDIT**.
+- The frozen R-250 profile proves that 648,120 repeated reflection-to-Q14 LPC
+  conversions consume 58.5003879 cumulative seconds, or 0.6097914076 of the
+  profiled rescored encode. A FilterLaw is stable for its block, while the
+  current candidate path recomputes the identical tuple per sample and per
+  candidate.
+- Selected hypothesis: one local helper prepares exactly the FilterLaw blocks
+  touched by the current subframe, returns an immutable `(first_block, laws)`
+  value, and both desired-excitation callers plus realized-candidate synthesis
+  reuse it. This explicitly includes Basis-training subframes as well as the
+  main encoder loop.
+  The existing integer coefficient, accumulation, rounding, clipping,
+  candidate, metric, selection, trace, stream and commit orders do not change.
+- Rejected alternatives are no change, global memoization, whole-file
+  preparation, a single-law shortcut, hidden state in FilterLaw, approximate
+  or vectorized arithmetic, native C++23 batching, and CUDA. The last two stay
+  eligible only for a later structural S15 gate after this measured redundancy
+  is either removed exactly or rejected.
+- The helper may prepare at most nine laws and retain at most 16 KiB. It has no
+  global cache, file lifetime, cross-encode state, public ABI, syntax, decoder,
+  product or player effect.
+- The first draft was withdrawn before audit or code because self-red-team
+  found the separate `_collect_closed_loop_excitation_targets` desired-target
+  caller. The amended contract covers every direct caller and validates the
+  complete law count, 64-to-8192 block range, and 1-to-512 region length.
+- Admission requires exact equality to all 128 frozen pre-change cases and the
+  complete short-run stream, decoded PCM, semantic report and candidate trace;
+  helper conversions must equal touched laws and stop scaling with candidate
+  evaluations. Neither timing arm may regress by more than 2% median CPU, at
+  least one must improve by 10%, wall may not regress by more than 10%, and
+  peak memory may not grow by more than 8 MiB.
+- Any exactness or bound failure is terminal NO-GO for this implementation.
+  No tolerance, reduced candidate set, relaxed limit or repeated rescue is
+  permitted. Passing is an output-identical mechanical refactor under the
+  R-198 focused exception, not a new codec generation or compression claim.
+
+## R-254 — R-253 independent dual pre-code GO
+
+- Date: 2026-08-02
+- Status: **DUAL GO FOR EXACT R-253 IMPLEMENTATION ONLY**.
+- Both independent auditors reviewed exact R-253 SHA-256
+  `38dfc62cd8ac68e912a6b5c83b9bb4323ae523dd37aaaf023fae657947dfc277`
+  without editing files or executing codec work.
+- The withdrawn first draft was correctly NO-GO because it omitted the
+  Basis-training desired-target caller. The amended record covers both direct
+  desired-target callers, the main candidate-synthesis caller, and the direct
+  tests that must adopt the prepared region.
+- Both auditors independently proved the exact law-count mapping and nine-law
+  maximum, reproduced the 56,229-byte deterministic gzip identity, and found
+  no remaining ownership, state, resource, scope, or evidence blocker.
+- Implementation is authorized only within R-253's line/file/resource budget.
+  The focused R-198 exception is conditional on exact post-change payload,
+  PCM, report, trace and golden equality plus the stated conversion, timing,
+  wall and memory gates. Any mismatch is terminal NO-GO.

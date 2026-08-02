@@ -82,6 +82,20 @@ version.
   0.50634% waveform SSE versus its legacy arm but costs 3.68981 times median
   CPU. This is evidence for an output-identical mechanical refactor, not a new
   codec generation, Opus comparison, version, or release.
+- Froze R-253 as the pre-code Phase-B contract for one bounded per-subframe
+  immutable LPC preparation helper. The selected change may only remove
+  repeated pure conversion; 128 frozen scalar cases and every stream, PCM,
+  candidate, metric, trace and report identity must remain exact. Global or
+  whole-file caches, approximation, native batching and CUDA are excluded from
+  this mechanical gate. Implementation remains blocked pending two independent
+  binary GO verdicts.
+  Its initial draft was withdrawn before audit or code after self-red-team found
+  a second desired-target caller in Basis training; the amended scope covers
+  every caller and exact profile/law-count bounds.
+- Recorded the R-254 independent dual GO for exact revised R-253 SHA-256
+  `38dfc62c...c277`. It authorizes only the bounded helper, direct private tests,
+  deterministic compressed golden fixture, and one post-change evidence
+  runner. No algorithm generation or product behavior is admitted.
 
 ### Research
 

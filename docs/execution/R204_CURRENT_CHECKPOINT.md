@@ -1077,3 +1077,45 @@ All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
 and S16-S63 pending. The next safe action is a separate Phase-B preflight and
 independent GO for the bounded exact per-subframe LPC preparation helper. No
 oracle or test source edit is authorized until that record is complete.
+
+## R-253 S15 exact-LPC Phase-B pre-code checkpoint
+
+The immutable R-250 evidence package is published at commit
+`d70d73dd66a7b4a18b18b69368cf03aba1148e78`. R-253 freezes one mechanical
+Phase-B hypothesis: prepare at most nine Q14 LPC tuples once per subframe and
+reuse the same immutable value in desired-excitation and every realized
+candidate. It preserves all scalar integer order and every output identity.
+
+Official RFC 6716 fixed-point requirements, current Xiph Opus source, the
+Resonith scalar oracle and measured negative evidence were reviewed. Eight
+alternatives are explicitly rejected or deferred. Exact 128-case, complete
+short-run identity, conversion-count, CPU/wall/memory and fail-closed gates are
+frozen. Implementation is NO-GO until two independent auditors approve this
+exact pre-code record.
+
+The initial R-253 draft was withdrawn before any GO or source edit: self-red-
+team found the second desired-target caller in Basis training. The amended
+record covers both `_collect_closed_loop_excitation_targets` and the main
+encoder loop and requires exact law count plus profile-bounded block and region
+sizes.
+
+All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
+and S16-S63 pending. S12 remains the accepted codec generation; R-198 is not
+yet triggered. The next safe action is the dual independent R-253 pre-code
+audit, followed only on GO by the bounded helper, focused tests, compressed
+golden fixture, and one post-change evidence runner.
+
+## R-254 S15 Phase-B dual-GO checkpoint
+
+Two independent auditors returned GO for exact revised R-253 SHA-256
+`38dfc62cd8ac68e912a6b5c83b9bb4323ae523dd37aaaf023fae657947dfc277`.
+They confirmed complete caller coverage, exact total block mapping, the
+nine-law maximum, local immutable ownership, compressed-fixture identities,
+budgets and conditional R-198 focused-exception logic. The omitted-caller first
+draft remains explicitly withdrawn and authorized no code.
+
+All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
+and S16-S63 pending. The next safe action is the smallest R-253 helper and
+focused exactness implementation, followed by an independent changed-file and
+test-result audit before any timed post-change transaction. S12 remains the
+accepted codec generation.

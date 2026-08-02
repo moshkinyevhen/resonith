@@ -13,6 +13,8 @@ Numbers from papers are statements made by the authors prior to independent repr
 ## Standards and anchors
 
 - [RFC 6716 - Definition of the Opus Audio Codec](https://datatracker.ietf.org/doc/html/rfc6716)
+- [Xiph Opus LPC analysis filter](https://github.com/xiph/opus/blob/master/silk/LPC_analysis_filter.c)
+- [Xiph Opus LPC inverse prediction gain](https://github.com/xiph/opus/blob/master/silk/LPC_inv_pred_gain.c)
 - [Official Opus releases and current implementation](https://www.opus-codec.org/)
 - [Official opus-tools 0.2 documentation](https://www.opus-codec.org/docs/opus-tools/opusenc.html)
 - [MPEG-4 Audio](https://www.mpeg.org/standards/MPEG-4/3/)
