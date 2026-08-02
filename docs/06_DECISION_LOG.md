@@ -10527,3 +10527,28 @@ i32 end_gain_q15
 - Non-regression boundary:
   - R-198 comparisons and mandatory release, security, compatibility, and
     platform gates remain fully binding.
+
+### R-214 S10 final admission and S11 authorization
+
+- Status: **INDEPENDENT GO; S10 COMPLETE; S11 AUTHORIZED**
+- Audited head: `1d0f6e86cded81fd156895574150b4f8f8e4d67b`.
+- GitHub evidence:
+  - Tests run `30724305949`: success;
+  - Mobile Core run `30724305951`: success, all nine evidence jobs;
+  - five valid R-203 replays agree on portable semantic identity;
+  - 2,000,000 sanitizer-fuzz inputs completed with zero findings;
+  - adjusted coverage is 96.3512% lines / 92.4779% branches;
+  - TSan passed eight threads and 100,000 sequences;
+  - Android, iOS, macOS, Windows and Linux obligations passed.
+- Workflow integrity:
+  - R-213 installs the frozen replay environment on Unix;
+  - every Bash replay pipeline is fail-closed with `pipefail`;
+  - Windows explicitly propagates piped native-process failures.
+- Evidence root:
+  `G:\Resonith\artifacts\r213-s10-final`.
+- Disposition:
+  - S10 has no remaining accepted blocker;
+  - S11 anonymous multi-partial MAF predictor is the next active step;
+  - R-185 preflight and independent red-team remain mandatory before source
+    changes;
+  - R-198 is not triggered by the workflow-only R-213 remediation.
