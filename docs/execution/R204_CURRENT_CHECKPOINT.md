@@ -15,10 +15,11 @@ Canonical plan:
 
 Repository branch: `codex/maf-r193-alpha`
 
-Repository HEAD and public branch before the uncommitted S11/S12 evidence:
-`ca87decf7d4b255bae11ce980e6f4be6fe3065f0`
+Repository HEAD and public branch before the uncommitted R-221/R-223 S12
+admission package:
+`1c45376eebe7daa49904acae885c47d6d571cf87`
 
-Worktree state: active R-215 S12 comparison preparation; not clean. The owner's
+Worktree state: completed R-221 S12 evidence packaging; not clean. The owner's
 untracked development-plan DOCX and unrelated worktree changes are outside
 project edits and must not be staged, moved, modified, or removed.
 
@@ -31,17 +32,17 @@ implementation checkpoint (retained evidence, not the current worktree):
 
 ## Stable step status
 
-- `S01`–`S11`: completed.
-- `S12`: in progress.
-- `S13`–`S63`: pending.
+- `S01`–`S12`: completed.
+- `S13`: next; preflight not yet started.
+- `S14`–`S63`: pending.
 
-Active evidence generation: R-215 S12 complete registered long-first codec
-comparison.
+Accepted evidence: R-223 independently admits the saved R-221 complete
+registered direct comparison under the owner's explicit narrow S12 amendment.
 
-Codec-algorithm generation: the focused S11 R-215 implementation has
-independent GO but remains experimental until S12 completes the mandatory
-comparison against the exact preceding Resonith incumbent and maximum-effort
-official Opus.
+Codec-algorithm generation: the focused S11 R-215 implementation and its R-221
+direct comparison are accepted research evidence. They remain experimental and
+do not imply product release, bitstream admission, or general superiority over
+Opus.
 
 Incumbent identities:
 
@@ -49,32 +50,31 @@ Incumbent identities:
   `ecfee1a3ed4a2a62848da91c91acc098f873cbd6`;
 - documentation-only repository checkpoint:
   `69c0d341b626d29dff6d951ec3485a437d42e767`;
-- preceding accepted Resonith codec generation: not activated for this
-  evidence-only analyzer generation; S11 may not begin until its preflight
-  freezes the exact incumbent streams, decoder, source PCM, and manifest;
-- maximum-effort Opus tool identity reserved for the next codec-algorithm gate:
+- current research incumbent: the R-215 S11 implementation measured by the
+  independently admitted R-221/R-223 S12 direct comparison; its exact streams,
+  decoder, source PCM and manifest are the S13 preflight baseline;
+- fixed official Opus identity used by the admitted S12 direct anchor:
   `opusenc` SHA-256
   `0b8d4e8db7697bd8981e9246de1bd8a1df05c2bbb98bba2b2090d7bb585e70f9`,
   `opusdec` SHA-256
   `ea1a553102020f58f0af86eb1cf2377a055ccbc93a2130fa62f77c96f522c8e3`,
   both `opus-tools 0.2-39-g9b1ca51` using
-  `libopus 1.6.1-8-g475cbc5`. Exact maximum-effort options and per-file
-  frontier remain to be frozen at the S11 evidence-generation preflight.
+  `libopus 1.6.1-8-g475cbc5`. The fixed maximum-complexity options are frozen
+  in R-221; no per-file Opus frontier was searched or claimed.
 
 ## Active substep
 
-Run S12 with no intervening algorithm change:
+Begin S13 only after an evidence-first preflight and independent challenge:
 
-1. freeze the complete registered source manifest, exact prior Resonith
-   incumbent, current R-215 candidate, official Opus 1.6.1 tools/options, and
-   actual decoders;
-2. run the full Mozart long input first, then every other registered long input,
-   and only then the complete short corpus;
-3. retain per-file and aggregate complete bytes, quality, phase/transient/
-   channel diagnostics, time, CPU/GPU, memory, hashes, fallbacks, commands, and
-   listening artifacts;
-4. obtain independent GO/NO-GO before S13. Do not promote R-215 or make an Opus
-   superiority claim from the focused synthetic S11 gate.
+1. freeze the exact S12 incumbent streams, decoder, manifest, metric set and
+   fixed Opus anchor;
+2. define phase-continuous and phase-locked trajectory competitors plus sparse
+   objective phase-innovation anchors and complete byte/quality cost;
+3. falsify anchor necessity, checkpoint containment, bounded integer decode,
+   random access, packet loss, portability and regression behavior before
+   changing production behavior;
+4. implement the smallest coherent candidate and admit it only through the
+   separately authorized S14 complete comparison.
 
 ## Frozen identities
 
@@ -885,22 +885,24 @@ S11-only syntax, zero anchor/reset records, model-active deterministic repeat,
 and tail-fusion A/B all passed. The independent auditor returned final GO with
 no blockers and independently passed 24/24 relevant tests.
 
-## Next safe action after R-215
+## R-223 S12 complete checkpoint and next safe action
 
-S12 is active under the owner's narrowed direct-comparison scope: current
+S12 is complete under the owner's narrowed direct-comparison scope: current
 Resonith versus one fixed official Opus 1.6.1 configuration at complexity 10,
-with no Opus-frontier or preceding-generation output column. R-219 completed
-Mozart and five registered classes, then failed closed on an unmatched speech
-rate. R-220 separately completed short and 319.38-second LibriSpeech realtime
-diagnostics. R-221 bounded rate-only calibration received independent pre-code
-GO at preflight SHA-256
-`a97c1da031e905e4ac55d16f13f069f12cc330a2a657951e7824eadf1ca2c755`.
+with no Opus-frontier or preceding-generation output column. The R-221 run
+completed all 19 registered inputs with 16 strict complete-byte matches and
+three explicitly excluded nearest-rate diagnostics. The independent auditor
+re-decoded every retained file, replayed every metric and rate transition, and
+returned GO with no blocking findings.
 
-All 63 states remain: S01-S11 complete, S12 in progress, S13-S63 pending.
-Repository HEAD before the R-221 implementation is
-`64521b19551d4b9688de10fe01c5302607a5beb1`; the worktree is intentionally
-mixed, so every synchronization must stage explicit files. The next safe
-action is the exact audited R-221 implementation, focused tests, independent
-post-code identity verdict, and then a fresh full long-first direct corpus.
-S13, promotion, release, novelty, and compression claims remain blocked until
-S12 completes and receives independent admission.
+The detailed result is
+`docs/results/R221_S12_FIXED_OPUS_DIRECT_2026-08-02.md`; the audit verdict is
+`docs/reviews/R223_S12_COMPLETE_CORPUS_AUDIT_2026-08-02.md`.
+
+All 63 states remain individually visible: S01-S12 complete, S13 next, and
+S14-S63 pending. Repository HEAD and public branch before this uncommitted
+admission package are `1c45376eebe7daa49904acae885c47d6d571cf87`. The worktree
+is intentionally mixed, so every synchronization must stage explicit files.
+The next safe action is the audited S13 preflight for phase-continuous versus
+phase-locked trajectories with sparse objective innovation anchors. Product
+promotion, release, novelty, and general compression claims remain blocked.

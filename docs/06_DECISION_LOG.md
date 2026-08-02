@@ -10990,7 +10990,7 @@ i32 end_gain_q15
 
 ## R-221 — Bounded rate-only matching for direct comparison
 
-- Status: **PRE-CODE; INDEPENDENT GO/NO-GO REQUIRED**.
+- Status: **IMPLEMENTED; COMPLETE CORPUS ADMITTED BY R-223**.
 - R-219 stopped correctly on `ebu-female-speech-en`: the four fixed Opus
   attempts bracketed the 94,816-byte target but missed the 94-byte tolerance.
   Repeating them is a blind retry; searching other Opus configurations is
@@ -11030,6 +11030,15 @@ i32 end_gain_q15
   **GO with no blocking findings**. It authorizes only the exact bounded
   controller implementation and focused validation. Corpus execution still
   requires post-implementation identity audit.
+- Final post-implementation audit: **GO for one fresh complete corpus run**.
+  Runner SHA-256 is
+  `830ed4ac12b369bcf9de7308fa18bfb5b31c0989c11aaa665f052a9d87d869a3`;
+  focused-test SHA-256 is
+  `76f51f610927169bbe0cb1a51b30e1d7e53c5c496f2d099d09bec2e26a2e3947`;
+  the independent rerun passed 32/32 in 2.71 seconds. No R-219 reuse,
+  admission, S13, version promotion, release, or general Opus claim is
+  authorized. Full verdict:
+  `docs/reviews/R221_S12_BOUNDED_RATE_IMPLEMENTATION_AUDIT_2026-08-02.md`.
 
 ## R-222 — Durable GitHub history and checkpoint versioning
 
@@ -11042,3 +11051,42 @@ i32 end_gain_q15
 - A commit or push is repository synchronization only. It cannot admit an
   experiment, imply compatibility, create a release, or establish a quality or
   compression claim.
+
+## R-223 — S12 complete direct-comparison admission
+
+- Status: **INDEPENDENT GO; S12 COMPLETE IN THE DECLARED NARROW SCOPE**.
+- The preserved R-221 run identity is
+  `470603e2f8fed8957e0eade645bd78fbab1b50fd35aad624b9be473dd23dc73c`
+  at source revision `1c45376eebe7daa49904acae885c47d6d571cf87`.
+- Nineteen registered inputs completed. Sixteen are `STRICT_MATCH`; female EBU
+  speech, male EBU speech, and sustained sine are `UNMATCHED_NEAREST` and are
+  mechanically excluded from all equal-rate statistics and claims.
+- The strict rows cover 570.628 seconds and total 9,602,867 Resonith bytes
+  versus 9,602,500 Opus bytes, a difference of 367 bytes or about 0.0038%.
+- Resonith wins waveform SNR on 13/16 strict rows, registered channel-0 phase
+  MAE on 15/16, mean pre-echo on 14/16, magnitude cosine on 11/16, and log-mel
+  RMSE on 9/16. Opus wins detailed log-spectrum distance on 11/16.
+- The result identifies a stable split: current Resonith commonly preserves
+  waveform timing, channel-0 phase and attacks much more accurately, but loses
+  important low-energy spectral detail and speech-critical envelopes on
+  several classes.
+  Later MAF work must repair that allocation without discarding the temporal
+  advantage.
+- Independent audit closed all 19 authority chains, re-decoded every Opus and
+  Resonith artifact, replayed every metric and q5 transition, and found zero
+  blocking issues. Three ESTOI differences of `2.22e-16` through `9.99e-16`
+  are non-decision-changing floating-point rounding.
+- Machine evidence SHA-256 identities:
+  - `aggregate.json`:
+    `f8aeed2a205e7c802fd093d9de90bf1b4df9b751b1225d5b00592020889acfcf`;
+  - `REPORT.md`:
+    `a89dddd2f578712063973024cbcd0da2809f21189f11cf11ce8aa4fcc57ea534`;
+  - `run-index.json`:
+    `ed1d8e5505ccf0fe0af4b59725e1f5e1c30fefc67218aff9b3608b9046140ecd`.
+- Detailed result:
+  `docs/results/R221_S12_FIXED_OPUS_DIRECT_2026-08-02.md`.
+- Independent verdict:
+  `docs/reviews/R223_S12_COMPLETE_CORPUS_AUDIT_2026-08-02.md`.
+- This admission does not authorize an Opus frontier, a full-19 equal-rate
+  claim, general superiority, a release, or a `VERSION` increment. S13 is the
+  next step and requires its own evidence-first preflight.

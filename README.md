@@ -226,6 +226,12 @@ An improvement is not released until its semantic version and English
 protocol is in
 [Continuous Evidence and Release Protocol](docs/15_CONTINUOUS_EVIDENCE.md).
 
+The latest completed gate is the
+[R-221 S12 fixed-Opus direct comparison](docs/results/R221_S12_FIXED_OPUS_DIRECT_2026-08-02.md):
+19 registered inputs, 16 strict complete-byte matches, three explicitly
+excluded nearest-rate diagnostics, and independent decoder/metric replay. It
+documents a mixed error profile and makes no general better-than-Opus claim.
+
 Every coherent synchronized development change is also recoverable before it
 is pushed: its English changelog entry, R-number, validation evidence, affected
 stable step, and all-63-step durable checkpoint are committed together. The

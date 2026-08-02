@@ -24,11 +24,14 @@ version.
   while the short analyzer-rich path is not real time. At matched bytes,
   Resonith has higher waveform SNR but lower STOI/ESTOI and worse log-mel than
   Opus, so no speech-quality victory is claimed.
-- Accepted the pre-code design for R-221 bounded rate-only calibration. It
-  preserves the single fixed maximum-complexity Opus configuration, permits at
-  most twelve quality-blind integer-bitrate observations, and excludes every
-  unmatched row from equal-rate claims. Implementation and the complete S12
-  corpus remain pending.
+- Completed and independently admitted the R-221 S12 direct comparison in its
+  narrow declared scope. All 19 registered inputs were decoded and audited;
+  16 are strict complete-byte matches and three are retained diagnostic
+  mismatches excluded from equal-rate claims. Resonith wins waveform SNR on
+  13/16 strict rows, registered channel-0 phase MAE on 15/16, pre-echo on
+  14/16, and log-mel on 9/16, while Opus wins detailed log-spectrum distance on
+  11/16. This is a measured error-profile diagnosis, not a general
+  better-than-Opus claim.
 - Made GitHub synchronization durable: every coherent pushed change now carries
   an English changelog entry, R-number, validation record, updated all-63-step
   checkpoint, and commit identity. Experimental commits do not increment the
