@@ -922,6 +922,11 @@ The independent R-226 replay confirmed payload identity 19/19 and native
 decoded-PCM identity 19/19 between historical pre-S11 `ca87dec` direct Truth
 and every retained R-221 Resonith output.
 
+The coherent R-224/R-226 implementation and evidence package is public at
+commit `434d12fa3de72aacb3a2361bf99283f2caab42d0` on
+`codex/maf-r193-alpha`. This synchronization did not change `VERSION` and is
+not a product release.
+
 Authoritative local evidence:
 
 - aggregate:

@@ -41,7 +41,8 @@ version.
   PCM outputs are byte-identical to the exact pre-S11 `ca87dec` direct-Truth
   producer. This proves that the registered R-221 result measured direct Truth,
   not an active persistent-partial lane; no codec improvement, syntax, version,
-  Opus rerun, or release is claimed.
+  Opus rerun, or release is claimed. The coherent evidence package is commit
+  `434d12fa3de72aacb3a2361bf99283f2caab42d0`.
 
 ### Research
 
