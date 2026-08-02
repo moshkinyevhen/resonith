@@ -11476,3 +11476,34 @@ i32 end_gain_q15
 - Accepted S12 remains unchanged. Any new S15 attempt is a new hypothesis and
   must remove the per-candidate Python synthesis/FFT cost structurally under a
   new audited preflight; it may not rescue R-232 by relaxing its limits.
+
+## R-243 through R-252 — exact LPC-lifetime Phase-A evidence closure
+
+- Date: 2026-08-02
+- Status: **PHASE-A EVIDENCE ACCEPTED; SOURCE CHANGE STILL NO-GO**.
+- R-243 selected one bounded, output-identical mechanical hypothesis: prepare
+  the Q14 LPC tuple once for every persistent FilterLaw touched by a subframe,
+  then reuse the immutable tuple in desired-excitation and candidate synthesis.
+  Global caching, whole-file preparation, CUDA, approximate arithmetic, larger
+  timeouts and shorter controls were rejected for this gate.
+- R-244 through R-248 closed the runner, runtime, import, resource, authority,
+  atomic-publication and dual-audit contracts without changing codec or oracle
+  behavior. R-246 then failed once after successful expensive work because
+  Python 3.14 `pstats.Stats` rejected a `WindowsPath`; R-249 closed that exact
+  transaction with no retry.
+- R-250 changed only the profile filename argument to `str(profile_path)`.
+  R-251 and the final commit-bound dual review authorized exactly one new
+  invocation. It published the canonical receipt SHA-256
+  `b28f8d264d183d34a817f0523ec274cb2ac057df66413235e578d295ffedba8d`.
+- Two independent result audits returned GO. The 29-file/four-directory
+  closure, all authority and manifest identities, 128 golden cases, resource
+  bounds, stream/PCM/report cross-identities, counters and three predicates
+  pass.
+- The frozen rescored arm is 12,371 bytes versus 12,554 bytes for legacy and
+  has 0.50634% lower waveform SSE, but uses 3.68981 times median CPU. The
+  profile records 648,120 `_lpc_q14` calls and a 0.6097914076 cumulative-time
+  share. These are pre-change diagnostic facts, not a codec generation or Opus
+  claim.
+- R-252 admits only the immutable Phase-A evidence. R-198 is not triggered.
+  Oracle and test edits remain blocked until a separate Phase-B preflight and
+  independent binary GO bind the exact helper scope and post-change gates.

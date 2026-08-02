@@ -1056,3 +1056,24 @@ complete resource/quality/byte gates and an independent binary pre-code audit
 are recorded. Repository HEAD before this uncommitted terminal package is
 `5aff74dbce41d7dece102a10f7ff326d7a700dda`; explicit-file staging remains
 mandatory in the mixed worktree.
+
+## R-252 S15 exact-LPC Phase-A baseline checkpoint
+
+R-250 ran exactly once at execution identity
+`4a74ee485ea0d1e207063920d45001ee6d4564ee` and atomically published its sole
+PASS evidence root. Two independent read-only result audits returned GO. The
+canonical receipt SHA-256 is
+`b28f8d264d183d34a817f0523ec274cb2ac057df66413235e578d295ffedba8d`;
+all 29 files, 128 golden cases, provenance, cross-run identities, counters,
+predicates and resource bounds pass.
+
+The frozen profile proves 648,120 `_lpc_q14` calls and a 0.6097914076 share of
+encode cumulative time. The rescored arm remains 3.68981 times slower than
+legacy median CPU despite saving 183 complete bytes and 0.50634% waveform SSE.
+No codec/oracle/bitstream behavior changed, so R-198 is not triggered and S12
+remains the accepted generation.
+
+All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
+and S16-S63 pending. The next safe action is a separate Phase-B preflight and
+independent GO for the bounded exact per-subframe LPC preparation helper. No
+oracle or test source edit is authorized until that record is complete.

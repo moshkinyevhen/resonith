@@ -75,6 +75,13 @@ version.
   all later controls. No retry, larger limit, real-audio run, Opus rerun,
   syntax/default/version change or generation admission occurred. R-241/R-242
   retain the atomic failure evidence; S12 remains the accepted frontier.
+- Completed the dual-audited R-250 Phase-A pre-change baseline for the exact
+  LPC-lifetime hoist. Its sole PASS transaction retained 29 files and 128
+  golden cases and measured 648,120 `_lpc_q14` calls consuming 60.9791% of the
+  profiled encode cumulative time. Rescoring saves 1.45770% complete bytes and
+  0.50634% waveform SSE versus its legacy arm but costs 3.68981 times median
+  CPU. This is evidence for an output-identical mechanical refactor, not a new
+  codec generation, Opus comparison, version, or release.
 
 ### Research
 

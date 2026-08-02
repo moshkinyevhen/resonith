@@ -1,0 +1,193 @@
+Sun Aug  2 23:55:26 2026    G:\Resonith\artifacts\r250-s15-short-baseline-prechange.staging\profile\rescored.prof
+
+         124747086 function calls (124746528 primitive calls) in 95.782 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000   95.935   95.935 r232_s15_source_filter_gate.py:497(_encode_arm)
+        1    0.001    0.001   95.935   95.935 maf_source_filter_oracle.py:2504(encode_maf_source_filter_analysis)
+        1    0.406    0.406   91.763   91.763 maf_source_filter_oracle.py:1654(_encode_excitation_pvq)
+     8642    6.506    0.001   68.252    0.008 maf_source_filter_oracle.py:1090(_synthesize_short_filter_candidate)
+   648120   22.456    0.000   58.500    0.000 maf_source_filter_oracle.py:290(_lpc_q14)
+ 30698931   23.437    0.000   35.464    0.000 maf_source_filter_oracle.py:111(_round_divide_signed)
+   753371    1.285    0.000   13.136    0.000 fromnumeric.py:2245(clip)
+   753371    1.195    0.000   11.851    0.000 fromnumeric.py:48(_wrapfunc)
+     1464    0.769    0.001    9.227    0.006 maf_source_filter_oracle.py:970(_desired_short_excitation_target)
+   552976    1.376    0.000    8.222    0.000 fromnumeric.py:38(_wrapit)
+   753371    5.177    0.000    7.574    0.000 _methods.py:96(_clip)
+ 31349521    6.561    0.000    6.561    0.000 {built-in method builtins.divmod}
+   566011    0.557    0.000    6.422    0.000 {method 'clip' of 'numpy.ndarray' objects}
+ 33997167    6.176    0.000    6.176    0.000 {built-in method builtins.abs}
+        2    1.889    0.944    5.943    2.972 maf_source_filter_oracle.py:858(_synthesize_source_filter)
+        1    0.000    0.000    4.165    4.165 maf_source_filter_oracle.py:2656(decode_maf_source_filter_stream)
+     1464    1.989    0.001    2.662    0.002 maf_source_filter_oracle.py:1360(_search_adaptive_state)
+        2    0.055    0.027    2.584    1.292 maf_source_filter_oracle.py:2279(_decode_excitation_pvq)
+ 13652373    2.560    0.000    2.560    0.000 {built-in method builtins.len}
+   187360    0.302    0.000    2.012    0.000 {method 'clip' of 'numpy.generic' objects}
+  1506742    1.827    0.000    1.827    0.000 getlimits.py:399(__init__)
+     2848    0.709    0.000    1.792    0.001 pvq_envelope_oracle.py:222(_unrank_pvq)
+    10054    0.650    0.000    1.451    0.000 pvq_envelope_oracle.py:459(_materialize_band)
+     4312    1.082    0.000    1.425    0.000 pvq_envelope_oracle.py:192(_rank_pvq)
+    11740    0.646    0.000    1.425    0.000 maf_cell_oracle.py:218(_stochastic_direction)
+     8642    0.436    0.000    1.269    0.000 maf_source_filter_oracle.py:1037(_local_log_mel_error)
+   187360    0.339    0.000    0.910    0.000 maf_source_filter_oracle.py:205(_interpolated_pitch)
+   751232    0.769    0.000    0.769    0.000 maf_cell_oracle.py:208(_counter_word)
+     1464    0.730    0.000    0.754    0.001 pvq_envelope_oracle.py:404(_pulse_shape)
+   650590    0.489    0.000    0.737    0.000 pvq_envelope_oracle.py:331(_round_divide_signed)
+    17284    0.104    0.000    0.610    0.000 _pocketfft.py:324(rfft)
+    13176    0.025    0.000    0.531    0.000 pvq_envelope_oracle.py:308(_quantize_gain_code)
+    13176    0.080    0.000    0.500    0.000 pvq_envelope_oracle.py:277(_quantize_log_gain)
+    17284    0.462    0.000    0.484    0.000 _pocketfft.py:58(_raw_fft)
+   122551    0.414    0.000    0.414    0.000 pvq_envelope_oracle.py:253(_decoded_log_gain)
+   412227    0.408    0.000    0.408    0.000 {method 'astype' of 'numpy.ndarray' objects}
+  1306357    0.353    0.000    0.353    0.000 {built-in method builtins.getattr}
+   753371    0.329    0.000    0.329    0.000 getlimits.py:410(min)
+   815935    0.253    0.000    0.319    0.000 {built-in method builtins.min}
+     1464    0.069    0.000    0.250    0.000 maf_source_filter_oracle.py:1128(_candidate_choice_digest)
+   552977    0.250    0.000    0.250    0.000 {method 'wrap' of 'numpy._core._multiarray_umath._array_converter' objects}
+   552977    0.243    0.000    0.243    0.000 {method 'as_arrays' of 'numpy._core._multiarray_umath._array_converter' objects}
+   753371    0.241    0.000    0.241    0.000 getlimits.py:423(max)
+     5856    0.088    0.000    0.199    0.000 maf_source_filter_oracle.py:1203(_committed_state_identity)
+     8642    0.036    0.000    0.199    0.000 fromnumeric.py:3737(mean)
+     8642    0.120    0.000    0.183    0.000 maf_source_filter_oracle.py:1063(_candidate_output_window)
+   753371    0.175    0.000    0.175    0.000 fromnumeric.py:2240(_clip_dispatcher)
+     7010    0.148    0.000    0.164    0.000 maf_source_filter_oracle.py:1342(_adaptive_vector)
+     8642    0.059    0.000    0.163    0.000 _methods.py:115(_mean)
+    13176    0.104    0.000    0.148    0.000 pvq_envelope_oracle.py:443(_projected_gain)
+    12724    0.119    0.000    0.147    0.000 maf_cell_oracle.py:142(_distortion_q20)
+    10702    0.071    0.000    0.133    0.000 pvq_envelope_oracle.py:137(read_bits)
+    20120    0.065    0.000    0.115    0.000 maf_source_filter_oracle.py:1163(_update_trace_integer)
+    15888    0.091    0.000    0.091    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+   190726    0.084    0.000    0.084    0.000 pvq_envelope_oracle.py:129(read_bit)
+     5736    0.043    0.000    0.083    0.000 pvq_envelope_oracle.py:92(write_bits)
+     8790    0.082    0.000    0.082    0.000 {built-in method _hashlib.openssl_sha256}
+     7136    0.009    0.000    0.075    0.000 pvq_envelope_oracle.py:157(read_signed_exp_golomb)
+     1464    0.018    0.000    0.071    0.000 maf_source_filter_oracle.py:1175(_candidate_signature)
+     4314    0.013    0.000    0.068    0.000 fromnumeric.py:2342(sum)
+     7314    0.020    0.000    0.065    0.000 pvq_envelope_oracle.py:145(read_unsigned_exp_golomb)
+    64959    0.063    0.000    0.063    0.000 {built-in method numpy.asarray}
+     1464    0.032    0.000    0.060    0.000 maf_source_filter_oracle.py:1259(_select_decoder_domain_candidate)
+    14178    0.014    0.000    0.060    0.000 pvq_envelope_oracle.py:295(<lambda>)
+   190913    0.055    0.000    0.055    0.000 {built-in method builtins.max}
+    96825    0.050    0.000    0.054    0.000 pvq_envelope_oracle.py:81(write_bit)
+     8642    0.049    0.000    0.053    0.000 _methods.py:73(_count_reduce_items)
+    96626    0.053    0.000    0.053    0.000 {method 'update' of '_hashlib.HASH' objects}
+     4315    0.017    0.000    0.053    0.000 fromnumeric.py:66(_wrapreduction)
+     3568    0.004    0.000    0.050    0.000 pvq_envelope_oracle.py:107(write_signed_exp_golomb)
+     3746    0.015    0.000    0.047    0.000 pvq_envelope_oracle.py:98(write_unsigned_exp_golomb)
+     2928    0.007    0.000    0.046    0.000 fromnumeric.py:2474(any)
+     2928    0.012    0.000    0.039    0.000 fromnumeric.py:86(_wrapreduction_any_all)
+    26350    0.035    0.000    0.035    0.000 {built-in method numpy.zeros}
+   187360    0.035    0.000    0.035    0.000 maf_source_filter_oracle.py:229(_fractional_delayed_sample)
+    31905    0.033    0.000    0.033    0.000 {built-in method numpy.empty}
+     4312    0.013    0.000    0.032    0.000 numerictypes.py:411(issubdtype)
+    17426    0.029    0.000    0.029    0.000 {method 'tobytes' of 'numpy.ndarray' objects}
+    53366    0.027    0.000    0.027    0.000 {built-in method _struct.pack}
+     8786    0.023    0.000    0.023    0.000 {method 'hexdigest' of '_hashlib.HASH' objects}
+     8642    0.008    0.000    0.019    0.000 numeric.py:483(count_nonzero)
+     8624    0.011    0.000    0.019    0.000 numerictypes.py:229(issubclass_)
+     2928    0.018    0.000    0.018    0.000 maf_source_filter_oracle.py:1192(_writer_identity)
+    10054    0.011    0.000    0.017    0.000 pvq_envelope_oracle.py:320(_gain_code_to_qlog)
+    25926    0.016    0.000    0.016    0.000 {built-in method numpy.lib.array_utils.normalize_axis_index}
+    30369    0.014    0.000    0.014    0.000 {method 'append' of 'list' objects}
+     9792    0.009    0.000    0.013    0.000 maf_source_filter_oracle.py:121(_signed_exp_golomb_bits)
+    37975    0.012    0.000    0.012    0.000 {method 'bit_length' of 'int' objects}
+     1601    0.006    0.000    0.012    0.000 maf_source_filter_oracle.py:1237(_decoder_domain_quality_q20)
+     8642    0.011    0.000    0.011    0.000 {built-in method numpy._core._multiarray_umath.count_nonzero}
+    17234    0.011    0.000    0.011    0.000 pvq_envelope_oracle.py:299(_maximum_gain_code)
+    12961    0.010    0.000    0.010    0.000 {built-in method builtins.isinstance}
+    17316    0.010    0.000    0.010    0.000 {built-in method math.isqrt}
+    12936    0.009    0.000    0.009    0.000 {built-in method builtins.issubclass}
+    20120    0.008    0.000    0.008    0.000 {method 'to_bytes' of 'int' objects}
+    18885    0.008    0.000    0.008    0.000 {built-in method math.isfinite}
+     8643    0.008    0.000    0.008    0.000 {built-in method builtins.hasattr}
+    10108    0.007    0.000    0.007    0.000 {method 'encode' of 'str' objects}
+    34568    0.007    0.000    0.007    0.000 multiarray.py:713(result_type)
+    17284    0.006    0.000    0.006    0.000 _pocketfft.py:116(_fft_dispatcher)
+     2928    0.004    0.000    0.006    0.000 {built-in method builtins.next}
+     1601    0.002    0.000    0.005    0.000 maf_source_filter_oracle.py:1229(_round_half_even)
+     2928    0.005    0.000    0.005    0.000 maf_source_filter_oracle.py:1267(<genexpr>)
+        1    0.001    0.001    0.004    0.004 maf_source_filter_oracle.py:726(_pack_parameter_events)
+    12104    0.004    0.000    0.004    0.000 {method 'append' of 'bytearray' objects}
+    17284    0.004    0.000    0.004    0.000 multiarray.py:115(empty_like)
+     7243    0.004    0.000    0.004    0.000 {method 'items' of 'dict' objects}
+     2928    0.004    0.000    0.004    0.000 maf_source_filter_oracle.py:2011(<genexpr>)
+        1    0.001    0.001    0.004    0.004 maf_source_filter_oracle.py:779(_unpack_parameter_events)
+     8645    0.004    0.000    0.004    0.000 {built-in method numpy.asanyarray}
+     1464    0.003    0.000    0.003    0.000 {built-in method fromkeys}
+     7000    0.003    0.000    0.003    0.000 {method 'add' of 'set' objects}
+     8642    0.003    0.000    0.003    0.000 fromnumeric.py:3732(_mean_dispatcher)
+     6211    0.003    0.000    0.003    0.000 maf_source_filter_oracle.py:1315(<genexpr>)
+     8642    0.003    0.000    0.003    0.000 multiarray.py:197(concatenate)
+     1601    0.003    0.000    0.003    0.000 {built-in method builtins.round}
+     6706    0.002    0.000    0.002    0.000 multiarray.py:406(where)
+     8642    0.002    0.000    0.002    0.000 numeric.py:479(_count_nonzero_dispatcher)
+     5546    0.002    0.000    0.002    0.000 maf_source_filter_oracle.py:1424(<genexpr>)
+   568/10    0.002    0.000    0.002    0.000 pvq_envelope_oracle.py:173(_pvq_codebook_size)
+     3246    0.002    0.000    0.002    0.000 maf_source_filter_oracle.py:1429(<genexpr>)
+     1464    0.001    0.000    0.001    0.000 {built-in method fromhex}
+     4314    0.001    0.000    0.001    0.000 fromnumeric.py:2337(_sum_dispatcher)
+     2928    0.001    0.000    0.001    0.000 fromnumeric.py:2469(_any_dispatcher)
+      733    0.001    0.000    0.001    0.000 maf_source_filter_oracle.py:2553(<genexpr>)
+        1    0.001    0.001    0.001    0.001 maf_source_filter_oracle.py:997(_local_mel_filter_bank)
+        1    0.000    0.000    0.001    0.001 codec.py:61(_quality_report)
+     1782    0.001    0.000    0.001    0.000 maf_source_filter_oracle.py:1434(<lambda>)
+     1464    0.001    0.000    0.001    0.000 maf_source_filter_oracle.py:2025(<lambda>)
+     1601    0.000    0.000    0.000    0.000 maf_source_filter_oracle.py:1330(<lambda>)
+        3    0.000    0.000    0.000    0.000 numeric.py:2470(array_equal)
+        1    0.000    0.000    0.000    0.000 rsc1.py:85(pack_rsc1)
+      732    0.000    0.000    0.000    0.000 <string>:8(__eq__)
+       81    0.000    0.000    0.000    0.000 {built-in method numpy.arange}
+      208    0.000    0.000    0.000    0.000 <string>:21(__hash__)
+      733    0.000    0.000    0.000    0.000 <string>:7(__eq__)
+        1    0.000    0.000    0.000    0.000 rsc1.py:153(parse_rsc1)
+        1    0.000    0.000    0.000    0.000 function_base.py:27(linspace)
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.sorted}
+        3    0.000    0.000    0.000    0.000 rsc1.py:102(<genexpr>)
+        1    0.000    0.000    0.000    0.000 dataclasses.py:1762(replace)
+        2    0.000    0.000    0.000    0.000 rsc1.py:52(validated)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        4    0.000    0.000    0.000    0.000 rsc1.py:24(_validated_type)
+      208    0.000    0.000    0.000    0.000 {built-in method builtins.hash}
+        3    0.000    0.000    0.000    0.000 {method 'all' of 'numpy.ndarray' objects}
+        1    0.000    0.000    0.000    0.000 dataclasses.py:1781(_replace)
+        1    0.000    0.000    0.000    0.000 fromnumeric.py:3049(max)
+        2    0.000    0.000    0.000    0.000 maf_source_filter_oracle.py:1004(hz_to_mel)
+        1    0.000    0.000    0.000    0.000 maf_source_filter_oracle.py:1007(mel_to_hz)
+        3    0.000    0.000    0.000    0.000 _methods.py:64(_all)
+       20    0.000    0.000    0.000    0.000 rsc1.py:32(<genexpr>)
+        3    0.000    0.000    0.000    0.000 pvq_envelope_oracle.py:164(require_canonical_end)
+        6    0.000    0.000    0.000    0.000 {built-in method zlib.crc32}
+        2    0.000    0.000    0.000    0.000 pvq_envelope_oracle.py:111(finish)
+        1    0.000    0.000    0.000    0.000 {method 'join' of 'bytes' objects}
+        1    0.000    0.000    0.000    0.000 stream_sections.py:108(unpack_conf)
+       21    0.000    0.000    0.000    0.000 <string>:2(__init__)
+        6    0.000    0.000    0.000    0.000 {method 'pack' of '_struct.Struct' objects}
+        1    0.000    0.000    0.000    0.000 dataclasses.py:1471(_is_dataclass_instance)
+        4    0.000    0.000    0.000    0.000 {method 'digest' of '_hashlib.HASH' objects}
+        2    0.000    0.000    0.000    0.000 pvq_envelope_oracle.py:75(__init__)
+        3    0.000    0.000    0.000    0.000 pvq_envelope_oracle.py:122(__init__)
+        6    0.000    0.000    0.000    0.000 {method 'unpack_from' of '_struct.Struct' objects}
+       34    0.000    0.000    0.000    0.000 {built-in method builtins.ord}
+        1    0.000    0.000    0.000    0.000 maf_source_filter_oracle.py:1598(_excitation_basis_rotations)
+        2    0.000    0.000    0.000    0.000 stream_sections.py:33(__post_init__)
+        1    0.000    0.000    0.000    0.000 numeric.py:1910(isscalar)
+        1    0.000    0.000    0.000    0.000 {method 'reshape' of 'numpy.ndarray' objects}
+        1    0.000    0.000    0.000    0.000 fromnumeric.py:3520(ndim)
+        1    0.000    0.000    0.000    0.000 stream_sections.py:96(pack_conf)
+        1    0.000    0.000    0.000    0.000 {method 'result_type' of 'numpy._core._multiarray_umath._array_converter' objects}
+        2    0.000    0.000    0.000    0.000 rsc1.py:103(<lambda>)
+        1    0.000    0.000    0.000    0.000 maf_source_filter_oracle.py:132(_pitch_bounds_q8)
+        1    0.000    0.000    0.000    0.000 {built-in method math.log10}
+        3    0.000    0.000    0.000    0.000 numeric.py:2451(_array_equal_dispatcher)
+        2    0.000    0.000    0.000    0.000 rsc1.py:109(<genexpr>)
+        1    0.000    0.000    0.000    0.000 {method 'values' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 fromnumeric.py:3044(_max_dispatcher)
+        1    0.000    0.000    0.000    0.000 {method 'unpack' of '_struct.Struct' objects}
+        1    0.000    0.000    0.000    0.000 maf_source_filter_oracle.py:1463(_learn_excitation_bases)
+        1    0.000    0.000    0.000    0.000 {built-in method _operator.index}
+        1    0.000    0.000    0.000    0.000 function_base.py:22(_linspace_dispatcher)
+        1    0.000    0.000    0.000    0.000 fromnumeric.py:3516(_ndim_dispatcher)
+
+

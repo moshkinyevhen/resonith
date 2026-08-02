@@ -1,0 +1,105 @@
+{
+  "analysis": {
+    "cpu_seconds": 14.96875,
+    "wall_seconds": 15.1228889
+  },
+  "golden": {
+    "case_count": 128,
+    "sha256": "8fe390457f9baf5226207f2d3c3ebb71c6ba5ac968921cb7e6e145f9b4e8ccf6"
+  },
+  "identities": {
+    "legacy": {
+      "bytes": 12554,
+      "candidate_subframe_counters": {
+        "maf_cell.subframe_count": 1464,
+        "maf_cell.subframe_size": 64
+      },
+      "decoded_pcm_bytes": 187360,
+      "decoded_pcm_sha256": "2ae63818e87e41c2e0acddd355828039338f9bc84b9e913947741179fa5681b4",
+      "report_bytes": 218880,
+      "report_sha256": "4ed913d870855cbb4995e81cf6e07f6b65d85d63447b43394530dc55f78490cd",
+      "stream_sha256": "f0c3abf0a71ee7d40bdd4f5c022291264b8e39a40c2e9bdc58f14fd23f87a8a6",
+      "waveform_sse": 73327420909
+    },
+    "rescored": {
+      "bytes": 12371,
+      "candidate_subframe_counters": {
+        "maf_cell.decoder_domain_candidate_evaluations": 8642,
+        "maf_cell.decoder_domain_rejected_candidate_evaluations": 7041,
+        "maf_cell.subframe_count": 1464,
+        "maf_cell.subframe_size": 64
+      },
+      "decoded_pcm_bytes": 187360,
+      "decoded_pcm_sha256": "bcff64e10968a7050e7296f95d5a77491a034f1b47f013edc4e0d940ef5977a8",
+      "report_bytes": 218916,
+      "report_sha256": "198ca97e66fbca44f00ace0ad2f57ca64be5fef6e1292b03edf44d397078d9b5",
+      "stream_sha256": "15415da9ba2e25ce48873c8a5dc1686f05efa62fb46f4e9b28c4a1c3bfe7532d",
+      "waveform_sse": 72956137926
+    }
+  },
+  "medians": {
+    "legacy": {
+      "cpu_seconds": 10.578125,
+      "wall_seconds": 10.6120175
+    },
+    "rescored": {
+      "cpu_seconds": 39.03125,
+      "wall_seconds": 39.6908918
+    }
+  },
+  "pair_order": [
+    [
+      "legacy",
+      "rescored"
+    ],
+    [
+      "rescored",
+      "legacy"
+    ],
+    [
+      "legacy",
+      "rescored"
+    ]
+  ],
+  "schema": "resonith-r250-s15-timing-worker-1",
+  "source_sha256_after": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46",
+  "trials": [
+    {
+      "arm": "legacy",
+      "cpu_seconds": 10.296875,
+      "pair_index": 0,
+      "wall_seconds": 10.3949491
+    },
+    {
+      "arm": "rescored",
+      "cpu_seconds": 38.859375,
+      "pair_index": 0,
+      "wall_seconds": 39.4236692
+    },
+    {
+      "arm": "rescored",
+      "cpu_seconds": 39.421875,
+      "pair_index": 1,
+      "wall_seconds": 40.3650922
+    },
+    {
+      "arm": "legacy",
+      "cpu_seconds": 10.578125,
+      "pair_index": 1,
+      "wall_seconds": 10.6120175
+    },
+    {
+      "arm": "legacy",
+      "cpu_seconds": 10.703125,
+      "pair_index": 2,
+      "wall_seconds": 10.8399792
+    },
+    {
+      "arm": "rescored",
+      "cpu_seconds": 39.03125,
+      "pair_index": 2,
+      "wall_seconds": 39.6908918
+    }
+  ],
+  "worker_process_cpu_seconds_proxy": 237.375
+}

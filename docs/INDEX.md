@@ -146,6 +146,12 @@
 | [reviews/R233_S15_SOURCE_FILTER_PRECODE_AUDIT_2026-08-02.md](reviews/R233_S15_SOURCE_FILTER_PRECODE_AUDIT_2026-08-02.md) | Independent pre-code GO for the bounded R-232 S15 implementation only |
 | [results/R241_S15_DECODER_RESCORING_TERMINAL_RESULT_2026-08-02.md](results/R241_S15_DECODER_RESCORING_TERMINAL_RESULT_2026-08-02.md) | Corrected incumbent identity PASS followed by frozen 900-second synthetic timeout and no-generation rejection |
 | [reviews/R242_R241_TERMINAL_RESULT_AUDIT_2026-08-02.md](reviews/R242_R241_TERMINAL_RESULT_AUDIT_2026-08-02.md) | Independent receipt, task-order, cleanup, kill-gate, and GO-to-reject audit for R-241 |
+| [reviews/R243_S15_EXACT_LPC_LIFETIME_HOIST_PREFLIGHT_2026-08-02.md](reviews/R243_S15_EXACT_LPC_LIFETIME_HOIST_PREFLIGHT_2026-08-02.md) | Evidence-first exact per-subframe LPC-lifetime hoist hypothesis, alternatives, falsification, and Phase-A/Phase-B gates |
+| [reviews/R246_S15_SELF_VERIFYING_PHASE_A_EVIDENCE_PREFLIGHT_2026-08-02.md](reviews/R246_S15_SELF_VERIFYING_PHASE_A_EVIDENCE_PREFLIGHT_2026-08-02.md) | Self-verifying bounded Phase-A timing/profile/golden evidence transaction |
+| [reviews/R249_R246_TERMINAL_FAILURE_2026-08-02.md](reviews/R249_R246_TERMINAL_FAILURE_2026-08-02.md) | Closed one-run pstats WindowsPath failure and exact no-retry consequence |
+| [reviews/R250_R246_PSTATS_PATH_REMEDIATION_2026-08-02.md](reviews/R250_R246_PSTATS_PATH_REMEDIATION_2026-08-02.md) | One-expression Python 3.14 pstats filename remediation with unchanged codec workload |
+| [reviews/R251_R250_FOCUSED_DUAL_AUDIT_2026-08-02.md](reviews/R251_R250_FOCUSED_DUAL_AUDIT_2026-08-02.md) | Dual focused GO for the exact R-250 runner and authority freeze |
+| [results/R252_S15_PHASE_A_BASELINE_RESULT_2026-08-02.md](results/R252_S15_PHASE_A_BASELINE_RESULT_2026-08-02.md) | Dual-audited 29-file Phase-A baseline proving the exact repeated-LPC bottleneck |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
