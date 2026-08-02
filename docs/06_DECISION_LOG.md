@@ -10716,3 +10716,133 @@ i32 end_gain_q15
   - this closes focused S11 and authorizes only the complete S12 registered
     long-first comparison. S13, promotion, release, novelty, and compression
     claims remain blocked.
+
+## R-218 — Output-identical S11 analyzer performance remediation
+
+- Status: **INDEPENDENT GO; BASELINE FINGERPRINTING AUTHORIZED**
+- Problem: the fixed R-217 direct comparison stopped twice because the frozen
+  S11 analyzer used 792.173 seconds on `ebu-claves` and exceeded 900 seconds on
+  `ebu-cymbal`, despite both inputs containing only 529,200 stereo frames.
+- Objective: make the existing 900-second S11 ceiling sufficient without
+  changing the S11 candidate language, observation values/order, native graph,
+  selected payload, decoded PCM, resource/security behavior, or R-217 Opus
+  anchor.
+- Measured focused profile:
+  - 42.579 seconds total under `cProfile`;
+  - 29.592 seconds in `observe_complex_partials`;
+  - 11.921 seconds in `_candidate_peaks`;
+  - 8.120 seconds in `_direct_dtft`;
+  - 5.488 seconds in `_assign_conflict_groups`.
+- The independently reviewed remediation is sequential A, then B, then C:
+  remove the tail-list copy; prove identity; hoist one immutable PCM16-to-
+  float64 conversion; prove identity; then hoist only exact DTFT constants and
+  the identical per-frame window product; prove identity. The generation may
+  be admitted only if every checkpoint passes independently.
+- The first audit returned NO-GO because selected fallback bytes alone could
+  hide changed search state, stable source ownership was unstated, runtime
+  admission was ambiguous, and raw-PCM/resource gates were incomplete. The
+  revised preflight requires a pre-edit byte-level fingerprint of observations,
+  graph inputs/edges/paths, lowered lanes/subsets and RDO ledger; stable
+  non-concurrently-mutated PCM; exact <=475-second claves and <=600-second
+  cymbal limits; raw PCM identity; and unchanged RSS/disk ceilings.
+- No timeout increase, candidate pruning, approximate search, reordered
+  floating reduction, new Opus search, or new codec algorithm is authorized.
+- Implementation was blocked until the independent auditor issued binary GO
+  on the revised remediation and identity gates recorded in
+  `docs/reviews/R218_S11_OUTPUT_IDENTICAL_PERFORMANCE_PREFLIGHT_2026-08-02.md`.
+- Final independent re-audit verdict: **GO** on preflight SHA-256
+  `9900e569df3fd6f33ef637a0d4f0c525196664fb8eee756b1e4c6abb768641b7`.
+  Authorization is limited to sequential A -> exact identity gate -> B ->
+  exact identity gate -> C -> exact identity gate. Any mismatch kills that
+  checkpoint; no tolerance, timeout increase, pruning, reordered arithmetic,
+  GPU path, or comparison-scope change is authorized.
+- Implementation evidence status: **INDEPENDENT FINAL CLOSEOUT GO; IMMUTABLE
+  COMMIT PREPARATION**.
+  - A removed only quadratic suffix-list allocation and reduced full claves
+    encode from 774.105972 to 237.670336 seconds while preserving the complete
+    internal SHA-256
+    `79c11ca6b160d80330c30944e82d59207b8b7e4157d5984d3b7826f019a34a2b`.
+  - B hoisted the stable PCM16-to-float64 snapshot and preserved every named
+    internal identity; full claves fell to 220.386926 seconds.
+  - C reused the identical windowed frame and immutable DTFT constants while
+    retaining the same `np.exp` and axis-0 `np.sum` order; full claves fell to
+    196.590282 seconds, a 3.9377x speedup over baseline.
+  - full cymbal, which previously exceeded 900 seconds, completed in
+    233.343736 seconds and repeated in 239.125873 seconds with identical
+    internal, payload, and decoded-PCM hashes.
+  - all seven focused cases, both active real prefixes, and full claves kept
+    identical observation/graph/lane/subset/RDO, payload, and PCM hashes after
+    each A/B/C checkpoint. No Opus point was searched or encoded by R-218.
+  - detailed retained evidence is in
+    `docs/results/R218_S11_OUTPUT_IDENTICAL_PERFORMANCE_2026-08-02.md`.
+  - the independent closeout audit reproduced all reported hashes, all 30
+    baseline/A/B/C semantic identity comparisons, both C-repeat payload/PCM
+    identities and the 16-test gate, but rejected the resource-evidence
+    contract: historical checkpoint JSON files omitted externally measured
+    resource fields and the C-repeat helper asserted zero temporary bytes;
+  - A and B are proof checkpoints rather than retained generations, so they
+    will not be rerun solely for telemetry. Their resource-admission claim is
+    withdrawn. Final C must instead repeat full claves and cymbal under a
+    fail-closed parent monitor that creates a suspended child inside an
+    active-process-limit-1 Windows Job Object, hashes authorities before and
+    after, and records operating-system peak working set plus staging byte
+    high-water under the unchanged 8 GiB/2 GiB/600 s limits. This supersedes
+    original gate 8 only for historical A/B resource admission;
+  - R-217 itself must not be bypassed: it correctly rejects the dirty changed
+    analyzer, pins the pre-R-218 revision, and omits the analyzer from run
+    identity. After R-218 closes, selected R-218 files require an immutable
+    commit and a new independently audited direct-comparison identity that
+    explicitly hashes the analyzer while preserving the single fixed official
+    Opus 1.6.1 point;
+  - exact remediation scope and kill gates are appended to the R-218
+    preflight. S12 remains blocked until the auditor authorizes and closes both
+    evidence gaps.
+  - first monitor-code audit: **NO-GO for real repeats**. Job structure layouts,
+    active-process enforcement and the eight focused tests passed, but four
+    closeout gaps remain: the parent gate needs an externally supplied audited
+    self-hash; receipt-inclusive disk bytes need a final limit check; failure
+    cleanup needs checked `TerminateJobObject` plus verified child death and
+    checked handles; and the receipt needs observed sample count/maximum gap,
+    not only a configured interval;
+  - selected smallest remediation: require and record an audited parent-gate
+    SHA-256 argument; target 10 ms sampling and fail if observed start-to-start
+    gap exceeds 25 ms; reject receipt-inclusive bytes above 2 GiB; check every
+    monitor-owned handle operation; on any monitor failure terminate the Job,
+    wait for and verify child exit, with an explicit process-kill fallback if
+    Job termination itself fails. Focused mutants must cover wrong gate hash,
+    receipt overflow, sampling overrun, and child cleanup before any real C
+    repeat.
+  - first independently authorized full-claves resource launch failed closed
+    in 0.9 seconds before encoding because the helper was invoked by script
+    path without `PYTHONPATH`; its absolute import of `experiments` failed.
+    The fresh staging root is empty and no child survived. A no-encode `--help`
+    probe reproduced the exact `ModuleNotFoundError`;
+  - a non-encoding test falsified module-only launch: the existing dependency
+    graph also imports top-level `cibs0` from `reference`. Retry remains
+    blocked. The selected correction is pinned Python `-I -c` with a recorded
+    bootstrap that inserts only the resolved repository and `reference` roots,
+    then runs the same hashed module; inherited `PYTHONPATH` remains excluded.
+    The new gate must also expose bounded child error evidence, pass focused
+    tests, receive a fresh external parent hash and independent GO, then use a
+    new empty staging root. Full evidence is in
+    `docs/reviews/R218_S11_RESOURCE_GATE_LAUNCH_INCIDENT_2026-08-02.md`.
+  - the remediated parent gate received independent GO at SHA-256
+    `3128e5f75dc5bf1955aec9515ba35c1cd8672aced3c86137cd1a84ce9436d198`;
+    its 13 focused fail-closed tests independently passed;
+  - authoritative final-C resource repeats both pass with frozen internal,
+    payload and PCM identities unchanged:
+    - claves: 193.272769-second encode, 256.040667-second parent wall,
+      782,192,640-byte peak working set, 10.6424-ms maximum observed sample
+      gap, 9,995-byte receipt-inclusive disk high-water, parent receipt
+      SHA-256 `d0a3193b4d3845e6dd15e9bec379902e8dc56a6c64da63a77ef373b0f867ee6b`;
+    - cymbal: 229.107934-second encode, 302.371870-second parent wall,
+      848,003,072-byte peak working set, 11.0230-ms maximum observed sample
+      gap, 9,973-byte receipt-inclusive disk high-water, parent receipt
+      SHA-256 `923f22901a173cfc01a98e7e3ad856b53794fb83adc56786c09c0a48bc5a1527`;
+  - both remain below the unchanged 600-second, 8 GiB and 2 GiB ceilings;
+  - independent final closeout recomputed receipt hashes and fixed-point sizes,
+    every pre/post authority, frozen internal/payload/PCM identities, runtime,
+    RSS, disk, sample counts/gaps, report arithmetic and the empty failed root.
+    Verdict: **GO for narrow immutable-commit preparation only**. Commit scope
+    requires a separate staged-index audit; pushing, old-R-217 reuse, a new
+    runner, Opus and corpus work remain unauthorized at this boundary.

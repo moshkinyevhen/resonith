@@ -185,17 +185,14 @@ def _sub_bin_peak(magnitude: np.ndarray, peak: int) -> float:
 
 
 def _direct_dtft(
-    frame: np.ndarray,
-    window: np.ndarray,
+    weighted_frame: np.ndarray,
+    relative_sample: np.ndarray,
     frequency_hz: float,
     sample_rate: int,
+    normalization: float,
 ) -> np.ndarray:
     """Evaluate phase at the fitted frequency and centered time origin."""
 
-    relative_sample = (
-        np.arange(frame.shape[0], dtype=np.float64)
-        - frame.shape[0] // 2
-    )
     kernel = np.exp(
         -2j
         * np.pi
@@ -203,9 +200,8 @@ def _direct_dtft(
         * relative_sample
         / sample_rate
     )
-    normalization = max(float(np.sum(window)), 1.0e-30)
     return (
-        np.sum(frame * window[:, None] * kernel[:, None], axis=0)
+        np.sum(weighted_frame * kernel[:, None], axis=0)
         / normalization
     )
 
@@ -440,7 +436,11 @@ def _assign_conflict_groups(
     )
     for position, first_index in enumerate(ordered):
         first = observations[first_index]
-        for second_index in ordered[position + 1 :]:
+        # Walk the same ordered suffix by index.  Materializing the suffix here
+        # copied O(n^2) references even though the time-window break examines
+        # only nearby observations; indexing preserves comparison/union order.
+        for second_position in range(position + 1, len(ordered)):
+            second_index = ordered[second_position]
             second = observations[second_index]
             if second.center_sample - first.center_sample > minimum_hop // 2:
                 break
@@ -486,7 +486,11 @@ def observe_complex_partials(
         ComplexPartialAnalyzerManifest()
     ),
 ) -> ComplexPartialObservationSet:
-    """Build the finite R-186 multiresolution observation union."""
+    """Build the finite R-186 multiresolution observation union.
+
+    The caller owns a stable PCM16 snapshot and must not mutate it concurrently
+    during analysis; deterministic encoding never defined concurrent mutation.
+    """
 
     source = np.asarray(samples)
     if (
@@ -509,6 +513,9 @@ def observe_complex_partials(
     if estimated_observations > manifest.maximum_observations:
         raise ValueError("R-186 observation manifest exceeds its hard bound")
 
+    # PCM16 values are exactly representable in float64.  Convert the stable
+    # source once instead of allocating the same full array for every frame.
+    source_float64 = source.astype(np.float64)
     observations: list[ComplexPartialObservation] = []
     allocation_reports = []
     for resolution_id, resolution in enumerate(manifest.resolutions):
@@ -516,6 +523,11 @@ def observe_complex_partials(
             resolution.fft_samples,
             sym=False,
         )
+        relative_sample = (
+            np.arange(resolution.fft_samples, dtype=np.float64)
+            - resolution.fft_samples // 2
+        )
+        normalization = max(float(np.sum(window)), 1.0e-30)
         bands = _band_edges(
             sample_rate,
             resolution.fft_samples,
@@ -527,13 +539,16 @@ def observe_complex_partials(
         for frame_index in range(frame_count):
             center_sample = frame_index * resolution.hop_samples
             frame = _centered_frame(
-                source.astype(np.float64),
+                source_float64,
                 center_sample,
                 resolution.fft_samples,
             )
-            normalization = max(float(np.sum(window)), 1.0e-30)
+            # Reuse the exact left operand that the incumbent expressions
+            # independently formed for the FFT and every direct DTFT.  The
+            # exponential and axis-0 reduction order remain unchanged.
+            weighted_frame = frame * window[:, None]
             spectrum = np.fft.rfft(
-                frame * window[:, None],
+                weighted_frame,
                 axis=0,
             ) / normalization
             channel_magnitude = 2.0 * np.abs(spectrum).T
@@ -608,10 +623,11 @@ def observe_complex_partials(
                         sub_bin * sample_rate / resolution.fft_samples
                     )
                     values = _direct_dtft(
-                        frame,
-                        window,
+                        weighted_frame,
+                        relative_sample,
                         frequency_hz,
                         sample_rate,
+                        normalization,
                     )
                     amplitudes = 2.0 * np.abs(values)
                     aggregate_amplitude = float(np.linalg.norm(amplitudes))
