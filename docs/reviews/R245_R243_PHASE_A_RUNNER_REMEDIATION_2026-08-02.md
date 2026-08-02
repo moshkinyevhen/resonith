@@ -2,7 +2,7 @@
 
 Date: 2026-08-02
 
-Status: **IMPLEMENTED, EXECUTION BLOCKED PENDING DUAL RE-AUDIT**
+Status: **REJECTED BY DUAL RE-AUDIT; NEVER EXECUTED**
 
 ## Scope
 
@@ -66,7 +66,11 @@ It was never executed.
 
 ## Remaining gate
 
-The compacted runner must remain at most 600 physical lines and 64 KiB, pass
-AST parsing and whitespace checks, and receive two new independent binary GO
-verdicts over its exact SHA-256 and the newly frozen authority SHA-256. Only
-those verdicts can authorize the single Phase-A evidence execution.
+The compacted runner remained within 600 physical lines and 64 KiB, but the
+dual re-audit found three remaining false-PASS classes: direct worker execution
+did not prove its own resource sandbox; the controller did not re-expand the
+complete base-authority closure after each worker; and retained payload/PCM/
+report files were not independently hashed back to their declared identities.
+Because R-243 allowed only one audited runner remediation, R-243 is closed
+without an evidence execution. R-246 is a new pre-execution authority
+transaction, not a retry of an evidence workload.
