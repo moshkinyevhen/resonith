@@ -1,4 +1,4 @@
-"""Atomically capture bounded R-246 Phase-A evidence; this changes no codec code."""
+"""Atomically capture bounded R-250 Phase-A evidence; this changes no codec code."""
 from __future__ import annotations
 import argparse, cProfile, hashlib, importlib, io, json, math, os
 from pathlib import Path
@@ -9,11 +9,11 @@ sys.dont_write_bytecode = True
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_ROOT = PROJECT_ROOT / "artifacts"
 RESULT_ROOT = PROJECT_ROOT / "experiments/results"
-FINAL_OUTPUT = ARTIFACT_ROOT / "r246-s15-short-baseline-prechange"
-STAGING_OUTPUT = ARTIFACT_ROOT / "r246-s15-short-baseline-prechange.staging"
-FAILURE_OUTPUT = ARTIFACT_ROOT / "r246-s15-short-baseline-prechange-failure.json"
-FUTURE_SUMMARY = RESULT_ROOT / "r246_s15_short_baseline_prechange.json"
-AUTHORITY_PATH = PROJECT_ROOT / "experiments/fixtures/r246_s15_phase_a_authority.json"
+FINAL_OUTPUT = ARTIFACT_ROOT / "r250-s15-short-baseline-prechange"
+STAGING_OUTPUT = ARTIFACT_ROOT / "r250-s15-short-baseline-prechange.staging"
+FAILURE_OUTPUT = ARTIFACT_ROOT / "r250-s15-short-baseline-prechange-failure.json"
+FUTURE_SUMMARY = RESULT_ROOT / "r250_s15_short_baseline_prechange.json"
+AUTHORITY_PATH = PROJECT_ROOT / "experiments/fixtures/r250_s15_phase_a_authority.json"
 ENVIRONMENT = {name: "1" for name in (
     "PYTHONDONTWRITEBYTECODE", "OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS")}
 ENVIRONMENT["PYTHONHASHSEED"] = "0"
@@ -69,7 +69,7 @@ def _safe_remove_staging() -> str | None:
     try:
         _exact_parent(STAGING_OUTPUT, ARTIFACT_ROOT)
         if STAGING_OUTPUT.exists():
-            if STAGING_OUTPUT.name != "r246-s15-short-baseline-prechange.staging": raise RuntimeError("unexpected staging name")
+            if STAGING_OUTPUT.name != "r250-s15-short-baseline-prechange.staging": raise RuntimeError("unexpected staging name")
             shutil.rmtree(STAGING_OUTPUT)
         return None
     except BaseException as error:
@@ -80,7 +80,7 @@ def _read_authority(path: Path, expected_sha256: str, *, check_git: bool) -> dic
     raw = resolved.read_bytes()
     if hashlib.sha256(raw).hexdigest() != expected_sha256.lower(): raise RuntimeError("R-243 authority SHA-256 mismatch")
     authority = json.loads(raw)
-    if authority.get("schema") != "resonith-r246-s15-phase-a-authority-1": raise RuntimeError("R-246 authority schema mismatch")
+    if authority.get("schema") != "resonith-r250-s15-phase-a-authority-1": raise RuntimeError("R-250 authority schema mismatch")
     if set(authority) != {"budgets", "environment", "files", "git_commit", "output_paths", "python", "runner", "runtime", "schema", "scope", "source"}: raise RuntimeError("R-246 authority top-level schema mismatch")
     if authority["environment"] != ENVIRONMENT or set(authority["python"]) != {"path", "sha256", "version"} or set(authority["runtime"]) != {"numpy", "windows_build"}: raise RuntimeError("R-246 authority runtime contract mismatch")
     if set(authority["files"]) != {"audit", "base_authority", "configuration", "implementation_audit", "native_core", "numpy_binary", "oracle", "preflight", "r232_runner", "r243_closure", "r243_preflight", "remediation", "runner", "source", "test_module"}: raise RuntimeError("R-246 authority file-set mismatch")
@@ -298,7 +298,7 @@ def _timing_worker(authority_path: Path, authority_sha: str, output: Path) -> No
         "identities": {label: records[0] for label, records in identities.items()},
         "medians": medians,
         "pair_order": [list(pair) for pair in PAIR_ORDER],
-        "schema": "resonith-r246-s15-timing-worker-1",
+        "schema": "resonith-r250-s15-timing-worker-1",
         "source_sha256_after": source_after,
         "trials": trials,
         "worker_process_cpu_seconds_proxy": time.process_time() - PROCESS_CPU_START,
@@ -325,7 +325,7 @@ def _profile_worker(authority_path: Path, authority_sha: str, output: Path) -> N
     stats = pstats.Stats(profiler)
     for name, sort_key in (("cumulative.txt", "cumulative"), ("self.txt", "tottime")):
         stream = io.StringIO()
-        pstats.Stats(profile_path, stream=stream).strip_dirs().sort_stats(sort_key).print_stats()
+        pstats.Stats(str(profile_path), stream=stream).strip_dirs().sort_stats(sort_key).print_stats()
         (output / name).write_text(stream.getvalue(), encoding="utf-8", newline="\n")
     selected = {}
     for key, value in stats.stats.items():
@@ -341,7 +341,7 @@ def _profile_worker(authority_path: Path, authority_sha: str, output: Path) -> N
     if source_after != authority["files"]["source"]["sha256"]: raise RuntimeError("R-243 source drifted during profile worker")
     _atomic_json(output / "report.json", {
         "cumulative_sha256": _sha256(output / "cumulative.txt"), "identity": identity, "lpc_to_encode_cumulative_ratio": ratio, "profile_functions": selected,
-        "profile_sha256": _sha256(profile_path), "schema": "resonith-r246-s15-profile-worker-1",
+        "profile_sha256": _sha256(profile_path), "schema": "resonith-r250-s15-profile-worker-1",
         "self_sha256": _sha256(output / "self.txt"),
         "source_sha256_after": source_after,
         "worker_process_cpu_seconds_proxy": time.process_time() - PROCESS_CPU_START})
@@ -404,7 +404,7 @@ def _validate_evidence(authority: dict):
     timing = _read_canonical(STAGING_OUTPUT / "timing/report.json"); profile = _read_canonical(STAGING_OUTPUT / "profile/report.json")
     timing_keys = {"analysis", "golden", "identities", "medians", "pair_order", "schema", "source_sha256_after", "trials", "worker_process_cpu_seconds_proxy"}
     profile_keys = {"cumulative_sha256", "identity", "lpc_to_encode_cumulative_ratio", "profile_functions", "profile_sha256", "schema", "self_sha256", "source_sha256_after", "worker_process_cpu_seconds_proxy"}
-    if set(timing) != timing_keys or set(profile) != profile_keys or timing["schema"] != "resonith-r246-s15-timing-worker-1" or profile["schema"] != "resonith-r246-s15-profile-worker-1": raise RuntimeError("R-246 worker report schema mismatch")
+    if set(timing) != timing_keys or set(profile) != profile_keys or timing["schema"] != "resonith-r250-s15-timing-worker-1" or profile["schema"] != "resonith-r250-s15-profile-worker-1": raise RuntimeError("R-250 worker report schema mismatch")
     if timing["source_sha256_after"] != authority["files"]["source"]["sha256"] or profile["source_sha256_after"] != timing["source_sha256_after"]: raise RuntimeError("R-246 worker source mismatch")
     if set(timing["analysis"]) != {"cpu_seconds", "wall_seconds"} or not all(_nonnegative(value) for value in timing["analysis"].values()): raise RuntimeError("R-246 analysis timing mismatch")
     expected_trials = [(index, label) for index, pair in enumerate(PAIR_ORDER) for label in pair]
@@ -463,7 +463,7 @@ def _worker_request(path: Path, expected_sha256: str) -> dict:
     request = json.loads(raw)
     if raw != _canonical_bytes(request): raise RuntimeError("R-246 worker request is not canonical")
     mode = request.get("mode")
-    if request.get("schema") != "resonith-r246-worker-request-1" or mode not in {"timing", "profile"}: raise RuntimeError("R-243 worker request schema/mode mismatch")
+    if request.get("schema") != "resonith-r250-worker-request-1" or mode not in {"timing", "profile"}: raise RuntimeError("R-243 worker request schema/mode mismatch")
     if path.resolve() != (STAGING_OUTPUT / f"{mode}-request.json").resolve(): raise RuntimeError("R-243 worker request path mismatch")
     if request.get("parent_pid") != os.getppid() or len(request.get("nonce", "")) != 64: raise RuntimeError("R-243 worker parent/nonce mismatch")
     output = Path(request["output"]).resolve(strict=False)
@@ -514,7 +514,7 @@ def _controller(authority_path: Path, authority_sha: str, output: Path) -> None:
                          (FAILURE_OUTPUT, ARTIFACT_ROOT), (FUTURE_SUMMARY, RESULT_ROOT)):
         _exact_parent(path, parent)
         if path.exists(): raise FileExistsError(f"R-243 pre-launch target exists: {path}")
-    unexpected = list(ARTIFACT_ROOT.glob("r246-s15-short-baseline-prechange.staging-*"))
+    unexpected = list(ARTIFACT_ROOT.glob("r250-s15-short-baseline-prechange.staging-*"))
     if unexpected: raise FileExistsError("R-243 unexpected staging sibling exists")
     source_hash = authority["files"]["source"]["sha256"]
     state = {"completed_modes": [], "phase": "owned", "resources": {}, "last_validated": {"authority_sha256": authority_sha.lower(), "git_commit": authority["git_commit"], "source_sha256": source_hash, "stage": "owned"}}
@@ -533,7 +533,7 @@ def _controller(authority_path: Path, authority_sha: str, output: Path) -> None:
             request_path = STAGING_OUTPUT / f"{mode}-request.json"
             request = {"authority_sha256": authority_sha.lower(), "mode": mode, "nonce": secrets.token_hex(32),
                        "output": str((STAGING_OUTPUT / mode).resolve(strict=False)), "parent_pid": os.getpid(),
-                       "schema": "resonith-r246-worker-request-1"}
+                       "schema": "resonith-r250-worker-request-1"}
             _atomic_json(request_path, request)
             request_sha = _sha256(request_path)
             requests[mode] = {"payload": request, "sha256": request_sha}
@@ -557,7 +557,7 @@ def _controller(authority_path: Path, authority_sha: str, output: Path) -> None:
             raw_request = request_path.read_bytes()
             if hashlib.sha256(raw_request).hexdigest() != request_sha or raw_request != _canonical_bytes(request) or request_path.with_suffix(".consumed").read_bytes() != (request_sha + "\n").encode("ascii"): raise RuntimeError("R-246 request/marker drift")
             report = _read_canonical(STAGING_OUTPUT / mode / "report.json")
-            expected_schema = f"resonith-r246-s15-{mode}-worker-1"
+            expected_schema = f"resonith-r250-s15-{mode}-worker-1"
             if report.get("schema") != expected_schema: raise RuntimeError(f"R-243 {mode} worker schema mismatch")
             if report.get("source_sha256_after") != authority["files"]["source"]["sha256"]: raise RuntimeError(f"R-243 {mode} source identity mismatch")
             cpu_proxy = report["worker_process_cpu_seconds_proxy"]
@@ -582,7 +582,7 @@ def _controller(authority_path: Path, authority_sha: str, output: Path) -> None:
             "environment": ENVIRONMENT, "git_commit": authority["git_commit"], "identities": authority["files"],
             "predicates": predicates, "python": authority["python"], "requests": requests, "resources": state["resources"],
             "retained_files": _manifest(STAGING_OUTPUT), "runtime": authority["runtime"],
-            "schema": "resonith-r246-s15-phase-a-receipt-1", "status": "PASS"}
+            "schema": "resonith-r250-s15-phase-a-receipt-1", "status": "PASS"}
         _atomic_json(STAGING_OUTPUT / "receipt.json", receipt)
         _validate_tree(STAGING_OUTPUT, receipt=True)
         receipt_raw = (STAGING_OUTPUT / "receipt.json").read_bytes(); retained_receipt = json.loads(receipt_raw)
@@ -608,7 +608,7 @@ def _failure(error: BaseException, authority_sha: str, started: float, state: di
     payload = {
         "authority_sha256": authority_sha.lower(), "controller_wall_seconds": time.perf_counter() - started,
         "error": f"{type(error).__name__}: {error}"[:4096], "monitored_failure_evidence": monitored,
-        "phase_state": state, "schema": "resonith-r246-s15-phase-a-failure-1",
+        "phase_state": state, "schema": "resonith-r250-s15-phase-a-failure-1",
         "staging_cleanup_error": cleanup_error[:4096] if cleanup_error else None, "status": "FAIL", "traceback": traceback.format_exc()[-16384:]}
     if len(_canonical_bytes(payload)) > LOG_LIMIT:
         payload = {"authority_sha256": authority_sha.lower(), "controller_wall_seconds": time.perf_counter() - started, "error": payload["error"][:1024], "monitored_failure_evidence": monitored, "phase_state": {key: state.get(key) for key in ("completed_modes", "last_validated", "observed", "phase_at_failure", "resources")}, "schema": payload["schema"], "staging_cleanup_error": payload["staging_cleanup_error"], "status": "FAIL", "traceback": "failure receipt compacted"}

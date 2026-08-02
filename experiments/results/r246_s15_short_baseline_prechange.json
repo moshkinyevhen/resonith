@@ -1,0 +1,31 @@
+{
+  "authority_sha256": "47ee9d8cd36e48097cd5ff50727806dfc0850d0ee2fdf2e9322993f65b922a40",
+  "codec_or_oracle_changed": false,
+  "controller_wall_seconds": 361.7872238000127,
+  "failure_receipt": {
+    "bytes": 4366,
+    "path": "artifacts/r246-s15-short-baseline-prechange-failure.json",
+    "sha256": "9946a43d8456c8a3116429c99093d1f60c7caf101ed40418fd8d100f62974393"
+  },
+  "git_commit": "ebfb185dd7c8de5240ff928a311226a29899a46b",
+  "profile_worker": {
+    "exit_code": 1,
+    "job_peak_memory_bytes": 116846592,
+    "process_peak_working_set_bytes": 140308480,
+    "root_cause": "Python 3.14 pstats.Stats rejected a pathlib.WindowsPath filename; use the documented string filename interface",
+    "wall_seconds": 118.07314870000118
+  },
+  "r198_triggered": false,
+  "runner_sha256": "54895890797bf5a545945345d9b9b0e599c909dc03d473bf6cc01c158d1232e8",
+  "schema": "resonith-r246-s15-phase-a-failure-summary-1",
+  "staging_cleanup_error": null,
+  "status": "FAIL",
+  "success_output_present": false,
+  "timing_worker": {
+    "exit_code": 0,
+    "job_peak_memory_bytes": 117219328,
+    "process_cpu_proxy_seconds": 226.671875,
+    "process_peak_working_set_bytes": 140107776,
+    "wall_seconds": 230.15138759999536
+  }
+}
