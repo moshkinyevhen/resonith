@@ -11333,3 +11333,26 @@ i32 end_gain_q15
   phase-free identities/arithmetic, paired subset/transport rule and delay axis
   were closed, the auditor returned binary GO on preflight SHA-256
   `957c4edd16267893b34cce37e4522eb92bde0017576cf17a901bf112983c627a`.
+
+## R-229 — R-227 implementation NO-GO and capability-bound remediation
+
+- Status: **REMEDIATED IMPLEMENTATION CANDIDATE; LONG EXECUTION NO-GO PENDING
+  COMMIT-BOUND INDEPENDENT AUDIT**.
+- The initial runner cleared the S11, direct-Truth, tiling, paired-arm, byte,
+  resource and atomic-output findings, but independent audit rejected a
+  forgeable textual phase seal, nonspecific synthetic detection and incomplete
+  loaded-module/commit authority.
+- The replacement `PhaseEvidenceVault` exposes no raw mapping and creates a
+  read capability only after the exact eligibility file has been atomically
+  committed. The frozen 600-placement MFT1 is hashed, parsed, schedule-checked
+  and natively decoded; only scheduled one-eighth-cycle crossings can satisfy
+  its aggregate control. Every file-backed loaded module is now hashed before
+  and after execution.
+- The focused gate passes 17/17 and a fresh-process inventory diagnostic is
+  exactly stable at 974 modules across synthetic native decode and speech
+  metrics. These are implementation checks, not compression results.
+- Detailed audit and remediation record:
+  `docs/reviews/R229_R227_IMPLEMENTATION_AUDIT_2026-08-02.md`.
+- The exact candidate must be committed and independently re-audited before
+  the one-shot four-input run. Syntax, decoder behavior, versioning, Opus
+  reruns, promotion and release remain blocked.

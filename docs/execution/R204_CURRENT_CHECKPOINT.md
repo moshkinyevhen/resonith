@@ -969,3 +969,22 @@ All 63 states remain individually visible: S01-S12 complete, S13 active, and
 S14-S63 pending. The audited pre-code package is public at commit
 `1c375d9f3ffe4f80b152e8015d0e25e9797f2ebf` on
 `codex/maf-r193-alpha`.
+
+## R-229 S13 implementation remediation checkpoint
+
+S13 remains active. The independent implementation audit cleared the earlier
+S11, direct-Truth, tiling, paired-arm, byte, resource and atomic-output
+findings, but returned NO-GO on a forgeable phase seal, nonspecific synthetic
+detection and incomplete module/commit authority.
+
+The single bounded remediation now uses a durable phase-evidence capability,
+checks and natively decodes the exact frozen 600-placement every-thirtieth-jump
+control, and binds every loaded file-backed Python module before and after the
+run. The focused gate passes 17/17 in 29.91 seconds and the fresh-process module
+inventory remains identical at 974 entries after synthetic decode and speech
+metrics.
+
+All 63 states remain individually visible: S01-S12 complete, S13 active, and
+S14-S63 pending. The next safe action is an explicit commit of the exact runner,
+test and audit record followed by a fresh commit-bound independent GO. The four
+long inputs and all product changes remain blocked until that verdict.

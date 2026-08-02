@@ -50,6 +50,12 @@ version.
   strict kill gate. R-228 authorizes only the smallest implementation; long
   execution, syntax, versioning and release remain blocked. The public pre-code
   checkpoint is commit `1c375d9f3ffe4f80b152e8015d0e25e9797f2ebf`.
+- Implemented the bounded R-227 runner and retained the independent R-229
+  NO-GO instead of hiding it. The bounded remediation replaces forgeable phase
+  strings with a durable capability vault, validates and natively decodes the
+  exact 600-placement periodic control, records the complete loaded-module
+  inventory, and passes 17/17 focused checks. Long execution remains blocked
+  until the committed bytes receive a fresh independent GO.
 
 ### Research
 
