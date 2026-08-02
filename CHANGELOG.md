@@ -43,6 +43,12 @@ version.
   not an active persistent-partial lane; no codec improvement, syntax, version,
   Opus rerun, or release is claimed. The coherent evidence package is commit
   `434d12fa3de72aacb3a2361bf99283f2caab42d0`.
+- Froze and independently audited the R-227 S13 phase-poisoned tiled-shadow
+  experiment. It uses a complete four-input authority, bounded twelve-second
+  target tiles, phase-free integer support and knot selection, paired existing-
+  syntax carry/reset arms, actual complete-byte/native-decode accounting and a
+  strict kill gate. R-228 authorizes only the smallest implementation; long
+  execution, syntax, versioning and release remain blocked.
 
 ### Research
 

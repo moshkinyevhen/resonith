@@ -99,6 +99,8 @@
 | [reviews/R215_S11_PERSISTENT_MULTI_PARTIAL_PREFLIGHT_2026-08-02.md](reviews/R215_S11_PERSISTENT_MULTI_PARTIAL_PREFLIGHT_2026-08-02.md) | Evidence-first S11 anonymous persistent-partial design, falsification, bounds, remediations, and independent audit gates |
 | [reviews/R224_S13_PHASE_ECONOMY_ORACLE_PREFLIGHT_2026-08-02.md](reviews/R224_S13_PHASE_ECONOMY_ORACLE_PREFLIGHT_2026-08-02.md) | Frozen S13 phase-economy alternatives, prior art, predecessor closure, oracle gates, and syntax hold |
 | [reviews/R226_R224_PREDECESSOR_AGGREGATE_AUDIT_2026-08-02.md](reviews/R226_R224_PREDECESSOR_AGGREGATE_AUDIT_2026-08-02.md) | Independent aggregate replay and narrow GO for R-224 predecessor identity closure |
+| [reviews/R227_S13_PHASE_POISONED_TILED_SHADOW_PREFLIGHT_2026-08-02.md](reviews/R227_S13_PHASE_POISONED_TILED_SHADOW_PREFLIGHT_2026-08-02.md) | Exact pre-code S13 tiled phase-poisoned shadow, paired existing-syntax arms, bounds, metrics, and kill gate |
+| [reviews/R228_R227_PREFLIGHT_AUDIT_2026-08-02.md](reviews/R228_R227_PREFLIGHT_AUDIT_2026-08-02.md) | Independent initial NO-GO, exact amendment closure, and binary GO for the smallest R-227 implementation |
 | [results/EXTENDED_AUDIO_CORPUS_2026-07-27.md](results/EXTENDED_AUDIO_CORPUS_2026-07-27.md) | R-111 heterogeneous corpus acquisition, coverage, and preparation evidence |
 | [results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md](results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md) | R-107 gain-shape results against Opus across all 16 R-111 classes |
 | [results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md](results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md) | R-107 complete speech, piano, and full-Mozart admission result |

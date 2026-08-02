@@ -946,3 +946,25 @@ the four-input free exact-phase upper-bound oracle, followed by independent
 pre-code and post-implementation audits. Paid phase syntax, decoder/bitstream
 changes, an Opus rerun, product/version changes, promotion and release remain
 blocked.
+
+## R-228 S13 pre-code GO and next safe action
+
+S13 remains active. R-227 replaces the under-bound monolithic Stage-1 wording
+with one exact phase-poisoned tiled-shadow experiment. The complete preflight
+SHA-256 is
+`957c4edd16267893b34cce37e4522eb92bde0017576cf17a901bf112983c627a`.
+The four-input local source manifest SHA-256 is
+`173b3c8c773a3152358dbe542bca53aa839999a2813fe3a8dbaeec63ac376f88`;
+all four file and PCM identities were re-read successfully.
+
+The first independent review returned NO-GO and the exact amendment closed its
+four blockers plus the second red-team's phase-free identity/arithmetic
+findings. R-228 records the final independent binary GO. The next safe action
+is exactly one experimental runner and one focused contract-test module,
+followed by a separate implementation audit. The four long inputs, new syntax,
+decoder changes, Opus rerun, versioning, promotion and release remain blocked
+until their declared gates.
+
+All 63 states remain individually visible: S01-S12 complete, S13 active, and
+S14-S63 pending. Repository HEAD and public branch before this uncommitted
+pre-code package are `6fbc459258dfad4961a5e5ad4011b0e4788f79ae`.

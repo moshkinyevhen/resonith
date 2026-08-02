@@ -11273,3 +11273,63 @@ i32 end_gain_q15
   `docs/results/R224_S13_PREDECESSOR_COMPARISON_2026-08-02.md`.
 - Independent verdict:
   `docs/reviews/R226_R224_PREDECESSOR_AGGREGATE_AUDIT_2026-08-02.md`.
+
+## R-227 — S13 phase-poisoned tiled shadow amendment
+
+- Status: **PRE-CODE GO; SMALLEST IMPLEMENTATION AUTHORIZED; LONG EXECUTION
+  NO-GO PENDING IMPLEMENTATION AUDIT**.
+- R-224/R-226 closed the predecessor baseline but exposed three contradictions
+  in the first Stage-1 wording. Phase cannot vary on a continuous lane while
+  frequency remains fixed except through a discontinuous reset; exact S11 uses
+  observed phase in graph/path/thinning decisions; and all four declared long
+  inputs exceed the frozen 3,500,000-observation monolithic S11 cap. Their
+  calculated upper bounds are 28,405,440 for Mozart, 5,030,688 for long
+  LibriSpeech, 46,659,024 for full *Elephants Dream*, and 28,350,336 for the
+  synthetic positive control.
+- Rejected alternatives are raising the monolithic cap, reusing phase-informed
+  S11 paths, allowing an unbounded per-sample phase oracle, changing frequency
+  through an undisclosed phase bridge, or treating a reference-only waveform as
+  native-decoder evidence.
+- The selected smallest falsifiable correction is a conservative twelve-second
+  tiled shadow proposer. It uses only a frozen existing R-186 resolution,
+  centered 4096-sample halo, half-open core ownership and no cross-tile edges.
+  Phase-free observation records drive path, support, knot, gain, frequency,
+  Basis and lane ordering. Exact phase values live in a separate sealed table
+  that those stages cannot access.
+- The shadow phase-blind arm uses observed phase only at lane birth and then
+  carries phase continuously. The reset arm may replace only the existing
+  fixed-size MFT1 type-8 `source_position_q16` value at an already sealed
+  retained-knot placement start. Automatic placement splits must carry phase
+  and create no reset degree of freedom. Frequency, gain, Basis, support,
+  knots, placement count, route, Truth coder and decoder remain identical.
+- Both arms are actual existing-syntax MFT1/CBF1 candidates and must be decoded
+  through the frozen native Core. Every predictor, container and final-Truth
+  byte is charged. The four-byte phase-position field may be reported as an
+  attribution but is never subtracted from complete size or called free in a
+  codec-rate claim.
+- Eligibility and its digest are sealed before the phase table or savings is
+  read. Phase usability may reject a complete sealed lane but may not prune,
+  split, rerank or change it. The three real long inputs must all qualify and
+  pass; the 600-second synthetic signal is a positive control only and cannot
+  satisfy the real-audio count.
+- The exact input identities, generator, tile geometry, phase-free matcher,
+  knot DP, candidate order, byte ledger, quality directions/tolerances,
+  resource bounds and negative tests must be frozen in one R-227 record before
+  code. A fresh independent binary GO is mandatory before implementation and a
+  separate implementation GO before the first four-input execution.
+- The exact pre-code candidate is
+  `docs/reviews/R227_S13_PHASE_POISONED_TILED_SHADOW_PREFLIGHT_2026-08-02.md`.
+  It binds the local source-identity manifest SHA-256
+  `173b3c8c773a3152358dbe542bca53aa839999a2813fe3a8dbaeec63ac376f88`,
+  the twelve-second target tile law, the integer phase-free tracker, the paired
+  carry/reset arms, actual existing-syntax byte accounting, native decode,
+  metric tolerances, resource ceilings and the one-shot kill gate.
+- New phase syntax, decoder behavior, an Opus rerun, product/version changes,
+  promotion and release remain **NO-GO**.
+- R-228 records the audit sequence. The first independent pass rejected
+  preflight SHA-256
+  `5846b8f5db651aa8ba89a9bf6511af83b1c89a11da9331423ad19cec083d0c33`.
+  After the four-input authority, exact bound-rejection status, canonical
+  phase-free identities/arithmetic, paired subset/transport rule and delay axis
+  were closed, the auditor returned binary GO on preflight SHA-256
+  `957c4edd16267893b34cce37e4522eb92bde0017576cf17a901bf112983c627a`.
