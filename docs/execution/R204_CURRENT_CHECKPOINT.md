@@ -988,3 +988,27 @@ All 63 states remain individually visible: S01-S12 complete, S13 active, and
 S14-S63 pending. The next safe action is an explicit commit of the exact runner,
 test and audit record followed by a fresh commit-bound independent GO. The four
 long inputs and all product changes remain blocked until that verdict.
+
+## R-231 S13 terminal rejection and S15 handoff
+
+The commit-bound R-230 audit returned GO and authorized the one frozen R-227
+execution at commit `5d720128ccbd77091ac613274df135b503af028c`.
+
+Full Mozart and long LibriSpeech completed with zero eligible phase-free lanes.
+Full *Elephants Dream* then stopped before candidate publication at the frozen
+native lapped-analysis host ceiling. The synthetic control was not executed.
+No retry or resource/threshold change is authorized. The exact terminal-record
+SHA-256 is
+`75445b6fdbc90d0ae3ded651a0e239dde4bcb8a1f1c9a48c8f438374726b7db5`.
+
+R-231 independently verified every retained receipt, eligibility digest,
+resource bound, empty staging state and absence of retry, and returned GO with
+no blockers. S13 is complete as rejected/no-change. S14 is complete as not
+applicable because no algorithm generation was admitted. S15 is active from
+the unchanged S12 baseline.
+
+All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
+and S16-S63 pending. The next safe action is the evidence-first S15 source-
+filter preflight: freeze alternatives, prior art, anonymous excitation/
+resonator identifiability, complete byte-quality-resource cost, falsification
+gates, and an independent pre-code audit before implementation.

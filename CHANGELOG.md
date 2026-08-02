@@ -56,6 +56,13 @@ version.
   exact 600-placement periodic control, records the complete loaded-module
   inventory, and passes 17/17 focused checks. Long execution remains blocked
   until the committed bytes receive a fresh independent GO.
+- Closed R-227/S13 as an independently audited negative result. Full Mozart
+  and long LibriSpeech produced zero eligible phase-free lanes; full
+  *Elephants Dream* then stopped before candidate publication at the frozen
+  native lapped-analysis memory ceiling. No retry, threshold retuning, syntax,
+  version, decoder, Opus anchor or product behavior changed. S14 is not
+  applicable because no generation was admitted; S15 source-filter work starts
+  from the unchanged accepted S12 baseline.
 
 ### Research
 

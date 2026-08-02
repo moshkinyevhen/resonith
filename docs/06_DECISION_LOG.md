@@ -11356,3 +11356,43 @@ i32 end_gain_q15
 - The exact candidate must be committed and independently re-audited before
   the one-shot four-input run. Syntax, decoder behavior, versioning, Opus
   reruns, promotion and release remain blocked.
+
+## R-230 — R-227 commit-bound implementation GO
+
+- Date: 2026-08-02
+- Status: **INDEPENDENT GO FOR ONE FROZEN FOUR-INPUT EXECUTION**.
+- Exact commit `5d720128ccbd77091ac613274df135b503af028c` matches local
+  HEAD and the public `codex/maf-r193-alpha` branch. The runner and focused
+  test SHA-256 values are respectively
+  `320307dc8fd0c9bead47fd2dd998734f17bbed232632be1615d121db3b02eef6`
+  and
+  `50153bfb914069493c5d5a93095f6e5a7ae9e24ecee7fc8ef3c106e3d89af3d9`.
+- The independent auditor passed 17/17 focused tests and confirmed the durable
+  object-identity phase capability, exact synthetic schedule/native decode,
+  full loaded-module inventory and every previously cleared bound.
+- This GO authorized one execution only. It did not authorize syntax, decoder,
+  version, Opus rerun, promotion or release changes.
+
+## R-231 — R-227 terminal result and S13 rejection
+
+- Date: 2026-08-02
+- Status: **INDEPENDENT GO TO REJECT; MEASURED NO-CHANGE**.
+- Full Mozart and long LibriSpeech completed atomically but produced zero
+  eligible phase-free lanes. Their eligibility stages did not access phase.
+  Either result independently fails the frozen all-three-real kill gate.
+- Full *Elephants Dream* stopped before candidate publication with
+  `MemoryError: native lapped analysis exceeds the configured host ceiling`.
+  Its staging directory is empty and no final item exists. The synthetic
+  positive control was not executed after this terminal resource failure.
+- The terminal record SHA-256 is
+  `75445b6fdbc90d0ae3ded651a0e239dde4bcb8a1f1c9a48c8f438374726b7db5`.
+  Independent audit confirmed the index, receipt, eligibility and resource
+  identities, absence of retry, and fail-closed disposition with no blockers.
+- S13 is closed as rejected/no-change. S14 is not applicable because no new
+  Resonith generation exists to compare. S15 begins from the unchanged S12
+  accepted baseline. No phase syntax, decoder/default/version, Opus anchor,
+  product or release behavior changes.
+- Detailed result:
+  `docs/results/R227_S13_PHASE_POISONED_SHADOW_RESULT_2026-08-02.md`.
+- Independent verdict:
+  `docs/reviews/R231_R227_RESULT_AUDIT_2026-08-02.md`.

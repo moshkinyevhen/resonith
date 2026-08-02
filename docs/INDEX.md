@@ -102,6 +102,8 @@
 | [reviews/R227_S13_PHASE_POISONED_TILED_SHADOW_PREFLIGHT_2026-08-02.md](reviews/R227_S13_PHASE_POISONED_TILED_SHADOW_PREFLIGHT_2026-08-02.md) | Exact pre-code S13 tiled phase-poisoned shadow, paired existing-syntax arms, bounds, metrics, and kill gate |
 | [reviews/R228_R227_PREFLIGHT_AUDIT_2026-08-02.md](reviews/R228_R227_PREFLIGHT_AUDIT_2026-08-02.md) | Independent initial NO-GO, exact amendment closure, and binary GO for the smallest R-227 implementation |
 | [reviews/R229_R227_IMPLEMENTATION_AUDIT_2026-08-02.md](reviews/R229_R227_IMPLEMENTATION_AUDIT_2026-08-02.md) | Independent implementation NO-GO, durable phase capability, exact periodic-control validation, and commit-bound re-audit gate |
+| [reviews/R230_R227_COMMIT_BOUND_IMPLEMENTATION_GO_2026-08-02.md](reviews/R230_R227_COMMIT_BOUND_IMPLEMENTATION_GO_2026-08-02.md) | Commit-bound independent GO for the single frozen R-227 four-input execution |
+| [reviews/R231_R227_RESULT_AUDIT_2026-08-02.md](reviews/R231_R227_RESULT_AUDIT_2026-08-02.md) | Independent result GO to reject S13 as measured no-change and advance to S15 |
 | [results/EXTENDED_AUDIO_CORPUS_2026-07-27.md](results/EXTENDED_AUDIO_CORPUS_2026-07-27.md) | R-111 heterogeneous corpus acquisition, coverage, and preparation evidence |
 | [results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md](results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md) | R-107 gain-shape results against Opus across all 16 R-111 classes |
 | [results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md](results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md) | R-107 complete speech, piano, and full-Mozart admission result |
@@ -138,6 +140,7 @@
 | [results/R215_S11_PERSISTENT_MULTI_PARTIAL_2026-08-02.md](results/R215_S11_PERSISTENT_MULTI_PARTIAL_2026-08-02.md) | Focused S11 implementation, complete Truth RDO, tail-fusion A/B, deterministic active repeat, and independent GO evidence |
 | [results/R221_S12_FIXED_OPUS_DIRECT_2026-08-02.md](results/R221_S12_FIXED_OPUS_DIRECT_2026-08-02.md) | Complete 19-item direct comparison against one fixed official Opus 1.6.1 maximum-complexity anchor, with strict-rate exclusions and independent replay |
 | [results/R224_S13_PREDECESSOR_COMPARISON_2026-08-02.md](results/R224_S13_PREDECESSOR_COMPARISON_2026-08-02.md) | Actual 19-item pre-S11 direct-Truth execution proving payload and decoded-PCM identity with every retained R-221 Resonith output |
+| [results/R227_S13_PHASE_POISONED_SHADOW_RESULT_2026-08-02.md](results/R227_S13_PHASE_POISONED_SHADOW_RESULT_2026-08-02.md) | Terminal phase-shadow evidence: zero eligible real lanes, frozen resource stop, no admitted generation, and no-change closure |
 | [reviews/R223_S12_COMPLETE_CORPUS_AUDIT_2026-08-02.md](reviews/R223_S12_COMPLETE_CORPUS_AUDIT_2026-08-02.md) | Independent 19/19 authority, decoder, metric, rate-controller, and aggregate GO for narrow S12 admission |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
