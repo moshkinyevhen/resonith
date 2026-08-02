@@ -10552,3 +10552,167 @@ i32 end_gain_q15
   - R-185 preflight and independent red-team remain mandatory before source
     changes;
   - R-198 is not triggered by the workflow-only R-213 remediation.
+
+### R-215 frozen S11 persistent multi-partial predictor
+
+- Status: **FOCUSED S11 COMPLETE; INDEPENDENT GO; S12 AUTHORIZED**
+- Problem and complete objective:
+  - R-191/R-203 provides bounded anonymous complex-partial paths but no
+    synthesis or actual-byte selection;
+  - minimize complete container, one frozen Basis, independent per-channel
+    lifetimes, and final Truth bytes under actual decoder quality, work,
+    memory, startup, and fallback costs;
+  - direct lapped Truth remains the complete incumbent.
+- Sources of truth:
+  - McAulay/Quatieri sinusoidal analysis-synthesis, global partial-tracking
+    literature, MPEG-4 parametric audio/HILN, spectral-modeling residual
+    practice, DDSP physical priors, R-180/R-183 negative byte evidence, and
+    the admitted R-191/R-203 native paths;
+  - sinusoidal tracking, parametric lines, and line-plus-residual synthesis are
+    prior art and are not claimed as Resonith novelty.
+- Alternatives:
+  - no change/direct Truth: retained as fallback and RDO incumbent;
+  - frame-local fundamental plus harmonics: rejected for polyphony,
+    inharmonicity, crossings, and phase cancellation;
+  - a new persistent oscillator opcode: rejected until existing MFT1 type-8
+    and CBF1 transport prove complete-byte benefit;
+  - independent anonymous persistent lanes: accepted as the smallest coherent
+    test;
+  - source-filter, phase anchors, stochastic/transient paths, latent
+    separation, harmonic grouping, cross-channel reuse, learned proposals,
+    and public syntax: deferred to their existing later panel steps.
+- Frozen S11 language:
+  - frozen used-only cosine family `{16,32,64,128,256}`, complete fixture
+    SHA-256
+    `9880c8f4ad2ac36e5af5302299a8a6dbbe7416b8243f48c786db3a375c40a87c`;
+  - unchanged MFT1 type-8 piecewise-linear Q16 step and signed Q15 gain,
+    arbitrary birth/death, one initial phase, continuous one-past phase carry,
+    independent per-channel emitters, static one-hot mix, one final Truth, and
+    direct Truth fallback;
+  - one length is selected once per lane; length 16 maps the existing
+    inclusive `+/-8 * 2^16` step range to the full signed Nyquist interval,
+    while longer admitted lengths reduce interpolation error;
+  - aggregate observations may propose paths but cannot share channel law,
+    phase, gain, emitter, or record cost in S11.
+- Reproducible in-language lower bound:
+  - actual native decode of a 12-second changing/overlapping four-lane field;
+  - complete CBF1 candidate `4,768` bytes versus direct Truth `119,854` bytes,
+    ratio `3.9782%`, with bit-exact final PCM;
+  - two runs produced receipt SHA-256
+    `0b86b51d90e1be8c335103bdfb746ea408970706d88654c1452ea407bdd31668`;
+  - this proves only bounded representational capacity, not analyzer recovery,
+    real-audio gain, Opus gain, novelty, or promotion.
+- Retained negative evidence:
+  - a read-only 997 Hz diagnostic exposed 16-point interpolation residual RMS
+    307.74 PCM and increased lapped Truth from 572 to 8,126 bytes;
+  - final Truth and direct fallback price this error; the failed 16-only
+    language was revised before the focused S11 gate rather than hidden by a
+    threshold change.
+- Falsifiable prediction and kill gates:
+  - automatically recovered lanes must make a new complete Pareto point, with
+    the predeclared focused synthetic threshold passing on at least two of
+    crossing, birth/death overlap, and gap/reappearance cases;
+  - path identity, channel phase, continuous split carry, CBF1/MFT1 PCM
+    identity, final decoder loop, bounds, and direct fallback must remain
+    exact and deterministic;
+  - noise, transients, over-bound candidates, or uneconomic lanes must fall
+    back explicitly rather than force model activation;
+  - S12 must run the complete registered long-first comparison against the
+    preceding Resonith generation and maximum-effort official Opus before any
+    S13 algorithm work or promotion.
+- Independent audit:
+  - final **GO with no blockers** for the frozen S11 implementation;
+  - signed `+/-Nyquist` edges, beyond-range rejection, all artifact hashes,
+    byte closure, `2^20` phase modulus, exact split carry, and claim boundary
+    were independently checked;
+  - public syntax, S13+, promotion, release, novelty, and compression claims
+    remain unauthorized until focused S11 evidence and S12.
+- Dominated cycle-offset implementation rule:
+  - S11 uses `cycle_offsets=(0,)`; nonzero duplicates change no phase or
+    topology term and add only nonnegative offset cost;
+  - frozen crossing evidence preserves the same selected 122-observation
+    semantic sequence while reducing edges `4,755 -> 951` and native work
+    `170,645,887 -> 26,757,175` units;
+  - semantic identity means the ordered observation evidence, not candidate,
+    incoming-edge, path, rank, or packed IDs across manifests;
+  - universal bounded-frontier equivalence is not claimed because duplicate
+    IDs can consume top-K state under ties or saturation;
+  - the encoder work cap is frozen at `250,000,000` units; exhaustion is an
+    explicit fallback, not authority to expand the cap silently.
+- Basis-resolution remediation before the focused S11 gate:
+  - the analyzer-recovered 16-only clean-tone candidate improved SSE sharply
+    but lost rate at both 64 and 128 coefficients/frame, exposing material
+    interpolation residual rather than a threshold problem;
+  - alternatives were direct Truth only, 256 only with fallback above
+    `sample_rate/32`, a frozen power-of-two family, or a new oscillator opcode;
+    direct Truth remains fallback, 256 only loses high partials, and a new
+    opcode remains deferred to S51;
+  - independent audit returned **GO** for the smallest coherent frozen family
+    `{16,32,64,128,256}` and **NO-GO** for adding 512/1024 in S11;
+  - one length is selected once per lane as the longest member whose raw,
+    corrected, interpolated, split, and tail endpoint steps all fit existing
+    type-8 bounds; the length never changes inside that lane;
+  - every phase mapping, distance, correction, modulo, one-past carry, split,
+    and tail operation uses that length; a hard-coded 16 is a blocker;
+  - only used tables are packed once in ascending-length order and their full
+    byte/header cost participates in complete RDO;
+  - native one-law evidence at 128 coefficients/frame gives length-128
+    `3,719` bytes/SSE `0` versus direct Truth `4,229` bytes/SSE `15,724,667`,
+    a 12.06% byte reduction with exact PCM; this is a focused lower bound, not
+    analyzer recovery or a real-audio claim.
+- Final decoder-coordinate phase-fit remediation:
+  - the unchanged analyzer path remains authoritative; measured frequency may
+    select only an unwrapped integer cycle and cannot change path identity;
+  - a frozen Q12 weighted two-parameter integer solve proposes type-8 endpoint
+    steps, with endpoint-prior weight one, exact ties-even division, fixed
+    conditioning and signed 512-bit accumulator gates;
+  - the actual half-away-rounded native type-8 coordinates rescore every
+    observation and split; ambiguous aliases, insufficient data, range or
+    conditioning failures retain the previous endpoint fitter or direct Truth;
+  - no phase reset, interior anchor, per-knot phase record, or opcode is added;
+    those remain S13/S51 scope;
+  - the historical 4,412-byte/SSE-915,414 diagnostic is explicitly
+    non-authoritative because its exact input, command, and artifact identities
+    were not persisted; it is neither an admission baseline nor a passed gate;
+  - the executable admission gate is the reproducible predeclared two-of-three
+    structural Pareto threshold plus explicit noise/transient fallback,
+    executed transport/decoder evidence, and deterministic repetition of an
+    actually model-active candidate.
+- Boundary-valid paid-lifetime rule:
+  - an independent audit returned **GO** for excluding centered observations
+    whose frozen FFT window extends beyond source bounds;
+  - the complete native path and ordered IDs remain unchanged evidence; one
+    deterministic maximal valid run defines separate retained-support IDs;
+  - run selection maximizes covered sample span, then observation count, then
+    earliest center, then lexicographic IDs, without bridging invalid rows;
+  - rejected prefix, suffix, and gaps remain final Truth and no edge-padding
+    extrapolation is allowed;
+  - the rule changes paid S11 birth/death only and makes no unbiased-gain
+    claim; complete decoder-domain RDO remains authoritative.
+ - Exact constant-span tail fusion:
+  - independent **GO** permits fusing an adjacent tail into a constant law only
+    under identical emitter/Basis/circular/gain, 65,535-sample, frozen
+    frequency/type-8, old-boundary one-past-phase, and support-contiguity gates;
+  - it is not a PCM-identical refactor: the tail prediction, Truth, and complete
+    RDO are recomputed and the fused form is never forced;
+  - the focused receipt must expose before/after placements, boundary phase,
+    complete bytes/SSE, executed CBF1/MFT1 identity, and model-active repeat
+    hashes before S11 can close.
+- Focused closeout evidence:
+  - authoritative receipt
+    `G:\Resonith\artifacts\r215-s11-focused-v3\r215_s11_focused_gate.json`,
+    SHA-256
+    `afcdea6a9277182b53f32b1c0777e904fe1a58c5a52ccdcd9f26e5cf462ecc95`;
+  - predeclared structural Pareto threshold passed on birth/death and
+    gap/reappearance; noise and transient explicitly selected direct Truth;
+  - the model-active delayed/antiphase stereo candidate selected CBF1 + Truth
+    at 14,051 bytes/SSE 132,190,200 versus direct Truth 15,813
+    bytes/SSE 154,475,295, with identical repeated stream, PCM, lane evidence,
+    and metric hashes;
+  - all 16 evaluated subsets proved parser-derived S11-only records,
+    CBF1/MFT1 predictor identity, and independent complete-decode identity;
+  - independent final verdict is **GO with no blocking findings** and an
+    independent 24/24 relevant-test pass in 6.61 seconds;
+  - this closes focused S11 and authorizes only the complete S12 registered
+    long-first comparison. S13, promotion, release, novelty, and compression
+    claims remain blocked.

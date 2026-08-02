@@ -15,15 +15,15 @@ Canonical plan:
 
 Repository branch: `codex/maf-r193-alpha`
 
-Last accepted repository revision before the current evidence work:
-`69c0d341b626d29dff6d951ec3485a437d42e767`
+Repository HEAD and public branch before the uncommitted S11/S12 evidence:
+`ca87decf7d4b255bae11ce980e6f4be6fe3065f0`
 
-Worktree state: active R-203 evidence-only remediation; not clean and not yet
-admitted. The owner's untracked development-plan DOCX is outside project edits
-and must not be staged, moved, modified, or removed.
+Worktree state: active R-215 S12 comparison preparation; not clean. The owner's
+untracked development-plan DOCX and unrelated worktree changes are outside
+project edits and must not be staged, moved, modified, or removed.
 
-Current `git status --porcelain=v1 -uall` identity at the R-205 V26
-implementation checkpoint:
+Historical `git status --porcelain=v1 -uall` identity at the R-205 V26
+implementation checkpoint (retained evidence, not the current worktree):
 
 - entry count: `86`;
 - SHA-256 of the UTF-8 newline-joined status rows:
@@ -31,16 +31,17 @@ implementation checkpoint:
 
 ## Stable step status
 
-- `S01`–`S08`: completed.
-- `S09`: in progress.
-- `S10`: pending until S09 receives independent GO.
-- `S11`–`S63`: pending.
+- `S01`–`S11`: completed.
+- `S12`: in progress.
+- `S13`–`S63`: pending.
 
-Active evidence generation:
-`R205-FAMILY-EPOCH-V26`, evidence-only and unadmitted.
+Active evidence generation: R-215 S12 complete registered long-first codec
+comparison.
 
-Codec-algorithm generation: none active. R-203 does not change the codec
-algorithm, bitstream, or decoded PCM and therefore does not trigger R-198.
+Codec-algorithm generation: the focused S11 R-215 implementation has
+independent GO but remains experimental until S12 completes the mandatory
+comparison against the exact preceding Resonith incumbent and maximum-effort
+official Opus.
 
 Incumbent identities:
 
@@ -62,18 +63,18 @@ Incumbent identities:
 
 ## Active substep
 
-Complete R-205 V26 Stage-1 Phase A before any discovery call:
+Run S12 with no intervening algorithm change:
 
-1. finish the exact private telemetry implementation, 36 site contexts,
-   18 epoch slots, ledger snapshots, canonical serialization, and rooted
-   validator;
-2. compile only a temporary byte-identical source tree with the permitted
-   C++23 evidence delta;
-3. pass source, AST, ABI, semantic, typed, status, alias, PE/resource,
-   runtime, and working-set gates;
-4. only after all Phase-A receipts pass, run the authority-ordered 19,587
-   discovery calls. Admission, the original 72-mutant campaign, R-203
-   admission, S10, and codec-algorithm work remain forbidden.
+1. freeze the complete registered source manifest, exact prior Resonith
+   incumbent, current R-215 candidate, official Opus 1.6.1 tools/options, and
+   actual decoders;
+2. run the full Mozart long input first, then every other registered long input,
+   and only then the complete short corpus;
+3. retain per-file and aggregate complete bytes, quality, phase/transient/
+   channel diagnostics, time, CPU/GPU, memory, hashes, fallbacks, commands, and
+   listening artifacts;
+4. obtain independent GO/NO-GO before S13. Do not promote R-215 or make an Opus
+   superiority claim from the focused synthetic S11 gate.
 
 ## Frozen identities
 
@@ -873,13 +874,20 @@ The independent auditor returned final GO and found no remaining S10 blocker.
 The retained local evidence root is
 `G:\Resonith\artifacts\r213-s10-final`.
 
-## Next safe action after R-214
+## R-215 S11 focused final GO checkpoint
 
-S11 is active: define and implement the smallest coherent anonymous
-multi-partial MAF predictor with persistent source lifetimes. Before production
-behavior changes, complete the R-185 evidence-first brainstorm, prior-art and
-first-principles review, explicit alternatives and falsification, full cost
-model, kill gate, and independent red-team. S12 remains the mandatory complete
-registered long-first comparison against the preceding Resonith generation and
-maximum-effort official Opus before any S11 algorithm generation can be
-accepted.
+S11 is complete. The authoritative focused receipt is
+`G:\Resonith\artifacts\r215-s11-focused-v3\r215_s11_focused_gate.json`, SHA-256
+`afcdea6a9277182b53f32b1c0777e904fe1a58c5a52ccdcd9f26e5cf462ecc95`.
+The predeclared two-of-three structural Pareto gate passed; noise/transient
+fallback, 16 executed subset transport/complete-decoder identities, parsed
+S11-only syntax, zero anchor/reset records, model-active deterministic repeat,
+and tail-fusion A/B all passed. The independent auditor returned final GO with
+no blockers and independently passed 24/24 relevant tests.
+
+## Next safe action after R-215
+
+S12 is active. Freeze and execute the complete registered long-first comparison
+against the preceding Resonith generation and maximum-effort official Opus.
+S13, promotion, release, novelty, and compression claims remain blocked until
+S12 completes and receives independent admission.

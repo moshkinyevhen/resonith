@@ -96,6 +96,7 @@
 | [reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V25_AUDIT_RESULT_2026-07-30.md](reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V25_AUDIT_RESULT_2026-07-30.md) | Two independent V25 NO-GO verdicts on matrix-count and realized-argv contradictions |
 | [reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V26_PREFLIGHT_2026-07-30.md](reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V26_PREFLIGHT_2026-07-30.md) | Exact 619-row matrix closure and separate immutable-template versus realized-admission argv laws |
 | [reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V26_AUDIT_RESULT_2026-07-30.md](reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V26_AUDIT_RESULT_2026-07-30.md) | Two independent V26 GO verdicts and the exact evidence-only implementation boundary |
+| [reviews/R215_S11_PERSISTENT_MULTI_PARTIAL_PREFLIGHT_2026-08-02.md](reviews/R215_S11_PERSISTENT_MULTI_PARTIAL_PREFLIGHT_2026-08-02.md) | Evidence-first S11 anonymous persistent-partial design, falsification, bounds, remediations, and independent audit gates |
 | [results/EXTENDED_AUDIO_CORPUS_2026-07-27.md](results/EXTENDED_AUDIO_CORPUS_2026-07-27.md) | R-111 heterogeneous corpus acquisition, coverage, and preparation evidence |
 | [results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md](results/HETEROGENEOUS_GAIN_SHAPE_2026-07-27.md) | R-107 gain-shape results against Opus across all 16 R-111 classes |
 | [results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md](results/PERCEPTUAL_GAIN_SHAPE_2026-07-27.md) | R-107 complete speech, piano, and full-Mozart admission result |
@@ -129,6 +130,7 @@
 | [results/R203_CANDIDATE_RICH_INTERIM_2026-07-29.md](results/R203_CANDIDATE_RICH_INTERIM_2026-07-29.md) | Interim 288-case independent selection, raw typed twice-run, Clang/GCC packed-parity evidence, with complete-ledger NO-GO retained |
 | [results/R207_S09_SCOPE_AND_S10_LOCAL_GATE_2026-08-01.md](results/R207_S09_SCOPE_AND_S10_LOCAL_GATE_2026-08-01.md) | R-207 withdrawal of the unimplemented private-ABI test recursion and bounded S10 public-ABI local conformance evidence |
 | [results/R214_S10_FINAL_ADMISSION_2026-08-02.md](results/R214_S10_FINAL_ADMISSION_2026-08-02.md) | Final S10 cross-toolchain, sanitizer, coverage, platform, artifact-integrity, and independent GO evidence |
+| [results/R215_S11_PERSISTENT_MULTI_PARTIAL_2026-08-02.md](results/R215_S11_PERSISTENT_MULTI_PARTIAL_2026-08-02.md) | Focused S11 implementation, complete Truth RDO, tail-fusion A/B, deterministic active repeat, and independent GO evidence |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
