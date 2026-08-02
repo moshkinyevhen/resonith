@@ -9,6 +9,31 @@ version.
 
 ## [Unreleased]
 
+### Evidence and repository history
+
+- Completed the output-identical R-218 S11 analyzer acceleration at commit
+  `64521b19551d4b9688de10fe01c5302607a5beb1`; codec payload and decoded PCM
+  identities are unchanged.
+- Added the audited R-219 direct comparison controller for current Resonith
+  versus one fixed official Opus 1.6.1 configuration. The partial long-first
+  run retained complete per-file bytes and actual-decoder quality metrics, then
+  failed closed when four bounded rate attempts missed the first registered
+  speech item.
+- Added R-220 short and 319.38-second LibriSpeech diagnostics. Resonith decoding
+  is faster than real time on both; the long encoder is 11.78 times real time,
+  while the short analyzer-rich path is not real time. At matched bytes,
+  Resonith has higher waveform SNR but lower STOI/ESTOI and worse log-mel than
+  Opus, so no speech-quality victory is claimed.
+- Accepted the pre-code design for R-221 bounded rate-only calibration. It
+  preserves the single fixed maximum-complexity Opus configuration, permits at
+  most twelve quality-blind integer-bitrate observations, and excludes every
+  unmatched row from equal-rate claims. Implementation and the complete S12
+  corpus remain pending.
+- Made GitHub synchronization durable: every coherent pushed change now carries
+  an English changelog entry, R-number, validation record, updated all-63-step
+  checkpoint, and commit identity. Experimental commits do not increment the
+  product `VERSION` or imply release.
+
 ### Research
 
 - Accepted the R-190 edge analyzer contract and retained the remediated R-191

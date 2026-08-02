@@ -2334,6 +2334,16 @@ measured improvements and regressions separately from targets or hypotheses.
 Local artifacts and the corresponding public release MUST identify the same
 version, source commit, filenames, and SHA-256 hashes.
 
+Every coherent change synchronized to an external repository SHALL be
+recoverable through an English `CHANGELOG.md` entry, a stable R-decision or
+evidence-generation identifier, the exact validation result, and an updated
+R-204 checkpoint containing the state of all 63 stable steps. A mixed worktree
+SHALL be staged by explicit path; unrelated or generated residue SHALL NOT be
+silently included. Experimental checkpoints are identified by immutable commit
+SHA plus R-number. `VERSION` SHALL change only for an admitted implementation
+generation or release. Commit or push success alone SHALL NOT imply evidence
+admission, compatibility, release, or a quality/compression claim.
+
 A normative syntax or decoder-behavior change MUST declare bitstream and ABI
 compatibility and increment the appropriate version. An unversioned change
 without reproducible before/after evidence remains an experiment and MUST NOT
@@ -2349,7 +2359,30 @@ maximum-effort Opus, actual-decoder, affected platform, listening, resource,
 security and Orkela acceptance gates pass and their comparative report is
 published. Each gate SHALL state the risk it controls and the decision enabled
 by a pass. The authoritative completion order is recorded in R-194 through
-R-196 and `docs/20_LSPF_MASTER_EXECUTION_PLAN.md`.
+R-196, R-204, and `docs/20_LSPF_MASTER_EXECUTION_PLAN.md`.
+
+The complete derived operational view SHALL be panel `R204-63-V1` in
+`docs/23_CONTINUOUS_63_STEP_EXECUTION_PANEL.md`, SHA-256
+`6b2d1e21436e22231538d1b362657375c3699892b5290d17843ae025f510684e`.
+Its 63 stable IDs SHALL remain durably restorable and SHALL NOT be silently
+shortened, regrouped, renumbered, reordered, or reconstructed from memory. The
+panel does not override the canonical plan, accepted decisions, dependencies,
+quarantines, audits, kill gates, safety, or authority. While continuous
+execution remains owner-authorized, a passing subtask is a checkpoint rather
+than project completion and execution proceeds to the earliest
+dependency-ready, safe, in-scope item. Continuation does not expand authority
+or authorize an external push, publication, release, paid service, credential
+use, destructive action, or unrelated work.
+
+Every pause, blocker, or execution-boundary yield SHALL update the durable
+R-204 checkpoint with all 63 states, repository and evidence identities, the
+active generation, blocker, clearance condition, invalidation conditions, and
+next safe action. Any clear owner stop, pause, wait, reprioritization,
+supersession, or scope reduction controls. Mandatory audit NO-GO, evidence
+drift, irreproducibility, missing authority or dependency, and safety,
+integrity, privacy, legal, host, storage, compute, or cost risk SHALL fail
+closed. A NO-GO blocks promotion and dependent work but does not prohibit
+separately authorized remediation.
 
 Every change to the codec algorithm SHALL define a new evidence generation and
 SHALL execute the complete versioned registered-music manifest before another
@@ -2366,6 +2399,10 @@ losses, wins and regressions per file and in aggregate. The original, encoded
 alternatives and decoded evaluation signals SHALL remain in the generation
 evidence directory.
 
+In this section, publishing a report means producing and retaining the local
+project evidence artifact. External publication or release requires separate
+authority.
+
 The registered-music manifest SHALL contain every project-pinned music file
 available to the generation, including all short/long and structural classes.
 A selected three-file subset SHALL NOT satisfy this gate. A mechanical
@@ -2374,6 +2411,51 @@ and decoded PCM are proven.
 
 The complete operational procedure is defined by
 [`docs/15_CONTINUOUS_EVIDENCE.md`](../docs/15_CONTINUOUS_EVIDENCE.md).
+
+### 16.1 Minimal sufficient evidence and anti-recursion
+
+Every official evidence gate SHALL begin with a claim ledger. Each proposed
+test SHALL identify an existing production claim or publicly observable
+behavior, the risk it controls, identity-current evidence already available,
+the expected result, and the decision caused by failure. A test without this
+mapping SHALL NOT be admitted.
+
+An implementation SHALL reuse current public-ABI, conformance, comparison,
+security, release, and platform gates before creating new evidence
+infrastructure. Their source, binary, command, toolchain, and input identities
+SHALL match the production version under test. A new harness requires a written
+public-observability gap that the retained gates cannot cover.
+
+An official gate SHALL NOT introduce a private or test-only ABI, semantic
+backdoor, friend-access hook, patched production binary, or a harness whose
+sole purpose is validating another harness. Independent hashes, schema
+validation, and repeated execution through the public production interface are
+terminal evidence-integrity checks; they SHALL NOT create another meta-gate.
+
+Before implementation, the gate SHALL freeze one cumulative budget covering
+human-authored and generated files and lines, runtime, peak memory, retained
+storage, CI/device/cloud/API cost, and remediation iterations. Splitting work
+across files, processes, names, generations, or harnesses SHALL NOT reset the
+budget or remediation count. Every numeric case or repetition count SHALL have
+a structural-coverage, boundary, mutation, convergence, statistical, or
+defect-detection rationale; an unexplained round count is not an admission
+requirement.
+
+Direct structural evidence through the public ABI SHOULD be preferred when it
+observes the claimed property. It SHALL NOT replace mandatory runtime,
+concurrency, security, compatibility, release, or platform execution when the
+property is observable only there.
+
+A gate passes only when its claim ledger is completely covered within the
+frozen budget, its result is reproducible, and every artifact is bound to the
+exact production identity. The first budget breach or first remediation MAY
+authorize one bounded redesign. A repeated breach or a second remediation
+cycle for the same claim SHALL stop the gate for independent redesign or scope
+reduction; renaming the work does not create a new first attempt. Negative
+research evidence blocks only explicitly dependent claims.
+
+This clause SHALL NOT weaken the R-198 registered-music comparisons or any
+mandatory release, security, compatibility, resource, or platform gate.
 
 ## 17. Open items
 

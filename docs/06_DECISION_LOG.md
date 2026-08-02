@@ -10717,6 +10717,68 @@ i32 end_gain_q15
     long-first comparison. S13, promotion, release, novelty, and compression
     claims remain blocked.
 
+## R-217 — Owner-directed fixed official Opus direct anchor
+
+- Status: **NORMATIVE EVIDENCE POLICY; INDEPENDENT CONDITIONAL GO CLOSED**
+- The owner stopped the R-216 exhaustive Opus-frontier search during the first
+  long item and narrowed S12 to a direct current-Resonith-versus-Opus
+  comparison. The preceding Resonith generation is excluded from R-217.
+- R-217 uses one official Opus 1.6.1 point at maximum `opusenc` complexity,
+  true VBR, 20 ms, zero expected loss, 1000 ms maximum delay, default phase
+  inversion, zero padding, discarded comments/pictures, and deterministic
+  serial. The exact registered token `speech` selects `--speech`; every other
+  item uses `--music`.
+- R-217 is not the R-166 maximum-effort frontier and cannot support a general
+  "better than Opus" claim. R-166 remains authoritative for any later broad
+  Opus claim.
+- Exactly four bitrate-feedback attempts are generated. Before any quality
+  metric is inspected, one attempt is selected by absolute complete-byte
+  delta, then smaller complete bytes, q5, and attempt index. Failure to enter
+  `max(64, target_bytes // 1000)` is `UNMATCHED` and forbids equal-rate claims.
+- The selected Ogg is decoded by official `opusdec`; current Resonith is
+  decoded by the Golden Core. Each receives one common metric pass from
+  identical PCM.
+- Partial R-216 staging has diagnostic value only and cannot seed R-217.
+  R-217 receives a new run identity, output schema, long-first atomic receipts,
+  frozen path/process/time/RSS/disk bounds, and fresh S11 and Opus encodes.
+- Independent red-team initially returned NO-GO and then authorized the
+  smallest coherent implementation after the claim, selection, container, and
+  authority remediations above were incorporated in
+  `docs/reviews/R217_S12_FIXED_OPUS_DIRECT_PREFLIGHT_2026-08-02.md`.
+- S13 remains blocked until all 19 R-217 receipts and the aggregate direct
+  report pass. This is an explicit owner-directed S12 evidence amendment, not
+  a silent modification of the stable 63-step panel.
+- First full-run incident and sole bounded redesign:
+  - full Mozart committed in 356.707504 seconds with receipt SHA-256
+    `99a0fcf1624860554331dfea6119918d77636586bf2b12c1cfa9b5fbe61123ef`;
+  - `ebu-claves` then failed closed at its exact 420-second S11 child ceiling,
+    without a stream, receipt, RSS/disk breach, orphan, or blind retry;
+  - the 2,998-byte failed staging was atomically quarantined with both file
+    hashes preserved;
+  - independent GO permits one change only: short S11 900 seconds and short
+    worker 1,200 seconds, with every other algorithm, identity, corpus and
+    resource bound unchanged;
+  - the redesigned run uses a new output root and repeats Mozart; any second
+    budget breach stops R-217 instead of expanding the limit again;
+  - complete evidence is in
+    `docs/reviews/R217_S12_SHORT_TIMEOUT_INCIDENT_2026-08-02.md`.
+- Second full-run stop:
+  - the new run identity
+    `68ee12a3560fab4bbe16969dc85488bdddace28913d4330e08770a10f558a6c3`
+    independently repeated Mozart and committed `ebu-claves` in 800.877559
+    seconds;
+  - `ebu-cymbal` then exceeded the redesigned exact 900-second S11 ceiling
+    without an output, receipt, RSS/disk breach, orphan, or retry;
+  - its 3,009-byte request-only staging was atomically quarantined with both
+    hashes preserved;
+  - R-211 now forbids another ceiling increase. R-217 is stopped until an
+    independently audited, output-identical S11 performance redesign fits the
+    existing bound, or the owner explicitly reduces scope;
+  - partial Mozart/claves evidence is retained but does not close S12 or
+    authorize S13/promotion;
+  - exact evidence is in
+    `docs/reviews/R217_S12_SECOND_TIMEOUT_STOP_2026-08-02.md`.
+
 ## R-218 — Output-identical S11 analyzer performance remediation
 
 - Status: **INDEPENDENT GO; BASELINE FINGERPRINTING AUTHORIZED**
@@ -10846,3 +10908,137 @@ i32 end_gain_q15
     Verdict: **GO for narrow immutable-commit preparation only**. Commit scope
     requires a separate staged-index audit; pushing, old-R-217 reuse, a new
     runner, Opus and corpus work remain unauthorized at this boundary.
+
+## R-219 — Post-R-218 fixed-Opus direct comparison identity
+
+- Status: **PRE-CODE; INDEPENDENT GO/NO-GO REQUIRED**
+- R-218 is immutable at revision
+  `64521b19551d4b9688de10fe01c5302607a5beb1`, but R-217 intentionally pins the
+  preceding source revision and lacks explicit analyzer identity. It must fail
+  rather than be bypassed.
+- Owner scope remains direct current Resonith versus one fixed official Opus
+  1.6.1 maximum-complexity point. No Opus-frontier search and no preceding-
+  Resonith comparison column are authorized.
+- Selected smallest change: a new R-219 controller generation preserving every
+  R-217 algorithm, command, metric, byte-selection, corpus, ordering, atomicity,
+  time and resource rule while changing only schemas/error labels, source and
+  preflight identities, and explicit analyzer authority.
+- The analyzer must be hashed in controller material and worker requests before
+  and during work. Old R-217 output remains diagnostic and cannot seed R-219.
+- Pre-code model, alternatives, fixed authorities and kill gates are in
+  `docs/reviews/R219_S12_POST_R218_DIRECT_IDENTITY_PREFLIGHT_2026-08-02.md`.
+  Controller code remains blocked pending an independent verdict.
+- First independent pre-code verdict: **NO-GO**. The R-217-shaped request was
+  mutable after creation and `item_id` did not bind every algorithmic field;
+  analyzer pre/post hashes also could not exclude change-use-restore ABA during
+  the nested S11 child.
+- Revised design seals exact request bytes through out-of-band argv SHA plus a
+  canonical manifest-item hash, verifies both in receipt and index, and holds
+  Windows deny-write/delete handles over the complete frozen imported execution
+  set and current source throughout worker execution and final verification.
+  First start requires a nonexistent reparse-free root; resume is explicit and
+  accepts only an exact indexed R-219 tree. Old R-217 schemas/tree adoption,
+  analyzer/dependency ABA and unchanged-id request mutants are mandatory
+  negative tests. Code remains blocked pending re-audit.
+- Second independent pre-code verdict: **NO-GO**. The allowed-diff gate had not
+  been expanded to the required controls; file handles alone did not prevent
+  ancestor-directory path swap; authority hashes and locks could diverge across
+  hand-maintained lists; and request bytes would still have been deleted.
+- Revised closure uses one canonical sorted declared project/tool/input
+  authority set for hashes, locks, material, request and receipt; holds both
+  file and ancestor-directory deny-delete handles; retains exact sealed request
+  bytes in every completed item; and quarantines rather than adopts an
+  unindexed rename-before-index crash product. Python site-packages and Windows
+  remain an explicitly version-pinned frozen-host assumption, not a false
+  whole-OS byte-lock claim. The allowed diff and required cross-process mutants
+  now enumerate these controls. Code remains blocked pending another verdict.
+- Third independent pre-code verdict: **NO-GO**. A singular authority digest
+  ambiguously included a different current WAV for each item, and the stated
+  hash/lock order left a mutation window between observation and lock.
+- Finalized identity model separates one run-wide static
+  `base_authority_set_sha256` from nineteen manifest-bound
+  `item_authority_set_sha256` values formed by adding exactly one source WAV.
+  Paths and ancestors are validated first; all directory/file handles are then
+  acquired in sorted order; hashes and digests are computed and compared only
+  while every lock is live; request creation/worker launch follows; postflight
+  hashes are checked before release. A synchronized hash-before-lock mutant is
+  mandatory. Code remains blocked pending re-audit.
+- Fourth independent pre-code verdict: **NO-GO** solely because stale
+  singular-digest wording contradicted the normative base-plus-nineteen-item
+  model and did not state when run identity becomes immutable.
+- The stale wording is removed. Run identity/material is computed once before
+  item execution from expected static rows plus the ordered nineteen manifest
+  source hashes. Under-lock observations must equal those precommitted base and
+  item values before request creation and can never redefine the run. Code
+  remains blocked pending final pre-code re-audit.
+- Final implementation audit: **GO for the exact R-219 direct gate**.
+  - runner SHA-256:
+    `e5f17b7a036cf83b408eebe0b65fb8c21be6da41c3b8343b4d1f2654ab989f54`;
+  - focused-test SHA-256:
+    `9d441eec34cd8f4a872da26942e941f4d8a1741e679e57808a7d20dadbcbde30`;
+  - 27/27 focused tests independently passed in 2.63 seconds;
+  - exact prefix resume, request retention/sealing, base-plus-nineteen item
+    authorities, Windows file/ancestor locking, R-217 rejection, emitted
+    two-codec output and pinned host identity all passed;
+  - AST comparison confirmed the computation-critical S11 and fixed-Opus
+    functions remain R-217-equivalent after label normalization;
+  - the authorized execution is current Resonith versus one fixed official
+    Opus 1.6.1 point only. No frontier search, preceding-generation column,
+    S13, promotion or release is authorized by this verdict;
+  - complete verdict:
+    `docs/reviews/R219_S12_DIRECT_IMPLEMENTATION_AUDIT_2026-08-02.md`.
+
+## R-221 — Bounded rate-only matching for direct comparison
+
+- Status: **PRE-CODE; INDEPENDENT GO/NO-GO REQUIRED**.
+- R-219 stopped correctly on `ebu-female-speech-en`: the four fixed Opus
+  attempts bracketed the 94,816-byte target but missed the 94-byte tolerance.
+  Repeating them is a blind retry; searching other Opus configurations is
+  outside owner scope.
+- Selected remediation preserves the first four attempts and every Opus
+  configuration coordinate, then permits at most eight integer-bitrate
+  bisection attempts inside the observed byte bracket. Quality is unavailable
+  to the controller until one point has been selected.
+- If twelve attempts still do not match, the nearest actual point is retained
+  with explicit `UNMATCHED_NEAREST` and byte/rate delta. It cannot support an
+  equal-rate winner claim but no longer prevents reporting the rest of the
+  corpus.
+- No R-219 output may seed R-221. S11, metrics, decoders, corpus/order and all
+  resource/time bounds remain unchanged.
+- Preflight and gates:
+  `docs/reviews/R221_S12_BOUNDED_RATE_MATCH_PREFLIGHT_2026-08-02.md`.
+- First independent pre-code verdict: **NO-GO**. The no-bracket path was
+  undefined, VBR nonmonotonicity made the bracket rule ambiguous, and unmatched
+  rows were not mechanically excluded from equal-rate aggregate claims.
+- Remediation forbids extrapolation. A legal bracket is an observed
+  q5-ordered sign-changing pair outside the strict tolerance; the minimum-span
+  pair is recomputed from every unique observation with a fixed tie order.
+  Missing, duplicate or non-shrinking brackets terminate immediately to the
+  quality-blind nearest point. Aggregate status/counts exclude every unmatched
+  row from all equal-rate statistics and claims. Code remains blocked pending
+  re-audit.
+- Second independent pre-code verdict: **NO-GO** on three deterministic details:
+  midpoint rounding, terminal fallback coverage and repeated-q5 handling.
+- The exact midpoint is now `q_low + (q_high - q_low) // 2` and must remain
+  strictly internal. Every no-match terminal condition selects nearest with no
+  further encode. Equal-q5 observations must have identical bytes and
+  normalized Ogg hash or fail determinism; agreeing duplicates collapse to the
+  earliest attempt only for bracket construction. Code remains blocked pending
+  final re-audit.
+- Final independent pre-code re-audit of exact preflight SHA-256
+  `a97c1da031e905e4ac55d16f13f069f12cc330a2a657951e7824eadf1ca2c755`:
+  **GO with no blocking findings**. It authorizes only the exact bounded
+  controller implementation and focused validation. Corpus execution still
+  requires post-implementation identity audit.
+
+## R-222 — Durable GitHub history and checkpoint versioning
+
+- Status: **OWNER-ACCEPTED PROCESS REQUIREMENT**.
+- Every coherent externally synchronized change must update the English
+  changelog and durable all-63-step R-204 checkpoint, then use explicit-file
+  staging and an immutable commit SHA. Experimental identities are R-number
+  plus commit SHA; `VERSION` changes only for an admitted generation or
+  release.
+- A commit or push is repository synchronization only. It cannot admit an
+  experiment, imply compatibility, create a release, or establish a quality or
+  compression claim.

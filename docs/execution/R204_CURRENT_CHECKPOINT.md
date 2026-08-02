@@ -887,7 +887,20 @@ no blockers and independently passed 24/24 relevant tests.
 
 ## Next safe action after R-215
 
-S12 is active. Freeze and execute the complete registered long-first comparison
-against the preceding Resonith generation and maximum-effort official Opus.
+S12 is active under the owner's narrowed direct-comparison scope: current
+Resonith versus one fixed official Opus 1.6.1 configuration at complexity 10,
+with no Opus-frontier or preceding-generation output column. R-219 completed
+Mozart and five registered classes, then failed closed on an unmatched speech
+rate. R-220 separately completed short and 319.38-second LibriSpeech realtime
+diagnostics. R-221 bounded rate-only calibration received independent pre-code
+GO at preflight SHA-256
+`a97c1da031e905e4ac55d16f13f069f12cc330a2a657951e7824eadf1ca2c755`.
+
+All 63 states remain: S01-S11 complete, S12 in progress, S13-S63 pending.
+Repository HEAD before the R-221 implementation is
+`64521b19551d4b9688de10fe01c5302607a5beb1`; the worktree is intentionally
+mixed, so every synchronization must stage explicit files. The next safe
+action is the exact audited R-221 implementation, focused tests, independent
+post-code identity verdict, and then a fresh full long-first direct corpus.
 S13, promotion, release, novelty, and compression claims remain blocked until
 S12 completes and receives independent admission.

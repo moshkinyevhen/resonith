@@ -141,6 +141,16 @@ Never present a **TARGET** or **HYPOTHESIS** as a measured result.
     meta-gate. Negative research evidence blocks only dependent claims. This
     rule never weakens R-198 or mandatory runtime, concurrency, security,
     release, compatibility, or platform gates.
+22. Preserve every coherent project change in version control. Before an
+    externally synchronized commit, update the English `CHANGELOG.md` and the
+    durable R-204 checkpoint so the affected stable step, evidence generation,
+    validation, repository identity, and next action are recoverable. Use the
+    immutable commit SHA plus the R-number as the identity of experimental
+    checkpoints. Increment `VERSION` only for an admitted implementation
+    generation or release; never manufacture a product version for an
+    unadmitted experiment. Stage explicit files from a mixed worktree, never
+    `git add -A`, and record push/PR/release state truthfully. A pushed commit
+    is synchronization, not evidence admission or release.
 
 ## Repository language
 
@@ -202,3 +212,7 @@ After a change, verify:
     music-manifest comparison against the immediately preceding Resonith
     generation and maximum-effort official Opus before another algorithm
     generation begins.
+16. every synchronized coherent change has an English changelog entry, an
+    updated all-63-step checkpoint, explicit-file staging, a reproducible
+    validation record, and a commit SHA; admitted versions additionally update
+    `VERSION` and matching artifact metadata.

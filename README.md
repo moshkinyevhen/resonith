@@ -226,6 +226,13 @@ An improvement is not released until its semantic version and English
 protocol is in
 [Continuous Evidence and Release Protocol](docs/15_CONTINUOUS_EVIDENCE.md).
 
+Every coherent synchronized development change is also recoverable before it
+is pushed: its English changelog entry, R-number, validation evidence, affected
+stable step, and all-63-step durable checkpoint are committed together. The
+commit SHA identifies experimental checkpoints. `VERSION` changes only when a
+generation is admitted or released, so a GitHub push never masquerades as a
+product release.
+
 An explicit shared Golden Core can replace Python forward analysis without
 changing the selected bitstream:
 

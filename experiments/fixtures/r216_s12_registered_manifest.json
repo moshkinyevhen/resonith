@@ -1,0 +1,489 @@
+{
+  "challenger_identity": {
+    "native_core_sha256": "f12c6ad9061089d2d4088a5bfd2e20e845148ebcd303afaecc3bb2dc6be042ed",
+    "predictor_sha256": "583daeee36190389d98278c2f0927db28e4d3423f0de9252e23c0226e790f1ec",
+    "python_wrapper_sha256": "32c514e5c9cf4f1beffba61c62d262489f35e2fb0c2e74c3cfdae2a132694045",
+    "source_revision": "7e2726789ca980177a32e6b36cfcd9f1d90b5463"
+  },
+  "comparison_scope": "R-215 S11 versus official maximum-effort Opus only; no preceding-Resonith comparison by owner direction",
+  "constituents": {
+    "coefficient_budget_provenance": {
+      "r117_complete_report": {
+        "path": "r117-complete/report.json",
+        "sha256": "cc906ac76c0bbd8acb3d4303818071c608e187eb0d152e075dd0986acfd98665"
+      },
+      "r117_r111_report": {
+        "path": "r117-r111/report.json",
+        "sha256": "51709d0e18184f9d86b9397e8e282e1315ca6aa50304c3d86dffa719ca492fe8"
+      },
+      "use": "configuration provenance only; no incumbent stream or metric comparison"
+    },
+    "prepared_r111_manifest": {
+      "path": "prepared-r111/prepared-manifest.json",
+      "sha256": "2af905648ec33b092d172fb8868abcdb4f09db91615a9e675cacd4ddc54930f3"
+    },
+    "real_music_corpus": {
+      "path": "experiments/real_music_corpus.json",
+      "sha256": "6eb7e6e6e330cf7d3890688ab5d67a0180c8be0403589e44dfe221b118f1ab9b"
+    }
+  },
+  "date": "2026-08-02",
+  "item_count": 19,
+  "items": [
+    {
+      "categories": [
+        "music"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 72,
+        "half_window": 512
+      },
+      "id": "mozart-full",
+      "order": 1,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 400.772666667,
+        "file_sha256": "f9bcc829c8c61e850c8a15d7d25ec600a904b2041ed3bb4d9e13131ea30a5a6f",
+        "frame_count": 19237088,
+        "path": "orkela-public-benchmark/mozart-original.wav",
+        "pcm16_payload_sha256": "c63dfcb59c384ef2f74cfb5edada31af9b7f25d3aa8706e0eb2fd41e06f0ae10",
+        "sample_rate": 48000
+      }
+    },
+    {
+      "categories": [
+        "transient",
+        "sparse",
+        "percussion",
+        "stereo"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "ebu-claves",
+      "order": 2,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 12.0,
+        "file_sha256": "9069b02a7bf39a67c36f634aef759d79ad63241b8b709d08b12f8a6a043959df",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-claves.wav",
+        "pcm16_payload_sha256": "1a8b6faffd774da205898a453deb3fa9d8e42c4da5e20d05aaac2a05e26cd65b",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "transient",
+        "stochastic",
+        "long-decay",
+        "stereo"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "ebu-cymbal",
+      "order": 3,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 12.0,
+        "file_sha256": "4e5fed73eea73f72b9b227591a9a586dbd664d762497aa6a9457920571447b42",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-cymbal.wav",
+        "pcm16_payload_sha256": "a9513b354efa40700c811f9fae8122f4a1a16196d849f684281263b2bdffd8cd",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "dense-mix",
+        "orchestra",
+        "classical",
+        "stereo"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "ebu-dense-orchestra",
+      "order": 4,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 12.0,
+        "file_sha256": "0b4a52d215937c541b3443fbbda3e45dd75909e3086d31d7c14dc0ca0885f134",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-dense-orchestra.wav",
+        "pcm16_payload_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "dense-mix",
+        "popular-music",
+        "voice",
+        "stereo"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "ebu-dense-pop",
+      "order": 5,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 12.0,
+        "file_sha256": "268d05e02aa746ffad10a7d4f1b9567334fcc9c784d42b56819ffafa2437436e",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-dense-pop.wav",
+        "pcm16_payload_sha256": "451f1950b201a63805aaf5ae14648f4c22870744246cffd2d1528d7846e1736f",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "electronic",
+        "tonal",
+        "synthetic"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 67,
+        "half_window": 512
+      },
+      "id": "ebu-electronic-tune",
+      "order": 6,
+      "source": {
+        "channel_count": 1,
+        "duration_seconds": 12.0,
+        "file_sha256": "8e863d085c3cfec9d8b4998e70db5de5dc0df414c1bb4c42547cf64e7f8db01e",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-electronic-tune.wav",
+        "pcm16_payload_sha256": "3999f17ac552f825cfaf1468bdf849c5d462c48cbeb525a7d774855a8833670b",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "speech",
+        "female",
+        "english"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 67,
+        "half_window": 512
+      },
+      "id": "ebu-female-speech-en",
+      "order": 7,
+      "source": {
+        "channel_count": 1,
+        "duration_seconds": 12.0,
+        "file_sha256": "f88f9321b302f2bab62cf5aa2dab62721b105efc36b37921372651625c4c0a0e",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-female-speech-en.wav",
+        "pcm16_payload_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "polyphonic",
+        "tonal",
+        "attack-decay",
+        "stereo"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "ebu-grand-piano",
+      "order": 8,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 12.0,
+        "file_sha256": "7141951e68eac8533d3a78065cc3036cdd2f13025d6c0bcb98b79d804d31629c",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-grand-piano.wav",
+        "pcm16_payload_sha256": "1002dcdc41b51c30fc204fe56a7d8fa1e52b14cbf80351a5c91327ac8c71d87e",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "speech",
+        "male",
+        "english"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 67,
+        "half_window": 512
+      },
+      "id": "ebu-male-speech-en",
+      "order": 9,
+      "source": {
+        "channel_count": 1,
+        "duration_seconds": 12.0,
+        "file_sha256": "0b12c8ee0f3def4a525fbeb2f9362972285d114a30d959a6da2a53be6b09ffea",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-male-speech-en.wav",
+        "pcm16_payload_sha256": "ff0f0f153ba2172be14425e7cbd6c9cf6b97a3025f1cae2d750d4787bda253ad",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "stochastic",
+        "noise",
+        "stereo"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "ebu-pink-noise",
+      "order": 10,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 12.0,
+        "file_sha256": "b3198d029a6ffd9ec43e9f5a863b8d8603a940ade4bb9ef90c8e184f643c295a",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-pink-noise.wav",
+        "pcm16_payload_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "transient",
+        "drum",
+        "noise-like",
+        "stereo"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "ebu-side-drum",
+      "order": 11,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 12.0,
+        "file_sha256": "47ef7efbb69684d60f68191182b482c083bb7e118903f761764817b75e4b0a31",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-side-drum.wav",
+        "pcm16_payload_sha256": "49daa865d51b9b76d04c941212640f7edbc2e02c88e0cc3e2dd7cf4e88241de9",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "solo-voice",
+        "harmonic",
+        "formant",
+        "stereo"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "ebu-soprano",
+      "order": 12,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 12.0,
+        "file_sha256": "b56f2d5b1b4f5a7061fe3c55e86ddd924c865fc3beeceeee5da1e0044e8cc0e2",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-soprano.wav",
+        "pcm16_payload_sha256": "8c72b39f95c8023eae5d6ef0d8b5c2b6d4c9f2af9dca039867df99c94be57306",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "sustained-tone",
+        "deterministic",
+        "level-tracking"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 67,
+        "half_window": 512
+      },
+      "id": "ebu-sustained-sine",
+      "order": 13,
+      "source": {
+        "channel_count": 1,
+        "duration_seconds": 12.0,
+        "file_sha256": "78faec4d9b92b72cba0ae1d13ec16bfc520c6c31e1b6df5f4e97e89515557e57",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-sustained-sine.wav",
+        "pcm16_payload_sha256": "060d8544899796771d4e81c103f96a877be0dc2b1937255a7d6aae65bca39e1f",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "resonant",
+        "vibrato",
+        "long-decay"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 67,
+        "half_window": 512
+      },
+      "id": "ebu-vibrato-gong",
+      "order": 14,
+      "source": {
+        "channel_count": 1,
+        "duration_seconds": 12.0,
+        "file_sha256": "314210d30b03d67e4f923f1584d1bb30f548e39abecf717a63ce837e31b54187",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-vibrato-gong.wav",
+        "pcm16_payload_sha256": "0f357304074a2332147de20353fb48c5193bbaf645b83816afcc8b227ad3b52e",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "solo-instrument",
+        "tonal",
+        "bowed-string",
+        "stereo"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "ebu-violin",
+      "order": 15,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 12.0,
+        "file_sha256": "e0aadf5f82ab9c6ba9517d59e4266c9ad382e56de880096a9d2e5154f1135370",
+        "frame_count": 529200,
+        "path": "prepared-r111/ebu-violin.wav",
+        "pcm16_payload_sha256": "85ed8dd302685fed05937e8ccf3188b581667a7a5f58481f3e1d315525c0c995",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "film-mix",
+        "dialogue",
+        "music",
+        "effects",
+        "ambience",
+        "stereo"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "xiph-elephants-dream-film-mix",
+      "order": 16,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 12.0,
+        "file_sha256": "d7992ab9edb34ba7fc5d750eb9cf76a843de7500110aa62b2d87b6f74de55af3",
+        "frame_count": 576000,
+        "path": "prepared-r111/xiph-elephants-dream-film-mix.wav",
+        "pcm16_payload_sha256": "37751a76cb712baa55b5a594926fc1ae26063cd7a48316b93c9cf8c7d01815a5",
+        "sample_rate": 48000
+      }
+    },
+    {
+      "categories": [
+        "film-mix",
+        "dialogue",
+        "music",
+        "effects",
+        "ambience",
+        "stereo"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "xiph-sintel-film-mix",
+      "order": 17,
+      "source": {
+        "channel_count": 2,
+        "duration_seconds": 12.0,
+        "file_sha256": "d4917c7b38fb9c409e29837d5907f5d932f75129c9e54ba2df6200fdb23416ca",
+        "frame_count": 576000,
+        "path": "prepared-r111/xiph-sintel-film-mix.wav",
+        "pcm16_payload_sha256": "0d251806d426900465725334f250d52d9678cbbfab34a9ab9fa2b7c936842f1b",
+        "sample_rate": 48000
+      }
+    },
+    {
+      "categories": [
+        "music"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 71,
+        "half_window": 512
+      },
+      "id": "emotional-piano",
+      "order": 18,
+      "source": {
+        "channel_count": 2,
+        "derivation": {
+          "duration_seconds": 8.0,
+          "origin_file_sha256": "9661f81d37c59f230b324b830ab68c0482336af3ec117c92e73108ffb4095f15",
+          "origin_path": "resonith-real-music/emotional_piano.wav",
+          "policy": "first 8.0 seconds, native stereo PCM16, no resampling",
+          "start_seconds": 0.0
+        },
+        "duration_seconds": 8.0,
+        "file_sha256": "37d28f15c8b3ecb13c2c161049c39d5de18f0c1b7e5f4a832684dd8059afdab5",
+        "frame_count": 352800,
+        "path": "orkela-emotional-piano-8s/01-emotional-piano-original.wav",
+        "pcm16_payload_sha256": "3481c6d893ff9b41a15862e042de56a2f13ac54ee2d230eff8a44123c640405e",
+        "sample_rate": 44100
+      }
+    },
+    {
+      "categories": [
+        "speech"
+      ],
+      "challenger": {
+        "band_count": 24,
+        "coefficients_per_frame": 68,
+        "half_window": 512
+      },
+      "id": "speech",
+      "order": 19,
+      "source": {
+        "channel_count": 1,
+        "duration_seconds": 5.855,
+        "file_sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46",
+        "frame_count": 93680,
+        "path": "orkela-public-benchmark/speech-original.wav",
+        "pcm16_payload_sha256": "156e1e1821700d4c4ad31a63e6d901a5088d5ee155fafd02a9d0d2de37f771e6",
+        "sample_rate": 16000
+      }
+    }
+  ],
+  "order_contract": "mozart-full first; remaining items by duration descending then id ascending",
+  "schema": "resonith-r216-s12-opus-only-manifest-2",
+  "status": "frozen-input-draft-for-independent-audit"
+}
