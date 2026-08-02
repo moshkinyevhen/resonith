@@ -15,11 +15,12 @@ Canonical plan:
 
 Repository branch: `codex/maf-r193-alpha`
 
-Repository HEAD and public branch before the uncommitted R-221/R-223 S12
-admission package:
-`1c45376eebe7daa49904acae885c47d6d571cf87`
+Repository HEAD and public branch before the uncommitted R-224/R-226 S13
+predecessor-closure package:
+`29e3590d96e60b1c886b0645e09c7d291eb92616`
 
-Worktree state: completed R-221 S12 evidence packaging; not clean. The owner's
+Worktree state: completed R-224 predecessor execution and independent audit;
+not clean. The owner's
 untracked development-plan DOCX and unrelated worktree changes are outside
 project edits and must not be staged, moved, modified, or removed.
 
@@ -33,11 +34,15 @@ implementation checkpoint (retained evidence, not the current worktree):
 ## Stable step status
 
 - `S01`–`S12`: completed.
-- `S13`: next; preflight not yet started.
+- `S13`: active; predecessor identity closure complete, Stage-1-specific
+  oracle freeze next.
 - `S14`–`S63`: pending.
 
 Accepted evidence: R-223 independently admits the saved R-221 complete
 registered direct comparison under the owner's explicit narrow S12 amendment.
+R-226 independently admits the R-224 historical execution as proof that all
+nineteen registered R-221 Resonith payloads and decoded PCM outputs are
+identical to the pre-S11 direct-Truth generation.
 
 Codec-algorithm generation: the focused S11 R-215 implementation and its R-221
 direct comparison are accepted research evidence. They remain experimental and
@@ -51,8 +56,10 @@ Incumbent identities:
 - documentation-only repository checkpoint:
   `69c0d341b626d29dff6d951ec3485a437d42e767`;
 - current research incumbent: the R-215 S11 implementation measured by the
-  independently admitted R-221/R-223 S12 direct comparison; its exact streams,
-  decoder, source PCM and manifest are the S13 preflight baseline;
+  independently admitted R-221/R-223 S12 direct comparison. R-224 proves every
+  registered selected output is the unchanged direct-Truth fallback, so the
+  S13 oracle must establish an active eligible persistent lane before any
+  phase-law experiment;
 - fixed official Opus identity used by the admitted S12 direct anchor:
   `opusenc` SHA-256
   `0b8d4e8db7697bd8981e9246de1bd8a1df05c2bbb98bba2b2090d7bb585e70f9`,
@@ -64,17 +71,17 @@ Incumbent identities:
 
 ## Active substep
 
-Begin S13 only after an evidence-first preflight and independent challenge:
+Continue S13 with the independently authorized Stage-1 free-oracle boundary:
 
-1. freeze the exact S12 incumbent streams, decoder, manifest, metric set and
-   fixed Opus anchor;
-2. define phase-continuous and phase-locked trajectory competitors plus sparse
-   objective phase-innovation anchors and complete byte/quality cost;
-3. falsify anchor necessity, checkpoint containment, bounded integer decode,
-   random access, packet loss, portability and regression behavior before
-   changing production behavior;
-4. implement the smallest coherent candidate and admit it only through the
-   separately authorized S14 complete comparison.
+1. freeze the exact four long PCM inputs, source hashes, S11 observations,
+   paths, supports, Basis and gain/frequency laws, direct-Truth configuration,
+   candidate order, resource ceilings, runner and focused tests;
+2. compare direct Truth, exact S11, a pure phase-blind continuous arm, and a
+   zero-byte exact-phase upper-bound oracle without changing syntax or decoder;
+3. admit further phase work only if the oracle reduces compressed final-Truth
+   bytes by at least 10% on at least three deterministically eligible complete
+   inputs while preserving a decoder-domain quality Pareto point;
+4. obtain a separate implementation audit before the first Stage-1 execution.
 
 ## Frozen identities
 
@@ -906,3 +913,31 @@ is intentionally mixed, so every synchronization must stage explicit files.
 The next safe action is the audited S13 preflight for phase-continuous versus
 phase-locked trajectories with sparse objective innovation anchors. Product
 promotion, release, novelty, and general compression claims remain blocked.
+
+## R-226 S13 predecessor closure and next safe action
+
+S13 is active. The R-224 controller passed 49/49 focused tests, received final
+implementation GO, and completed its only authorized fresh nineteen-item run.
+The independent R-226 replay confirmed payload identity 19/19 and native
+decoded-PCM identity 19/19 between historical pre-S11 `ca87dec` direct Truth
+and every retained R-221 Resonith output.
+
+Authoritative local evidence:
+
+- aggregate:
+  `G:\Resonith\artifacts\r224-s13-predecessor-comparison\aggregate.json`;
+- aggregate file SHA-256:
+  `4f3ee90bda70b573d95250cd05fcac0cdf70b8cff6f3221f1491d46f93fa6864`;
+- aggregate material SHA-256:
+  `90629dfa11f20ae346ae6a11365c623c6e2eb66199f54159c0952ddc73713d12`;
+- result:
+  `docs/results/R224_S13_PREDECESSOR_COMPARISON_2026-08-02.md`;
+- independent audit:
+  `docs/reviews/R226_R224_PREDECESSOR_AGGREGATE_AUDIT_2026-08-02.md`.
+
+All 63 states remain individually visible: S01-S12 complete, S13 active, and
+S14-S63 pending. The next safe action is the Stage-1-specific frozen record for
+the four-input free exact-phase upper-bound oracle, followed by independent
+pre-code and post-implementation audits. Paid phase syntax, decoder/bitstream
+changes, an Opus rerun, product/version changes, promotion and release remain
+blocked.

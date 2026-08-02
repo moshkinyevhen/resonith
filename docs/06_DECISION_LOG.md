@@ -11090,3 +11090,186 @@ i32 end_gain_q15
 - This admission does not authorize an Opus frontier, a full-19 equal-rate
   claim, general superiority, a release, or a `VERSION` increment. S13 is the
   next step and requires its own evidence-first preflight.
+
+## R-224 — S13 phase-economy oracle and syntax hold
+
+- Status: **PREDECESSOR COMPARISON PRE-CODE GO; S13 SYNTAX NO-GO**.
+- The S13 objective is corrected from generic phase improvement to a narrower
+  economic question: can objective phase evidence reduce complete final-Truth
+  cost while preserving the incumbent decoded quality? R-221 already reports
+  strong phase and transient accuracy, but all nineteen retained Resonith
+  streams selected `truth-fallback`; those results do not prove that the S11
+  persistent-partial model was active or that a phase-anchor law is needed.
+- Prior art is explicit. McAulay--Quatieri tracks sinusoidal amplitude,
+  frequency and phase with birth/death handling and cubic phase interpolation;
+  MPEG-4 HILN carries phase-continuous parametric lines; PARSHL and spectral
+  modeling retain sinusoidal trajectories plus residual. S13 claims no novelty
+  for phase continuity, phase locking, cubic interpolation, or line-plus-
+  residual synthesis.
+- Frozen alternatives, all charged through actual complete bytes and one final
+  decoded Truth, are:
+  - no change and direct Truth;
+  - the exact S11 incumbent, including its decoder-coordinate phase fit and
+    endpoint phase correction through frequency steps;
+  - a pure phase-blind continuous arm whose post-birth fit, thinning and knot
+    selection cannot observe phase;
+  - denser phase-blind frequency knots;
+  - the smallest existing-syntax triangular frequency bridge;
+  - split/rebirth with deterministic crossfade;
+  - a sparse phase-innovation bridge; and
+  - a zero-byte exact-phase oracle that is an upper bound only.
+- A cubic smoothstep correction is not equivalent to existing type-8 linear
+  frequency interpolation: it creates cubic phase and quadratic instantaneous-
+  frequency correction, while type-8 creates quadratic phase. No new cubic
+  decoder law or opcode is authorized unless it materially beats both the
+  triangular existing-syntax control and the best type-8 approximation.
+- Phase gauge is frozen before any experiment. The non-phase base law cannot
+  change after anchor fitting; signed gain versus phase-plus-pi, shortest-turn
+  half-cycle ties, analysis-window origin, amplitude nulls, beating, crossings,
+  gap/reappearance and route delay remain explicit ambiguities. Phase events
+  are forbidden below a frozen amplitude/confidence floor. Identity changes
+  choose rebirth or fallback rather than an anchor.
+- S13 cannot import S35 shared-route syntax. Experimental selection may jointly
+  protect channels, but every channel remains independently paid. Evidence must
+  report every channel, mid/side error, interchannel phase, delay/correlation,
+  antiphase cancellation and the existing channel-0 metric.
+- Existing MFT1 type-8 placements carry absolute source position. S13 therefore
+  has no existing persistent phase state whose lost event would corrupt all
+  future phase. Stateful anchor/checkpoint syntax remains S51 scope. S13 may
+  first evaluate only an encoder-side oracle and existing-syntax experiments;
+  corruption or checkpoint claims cannot exceed the current absolute-record
+  container.
+- Mandatory baseline closure precedes the oracle. R-221 deliberately omitted
+  the preceding-Resonith column under the then-active owner scope. The current
+  candidate closure is a machine proof that every retained R-221 stream selected
+  the unchanged direct-Truth fallback and is bitstream/decoded-PCM identical to
+  the pre-S11 direct-Truth generation. If complete recursive code/configuration,
+  native-decoder, input, payload and PCM identity cannot be proven for all
+  nineteen items, run the missing preceding-generation comparison instead.
+- The first baseline-proof re-audit returned **NO-GO** on authority closure,
+  not on the derivation principle. The proof is revised to bind the exact
+  `ca87dec` `encode_lapped_stream` producer blobs and current on-disk blobs;
+  every explicit/default call argument; PCM layout and registered order; the
+  loaded DLL, ABI/header, dependency and stateless-call contract; pinned Python,
+  NumPy, module origins, package roots and dynamic import closure; fallback
+  payload/reconstruction non-mutation; every receipt/index/artifact/replay; and
+  per-item derived preceding/current rows with the derivation stated. Merely
+  copying a current hash into a `preceding` field is forbidden. A final binary
+  GO remains mandatory before this proof tool is implemented.
+- The derived static proof is rejected as unnecessarily complex after that
+  audit. The selected smaller authority is an actual counterfactual execution
+  of the exact pre-S11 `ca87dec` direct-Truth producer on all nineteen frozen
+  R-221 inputs, followed by actual native decode and byte-for-byte/PCM-for-PCM
+  comparison with sealed R-221 outputs. Opus is not rerun. Duplicate historical
+  streams and WAVs are omitted only after equality; any mismatch is retained
+  and terminates the gate.
+- Independent re-audit returned **GO** for this actual-run replacement,
+  conditional on the exact archive/extraction, isolated runtime/module origin,
+  native DLL/source/ABI, per-item PCM/configuration, sealed receipt, process
+  bound, mismatch-retention, nineteen-row aggregate and negative-test fields
+  frozen in the R-224 preflight before implementation.
+- Final independent verification bound the exact amended preflight SHA-256
+  `a92b3ad2f04719c59cb1364294db1e4dc8d05a0872d1d590c85ef7920e1ca134`
+  and returned **GO with no blocking findings** for implementing and executing
+  only the bounded nineteen-item `ca87dec` predecessor comparison. Stage-1
+  oracle code, S13 behavior, syntax, Opus reruns, promotion and release remain
+  unauthorized.
+- Stage-1 oracle inputs, in order, are full 400.773-second Mozart,
+  319.38-second single-speaker LibriSpeech, full 658.32-second *Elephants
+  Dream*, and 600-second bounded synthetic vibrato. Freeze exact S11 paths,
+  supports, observations, Basis lengths, gain/frequency laws, source hashes,
+  decoder, Truth settings, candidate order, time, memory and retained-storage
+  budgets before the first run.
+- Kill S13 before syntax unless the free exact-phase oracle reduces compressed
+  final-Truth bytes by at least 10% on at least three deterministically eligible
+  complete inputs and creates a decoder-domain quality Pareto point. Real-audio
+  files are not silently labelled coherent; eligibility is numeric and label-
+  free.
+- If and only if the free oracle passes, one focused existing-syntax experiment
+  compares the eight frozen arms on stationary tone, linear chirp, one known
+  phase innovation, close-tone crossing with an amplitude null,
+  gap/reappearance, delayed/antiphase stereo, and the strongest qualifying real
+  long input. Tone and linear chirp must select zero anchors; bounded vibrato
+  uses at most one anchor per second.
+- A paid phase candidate is killed unless it beats exact S11, pure continuous,
+  dense-frequency and rebirth/crossfade by at least 3% complete bytes at the
+  frozen quality floor on at least two long real inputs, while preserving all-
+  channel quality, CBF1/MFT1 decoder identity, callback partition identity,
+  random-slice identity and existing bounded-resource limits.
+- S14 full registered comparison remains blocked until an S13 candidate passes
+  both gates. Failure is a valid S13 no-change result and advances the plan to
+  source-filter S15 without adding decoder complexity.
+
+## R-225 — R-224 controller independent minimal redesign
+
+- Status: **INDEPENDENT REDESIGN GO; CORPUS EXECUTION NO-GO**.
+- The first implementation audit rejected seven authority gaps. One bounded
+  remediation closed current-artifact TOCTOU, symmetric atomic mismatch
+  retention, fail-closed resource sampling, aggregate time/storage bounds,
+  complete module inventory, strict receipt validation and direct production
+  validators. The second audit still returned NO-GO on four residual gaps.
+- R-211 therefore forbids another ad-hoc patch cycle. A second independent
+  auditor designed the only authorized replacement, limited to the existing
+  controller and focused test module:
+  1. inspect the lexical drive-root-to-leaf path with `lstat` before any
+     resolution or traversal, reject every reparse component, and recursively
+     recheck the final evidence root after publication;
+  2. duplicate the exact Windows child-process handle once, retain it through
+     termination, and use one mandatory post-exit lifetime
+     `PeakWorkingSetSize`/CPU sample as the authoritative resource value;
+  3. construct one full absolute argv before request publication, execute that
+     list unchanged, compare it with `sys.orig_argv`, and retain the full list
+     plus canonical digest in request, receipt and aggregate;
+  4. exercise payload-only and PCM-only mismatch paths through the real
+     isolated historical worker, actual `ca87dec` tree, frozen native Core and
+     frozen short speech source. Either mismatch must retain both historical
+     artifacts atomically, publish a canonical MISMATCH receipt and terminate
+     nonzero without an aggregate.
+- Rejected substitutes are resolve-then-lstat, reopening by PID, faster polling
+  without a final lifetime counter, recording only an argv digest, helper-only
+  mismatch tests, monkeypatches, request flags, environment triggers and a
+  test-only codec ABI.
+- Admission remains blocked until the existing focused tests plus the lexical
+  junction/final-root checks, post-exit resource checks, complete argv
+  equality/mutation checks and two real mismatch executions pass, followed by
+  a fresh independent implementation GO. The nineteen-item predecessor run,
+  Stage-1 phase oracle, syntax, version, release and Opus rerun remain blocked.
+
+## R-226 — R-224 predecessor aggregate admission
+
+- Status: **INDEPENDENT AGGREGATE GO; STAGE-1 PRE-CODE GO ONLY**.
+- The redesigned controller passed 49/49 focused tests and a final independent
+  implementation audit. Its frozen identities are controller SHA-256
+  `f4ed3b6197338918da381604dfc561038a6cfcdcd2cf0952929cefc3982e57c4`
+  and test-module SHA-256
+  `5034aa835fe4aa40e4cd8e8e524163b72f240f8cbcea2f3c04adc9d241527b41`.
+- The only authorized fresh execution completed all nineteen registered inputs.
+  Historical/current payload identity is 19/19 and native decoded-PCM identity
+  is 19/19, with zero skips, duplicates, quarantines or mismatch artifacts.
+- Independent recomputation confirmed aggregate file SHA-256
+  `4f3ee90bda70b573d95250cd05fcac0cdf70b8cff6f3221f1491d46f93fa6864`,
+  aggregate material SHA-256
+  `90629dfa11f20ae346ae6a11365c623c6e2eb66199f54159c0952ddc73713d12`,
+  historical archive SHA-256
+  `6232d28b8ac4306821f58ed6be94de2db342814f0d7dc1c7f38adc94530752a6`,
+  and identical 572-entry archive/extracted inventories with digest
+  `72fd4991bae9c651e92bc5430afc11b9a67e8cc95a6a4542af9346d7876d4f7f`.
+- Controller wall before aggregate was 339.6762922 seconds. Maximum child peak
+  working set was 2,493,497,344 bytes, retained bytes before aggregate were
+  16,389,899, and the final evidence package was 16,705,533 bytes. Every frozen
+  time, memory and retention bound passed.
+- R-224 therefore proves that every registered R-221 Resonith output is the
+  unchanged pre-S11 direct-Truth result. The R-221 quality comparison cannot be
+  attributed to an active S11 persistent-partial lane.
+- The independent auditor returned GO only for Stage-1 pre-code planning and a
+  bounded encoder-side free-phase oracle. Before execution, a Stage-1-specific
+  record must freeze the exact four source PCM identities, S11 observations,
+  paths and supports, Basis and gain/frequency laws, lane caps, decoder/Truth
+  settings, entropy backend, candidate order, resource ceilings, runner and
+  focused tests. A separate implementation GO is mandatory.
+- Paid phase syntax, decoder or bitstream changes, Opus reruns, product/API or
+  version changes, promotion and release remain **NO-GO**.
+- Detailed result:
+  `docs/results/R224_S13_PREDECESSOR_COMPARISON_2026-08-02.md`.
+- Independent verdict:
+  `docs/reviews/R226_R224_PREDECESSOR_AGGREGATE_AUDIT_2026-08-02.md`.

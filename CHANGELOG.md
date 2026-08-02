@@ -36,6 +36,12 @@ version.
   an English changelog entry, R-number, validation record, updated all-63-step
   checkpoint, and commit identity. Experimental commits do not increment the
   product `VERSION` or imply release.
+- Closed the missing preceding-Resonith column with the audited R-224 actual
+  historical execution. All 19 frozen R-221 payloads and all 19 native decoded
+  PCM outputs are byte-identical to the exact pre-S11 `ca87dec` direct-Truth
+  producer. This proves that the registered R-221 result measured direct Truth,
+  not an active persistent-partial lane; no codec improvement, syntax, version,
+  Opus rerun, or release is claimed.
 
 ### Research
 
