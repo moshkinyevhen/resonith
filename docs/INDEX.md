@@ -165,6 +165,11 @@
 | [results/R263_S15_RUN1_TERMINAL_FAILURE_2026-08-03.md](results/R263_S15_RUN1_TERMINAL_FAILURE_2026-08-03.md) | Immutable terminal Run-1 failure, containment proof and S12 handoff law |
 | [reviews/R267_S15_ACCEPTED_S12_HANDOFF_2026-08-03.md](reviews/R267_S15_ACCEPTED_S12_HANDOFF_2026-08-03.md) | Dual-audited exact accepted-S12 active-surface restoration and clean S15 restart boundary |
 | [reviews/R268_S15_PERSISTENT_EXCITATION_RESONATOR_CELL_PREFLIGHT_2026-08-03.md](reviews/R268_S15_PERSISTENT_EXCITATION_RESONATOR_CELL_PREFLIGHT_2026-08-03.md) | Dual-audited bounded S15 persistent excitation and immutable-resonator Cell implementation contract |
+| [reviews/R271_S17_INHARMONIC_MODAL_FIELD_PREFLIGHT_2026-08-03.md](reviews/R271_S17_INHARMONIC_MODAL_FIELD_PREFLIGHT_2026-08-03.md) | Frozen V6 S17 deterministic inharmonic modal-field hypothesis, syntax, proposer, controls, selector, and kill gates |
+| [reviews/R272_S17_INHARMONIC_MODAL_FIELD_V5_AUDIT_2026-08-03.md](reviews/R272_S17_INHARMONIC_MODAL_FIELD_V5_AUDIT_2026-08-03.md) | Independent bounded implementation GO for the predecessor V5 design |
+| [reviews/R273_S17_V6_DELTA_AUDIT_2026-08-03.md](reviews/R273_S17_V6_DELTA_AUDIT_2026-08-03.md) | Independently approved one-LSB P0 fixture and unbounded-knot-span remediation |
+| [reviews/R274_S17_IMPLEMENTATION_CLOSURE_REMEDIATION_2026-08-03.md](reviews/R274_S17_IMPLEMENTATION_CLOSURE_REMEDIATION_2026-08-03.md) | Minimal proposer closure, complete enumeration, bounded clustering, units, and fail-closed selector remediation |
+| [reviews/R275_S17_IMPLEMENTATION_CLOSURE_AUDIT_2026-08-03.md](reviews/R275_S17_IMPLEMENTATION_CLOSURE_AUDIT_2026-08-03.md) | Independent final static GO authorizing one sealed S17 focused gate |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |

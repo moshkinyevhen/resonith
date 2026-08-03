@@ -1334,3 +1334,69 @@ resolved as not applicable without short or corpus execution.
 All 63 stable IDs remain visible: S01-S16 are resolved, S17 is active, and
 S18-S63 are pending. The next action is evidence-first design and independent
 pre-code audit of the deterministic inharmonic-partial field.
+
+## R-272 S17 inharmonic modal-field pre-code GO checkpoint
+
+Five bounded pre-code audit revisions produced final independent GO for the
+exact R-271 V5 design. The accepted private experiment shares explicit
+non-integer modal coordinates in IMF1, compares them against mechanically
+expanded PCM-identical IMU1 and direct accepted S12, and keeps all unmodelled
+signal in one independently decoded S12 Truth. Global predicates require
+scalar/native model identity, stable two-run hashes for both packs, strict
+IMF1<IMU1 complete bytes, frozen quality tolerances, zero clipping and bounded
+decoder work.
+
+Exact preflight SHA-256 is
+`a44ba1781d176577e713bc78f8ea859b11917625a0d600e3ad56cba7ff286dc4`;
+freezer SHA-256 is
+`ff61a3055864f28273d5c2728f3650c9099138562d0b9ec180af7e4a558da826`;
+manifest SHA-256 is
+`5c1146171d290b021e5ae73f2be282818ee402ac433a2c82b803fabaacc27300`.
+
+All 63 stable IDs remain visible: S01-S16 are resolved, S17 is active, and
+S18-S63 are pending. The next action is the exact allowlisted S17
+implementation. No audio/corpus/Opus run occurs until code and independent
+decoder closure are ready; the first focused long failure terminates S17.
+
+## R-273 S17 V6 implementation-delta checkpoint
+
+The executable P0 gate exposed a one-LSB fixture-rounding mismatch before any
+long input ran. Native and independent scalar IMF1/IMU1 decoders already agreed;
+the frozen P0 source differed in 59 of 192,000 samples. Independent audit
+authorized correcting the P0 freezer only. The corrected P0 now passes exact
+four-way decoder identity, odd-divisor round-to-even and later-interval phase
+witnesses. No long audio, registered corpus or Opus execution occurred.
+
+Exact R-271 V6 preflight SHA-256 is
+`a826da394f9dde734297b577d0b5cdc5fe9bed04864c00ac69ca11c2a67f8add`;
+freezer SHA-256 is
+`06391680f23c9bb771cb7157f2a0e82641e925201d0a081fe696e1f0af30e389`;
+tracked manifest SHA-256 is
+`86e772496a2f8c1ecbae89df133ca43528701c716acabffdeb90f27ca9939738`.
+
+All 63 stable IDs remain visible: S01-S16 are resolved, S17 is active, and
+S18-S63 are pending. The next action is one independent implementation audit,
+then frozen source/binary closure and one auditor-seeded long gate. A first
+long failure terminates S17 without N1, short controls, EBU, S18 or Opus.
+
+## R-275 S17 implementation-closure GO checkpoint
+
+R-274 V2 closed five implementation-audit blockers without adding another
+test class or audio run. The proposer now has a minimal identity-bound closure,
+uses all 64 possible seeds, performs one canonical at-most-eight Basis
+clustering pass, checks folded phase uncertainty, propagates capacity failure
+to accepted-S12 fallback, and uses frozen reproducible selector accounting.
+The observer's PCM-scale amplitude is converted to the V6 full-scale Q16 unit;
+the inherited path-family cap remains 85.
+
+Independent static audit returned GO on gate SHA-256
+`d43b46505620a46910c4e17e71586018fed5d5c3157bea97ac53119ed0ca95b7`
+and native implementation SHA-256
+`1981c44d05dd55dae71e25b62554aab16a752693f0ed56270a4b6637082003f8`.
+The one authorized native focused conformance run returned exit code zero. No
+audio, P0, holdout, registered corpus or Opus run occurred.
+
+All 63 stable IDs remain visible: S01-S16 are resolved, S17 is active, and
+S18-S63 are pending. The next action is the source/binary closure and coherent
+GitHub checkpoint, then one post-freeze auditor seed and one sealed long gate.
+No further pre-gate test is authorized.

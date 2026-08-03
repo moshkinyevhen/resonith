@@ -1,0 +1,96 @@
+{
+  "schema": "resonith-r271-s17-controls-1",
+  "generator_sha256": "06391680f23c9bb771cb7157f2a0e82641e925201d0a081fe696e1f0af30e389",
+  "basis_manifest_sha256": "9880c8f4ad2ac36e5af5302299a8a6dbbe7416b8243f48c786db3a375c40a87c",
+  "basis_256_pcm16le_sha256": "da8b1b6cfbb6840806397707bec13084a272d2746628f0e61acd96cd4c372e7c",
+  "proposer_input": "PCM-only; this generator and its parameters are forbidden imports",
+  "external_inputs": [
+    {
+      "id": "ebu-vibrato-gong",
+      "path": "G:/Resonith/artifacts/corpus/prepared-r111/ebu-vibrato-gong.wav",
+      "wav_sha256": "314210d30b03d67e4f923f1584d1bb30f548e39abecf717a63ce837e31b54187",
+      "pcm_payload_sha256": "0f357304074a2332147de20353fb48c5193bbaf645b83816afcc8b227ad3b52e",
+      "sample_rate": 44100,
+      "channels": 1,
+      "sample_width": 2,
+      "frames": 529200,
+      "wav_bytes": 1058444
+    },
+    {
+      "id": "ebu-grand-piano",
+      "path": "G:/Resonith/artifacts/corpus/prepared-r111/ebu-grand-piano.wav",
+      "wav_sha256": "7141951e68eac8533d3a78065cc3036cdd2f13025d6c0bcb98b79d804d31629c",
+      "pcm_payload_sha256": "1002dcdc41b51c30fc204fe56a7d8fa1e52b14cbf80351a5c91327ac8c71d87e",
+      "sample_rate": 44100,
+      "channels": 2,
+      "sample_width": 2,
+      "frames": 529200,
+      "wav_bytes": 2116844
+    }
+  ],
+  "controls": [
+    {
+      "id": "p0-exact-language-12s",
+      "path": "G:/Resonith/artifacts/corpus/r271-s17-controls-v1/p0-exact-language-12s.wav",
+      "sample_rate": 16000,
+      "sample_count": 192000,
+      "pcm16_payload_sha256": "e6d16edaba6b35f0b5c94892c82e749863f1fd8d38f4db50b14c62663b8beec8",
+      "wav_sha256": "ace8cd8c82ab3d3c28216f8ba05b9960ba086dc8c11c90312b0d6f2ce376522c",
+      "wav_bytes": 384044
+    },
+    {
+      "id": "p1-held-out-modal-180s",
+      "path": "G:/Resonith/artifacts/corpus/r271-s17-controls-v1/p1-held-out-modal-180s.wav",
+      "sample_rate": 16000,
+      "sample_count": 2880000,
+      "pcm16_payload_sha256": "19b3645b577cdd5e2df7e696aa952ece3af803934ef95b07c76c250d230c667c",
+      "wav_sha256": "20bd031885a94ec20e50a0152cc11245c936c504f9a26c06bbb249d7ca96ee2d",
+      "wav_bytes": 5760044
+    },
+    {
+      "id": "n1-independent-drift-180s",
+      "path": "G:/Resonith/artifacts/corpus/r271-s17-controls-v1/n1-independent-drift-180s.wav",
+      "sample_rate": 16000,
+      "sample_count": 2880000,
+      "pcm16_payload_sha256": "098f32a9c2f13b851850038de86b9a8b8272d4935e07eebed6d9aeb50460d354",
+      "wav_sha256": "13cfc6b63bc38705c7fa3f67b76ae40615355c73b3191050cf285cfe651ed0c5",
+      "wav_bytes": 5760044
+    },
+    {
+      "id": "n2-crossing-fields-12s",
+      "path": "G:/Resonith/artifacts/corpus/r271-s17-controls-v1/n2-crossing-fields-12s.wav",
+      "sample_rate": 16000,
+      "sample_count": 192000,
+      "pcm16_payload_sha256": "3c9bdabb91a57afc4dd8702c909031925b43dc2fc8c23a3c423805af845e3a3a",
+      "wav_sha256": "02d2be515109ff938ef2865befb1c5edd2354132632c075a8e2143efaad3da80",
+      "wav_bytes": 384044
+    },
+    {
+      "id": "n3-close-beating-12s",
+      "path": "G:/Resonith/artifacts/corpus/r271-s17-controls-v1/n3-close-beating-12s.wav",
+      "sample_rate": 16000,
+      "sample_count": 192000,
+      "pcm16_payload_sha256": "a8721925be25708a218eeaa4dafea5a4cf821dd9d6a8231efa4f2c9f6b3ca515",
+      "wav_sha256": "5fce66120dff1990fa9bf4718845b07fc048d174e0061e4e0dd485701de3a75f",
+      "wav_bytes": 384044
+    },
+    {
+      "id": "n4-phase-decay-mutation-12s",
+      "path": "G:/Resonith/artifacts/corpus/r271-s17-controls-v1/n4-phase-decay-mutation-12s.wav",
+      "sample_rate": 16000,
+      "sample_count": 192000,
+      "pcm16_payload_sha256": "3a6940374a3c6e7bb83eec9b38c2c395c60b05357ca8c99add69d3a93d5faca8",
+      "wav_sha256": "e4fb24474bc00b11e5e8768c190c6f1ed947b1195d4192be72e2b3920fd65917",
+      "wav_bytes": 384044
+    },
+    {
+      "id": "n5-overlap-contamination-12s",
+      "path": "G:/Resonith/artifacts/corpus/r271-s17-controls-v1/n5-overlap-contamination-12s.wav",
+      "sample_rate": 16000,
+      "sample_count": 192000,
+      "pcm16_payload_sha256": "eaa5d6a33a1d06c6b55ede49dac62bf679a05c03a0064043690d15775a9a08dc",
+      "wav_sha256": "1f5562179a5503a4a341cb704c6b4b695ef6f7f9896a10aa974e6e799249709c",
+      "wav_bytes": 384044
+    }
+  ]
+}

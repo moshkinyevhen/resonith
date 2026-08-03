@@ -11,6 +11,28 @@ version.
 
 ### Evidence and repository history
 
+- Added the R-275 bounded native/scalar IMF1 and IMU1 deterministic
+  inharmonic-field research path. Independent static audit closed proposer
+  identity, full enumeration, eight-Basis clustering, folded phase, complete
+  Truth decode, capacity fallback, and deterministic selector accounting. The
+  observer PCM amplitude now enters V6 in the correct full-scale Q16 unit and
+  the inherited path-family cap remains 85. The single native focused
+  conformance passed; S17 remains experimental and unadmitted until its sealed
+  focused gate and separately gated S18 comparison pass.
+- Froze and independently approved the R-271/R-272 S17 anonymous inharmonic
+  modal-field experiment. IMF1 shares explicit non-integer modal coordinates
+  and is compared with direct accepted S12 plus a mechanically expanded,
+  model-PCM-identical IMU1 attribution pack. Five pre-code audit revisions
+  closed parser, fixed-point, phase/decay, hidden-control, determinism,
+  selector and resource-budget defects before implementation. This is bounded
+  pre-code authority only; no codec improvement, syntax, version or release is
+  claimed.
+- Closed the R-273 S17 integer-fixture delta before any long run. The first P0
+  gate found a 59-sample, one-LSB mismatch between an old fixture rounding law
+  and the already matching native/scalar IMF1/IMU1 decoders. The fixture alone
+  was corrected after independent audit; P0 now passes four-way model identity,
+  odd-divisor round-to-even and later-interval phase witnesses. No codec
+  improvement, long-audio result or Opus comparison is claimed.
 - Implemented and measured the bounded R-268 S15 persistent excitation-
   resonator Cell. The synthetic two-Cell control is exact and 192 bytes versus
   33,980-byte accepted S12, while impulse, white noise and zero fall back

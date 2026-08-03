@@ -18,6 +18,7 @@ set(RESONITH_CORE_SOURCES
     src/composition.cpp
     src/container.cpp
     src/integrity.cpp
+    src/inharmonic_field.cpp
     src/lapped.cpp
     src/lapped_compact.cpp
     src/lapped_finite.cpp
@@ -594,6 +595,15 @@ if(BUILD_TESTING)
     )
     resonith_enable_warnings(resonith_maf_typed_test)
     add_test(NAME maf_typed_conformance COMMAND resonith_maf_typed_test)
+
+    add_executable(resonith_inharmonic_field_test
+        tests/inharmonic_field_test.cpp
+    )
+    target_compile_features(resonith_inharmonic_field_test PRIVATE cxx_std_23)
+    target_link_libraries(resonith_inharmonic_field_test PRIVATE Resonith::Core)
+    set_target_properties(resonith_inharmonic_field_test PROPERTIES CXX_EXTENSIONS OFF)
+    resonith_enable_warnings(resonith_inharmonic_field_test)
+    add_test(NAME inharmonic_field_conformance COMMAND resonith_inharmonic_field_test)
 
     add_executable(resonith_partial_graph_test
         tests/partial_graph_test.cpp

@@ -11905,3 +11905,87 @@ i32 end_gain_q15
   byte, PCM, anchor and quality decision. No measurement-only rerun is made:
   the candidate already fails frozen byte/quality/gap gates, so an RSS rerun
   cannot change no-change and would be a test performed only for testing.
+
+## R-271/R-272 — S17 anonymous inharmonic modal-field pre-code GO
+
+- Date: 2026-08-03
+- Status: **INDEPENDENT GO; BOUNDED IMPLEMENTATION AUTHORIZED**.
+- The selected S17 hypothesis shares explicit non-integer mode ratios, phase,
+  relative gain and decay through an anonymous persistent modal Basis, with
+  per-instance common frequency/gain laws and exactly one accepted-S12 Truth.
+  It makes no novelty claim for sinusoidal tracking, modal synthesis, HILN, or
+  deterministic/stochastic separation.
+- IMF1 is judged against direct S12 and a mechanically expanded IMU1 pack that
+  renders identical integer model PCM while repeating every mode coordinate.
+  Every model-on candidate requires scalar/native identity, stable two-run
+  hashes for both packs, complete-byte and frozen-quality eligibility, bounded
+  resources, zero clipping and strict IMF1 byte advantage over actual IMU1.
+- The admission control is generated from an auditor-selected seed only after
+  proposer source and binary hashes freeze. The generator cannot silently clip
+  or truncate. Semantic labels, generator metadata, learned inference and
+  future S33 harmonic syntax are excluded.
+- Five adversarial document rounds closed every implementation-blocking issue
+  before code. Exact V5 preflight SHA-256 is
+  `a44ba1781d176577e713bc78f8ea859b11917625a0d600e3ad56cba7ff286dc4`.
+  R-272 authorizes only the frozen seven-path, 1,500-nonblank-line
+  implementation and its stop-on-first-failure focused gate. S18 remains
+  separately gated by a focused pass.
+- Implementation exposed one false-negative-only prefilter before proposer or
+  audio execution: the two-Q32-unit knot-thinning limit was dimensionally
+  inappropriate for long modulation. V6 retains deterministic best-256
+  thinning but delegates eligibility to the already frozen complete Truth
+  bytes and actual-decoder quality gates. The delta requires independent GO.
+
+## R-273 — S17 V6 integer-fixture remediation GO
+
+- Date: 2026-08-03
+- Status: **INDEPENDENT DELTA GO; S17 REMAINS ACTIVE**.
+- The first P0 execution stopped before any long audio when the pre-generated
+  exact fixture differed from four mutually identical native/scalar IMF1/IMU1
+  decodes in 59 of 192,000 samples, each by one PCM unit. The freezer had used
+  half-up modal-contribution rounding instead of the V6 S17 round-to-even law.
+- The independent auditor approved correcting only P0. The decoder was not
+  weakened. Every other control and external-input hash remained identical;
+  the auditor-seeded holdout did not yet exist and therefore was not polluted.
+- The corrected P0 PCM16 SHA-256 is
+  `e6d16edaba6b35f0b5c94892c82e749863f1fd8d38f4db50b14c62663b8beec8`.
+  P0 passes four-way model identity, two-run IMF1/IMU1 stability, odd-divisor
+  round-to-even and later-interval phase witnesses. No long, corpus or Opus
+  execution occurred.
+- Exact audited V6 preflight SHA-256 is
+  `a826da394f9dde734297b577d0b5cdc5fe9bed04864c00ac69ca11c2a67f8add`.
+  S17-defined divisions are ties-even; inherited phase-curve division is
+  ties-away; inherited canonical Q16 Basis interpolation keeps its frozen
+  half-toward-positive-infinity law. No extra knot-span syntax limit exists.
+- Next authority is limited to implementation closure, a post-freeze auditor
+  seed, and the single stop-on-first-failure long gate. S18 remains blocked.
+
+## R-274/R-275 — S17 minimal implementation closure
+
+- Date: 2026-08-03
+- Status: **INDEPENDENT IMPLEMENTATION GO; ONE SEALED LONG GATE AUTHORIZED**.
+- Static audit rejected the first implementation snapshot because its proposer
+  closure was incomplete, it silently used only 32 of 64 seed paths, clustering
+  was not bounded to eight Bases, folded-phase admission was missing, capacity
+  fallback was incomplete, and work/preroll selector laws were not frozen.
+- R-274 selected a smaller closure: no import of the broad persistent-field
+  module, exact observer/path/SciPy identities, all 64 seeds, canonical
+  retain-128 ordering, one deterministic at-most-eight first-fit clustering
+  pass, exact phase-uncertainty admission, full candidate-path fallback, and
+  reproducible complete-byte/work/preroll selection.
+- A second static audit exposed two dimensional/boundary defects before audio:
+  the inherited observer amplitude remained PCM-scale although V6 requires a
+  full-scale Q16 ratio, and the inherited path-family cap is 85 rather than
+  128. R-274 V2 fixes only those units/bounds and classifies otherwise-valid
+  work-ceiling overflow as `PROFILE_BOUND`.
+- Exact final identities are R-274 V2
+  `d6059aa85cb16484809a12491f3b40354a26216ba00eed3585f89d739ede2f9b`,
+  gate `d43b46505620a46910c4e17e71586018fed5d5c3157bea97ac53119ed0ca95b7`,
+  native implementation
+  `1981c44d05dd55dae71e25b62554aab16a752693f0ed56270a4b6637082003f8`,
+  and scalar oracle
+  `8ba863a22567e19095c4a219760b429c3249d0cac7c2e8a75bb02b74d5bc4d8e`.
+- Independent re-audit returned GO. The already prescribed native focused
+  conformance ran exactly once and returned zero. No audio or Opus ran. Source
+  closure, one auditor seed, one freezer invocation, and one sealed long gate
+  are the only remaining S17-focused actions before terminal pass/no-change.
