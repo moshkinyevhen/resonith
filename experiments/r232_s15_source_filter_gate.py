@@ -19,7 +19,6 @@ import ctypes
 from ctypes import wintypes
 import hashlib
 import importlib
-import importlib.machinery
 import importlib.util
 import json
 import math
@@ -34,6 +33,9 @@ import time
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 REFERENCE_ROOT = PROJECT_ROOT / "reference"
 EXPERIMENT_ROOT = PROJECT_ROOT / "experiments"
+sys.path.insert(0, str(PROJECT_ROOT))
+sys.path.insert(0, str(REFERENCE_ROOT))
+sys.path.insert(0, str(EXPERIMENT_ROOT))
 
 np = None
 analyze_maf_source_filter_source = None
@@ -105,7 +107,6 @@ class _JobExtendedLimit(ctypes.Structure):
     ]
 
 
-class _JobBasicAccounting(ctypes.Structure): _fields_ = [(name,ctype) for name,ctype in (("TotalUserTime",ctypes.c_longlong),("TotalKernelTime",ctypes.c_longlong),("ThisPeriodTotalUserTime",ctypes.c_longlong),("ThisPeriodTotalKernelTime",ctypes.c_longlong),("TotalPageFaultCount",wintypes.DWORD),("TotalProcesses",wintypes.DWORD),("ActiveProcesses",wintypes.DWORD),("TotalTerminatedProcesses",wintypes.DWORD))]
 class _ProcessMemoryCounters(ctypes.Structure):
     _fields_ = [
         ("cb", wintypes.DWORD),
@@ -139,6 +140,8 @@ def _sha256(path: Path) -> str:
         while chunk := source.read(1 << 20):
             digest.update(chunk)
     return digest.hexdigest()
+
+
 def _directory_bytes(root: Path) -> int:
     total = 0
     if not root.exists():
@@ -152,7 +155,7 @@ def _directory_bytes(root: Path) -> int:
     return total
 
 
-def _atomic_write_json(path: Path, value: object, deadline: float | None = None) -> None:
+def _atomic_write_json(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + f".tmp-{os.getpid()}")
     if temporary.exists():
@@ -161,9 +164,9 @@ def _atomic_write_json(path: Path, value: object, deadline: float | None = None)
     try:
         with temporary.open("xb") as destination:
             destination.write(payload)
-            destination.flush(); os.fsync(destination.fileno())
-            if deadline is not None and time.perf_counter() > deadline: raise TimeoutError("R-263 receipt flush deadline exceeded")
-        temporary.replace(path); deadline is None or time.perf_counter() <= deadline or (path.unlink(),(_ for _ in ()).throw(TimeoutError("R-263 receipt publication deadline exceeded")))
+            destination.flush()
+            os.fsync(destination.fileno())
+        temporary.replace(path)
     finally:
         if temporary.exists():
             temporary.unlink()
@@ -212,21 +215,6 @@ def _tree_sha256(root: Path) -> str:
         with path.open("rb") as source:
             while chunk := source.read(1 << 20):
                 digest.update(chunk)
-    return digest.hexdigest()
-def _filtered_tree_sha256(root: Path) -> str:
-    if root.is_symlink() or getattr((state := root.lstat()), "st_file_attributes", 0) & 0x400: raise RuntimeError("R-257 runtime tree root is a reparse entry")
-    resolved = root.resolve(strict=True); digest = hashlib.sha256(b"resonith-r257-filtered-tree-1\0"); files: list[tuple[bytes,int,Path]] = []; stack = [(resolved,())]
-    while stack:
-        parent, parts = stack.pop()
-        for entry in os.scandir(parent):
-            relative, state = (*parts,entry.name), entry.stat(follow_symlinks=False)
-            if entry.is_symlink() or getattr(state,"st_file_attributes",0) & 0x400: raise RuntimeError("R-257 runtime tree contains a reparse entry")
-            if entry.is_dir(follow_symlinks=False): (entry.name != "__pycache__" and stack.append((Path(entry.path),relative))); continue
-            if not entry.is_file(follow_symlinks=False): raise RuntimeError("R-257 runtime tree contains a non-regular entry")
-            if Path(entry.name).suffix.lower() in {".pyc", ".pyo"}: raise RuntimeError("R-257 sourceless runtime bytecode is forbidden")
-            files.append(("/".join(relative).encode(),state.st_size,Path(entry.path)))
-    for name, size, path in sorted(files):
-        digest.update(b"F"+len(name).to_bytes(4,"little")+name+size.to_bytes(8,"little")+bytes.fromhex(_sha256(path)))
     return digest.hexdigest()
 
 
@@ -346,11 +334,11 @@ def _validate_authority(path: Path, expected_sha256: str) -> tuple[dict, dict[st
         expected_sha256,
         "implementation authority",
     )
-    schema = authority.get("schema")
-    if schema not in {"resonith-r232-s15-implementation-authority-2","resonith-r257-source-execution-authority-1"}: raise RuntimeError("R-232 implementation authority schema mismatch")
-    source_authority = schema == "resonith-r257-source-execution-authority-1"
-    required_files = {"bootstrap","configuration","gate","golden","native_core","r253_preflight","r257_preflight","r260_probe","r260_probe_runner","r260_probe_summary","r260_remediation","r262_remediation","r263_remediation","test_module"} if source_authority else {"configuration","native_core","preflight","test_module"}
-    if set(authority.get("files",{})) != required_files: raise RuntimeError("R-232 implementation authority file set mismatch")
+    if authority.get("schema") != "resonith-r232-s15-implementation-authority-2":
+        raise RuntimeError("R-232 implementation authority schema mismatch")
+    required_files = {"configuration", "native_core", "preflight", "test_module"}
+    if set(authority.get("files", {})) != required_files:
+        raise RuntimeError("R-232 implementation authority file set mismatch")
     files = {
         name: _resolve_authorized_file(record, PROJECT_ROOT)
         for name, record in authority["files"].items()
@@ -364,28 +352,13 @@ def _validate_authority(path: Path, expected_sha256: str) -> tuple[dict, dict[st
     for relative, module_path in discovered.items():
         if _sha256(module_path) != declared[relative].lower():
             raise RuntimeError(f"R-232 local module drift: {relative}")
-    if source_authority:
-        if "local_bytecode" in authority: raise RuntimeError("R-257 source authority contains bytecode")
-        local_imports = authority.get("local_imports", {})
-        if not isinstance(local_imports,dict): raise RuntimeError("R-257 local import map is invalid")
-        import_paths = []
-        for name, record in local_imports.items():
-            if not name or not isinstance(record,dict): raise RuntimeError("R-257 local import record is invalid")
-            resolved = _resolve_authorized_file(record,PROJECT_ROOT); import_paths.append(resolved.relative_to(PROJECT_ROOT).as_posix())
-            if record.get("package") is not (resolved.name == "__init__.py"): raise RuntimeError(f"R-257 local package identity drift: {name}")
-        expected_paths = set(discovered) | {files["test_module"].relative_to(PROJECT_ROOT).as_posix()}
-        if len(import_paths) != len(set(import_paths)) or set(import_paths) != expected_paths:
-            raise RuntimeError("R-257 local import map does not close source paths")
-        source_execution = authority.get("source_execution", {})
-        expected_loaders = [[suffix,loader.__module__,loader.__qualname__] for loader,suffixes in ((importlib.machinery.ExtensionFileLoader,importlib.machinery.EXTENSION_SUFFIXES),(importlib.machinery.SourceFileLoader,importlib.machinery.SOURCE_SUFFIXES),(importlib.machinery.SourcelessFileLoader,importlib.machinery.BYTECODE_SUFFIXES)) for suffix in suffixes]
-        required_imports = {"controller":["r232_s15_source_filter_gate"],"focused":["maf_p0.maf_source_filter_oracle","r232_s15_source_filter_gate","test_maf_source_filter_oracle"]}
-        if source_execution.get("digest") != "resonith-r257-filtered-tree-1" or source_execution.get("file_finder_loaders") != expected_loaders or source_execution.get("python_flags") != {"stage0":["-I","-S","-B"],"stage1":["-S","-P","-B"]} or source_execution.get("required_local_imports") != required_imports or not isinstance(source_execution.get("r263_launcher_source"),str) or hashlib.sha256(source_execution.get("r263_launcher_source","").encode()).hexdigest() != source_execution.get("r263_launcher_sha256") or Path(authority.get("prefix_root","")).resolve(strict=True) != (PROJECT_ROOT/"artifacts").resolve(strict=True): raise RuntimeError("R-257 source-execution policy drift")
-        if Path(source_execution.get("python_executable_path", "")).resolve(strict=True) != Path(sys.executable).resolve(strict=True) or _sha256(Path(sys.executable)) != authority["runtime_files"]["python.exe"]: raise RuntimeError("R-263 Python executable identity drift")
-    else:
-        discovered_bytecode = _discover_local_bytecode_closure(discovered); declared_bytecode = authority.get("local_bytecode",{})
-        if set(declared_bytecode) != set(discovered_bytecode): raise RuntimeError("R-232 local executable bytecode closure differs")
-        for relative, bytecode_path in discovered_bytecode.items():
-            if _sha256(bytecode_path) != declared_bytecode[relative].lower(): raise RuntimeError(f"R-232 local bytecode drift: {relative}")
+    discovered_bytecode = _discover_local_bytecode_closure(discovered)
+    declared_bytecode = authority.get("local_bytecode", {})
+    if set(declared_bytecode) != set(discovered_bytecode):
+        raise RuntimeError("R-232 local executable bytecode closure differs")
+    for relative, bytecode_path in discovered_bytecode.items():
+        if _sha256(bytecode_path) != declared_bytecode[relative].lower():
+            raise RuntimeError(f"R-232 local bytecode drift: {relative}")
 
     runtime_root = Path(sys.executable).resolve(strict=True).parent
     required_runtime_files = {
@@ -405,15 +378,14 @@ def _validate_authority(path: Path, expected_sha256: str) -> tuple[dict, dict[st
     runtime_trees = authority.get("runtime_trees", {})
     if set(runtime_trees) != {"DLLs", "Lib"}:
         raise RuntimeError("R-232 Python runtime tree set mismatch")
-    tree_hash = _filtered_tree_sha256 if source_authority else _tree_sha256
     for name, expected in runtime_trees.items():
-        if tree_hash(runtime_root / name) != expected.lower():
+        if _tree_sha256(runtime_root / name) != expected.lower():
             raise RuntimeError(f"R-232 Python runtime tree drift: {name}")
 
-    metadata = importlib.import_module("importlib.metadata"); source_versions = {distribution.metadata["Name"].lower():distribution.version for distribution in metadata.distributions(path=[authority["site_packages"]])} if source_authority else None
+    metadata = importlib.import_module("importlib.metadata")
     expected_runtime = {
         "external_packages": {
-            name: source_versions[name] if source_authority else metadata.version(name)
+            name: metadata.version(name)
             for name in ("numpy", "scipy", "soundfile", "pystoi", "cffi")
         },
         "python": platform.python_version(),
@@ -432,16 +404,12 @@ def _validate_authority(path: Path, expected_sha256: str) -> tuple[dict, dict[st
     for name, expected in required_environment.items():
         if os.environ.get(name) != expected:
             raise RuntimeError(f"R-232 requires {name}={expected}")
-    if not sys.dont_write_bytecode: raise RuntimeError("R-232 requires disabled bytecode writes")
-    if source_authority:
-        prefix = Path(os.environ.get("PYTHONPYCACHEPREFIX", "")).resolve(strict=True)
-        if sys.pycache_prefix is None or prefix != Path(sys.pycache_prefix).resolve(strict=True): raise RuntimeError("R-257 source-execution prefix mismatch")
-        if any(prefix.iterdir()): raise RuntimeError("R-257 source-execution prefix is not empty")
-        expected_site = (runtime_root / "Lib" / "site-packages").resolve(strict=True)
-        if Path(authority.get("site_packages", "")).resolve(strict=True) != expected_site: raise RuntimeError("R-257 site-packages authority mismatch")
-    elif sys.pycache_prefix is not None: raise RuntimeError("R-232 requires default-location bytecode reads")
-    if sys.flags.optimize != 0: raise RuntimeError("R-232 requires Python optimization level zero")
-    if os.name != "nt": raise RuntimeError("R-232 frozen execution is Windows-only")
+    if not sys.dont_write_bytecode or sys.pycache_prefix is not None:
+        raise RuntimeError("R-232 requires disabled, default-location bytecode writes")
+    if sys.flags.optimize != 0:
+        raise RuntimeError("R-232 requires Python optimization level zero")
+    if os.name != "nt":
+        raise RuntimeError("R-232 frozen execution is Windows-only")
     return authority, files
 
 
@@ -811,8 +779,6 @@ def _windows_api():
     kernel.ResumeThread.restype = wintypes.DWORD
     kernel.CloseHandle.argtypes = [wintypes.HANDLE]
     kernel.CloseHandle.restype = wintypes.BOOL
-    kernel.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]; kernel.OpenProcess.restype = wintypes.HANDLE
-    kernel.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]; kernel.WaitForSingleObject.restype = wintypes.DWORD
     psapi.GetProcessMemoryInfo.argtypes = [wintypes.HANDLE, ctypes.POINTER(_ProcessMemoryCounters), wintypes.DWORD]
     psapi.GetProcessMemoryInfo.restype = wintypes.BOOL
     return kernel, psapi
@@ -823,17 +789,17 @@ def _raise_last(message: str) -> None:
     raise OSError(error, f"{message}: Windows error {error}")
 
 
-def _create_job(kernel, memory_limit: int = WORKER_MEMORY_LIMIT, *, active_process_limit: int = 1, job_memory_limit: int | None = None, call_results: list | None = None) -> int:
-    job = kernel.CreateJobObjectW(None, None); call_results is not None and call_results.append({"call":"CreateJobObjectW","ok":bool(job)})
+def _create_job(kernel, memory_limit: int = WORKER_MEMORY_LIMIT) -> int:
+    job = kernel.CreateJobObjectW(None, None)
     if not job:
         _raise_last("CreateJobObjectW failed")
     limits = _JobExtendedLimit()
     limits.BasicLimitInformation.LimitFlags = 0x8 | 0x100 | 0x200 | 0x2000
-    limits.BasicLimitInformation.ActiveProcessLimit = active_process_limit
+    limits.BasicLimitInformation.ActiveProcessLimit = 1
     limits.ProcessMemoryLimit = memory_limit
-    limits.JobMemoryLimit = memory_limit if job_memory_limit is None else job_memory_limit
-    configured = bool(kernel.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits))); call_results is not None and call_results.append({"call":"SetInformationJobObject","ok":configured})
-    if not configured: last_error = ctypes.get_last_error(); closed = bool(kernel.CloseHandle(job)); call_results is not None and call_results.append({"call":"CloseHandleAfterSetFailure","ok":closed}); raise OSError(last_error,f"SetInformationJobObject failed: Windows error {last_error}")
+    limits.JobMemoryLimit = memory_limit
+    if not kernel.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits)):
+        _raise_last("SetInformationJobObject failed")
     return int(job)
 
 
@@ -878,121 +844,29 @@ def _job_peak_memory(kernel, job: int) -> int:
     if not kernel.QueryInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits), ctypes.byref(returned)):
         _raise_last("QueryInformationJobObject failed")
     return int(limits.PeakJobMemoryUsed)
-def _job_snapshot(kernel, job: int, label: str, started: float) -> dict[str, object]:
-    """Return the authoritative live PID set and lifetime accounting."""; accounting, returned = _JobBasicAccounting(), wintypes.DWORD()
-    if not kernel.QueryInformationJobObject(job, 1, ctypes.byref(accounting), ctypes.sizeof(accounting), ctypes.byref(returned)): _raise_last("QueryInformationJobObject accounting failed")
-    capacity = max(1, int(accounting.ActiveProcesses))
-    while True:
-        size = 8 + capacity * ctypes.sizeof(ctypes.c_size_t); storage = ctypes.create_string_buffer(size); ok = kernel.QueryInformationJobObject(job, 3, storage, size, ctypes.byref(returned)); assigned, listed = int.from_bytes(storage.raw[:4], "little"), int.from_bytes(storage.raw[4:8], "little")
-        if ok and assigned <= capacity and listed == assigned:
-            pids = list((ctypes.c_size_t * listed).from_buffer(storage, 8)); break
-        if not ok and ctypes.get_last_error() != 234:
-            _raise_last("QueryInformationJobObject process list failed")
-        capacity = max(capacity * 2, assigned, listed, 1)
-    return {"active_processes":int(accounting.ActiveProcesses),"elapsed_seconds":time.perf_counter()-started,"label":label,"pids":pids,"total_processes":int(accounting.TotalProcesses),"total_terminated_processes":int(accounting.TotalTerminatedProcesses)}
+
+
 class _MonitoredFailure(RuntimeError):
     """One child failure carrying terminal resource evidence."""
 
     def __init__(self, message: str, evidence: dict[str, object]) -> None:
         super().__init__(message)
         self.evidence = evidence
-def _r263_require(ok: object, message: str) -> None: ok or (_ for _ in ()).throw(RuntimeError(message))
-def _logged_windows_call(log: list, name: str, function, arguments: tuple): result = function(*arguments); error = ctypes.get_last_error(); numeric = 0 if result is None else int(result); ok = numeric != ctypes.c_void_p(-1).value if name == "CreateToolhelp32Snapshot" else numeric != 0xFFFFFFFF if name == "ResumeThread" else bool(result) or name == "Thread32Next" and error == 18 or name == "QueryInformationJobObject" and error == 234; log.append({"call":name,"information_class":int(arguments[1]) if name == "QueryInformationJobObject" else None,"last_error":error,"ok":ok,"result":numeric}); ok or (_ for _ in ()).throw(ctypes.WinError(error)); return result
-def _r263_attempt(function):
-    try: return function(),None
-    except BaseException as caught: return None,caught
-class _WindowsCalls:
-    def __init__(self, target, log: list) -> None: self.target,self.log = target,log
-    def __getattr__(self, name: str): function = getattr(self.target,name); return lambda *arguments:_logged_windows_call(self.log,name,function,arguments)
-def _consume_r263_progress(path: Path, offset: int, tail: bytes, records: list[dict[str, object]], started: float) -> tuple[int, bytes]:
-    if not path.exists(): return offset, tail
-    with path.open("rb") as source:
-        source.seek(offset); incoming = source.read()
-    offset += len(incoming); chunks = (tail + incoming).split(b"\n"); tail = chunks.pop()
-    for line in chunks:
-        _r263_require(line.startswith(b"R263_PROGRESS="),"R-263 outer progress stream contained ordinary bytes"); record = json.loads(line.removeprefix(b"R263_PROGRESS=")); _r263_require(record.get("schema") == "resonith-r263-progress-relay-1" and record.get("relay_sequence") == len(records)+1,"R-263 outer progress sequence drift"); inner = record.get("record",{}); _r263_require(inner.get("schema") == "resonith-r263-progress-1" and inner.get("producer") in {"stage0","stage1"} and (inner.get("producer") == "stage1" or inner.get("sequence") == record["relay_sequence"]),"R-263 outer progress schema/sequence drift")
-        record["observed_seconds"] = time.perf_counter() - started; records.append(record)
-    return offset, tail
-def _validate_r263_progress(records: list[dict[str, object]]) -> None:
-    phases = [record["record"]["phase"] for record in records]; required = ["stage0_preflight","stage1_full_closure","tests_start","tests_end","stage1_endpoint","stage0_endpoint"]; positions = [phases.index(phase) for phase in required]; _r263_require(set(phases) <= {*required,"isolated_start","isolated_end"} and all(phases.count(phase) == 1 for phase in required) and positions == sorted(positions) and next(record["record"].get("completed") for record in records if record["record"]["phase"] == "tests_end") == 26,"R-263 progress coverage/order drift"); events = [(record["record"].get("phase"),record["record"].get("label")) for record in records]; isolated = [event for event in events if event[0].startswith("isolated_")]; labels = {label for phase,label in isolated if phase == "isolated_start"}; _r263_require(labels == {"post-exit-drift","sentinel-invalidate","source-drift"} and len(isolated) == 6 and {label for _phase,label in isolated} == labels and all(isolated.count((phase,label)) == 1 and positions[2] < events.index(("isolated_start",label)) < events.index(("isolated_end",label)) < positions[3] for label in labels for phase in ("isolated_start","isolated_end")),"R-263 isolated progress coverage/order drift")
-    deadlines = {"tests_start":24.0,"tests_end":62.0,"stage0_endpoint":68.0}; _r263_require(not any(next(record["observed_seconds"] for record in records if record["record"]["phase"] == phase) > deadline for phase,deadline in deadlines.items()),"R-263 progress phase exceeded its absolute ceiling")
-def _r263_receipts(path: Path, context: dict[str, object]) -> dict[str, object]:
-    lines = path.read_bytes().splitlines(); stage1 = [json.loads(line.removeprefix(b"R257_RECEIPT=")) for line in lines if line.startswith(b"R257_RECEIPT=")]; stage0 = [json.loads(line.removeprefix(b"R257_STAGE0_RECEIPT=")) for line in lines if line.startswith(b"R257_STAGE0_RECEIPT=")]; _r263_require(len(lines) == len(stage1) + len(stage0) == 2 and len(stage1) == len(stage0) == 1 and lines[0].startswith(b"R257_RECEIPT=") and lines[1].startswith(b"R257_STAGE0_RECEIPT="),"R-263 final receipt cardinality/order drift"); one, zero = stage1[0],stage0[0]; expected0 = str(Path(context["stage0_prefix"]).resolve(strict=False)); expected1 = str(Path(expected0).with_name(Path(expected0).name.removesuffix("-s0") + "-s1")); _r263_require(one.get("schema") == "resonith-r263-stage1-receipt-1" and zero.get("schema") == "resonith-r263-stage0-receipt-1" and one.get("status") == zero.get("status") == "PASS" and one.get("authority_sha256") == context["authority_sha256"] and zero.get("authority_sha256") == context["authority_sha256"] and one.get("role") == zero.get("role") == "focused" and zero.get("child_exit_code") == 0 and one.get("prefix") == zero.get("stage1") and zero.get("stage0",{}).get("path") == expected0 and zero.get("stage1",{}).get("path") == expected1 and isinstance(zero.get("default_cache_sha256"),str) and len(zero["default_cache_sha256"]) == 64 and bool(zero.get("startup_cache_paths")),"R-263 final receipt identity drift"); return {"entry_counts":{"imports":len(one.get("imports",[])),"loaded":len(one.get("loaded",[])),"namespace_baseline":len(one.get("namespace_baseline",[]))},"stage0_prefix":zero["stage0"],"stage0_receipt_sha256":hashlib.sha256(json.dumps(zero,sort_keys=True,separators=(",", ":")).encode()).hexdigest(),"stage1_prefix":one["prefix"],"stage1_receipt_sha256":hashlib.sha256(json.dumps(one,sort_keys=True,separators=(",", ":")).encode()).hexdigest()}
-def _run_r263_monitored(command: list[str], suite_staging: Path, log_stem: Path, context: dict[str, object], environment: dict[str, str], receipt_path: Path) -> dict[str, object]:
-    kernel, _psapi = _windows_api(); job = None; stdout_path, stderr_path = log_stem.with_suffix(".stdout.log"), log_stem.with_suffix(".stderr.log"); stdout_path.parent.mkdir(parents=True, exist_ok=True)
-    process = None; assigned = closed = termination_attempted = termination_succeeded = False; error = None; calls, observations, progress = [], [], []; observed_kernel = _WindowsCalls(kernel,calls); offset, tail = 0, b""; started = time.perf_counter(); peak_job_memory = 0; retained_high_water = _directory_bytes(suite_staging)
-    try:
-        job = _create_job(kernel,512 << 20,active_process_limit=8,job_memory_limit=2 << 30,call_results=calls)
-        with stdout_path.open("xb") as stdout, stderr_path.open("xb") as stderr:
-            try:
-                process = subprocess.Popen(command, cwd=PROJECT_ROOT, env=environment, stdout=stdout, stderr=stderr, shell=False, creationflags=0x4)
-                assigned_result = bool(kernel.AssignProcessToJobObject(job,int(process._handle))); calls.append({"call":"AssignProcessToJobObject","ok":assigned_result}); _r263_require(assigned_result,ctypes.WinError(ctypes.get_last_error()))
-                assigned = True; observations.append(_job_snapshot(observed_kernel, job, "assigned-before-resume", started)); _resume_suspended_process(observed_kernel, process.pid)
-                while process.poll() is None:
-                    before = len(progress); offset, tail = _consume_r263_progress(stderr_path, offset, tail, progress, started)
-                    observations.extend(_job_snapshot(observed_kernel,job,f"progress-{index}",started) for index in range(before+1,len(progress)+1))
-                    elapsed = time.perf_counter() - started; phases = {record["record"]["phase"] for record in progress}
-                    if elapsed >= 24.0 and "tests_start" not in phases or elapsed >= 62.0 and "tests_end" not in phases or elapsed >= 68.0: raise TimeoutError("R-263 absolute phase/work deadline exceeded")
-                    peak_job_memory = max(peak_job_memory,_job_peak_memory(observed_kernel,job)); retained_high_water = max(retained_high_water,_directory_bytes(suite_staging)); _r263_require(peak_job_memory <= 2 << 30 and retained_high_water <= 64 << 20 and stdout_path.stat().st_size <= 4 << 20 and stderr_path.stat().st_size <= 4 << 20,RuntimeError("R-263 resource ceiling exceeded"))
-                    ceiling = 24.0 if "tests_start" not in phases else 62.0 if "tests_end" not in phases else 68.0; wait_result = int(kernel.WaitForSingleObject(int(process._handle),max(0,min(50,int((ceiling-(time.perf_counter()-started))*1000))))); calls.append({"call":"WaitForSingleObjectWork","ok":wait_result in {0,258},"result":wait_result}); _r263_require(wait_result in {0,258},RuntimeError("R-263 work wait failed"))
-            except BaseException as caught: error = caught
-            if process is not None and process.poll() is None:
-                observations.append(_job_snapshot(observed_kernel, job, "before-termination", started))
-                if assigned:
-                    termination_attempted = True; terminated_result, caught = _r263_attempt(lambda:bool(kernel.TerminateJobObject(job,124))); termination_succeeded = caught is None and terminated_result is True; calls.append({"call":"TerminateJobObject","error":None if caught is None else type(caught).__name__,"ok":termination_succeeded}); error = error or caught or (None if termination_succeeded else ctypes.WinError(ctypes.get_last_error()))
-                else: raise RuntimeError("R-263 suspended process was not assigned before containment")
-            while assigned and time.perf_counter() - started < 73.0:
-                snapshot = _job_snapshot(observed_kernel,job,"containment",started); observations.append(snapshot); peak_job_memory = max(peak_job_memory,_job_peak_memory(observed_kernel,job)); retained_high_water = max(retained_high_water,_directory_bytes(suite_staging))
-                if not snapshot["pids"] and snapshot["active_processes"] == 0: break
-                time.sleep(min(POLL_SECONDS,max(0.0,73.0-(time.perf_counter()-started))))
-            before = len(progress); offset, tail = _consume_r263_progress(stderr_path, offset, tail, progress, started); observations.extend(_job_snapshot(observed_kernel,job,f"progress-{index}",started) for index in range(before+1,len(progress)+1))
-        zero = bool(observations) and not observations[-1]["pids"] and observations[-1]["active_processes"] == 0
-        final_pids = [] if zero or not observations else list(observations[-1]["pids"])
-        opened = [(pid,int(kernel.OpenProcess(0x00100000,False,pid))) for pid in final_pids]; calls.extend({"call":"OpenProcess","ok":bool(handle),"pid":pid} for pid,handle in opened); wait_handles = [handle for _pid,handle in opened if handle]; error = error or (RuntimeError("R-263 survivor wait-handle open failed") if len(wait_handles) != len(opened) else None)
-        if time.perf_counter() - started > 73.5: error = error or TimeoutError("R-263 Job close deadline exceeded")
-        close_result = bool(kernel.CloseHandle(job)); calls.append({"call":"CloseHandleJob","ok":close_result}); error = error or (None if close_result else ctypes.WinError(ctypes.get_last_error())); error = error or (TimeoutError("R-263 Job close deadline exceeded") if time.perf_counter()-started > 73.5 else None)
-        closed = True
-        for handle in wait_handles:
-            remaining = max(0, int((74.5 - (time.perf_counter() - started)) * 1000))
-            wait_result = int(kernel.WaitForSingleObject(handle,remaining)); calls.append({"call":"WaitForSingleObject","ok":wait_result in {0,0x80},"result":wait_result}); error = error or (None if wait_result in {0,0x80} else TimeoutError("R-263 survivor wait exceeded"))
-            handle_close = bool(kernel.CloseHandle(handle)); calls.append({"call":"CloseHandleProcess","ok":handle_close}); error = error or (None if handle_close else ctypes.WinError(ctypes.get_last_error())); error = error or (TimeoutError("R-263 survivor wait exceeded") if time.perf_counter()-started > 74.5 else None)
-        if tail: error = error or RuntimeError("R-263 truncated outer progress record")
-        if error is None: _validate_r263_progress(progress)
-        if process is not None: process.poll()
-        if process is None or process.returncode != 0: error = error or RuntimeError(f"R-263 Stage-0 tree exited {None if process is None else process.returncode}")
-        if not zero or observations[-1]["total_processes"] != 34: error = error or RuntimeError("R-263 zero-survivor or exact process-ledger proof failed")
-        receipts = _r263_receipts(stdout_path,context) if error is None else None
-    except BaseException as caught: error = error or caught
-    finally:
-        if job is not None and not closed:
-            if assigned and not termination_attempted:
-                termination_attempted = True; terminated_result, caught = _r263_attempt(lambda:bool(kernel.TerminateJobObject(job,124))); termination_succeeded = caught is None and terminated_result is True; calls.append({"call":"TerminateJobObject","error":None if caught is None else type(caught).__name__,"ok":termination_succeeded}); error = error or caught or (None if termination_succeeded else ctypes.WinError(ctypes.get_last_error()))
-            elif process is not None and process.poll() is None and not termination_attempted: termination_attempted = True; _result, caught = _r263_attempt(process.kill); termination_succeeded = caught is None; calls.append({"call":"Popen.kill","error":None if caught is None else type(caught).__name__,"ok":termination_succeeded}); error = error or caught; wait_result, caught = _r263_attempt(lambda:int(kernel.WaitForSingleObject(int(process._handle),max(0,int((74.5-(time.perf_counter()-started))*1000))))); wait_ok = caught is None and wait_result in {0,0x80}; calls.append({"call":"WaitForSingleObjectUnassigned","error":None if caught is None else type(caught).__name__,"ok":wait_ok,"result":wait_result}); error = error or caught or (None if wait_ok else TimeoutError("R-263 unassigned process wait exceeded"))
-            close_result = bool(kernel.CloseHandle(job)); calls.append({"call":"CloseHandleJob","ok":close_result}); error = error or (None if close_result else ctypes.WinError(ctypes.get_last_error())); closed = True
-    elapsed = time.perf_counter() - started; retained_high_water = max(retained_high_water,_directory_bytes(suite_staging)); stdout_bytes = stdout_path.stat().st_size if stdout_path.exists() else 0; stderr_bytes = stderr_path.stat().st_size if stderr_path.exists() else 0; error = error or (RuntimeError("R-263 final resource ceiling exceeded") if retained_high_water > 64 << 20 or stdout_bytes > 4 << 20 or stderr_bytes > 4 << 20 else None); error = error or (TimeoutError("R-263 receipt publication safety margin exceeded") if elapsed > 74.5 else None)
-    evidence = {**context,"active_process_limit":8,"assignment_before_resume":assigned,"command":command,"creation_flags":4,"error":None if error is None else f"{type(error).__name__}: {error}","exit_code":None if process is None else process.returncode,"expected_total_processes":34,"final_receipts":receipts if "receipts" in locals() else None,"job_limit_flags":0x2308,"job_memory_limit_bytes":2 << 30,"job_observations":observations,"job_peak_memory_bytes":peak_job_memory,"kill_on_close":True,"process_memory_limit_bytes":512 << 20,"progress":progress,"retained_high_water_bytes":retained_high_water,"schema":"resonith-r263-stage-minus-one-receipt-1","status":"PASS" if error is None else "FAIL","stderr_bytes":stderr_bytes,"stderr_sha256":_sha256(stderr_path) if stderr_path.exists() else None,"stdout_bytes":stdout_bytes,"stdout_sha256":_sha256(stdout_path) if stdout_path.exists() else None,"terminate_calls":int(termination_attempted),"termination_succeeded":termination_succeeded,"wall_seconds":elapsed,"windows_calls":calls}
-    _atomic_write_json(receipt_path,evidence,deadline=started+75.0)
-    if error is not None: raise _MonitoredFailure(str(error), evidence) from error
-    return evidence
+
+
 def _run_monitored(
     command: list[str],
     suite_staging: Path,
     log_stem: Path,
     *,
     context: dict[str, object] | None = None,
-    environment: dict[str, str] | None = None,
     memory_limit: int = WORKER_MEMORY_LIMIT,
     wall_limit: float = WORKER_WALL_LIMIT,
     retained_limit: int = RETAINED_LIMIT,
     output_limit: int = OUTPUT_CAPTURE_LIMIT,
-    active_process_limit: int = 1,
-    job_memory_limit: int | None = None,
-    r263_receipt: Path | None = None,
 ) -> dict[str, object]:
-    if r263_receipt is not None:
-        return _run_r263_monitored(command, suite_staging, log_stem, context or {}, environment or os.environ.copy(), r263_receipt)
     kernel, psapi = _windows_api()
-    job = _create_job(kernel, memory_limit, active_process_limit=active_process_limit, job_memory_limit=job_memory_limit)
+    job = _create_job(kernel, memory_limit)
     process = None
     assigned = False
     caught: BaseException | None = None
@@ -1009,7 +883,7 @@ def _run_monitored(
                 process = subprocess.Popen(
                     command,
                     cwd=PROJECT_ROOT,
-                    env=environment if environment is not None else os.environ.copy(),
+                    env=os.environ.copy(),
                     stdout=stdout,
                     stderr=stderr,
                     shell=False,
@@ -1033,7 +907,7 @@ def _run_monitored(
                         disk_high_water,
                         _directory_bytes(suite_staging),
                     )
-                    if peak_working_set > memory_limit or peak_job_memory > (memory_limit if job_memory_limit is None else job_memory_limit):
+                    if peak_working_set > memory_limit or peak_job_memory > memory_limit:
                         raise MemoryError("R-232 worker exceeded its hard memory ceiling")
                     if disk_high_water > retained_limit:
                         raise OSError("R-232 retained/working evidence exceeded its ceiling")
@@ -1075,16 +949,6 @@ def _run_monitored(
         disk_high_water = max(disk_high_water, _directory_bytes(suite_staging))
         stdout_bytes = stdout_path.stat().st_size if stdout_path.exists() else 0
         stderr_bytes = stderr_path.stat().st_size if stderr_path.exists() else 0
-        r257_receipt = r257_receipt_error = None; expected_prefix = (context or {}).get("prefix_receipt")
-        if expected_prefix is not None and stdout_path.exists():
-            try:
-                signed_prefix = {key: value for key, value in expected_prefix.items() if key != "sha256"}
-                if expected_prefix.get("child_command") != command or expected_prefix.get("sha256") != hashlib.sha256(json.dumps(signed_prefix, sort_keys=True, separators=(",", ":")).encode()).hexdigest(): raise RuntimeError("R-257 worker launch receipt was not authenticated")
-                receipt_lines = [line.removeprefix(b"R257_RECEIPT=") for line in stdout_path.read_bytes().splitlines() if line.startswith(b"R257_RECEIPT=")]
-                if len(receipt_lines) != 1: raise RuntimeError("R-257 worker emitted other than one receipt")
-                r257_receipt = json.loads(receipt_lines[0]); expected_identity = {key:expected_prefix[key] for key in ("file_id","final_path","path","volume")}
-                if r257_receipt.get("prefix") != expected_identity or r257_receipt.get("authority_sha256") != expected_prefix["authority_sha256"] or r257_receipt.get("role") != "controller": raise RuntimeError("R-257 worker receipt identity mismatch")
-            except BaseException as error: r257_receipt_error = f"{type(error).__name__}: {error}"
         evidence = {
             **(context or {}),
             "exit_code": process.returncode if process is not None else None,
@@ -1092,7 +956,6 @@ def _run_monitored(
             "memory_limit_bytes": memory_limit,
             "process_peak_working_set_bytes": peak_working_set,
             "retained_limit_bytes": retained_limit,
-            "r257_receipt": r257_receipt,
             "staging_disk_high_water_bytes": disk_high_water,
             "stderr_bytes": stderr_bytes,
             "stderr_excerpt": (
@@ -1112,7 +975,7 @@ def _run_monitored(
             "wall_seconds": wall_seconds,
         }
         post_exit_error = None
-        if peak_working_set > memory_limit or peak_job_memory > (memory_limit if job_memory_limit is None else job_memory_limit):
+        if peak_working_set > memory_limit or peak_job_memory > memory_limit:
             post_exit_error = "R-232 worker exceeded its hard memory ceiling"
         elif disk_high_water > retained_limit:
             post_exit_error = "R-232 retained/working evidence exceeded its ceiling"
@@ -1122,8 +985,6 @@ def _run_monitored(
             post_exit_error = "R-232 worker exceeded its wall ceiling"
         elif process is None or process.returncode != 0:
             post_exit_error = f"R-232 worker exited {evidence['exit_code']}"
-        elif r257_receipt_error is not None:
-            post_exit_error = r257_receipt_error
         if caught is not None or post_exit_error is not None:
             message = (
                 f"{type(caught).__name__}: {caught}"
@@ -1287,21 +1148,36 @@ def _validate_completed_worker(
         ) from error
 
 
-def _claim_prefix_receipt(receipt: dict[str, object], used: set[tuple[str, object]]) -> None:
-    claims = (("path", receipt["path"]), ("identity", (receipt["volume"], receipt["file_id"])), ("sha256", receipt["sha256"]))
-    if any(claim in used for claim in claims): raise RuntimeError("R-257 worker prefix receipt was reused")
-    used.update(claims)
 def _controller(arguments) -> None:
-    authority_path = arguments.authority.resolve(strict=True); authority, _files = _validate_authority(authority_path,arguments.expected_authority_sha256); legacy_source = arguments.legacy_identity_source.resolve(strict=True); legacy_source_sha256 = _sha256(legacy_source)
-    if legacy_source_sha256 != authority["legacy_identity"]["source_sha256"]: raise RuntimeError("R-232 legacy identity source mismatch")
-    tasks = [{"control":None,"kind":"legacy-identity","name":"legacy-identity"}]+[{"control":control,"kind":"synthetic-control","name":control} for control in CONTROL_ORDER]
-    used_prefix_receipts: set[tuple[str, object]] = set()
-    if authority["schema"] == "resonith-r257-source-execution-authority-1":
-        controller_claim = {"file_id": int(os.environ["RESONITH_R257_PREFIX_FILE_ID"]), "final_path": os.environ["RESONITH_R257_PREFIX_FINAL_PATH"], "path": str(Path(sys.pycache_prefix).resolve()), "role": "controller", "volume": int(os.environ["RESONITH_R257_PREFIX_VOLUME"])}
-        controller_claim["sha256"] = hashlib.sha256(json.dumps(controller_claim, sort_keys=True, separators=(",", ":")).encode()).hexdigest(); _claim_prefix_receipt(controller_claim, used_prefix_receipts)
+    environment = {
+        "PYTHONHASHSEED": "0",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+    }
+    os.environ.update(environment)
+    authority_path = arguments.authority.resolve(strict=True)
+    authority, _files = _validate_authority(
+        authority_path, arguments.expected_authority_sha256
+    )
+    legacy_source = arguments.legacy_identity_source.resolve(strict=True)
+    legacy_source_sha256 = _sha256(legacy_source)
+    if legacy_source_sha256 != authority["legacy_identity"]["source_sha256"]:
+        raise RuntimeError("R-232 legacy identity source mismatch")
+    tasks = [
+        {"control": None, "kind": "legacy-identity", "name": "legacy-identity"}
+    ] + [
+        {"control": control, "kind": "synthetic-control", "name": control}
+        for control in CONTROL_ORDER
+    ]
 
     def execute(staging: Path, index: int, task: dict[str, object]) -> dict:
-        name, kind, control = str(task["name"]),str(task["kind"]),task["control"]; run_output = staging/"runs"/f"{index:02d}-{name}"
+        name = str(task["name"])
+        kind = str(task["kind"])
+        control = task["control"]
+        run_output = staging / "runs" / f"{index:02d}-{name}"
         request = {
             "control": control,
             "kind": kind,
@@ -1310,51 +1186,62 @@ def _controller(arguments) -> None:
             "source_path": str(legacy_source) if kind == "legacy-identity" else None,
             "source_sha256": legacy_source_sha256 if kind == "legacy-identity" else None,
         }
-        request_path = staging/"requests"/f"{index:02d}-{name}.json"; _atomic_write_json(request_path,request); request_sha256 = _sha256(request_path); run_index = staging/"run-index.json"; worker_arguments = ["--worker-request",str(request_path),"--expected-worker-request-sha256",request_sha256,"--authority",str(authority_path),"--expected-authority-sha256",arguments.expected_authority_sha256]; worker_prefix = worker_handle = worker_identity = environment = None
-        if authority["schema"] == "resonith-r257-source-execution-authority-1":
-            bootstrap = sys.modules.get("__main__"); prepare, finish = getattr(bootstrap,"worker_child",None),getattr(bootstrap,"finish_child",None)
-            if not callable(prepare) or not callable(finish): raise RuntimeError("R-257 worker bootstrap helpers are unavailable")
-            worker_prefix, state = prepare(authority_path,arguments.expected_authority_sha256,worker_arguments)
-            command, environment, worker_handle, worker_identity = state
-            prefix_receipt = {"authority_sha256":arguments.expected_authority_sha256.lower(),"child_command":command,"file_id":worker_identity[1],"final_path":worker_identity[2],"path":str(worker_prefix),"volume":worker_identity[0]}; prefix_receipt["sha256"] = hashlib.sha256(json.dumps(prefix_receipt,sort_keys=True,separators=(",", ":")).encode()).hexdigest()
-            _claim_prefix_receipt(prefix_receipt, used_prefix_receipts)
-        else: command = [sys.executable,str(Path(__file__).resolve(strict=True)),*worker_arguments]; prefix_receipt = None
-        try:
-            context = {"authority_sha256":arguments.expected_authority_sha256.lower(),"prefix_receipt":prefix_receipt,"request_sha256":request_sha256,"run_index_sha256":_sha256(run_index) if run_index.exists() else None,"runner_sha256":_sha256(Path(__file__).resolve(strict=True)),"task_name":name}
-            resources = _run_monitored(command,staging,staging/"logs"/f"{index:02d}-{name}",context=context,environment=environment)
-        finally:
-            if worker_prefix is not None:
-                finish(worker_prefix, worker_handle, worker_identity)
-        return _validate_completed_worker(run_output,resources,authority_path,arguments.expected_authority_sha256,kind=kind,name=name,request_sha256=request_sha256)
-    _execute_suite_transaction(arguments.output_directory,arguments.expected_authority_sha256,tasks,execute)
-def _r263_focused_admission(arguments) -> None:
-    authority_path = arguments.authority.resolve(strict=True); authority, files = _validate_authority(authority_path,arguments.expected_authority_sha256); source = authority["source_execution"]["r263_launcher_source"]; original = list(sys.orig_argv)
-    _r263_require("-c" in original and original[original.index("-c")+1] == source and hashlib.sha256(source.encode()).hexdigest() == authority["source_execution"]["r263_launcher_sha256"],"R-263 inline launcher identity drift")
-    prefix, receipt = arguments.stage0_prefix.resolve(strict=False), arguments.stage_minus_one_receipt.resolve(strict=False)
-    artifact_root = (PROJECT_ROOT/"artifacts").resolve(strict=True); _r263_require(not prefix.exists() and prefix.parent.resolve(strict=True) == artifact_root and not receipt.exists() and receipt.parent.parent.resolve(strict=True) == artifact_root and receipt.parent.is_dir() and not receipt.parent.is_symlink() and not getattr(receipt.parent.lstat(),"st_file_attributes",0) & 0x400 and not any(receipt.parent.iterdir()),"R-263 admission paths are not fresh, empty, or contained")
-    command = [sys.executable, "-I", "-S", "-B", "-X", f"pycache_prefix={prefix}", str(files["bootstrap"]), "--stage0-prefix", str(prefix), "--authority", str(authority_path), "--expected-authority-sha256", arguments.expected_authority_sha256, "--role", "focused", "--target"]
-    environment = {key:value for key,value in os.environ.items() if not key.upper().startswith("PYTHON") and key != "RESONITH_R257_STAGE1"}
-    environment.update({"LLVM_PROFILE_FILE":str(receipt.parent/"r263-%p.profraw"), "MKL_NUM_THREADS":"1", "NUMEXPR_NUM_THREADS":"1", "OMP_NUM_THREADS":"1", "OPENBLAS_NUM_THREADS":"1", "PYTHONDONTWRITEBYTECODE":"1", "PYTHONHASHSEED":"0", "PYTHONPYCACHEPREFIX":str(prefix), "RESONITH_R263_PROGRESS":"1", "RESONITH_R263_RUN_ROOT":str(receipt.parent), "TEMP":str(receipt.parent), "TMP":str(receipt.parent), "TMPDIR":str(receipt.parent)})
-    context = {"authority_path":str(authority_path), "authority_sha256":arguments.expected_authority_sha256.lower(), "bootstrap_sha256":authority["files"]["bootstrap"]["sha256"], "gate_sha256":authority["files"]["gate"]["sha256"], "launcher_sha256":authority["source_execution"]["r263_launcher_sha256"], "outer_command":original, "python_executable":str(Path(sys.executable).resolve(strict=True)), "r263_remediation_sha256":authority["files"]["r263_remediation"]["sha256"], "stage0_prefix":str(prefix)}
-    _run_monitored(command, receipt.parent, receipt.with_suffix(""), context=context, environment=environment, r263_receipt=receipt)
+        request_path = staging / "requests" / f"{index:02d}-{name}.json"
+        _atomic_write_json(request_path, request)
+        request_sha256 = _sha256(request_path)
+        run_index = staging / "run-index.json"
+        command = [
+            sys.executable,
+            str(Path(__file__).resolve(strict=True)),
+            "--worker-request",
+            str(request_path),
+            "--expected-worker-request-sha256",
+            request_sha256,
+            "--authority",
+            str(authority_path),
+            "--expected-authority-sha256",
+            arguments.expected_authority_sha256,
+        ]
+        resources = _run_monitored(
+            command,
+            staging,
+            staging / "logs" / f"{index:02d}-{name}",
+            context={
+                "authority_sha256": arguments.expected_authority_sha256.lower(),
+                "request_sha256": request_sha256,
+                "run_index_sha256": _sha256(run_index) if run_index.exists() else None,
+                "runner_sha256": _sha256(Path(__file__).resolve(strict=True)),
+                "task_name": name,
+            },
+        )
+        return _validate_completed_worker(
+            run_output,
+            resources,
+            authority_path,
+            arguments.expected_authority_sha256,
+            kind=kind,
+            name=name,
+            request_sha256=request_sha256,
+        )
+
+    _execute_suite_transaction(
+        arguments.output_directory,
+        arguments.expected_authority_sha256,
+        tasks,
+        execute,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--control-suite", action="store_true")
-    parser.add_argument("--r263-focused-admission", action="store_true")
     parser.add_argument("--output-directory", type=Path)
     parser.add_argument("--legacy-identity-source", type=Path)
-    parser.add_argument("--stage0-prefix", type=Path)
-    parser.add_argument("--stage-minus-one-receipt", type=Path)
     parser.add_argument("--worker-request", type=Path)
     parser.add_argument("--expected-worker-request-sha256")
     parser.add_argument("--authority", type=Path, required=True)
     parser.add_argument("--expected-authority-sha256", required=True)
     arguments = parser.parse_args()
-    if arguments.r263_focused_admission:
-        if arguments.control_suite or arguments.worker_request is not None or arguments.output_directory is not None or arguments.legacy_identity_source is not None or arguments.expected_worker_request_sha256 is not None or arguments.stage0_prefix is None or arguments.stage_minus_one_receipt is None or any(sys.argv.count(name) != 1 for name in ("--r263-focused-admission","--stage0-prefix","--stage-minus-one-receipt")):
-            raise ValueError("R-263 admission role is incomplete or mixed")
-        _r263_focused_admission(arguments)
-        return
     if arguments.worker_request is not None:
         if arguments.control_suite or arguments.output_directory is not None:
             raise ValueError("R-232 worker/controller roles are exclusive")
