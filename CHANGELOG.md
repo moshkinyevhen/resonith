@@ -130,6 +130,14 @@ version.
   R-258 records the final dual pre-code GO for exact R-257 V5. Authorization is
   evidence-only: two isolated focused runs and another implementation audit
   remain mandatory before any post-change codec timing transaction.
+- Closed R-259 through R-266 as immutable negative evidence. The final R-263
+  implementation retained 82 bindings, 26 tests and the exact 720-line budget,
+  but its sole authorized Run 1 failed before tests when ordinary Stage-1
+  stderr was treated as a framed length and raised `MemoryError`. Containment
+  ended with zero active Job processes and no survivors. Receipt SHA-256 is
+  `9864dccc...22f2`. Run 2, retry and R-263 remediation are forbidden; the
+  unadmitted R-253 path is excluded from release and performance lineage, and
+  S15 must restart as a genuinely new hypothesis from accepted S12 identities.
 
 ### Research
 

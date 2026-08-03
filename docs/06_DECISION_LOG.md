@@ -11655,3 +11655,105 @@ i32 end_gain_q15
   codec/output laws remain immutable.
 - Post-change codec execution remains NO-GO. Two isolated focused runs and a
   separate dual implementation audit are mandatory first.
+
+## R-259 through R-262 — source-execution implementation and bounded failures
+
+- Date: 2026-08-03
+- Status: **R-262 TERMINAL RUNTIME FAIL; NO ADMISSION**.
+- R-259 implemented the dual-audited R-257 source-only execution boundary.
+  R-260 then admitted the exact CPython startup cache sentinel after the first
+  focused launch failed before tests. R-261 retained a second fail-closed
+  result when its hostile constructor accessed guarded import state through a
+  forbidden interface, then moved that construction through Guard-owned
+  references without weakening the AST gate.
+- R-262 added exact one-location bound namespace-package handling for the real
+  SciPy `_external` package, bidirectional namespace ledger/loaded validation,
+  distinct raw/resolved uniqueness and no-descendant-touch reparse tests. Two
+  independent static auditors approved exact V5 implementation identities.
+- The first R-262 runtime admission exceeded the declared limit. The outside
+  wrapper returned after 94 seconds without enforcing its 75-second claim;
+  the exact two-process tree was then terminated and a read-only check found no
+  survivors. The immutable terminal receipt is
+  `artifacts/r262-s15-focused-admission-v1/run-1.stage-minus1.json`, SHA-256
+  `9c18f53340a627a2f325e5cc022648ab8f5ce7464800edb8a180f83147880508`.
+  Both prefixes were empty, no second run occurred, and R-262 is not admitted.
+- These are evidence-infrastructure changes only. No codec, audio, Opus,
+  syntax, version, player or release behavior changed.
+
+## R-263 — bounded transactional hostile-gate redesign
+
+- Date: 2026-08-03
+- Status: **FROZEN PRE-CODE PLAN**.
+- The exact 422-line plan SHA-256 is
+  `dcb8ecc6f8936dbcc40c3e88d57ab64fcc95311f8b81c09327df396850a0ea10`.
+- Selected design replaces fifteen full hostile interpreter launches with
+  reversible in-process mutations that call shared narrow production
+  validators. Source drift, true post-exit drift and irreversible importer
+  invalidation remain three isolated processes.
+- It removes only duplicate authority/runtime traversals, preserves one real
+  gate-validator closure, freezes ordered state restoration and canonical
+  authority-content checks, and uses a single framed progress relay.
+- A self-bound inline verifier executes before the gate, while the gate owns an
+  eight-process, 512-MiB-per-process/2-GiB-total no-breakaway Job. Work ends at
+  68 seconds; process-list/accounting queries, kill-on-close containment and a
+  stage-minus-one receipt complete by the absolute 75-second limit.
+- Exact closure is 82 bindings and the complete executable change remains at
+  or below 720 added lines including the one-line launcher. Any first-run
+  failure closes the mechanism without retry, a larger cap or a second
+  remediation.
+
+## R-264 — R-263 independent dual pre-code GO
+
+- Date: 2026-08-03
+- Status: **DUAL GO FOR EXACT EVIDENCE IMPLEMENTATION ONLY**.
+- Both independent auditors reviewed exact R-263 SHA-256
+  `dcb8ecc6f8936dbcc40c3e88d57ab64fcc95311f8b81c09327df396850a0ea10`
+  without editing files or executing project work and returned binary GO.
+- The authorization is limited to the exact three-file implementation, inline
+  launcher, authority update and frozen 720-line/resource limits. Two fresh
+  independent static implementation GO verdicts remain mandatory before Run
+  1. Codec/audio/Opus/player execution remains blocked.
+
+## R-265 — R-263 post-implementation dual static GO
+
+- Date: 2026-08-03
+- Status: **DUAL STATIC GO; EXACTLY ONE RUN 1 AUTHORIZED**.
+- The first exact implementation review found two blocking cleanup defects:
+  mutator failures were not externally recorded as terminal harness errors,
+  and an unassigned process could be marked terminated before kill success.
+  No project code or tests executed under that candidate.
+- The corrected candidate records a serialized `HARNESS_ERROR` only after
+  complete restoration and uses separate termination-attempt/success state,
+  one caught kill, one bounded wait and unconditional Job close/receipt flow.
+- Both independent auditors returned GO for bootstrap
+  `463002769637422d4dc4b6de32056212d5623313779530bcc4699dd5fdb62a7f`,
+  gate `c4529ffaee118d8fd51360babda6e88d7051b0c1fdeabacca200d11ff04ea908`,
+  test `ab70ba0f807ec4f7f3332a852c06e1ac5a9b8462889c232ac504258dddf81ede`
+  and authority
+  `1fe9e4b8a2c1afd5b52643ecbcd76ee187e888d4220f4b8173072e2f5aad7c02`.
+- Static closure is 82 bindings, 26 tests, a 1,014-byte newline-free launcher
+  and exactly 720 executable added lines. Run 1 may execute once; failure is
+  terminal and Run 2 remains conditional on a pass. No codec algorithm changed,
+  so R-198 audio/Opus comparison is not triggered.
+
+## R-266 — R-263 Run 1 terminal failure and quarantine
+
+- Date: 2026-08-03
+- Status: **TERMINAL FAIL; RUN 2 AND R-263 REMEDIATION FORBIDDEN**.
+- The one authorized Run 1 failed before tests started. Stage 1 ordinary stderr
+  was parsed as a framed length by Stage 0, producing `MemoryError`; the outer
+  monitor then fail-closed on Stage 0's ordinary traceback.
+- Receipt SHA-256 is
+  `9864dccc649846fceceea8c6fc7b4a7179697d4994baeb7755ef47fcd03a22f2`;
+  stderr SHA-256 is
+  `53c31f1bf1148b81536ae02915dcc96212f71258c6a9331d7ddf42c44b9d3d29`;
+  stdout is empty. Runtime was 7.207277 seconds, peak Job memory was
+  77,963,264 bytes and retained evidence peaked at 1,624 bytes.
+- Cleanup is proven: one successful termination, final Job active count zero,
+  empty PID set, absent Stage prefixes and no matching Python survivor. Two
+  independent read-only audits validated the result.
+- R-253 through R-263 remain unadmitted negative evidence. They are excluded
+  from admission, performance lineage and release claims. The active project
+  must hand off to accepted S12 identities before a genuinely new S15 proposal;
+  this is not an R-263 retry. No algorithm generation was accepted, so R-198
+  comparison is not triggered.

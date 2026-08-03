@@ -1199,3 +1199,63 @@ and S16-S63 pending. The next safe action is the bounded R-257 evidence-only
 implementation, followed by exactly two isolated focused runs and a separate
 dual implementation audit. The post-change codec runner and benchmark remain
 blocked. S12 remains the accepted codec generation.
+
+## R-264 S15 bounded hostile-gate pre-code checkpoint
+
+The first R-262 admission is terminal negative evidence: its non-enforcing
+shell wrapper returned after 94 seconds, the exact two-process tree was then
+terminated, both prefixes were empty, zero survivors remained, and no second
+run occurred. Receipt SHA-256 is
+`9c18f53340a627a2f325e5cc022648ab8f5ce7464800edb8a180f83147880508`.
+
+Two independent auditors returned GO for exact 422-line R-263 SHA-256
+`dcb8ecc6f8936dbcc40c3e88d57ab64fcc95311f8b81c09327df396850a0ea10`.
+It freezes fifteen transactionally restored narrow-validator mutants, three
+isolated temporal/hidden-state mutants, exact 82-binding authority, a
+self-bound inline pre-verifier, one framed progress relay and an authoritative
+no-breakaway Job process-list/accounting deadline. The total executable diff
+remains capped at 720 added lines.
+
+All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
+and S16-S63 pending. The next safe action is the smallest exact R-263
+implementation, followed by two read-only implementation audits. Run 1 remains
+blocked until both return GO; any Run-1 failure suppresses Run 2. S12 remains
+the accepted codec generation, so no R-198 audio/Opus comparison is due for
+this evidence-only remediation.
+
+## R-265 S15 R-263 post-implementation dual-GO checkpoint
+
+The final R-263 implementation passed two independent static audits after two
+blocking cleanup defects were corrected without adding a scenario or exceeding
+the frozen source budget. Exact identities are bootstrap
+`463002769637422d4dc4b6de32056212d5623313779530bcc4699dd5fdb62a7f`,
+gate `c4529ffaee118d8fd51360babda6e88d7051b0c1fdeabacca200d11ff04ea908`,
+test `ab70ba0f807ec4f7f3332a852c06e1ac5a9b8462889c232ac504258dddf81ede`
+and authority
+`1fe9e4b8a2c1afd5b52643ecbcd76ee187e888d4220f4b8173072e2f5aad7c02`.
+Static closure remains 82 bindings, 26 tests, a 1,014-byte launcher and exactly
+720 executable added lines.
+
+All 63 stable IDs remain individually visible: S01-S14 complete, S15 active,
+and S16-S63 pending. Exactly one fresh R-263 Run 1 is now authorized. Failure
+is terminal and suppresses Run 2; success alone authorizes one deterministic
+Run 2. This is evidence infrastructure, so no R-198 audio/Opus comparison is
+due yet.
+
+## R-266 S15 R-263 terminal-failure checkpoint
+
+The sole authorized R-263 Run 1 returned terminal `FAIL` after 7.207277 seconds,
+before tests started. Stage 1 ordinary stderr caused `MemoryError` in Stage 0's
+framed relay; the outer monitor rejected the resulting ordinary traceback.
+Receipt SHA-256 is
+`9864dccc649846fceceea8c6fc7b4a7179697d4994baeb7755ef47fcd03a22f2`.
+Containment succeeded with one termination attempt, zero final active Job
+processes, absent Stage prefixes and no matching Python survivor.
+
+Two independent read-only audits validated the failure and cleanup. R-253
+through R-263 remain unadmitted negative evidence; Run 2, retry and another
+R-263 remediation are forbidden. All 63 stable IDs remain visible: S01-S14 are
+complete, S15 remains active, and S16-S63 remain pending. The next action is an
+evidence-preserving quarantine/handoff to the accepted S12 identities, followed
+by a genuinely new S15 source-filter proposal against S12. No codec algorithm
+was admitted, so R-198 audio/Opus comparison is not triggered by this failure.

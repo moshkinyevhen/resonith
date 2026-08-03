@@ -157,6 +157,12 @@
 | [reviews/R256_R253_IMPLEMENTATION_DUAL_AUDIT_2026-08-02.md](reviews/R256_R253_IMPLEMENTATION_DUAL_AUDIT_2026-08-02.md) | Superseded implementation GO and retained stale timestamp-bytecode authority falsification |
 | [reviews/R257_S15_SOURCE_EXECUTION_AUTHORITY_PREFLIGHT_2026-08-02.md](reviews/R257_S15_SOURCE_EXECUTION_AUTHORITY_PREFLIGHT_2026-08-02.md) | Fail-closed isolated source-execution authority after R-255 stale-cache falsification |
 | [reviews/R258_R257_SOURCE_EXECUTION_DUAL_AUDIT_2026-08-02.md](reviews/R258_R257_SOURCE_EXECUTION_DUAL_AUDIT_2026-08-02.md) | Independent dual GO for exact R-257 V5 evidence remediation only |
+| [reviews/R260_R257_BOOTSTRAP_CACHE_SENTINEL_REMEDIATION_2026-08-03.md](reviews/R260_R257_BOOTSTRAP_CACHE_SENTINEL_REMEDIATION_2026-08-03.md) | Bound CPython bootstrap cache-sentinel failure analysis and remediation |
+| [reviews/R261_R260_HOSTILE_INJECTION_INTERFACE_REMEDIATION_2026-08-03.md](reviews/R261_R260_HOSTILE_INJECTION_INTERFACE_REMEDIATION_2026-08-03.md) | Guard-owned hostile-construction interface after fail-closed AST rejection |
+| [reviews/R262_R261_BOUND_NAMESPACE_PACKAGE_REMEDIATION_2026-08-03.md](reviews/R262_R261_BOUND_NAMESPACE_PACKAGE_REMEDIATION_2026-08-03.md) | Exact one-location runtime namespace package closure and V5 static candidate |
+| [reviews/R263_R262_BOUNDED_TRANSACTIONAL_HOSTILE_GATE_REDESIGN_2026-08-03.md](reviews/R263_R262_BOUNDED_TRANSACTIONAL_HOSTILE_GATE_REDESIGN_2026-08-03.md) | Bounded three-isolate transactional hostile-gate redesign after R-262 timeout |
+| [reviews/R264_R263_BOUNDED_HOSTILE_GATE_DUAL_AUDIT_2026-08-03.md](reviews/R264_R263_BOUNDED_HOSTILE_GATE_DUAL_AUDIT_2026-08-03.md) | Independent dual static GO and terminal R-263 runtime outcome |
+| [results/R263_S15_RUN1_TERMINAL_FAILURE_2026-08-03.md](results/R263_S15_RUN1_TERMINAL_FAILURE_2026-08-03.md) | Immutable terminal Run-1 failure, containment proof and S12 handoff law |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
