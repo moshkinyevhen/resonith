@@ -12044,3 +12044,30 @@ i32 end_gain_q15
   exact R-271 generation, S18 resolves as not applicable, and S19 becomes the
   next dependency-ready step. Every preserved mechanism remains subject to its
   later step's independent pre-code audit and complete R-198 comparison.
+
+## R-277 — S19 bounded sparse transient-event implementation GO
+
+- Date: 2026-08-03
+- Status: **INDEPENDENT IMPLEMENTATION GO; REAL AUDIO BLOCKED**.
+- S19 tests one small mechanism: a sample-addressed, non-overlapping sparse
+  integer-Haar event per channel plus exactly one unchanged accepted-S12 Truth
+  over the residual. It does not reopen short-window switching, TNS, raw PCM
+  transient records, stochastic tails, dictionaries, resonators, semantics,
+  cross-channel transfer, or a second Truth.
+- Eleven audit findings were closed before code: byte grammar and outer RSC1
+  fields, checked arithmetic, persistent-bank memory, deterministic detector,
+  exact Pareto/DP/deduplication rules, baseline authority, pre-echo identity,
+  complete Opus staging, exact fallback, malformed coverage, and full quality
+  guards.
+- The retained S12 Core moved to immutable artifact storage; S19 builds in a
+  distinct directory. Resource ceilings remain profile gates rather than
+  information-model verdicts.
+- Exact audited preflight SHA-256 is
+  `402a05ecefaa5867870c9825f77c528dac11e3a35094b80a0b065cd2eb870023`;
+  authority is
+  `873c2e1d8f11288816ab3f1f7af39b8ed81ac903c5296a0238d8bf01e3f2b862`;
+  synthetic vectors are
+  `44740bc5dc8fa38ebe8eac178392079c75179ad5d9f75c24e16bd891fd551503`.
+- GO authorizes the allowlisted implementation and focused synthetic tests
+  only. A separately sealed post-implementation manifest and independent GO
+  are mandatory before the long speech, drum controls, corpus, or Opus run.

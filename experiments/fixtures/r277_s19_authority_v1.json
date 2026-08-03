@@ -1,0 +1,113 @@
+{
+  "schema": "resonith-r277-s19-authority-1",
+  "baseline_revision": "19322f57d2cc5494ca72e2bdbb88bee9dd2bb888",
+  "r221_baseline": {
+    "run_identity": "470603e2f8fed8957e0eade645bd78fbab1b50fd35aad624b9be473dd23dc73c",
+    "source_revision": "1c45376eebe7daa49904acae885c47d6d571cf87",
+    "aggregate_path": "G:/Resonith/artifacts/r221-s12-bounded-rate-direct/aggregate.json",
+    "aggregate_sha256": "f8aeed2a205e7c802fd093d9de90bf1b4df9b751b1225d5b00592020889acfcf",
+    "registered_manifest_path": "G:/Resonith/experiments/fixtures/r216_s12_registered_manifest.json",
+    "registered_manifest_sha256": "551a9462e4f0e253e58576e5252eaeb2115e1a667ec3d904822a3c3ede1b95a0",
+    "required_item_count": 19,
+    "focused_item_ids": [
+      "ebu-claves",
+      "ebu-side-drum",
+      "ebu-sustained-sine",
+      "ebu-pink-noise"
+    ],
+    "closure_rule": "The runner must verify all source-file, PCM16, incumbent complete-file, incumbent payload, decoded-PCM and receipt hashes transitively from the registered manifest, aggregate and each named receipt before analysis"
+  },
+  "current_output_identical_baseline": {
+    "core_path": "G:/Resonith/artifacts/r277-s19-authority/s12-baseline-core.dll",
+    "core_sha256": "f22e3e002f15c811a250446fa08e586805d0cd7b88a8f362ad96e42af85326ba",
+    "identity_report_path": "G:/Resonith/docs/results/R277_S12_CURRENT_DECODER_IDENTITY_2026-08-03.md",
+    "identity_report_sha256": "38d7faaf243af03fd31990d2280fc3ad4aceb7479581af003094e0da2fa68ae5",
+    "registered_decode_matches": 19,
+    "registered_decode_total": 19,
+    "long_speech_decode_match": true
+  },
+  "baseline_source_authorities": [
+    {"path": "reference/maf_p0/lapped_oracle.py", "sha256": "e89cc95a10bf80d8de390807616c678535230aec4736364876dccf7acb1ab908"},
+    {"path": "reference/maf_p0/lapped_streaming.py", "sha256": "45dbdd243faa162cc3830b6d70ad23f30f00404ab6c55d5edaf7d79ca1675834"},
+    {"path": "reference/maf_p0/finite_state_oracle.py", "sha256": "ae6766958bdc6d64a9783d87ecfbbb1c735676a2379b6b87fb133d46ec98d4fa"},
+    {"path": "reference/maf_p0/sparse_entropy.py", "sha256": "1a7ced4acfd9011cc1f41d2279ca38691cad37318ef3b6ad75fab658e51735da"},
+    {"path": "reference/maf_p0/rsc1.py", "sha256": "20340df2fb0863ae49ce11421698fcce8371f9a852e41bf3fc53691150339e1b"},
+    {"path": "reference/maf_p0/native_core.py", "sha256": "32c514e5c9cf4f1beffba61c62d262489f35e2fb0c2e74c3cfdae2a132694045"},
+    {"path": "native/src/lapped.cpp", "sha256": "be7b5b45a3c94de1373aebed636ed84f6453153b841d8c4054d5ab24d902dff0"},
+    {"path": "native/src/lapped_compact.cpp", "sha256": "8671ce313e275402099f7b27147476868084b6b710e318e4850bb2dd633d93f2"},
+    {"path": "native/src/lapped_finite.cpp", "sha256": "b39af56334bcd094be13b0d479d0e9274f525bbc45a1e8c34db5484f4be89265"},
+    {"path": "native/include/resonith/lapped.h", "sha256": "5d5c3d298a483e87f1708969f9d02608465c14b1c51f283d1d61d531faa4a069"},
+    {"path": "native/include/resonith/lapped_compact.h", "sha256": "3c8b7166583945b21b8111bec0140684d3cccdd42fb9cb3c874999c08012d20e"},
+    {"path": "native/include/resonith/lapped_finite.h", "sha256": "e8ee3791fb37571301f69b5c12f0cd529f862b60bb7552fcba5c245dd4efc87e"},
+    {"path": "experiments/r216_s12_metrics.py", "sha256": "ab9f4a3e755d031f14fa7e6df88e4b11e65c44c5f6feb236ff4045be0f84f3e3"},
+    {"path": "reference/maf_p0/perceptual_metrics.py", "sha256": "4c02f3a7d2b04f26a0c51646c567daaeae391f1b1d23ba19974cf5780663c425"},
+    {"path": "experiments/packet_loss_benchmark.py", "sha256": "656f3a3e30bf5a3ac0a3e27b715351244fbdffb300dcdf49677a6ed04fc91dc6"}
+  ],
+  "runtime_authorities": {
+    "python": {
+      "path": "G:/Resonith/artifacts/tools/python-3.14.6-amd64/python.exe",
+      "sha256": "03168c01b7b7491423350e82c26fee71f35b43694d1319d3c668bda6903a0c38",
+      "version": "3.14.6"
+    },
+    "numpy": "2.5.1",
+    "scipy": "1.18.0",
+    "pystoi": "0.4.1",
+    "opusenc": {
+      "path": "G:/Resonith/artifacts/tools/opus-1.6.1-x64/opusenc.exe",
+      "sha256": "0b8d4e8db7697bd8981e9246de1bd8a1df05c2bbb98bba2b2090d7bb585e70f9"
+    },
+    "opusdec": {
+      "path": "G:/Resonith/artifacts/tools/opus-1.6.1-x64/opusdec.exe",
+      "sha256": "ea1a553102020f58f0af86eb1cf2377a055ccbc93a2130fa62f77c96f522c8e3"
+    }
+  },
+  "extra_inputs": {
+    "long_speech": {
+      "path": "G:/Resonith/artifacts/corpus/librispeech-r220/librispeech-speaker-long-5min.wav",
+      "file_sha256": "0191f7d14edfc27ec9f0354adc9cbba77fc2482c5fd09505ffc5463ecb7316c8",
+      "pcm16_sha256": "335384eab75a6a092adf5003c732a44b8a0ff9d4e710c3e8897d626f224d1b7f",
+      "incumbent_path": "G:/Resonith/artifacts/r220-speech-direct/long-speech/resonith/challenger.resonith",
+      "incumbent_settings": {"coefficients_per_frame": 68, "half_window": 512, "band_count": 24, "entropy": "bounded", "transform": "fixed", "density": "adaptive"},
+      "incumbent_bytes": 975280,
+      "incumbent_sha256": "88934249d609f2ead3d9402226561e65d3c2652bc34ac3039021b5f7e0422ab7",
+      "incumbent_decoded_pcm16_sha256": "fefe12c2f5daf1df2ea1ff1cf623df55ad3f96629a21aca3fc77752fc58ab476",
+      "receipt_path": "G:/Resonith/artifacts/r220-speech-direct/long-speech/receipt.json",
+      "receipt_sha256": "ba164297f985f05b780038583d473a3151759e69c9eaefee618895b9ee542689",
+      "work_request_path": "G:/Resonith/artifacts/r220-speech-direct/long-speech/work-request.json",
+      "work_request_sha256": "bf7c0caa0ccee2146dd13ae6635ffdb438d89a77f54a3d7fd1259d3a93524529"
+    },
+    "patro_de_bateria": {
+      "path": "G:/Resonith/artifacts/real_music_source/patro_de_bateria.wav",
+      "file_sha256": "81451591006ee747eb3fd31ad94ba0e73d6bcb685244d613eba02a72d141955f",
+      "conversion": "PCM24 little-endian signed, arithmetic right shift by 8, frame-major PCM16",
+      "sample_rate": 44100,
+      "channels": 2,
+      "frames": 164252,
+      "pcm16_sha256": "085d66e51ebb6253d4de17ab25bac919825fa085f342d60bc84130e7bca21344",
+      "incumbent_settings": {"coefficients_per_frame": 46, "half_window": 512, "band_count": 24, "entropy": "bounded", "transform": "fixed", "density": "adaptive"},
+      "incumbent_path": "G:/Resonith/artifacts/r277-s19-authority/patro-de-bateria-s12.resonith",
+      "incumbent_bytes": 44247,
+      "incumbent_sha256": "89cbcd139c69920f8ce973c750d59ef47468684c494f0f345ea1b79db032737b",
+      "incumbent_decoded_pcm16_sha256": "70a8b5a14bcfa1b071098580fc9ef37b9ec05076ce040700e9e49d4c7b163620"
+    },
+    "synthetic_vectors": {
+      "path": "experiments/fixtures/r277_s19_synthetic_vectors_v1.json",
+      "sha256": "44740bc5dc8fa38ebe8eac178392079c75179ad5d9f75c24e16bd891fd551503"
+    }
+  },
+  "prospective_change_allowlist": [
+    {"path": "reference/maf_p0/transient_sparse.py", "maximum_added_lines": 520},
+    {"path": "reference/maf_p0/transient_truth_candidate.py", "maximum_added_lines": 360},
+    {"path": "reference/maf_p0/native_core.py", "maximum_changed_lines": 140},
+    {"path": "reference/maf_p0/__init__.py", "maximum_changed_lines": 24},
+    {"path": "native/include/resonith/transient_sparse.h", "maximum_added_lines": 180},
+    {"path": "native/src/transient_sparse.cpp", "maximum_added_lines": 720},
+    {"path": "native/tests/transient_sparse_test.cpp", "maximum_added_lines": 620},
+    {"path": "native/CMakeLists.txt", "maximum_changed_lines": 36},
+    {"path": "tests/test_transient_sparse.py", "maximum_added_lines": 420},
+    {"path": "experiments/r277_s19_sparse_transient_gate.py", "maximum_added_lines": 900}
+  ],
+  "maximum_total_added_or_changed_lines": 3920,
+  "implementation_build_directory": "G:/Resonith/build/r277-s19-cpp23-clang22-ninja",
+  "pre_execution_rule": "The frozen baseline Core is never overwritten. S19 builds only in the declared distinct directory. After implementation and focused tests, a new immutable execution manifest must hash every allowlisted file, baseline and candidate binary, command and dependency and receive independent GO before any real-audio gate"
+}

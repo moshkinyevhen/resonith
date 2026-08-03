@@ -1419,3 +1419,24 @@ S01-S18 are resolved, S19 is active, and S20-S63 are pending. The next safe
 action is S19 theory, source review, alternatives, falsification, frozen gates,
 and independent pre-code audit. No historical limit is raised and no frozen
 seed or failed harness is reused.
+
+## R-277 S19 pre-code implementation-GO checkpoint
+
+The exact sparse transient-event hypothesis now has independent implementation
+GO. Its only candidate is a bounded sample-addressed sparse integer-Haar event
+bank plus one accepted-S12 residual Truth; exact no-event or rejected results
+remain the complete incumbent file byte for byte.
+
+Preflight SHA-256 is
+`402a05ecefaa5867870c9825f77c528dac11e3a35094b80a0b065cd2eb870023`;
+authority SHA-256 is
+`873c2e1d8f11288816ab3f1f7af39b8ed81ac903c5296a0238d8bf01e3f2b862`;
+synthetic-vector SHA-256 is
+`44740bc5dc8fa38ebe8eac178392079c75179ad5d9f75c24e16bd891fd551503`.
+All 29 authorities rehash exactly, including immutable retained long/drum
+incumbents and the immutable S12 baseline Core.
+
+All 63 stable IDs remain visible: S01-S18 are resolved, S19 is active, and
+S20-S63 are pending. The next action is the allowlisted implementation and
+focused synthetic conformance only. Real audio remains blocked until a
+post-implementation execution manifest and independent GO.

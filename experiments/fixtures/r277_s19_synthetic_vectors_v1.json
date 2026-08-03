@@ -1,0 +1,70 @@
+{
+  "schema": "resonith-r277-s19-synthetic-vectors-1",
+  "sample_rate": 48000,
+  "channels": 2,
+  "half_window": 512,
+  "cases": [
+    {
+      "id": "one-frame-no-detector-domain",
+      "vector_count": 1,
+      "frames_per_vector": 1,
+      "formula": "Both channels contain one zero PCM16 sample; detector must produce no peak and exact incumbent fallback"
+    },
+    {
+      "id": "all-hop-phases-positive",
+      "vector_count": 512,
+      "frames_per_vector": 2048,
+      "formula": "PCM is zero except channel 0 sample 768+phase is 32767; phase enumerates every integer 0 through 511"
+    },
+    {
+      "id": "all-hop-phases-negative",
+      "vector_count": 512,
+      "frames_per_vector": 2048,
+      "formula": "PCM is zero except channel 1 sample 768+phase is -32768; phase enumerates every integer 0 through 511"
+    },
+    {
+      "id": "adjacent-supports",
+      "vector_count": 1,
+      "frames_per_vector": 2048,
+      "formula": "PCM is zero except channel 0 sample 1023 is 32767 and sample 1024 is -32768"
+    },
+    {
+      "id": "stereo-opposite-full-scale",
+      "vector_count": 1,
+      "frames_per_vector": 2048,
+      "formula": "PCM is zero except sample 1024 is 32767 in channel 0 and -32768 in channel 1"
+    }
+  ],
+  "required_mutations": [
+    "truncated header at every byte",
+    "truncated event at every byte",
+    "nonzero header and record reserved fields",
+    "unsupported version and flags",
+    "invalid support and step codes",
+    "zero and over-bound coefficient count",
+    "zero coefficient value",
+    "maximal lawful coefficient values +8388607 and -8388607",
+    "first unlawful coefficient values +8388608 and -8388608",
+    "unterminated, five-byte and ten-byte ULEB128 continuation chains",
+    "descending and duplicate coefficient positions",
+    "nonzero position padding",
+    "nonminimal ULEB128",
+    "event overlap and noncanonical order",
+    "onset UINT32_MAX and UINT32_MAX-(support-1) checked-add overflow probes",
+    "coefficient, support and byte aggregate mismatch",
+    "body checksum mismatch"
+  ],
+  "required_derived_profile_rejections": [
+    "internally count-consistent records with event count 4097",
+    "internally count-consistent records with coefficient count 131073",
+    "internally count-consistent records with support-sample sum greater than 2097152",
+    "otherwise canonical payload whose encoded bytes exceed 2097152"
+  ],
+  "callback_partitions_for_2048_frame_cases": [
+    [2048],
+    [1, 2047],
+    [7, 5, 4, 9, 2023],
+    [511, 1, 512, 1024]
+  ],
+  "seek_positions": [0, 767, 768, 1023, 1024, 1025, 1535, 2048]
+}

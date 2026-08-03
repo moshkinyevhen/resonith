@@ -11,6 +11,13 @@ version.
 
 ### Evidence and repository history
 
+- Froze and independently approved the R-277/S19 bounded sparse transient-event
+  experiment. The exact TSE1 grammar uses sample-addressed non-overlapping
+  integer-Haar events plus one accepted-S12 residual Truth, with checked
+  arithmetic, a bounded expanded event bank, deterministic complete-byte RDO,
+  full quality guards, and exact incumbent fallback. This is implementation
+  authority only; real audio remains blocked until the new code and separate
+  build are sealed and independently approved.
 - Classified the S11-S17 terminal evidence under R-276. S12 is retained as a
   direct-Truth evidence baseline rather than S11 admission; the full-Mozart S11
   path and exact R-271 S17 generation are resource-profile-inconclusive, early

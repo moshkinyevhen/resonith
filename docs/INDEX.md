@@ -171,6 +171,9 @@
 | [reviews/R274_S17_IMPLEMENTATION_CLOSURE_REMEDIATION_2026-08-03.md](reviews/R274_S17_IMPLEMENTATION_CLOSURE_REMEDIATION_2026-08-03.md) | Minimal proposer closure, complete enumeration, bounded clustering, units, and fail-closed selector remediation |
 | [reviews/R275_S17_IMPLEMENTATION_CLOSURE_AUDIT_2026-08-03.md](reviews/R275_S17_IMPLEMENTATION_CLOSURE_AUDIT_2026-08-03.md) | Independent final static GO authorizing one sealed S17 focused gate |
 | [reviews/R276_RESOURCE_VERDICT_AND_RECOVERY_AUDIT_2026-08-03.md](reviews/R276_RESOURCE_VERDICT_AND_RECOVERY_AUDIT_2026-08-03.md) | Independent S11-S17 classification separating algorithm, profile, and harness failures, with recovery mapping into the unchanged 63-step plan |
+| [reviews/R277_S19_SPARSE_TRANSIENT_EVENT_PREFLIGHT_2026-08-03.md](reviews/R277_S19_SPARSE_TRANSIENT_EVENT_PREFLIGHT_2026-08-03.md) | Exact S19 sparse integer-lifting event hypothesis, grammar, search, resources, corpus, and kill gate |
+| [reviews/R277_S19_SPARSE_TRANSIENT_EVENT_AUDIT_2026-08-03.md](reviews/R277_S19_SPARSE_TRANSIENT_EVENT_AUDIT_2026-08-03.md) | Independent implementation GO after byte, arithmetic, memory, search, authority, quality, and fallback closure |
+| [results/R277_S12_CURRENT_DECODER_IDENTITY_2026-08-03.md](results/R277_S12_CURRENT_DECODER_IDENTITY_2026-08-03.md) | Current Core decode identity for all 19 retained S12 streams and long speech |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |
