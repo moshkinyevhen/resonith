@@ -11,6 +11,16 @@ version.
 
 ### Evidence and repository history
 
+- Implemented and measured the bounded R-268 S15 persistent excitation-
+  resonator Cell. The synthetic two-Cell control is exact and 192 bytes versus
+  33,980-byte accepted S12, while impulse, white noise and zero fall back
+  byte-for-byte. On the frozen 319.38-second speech diagnostic, however, the
+  best Cell stream is 995,104 bytes versus accepted S12 975,280 and regresses
+  SNR/STOI/ESTOI despite improving log-mel. The frozen long-first gate therefore
+  records S15 no-change and suppresses short speech and the S16 corpus run. A
+  missing machine-bound peak-RSS field is retained as an additional audit
+  failure; no measurement-only rerun is performed because it cannot change the
+  already negative codec decision.
 - Froze the dual-audited R-268 S15 persistent-Cell implementation contract.
   Two NO-GO rounds removed arbitrary recursive-state switching, random-access
   scope and underspecified record laws; the final bounded design uses immutable

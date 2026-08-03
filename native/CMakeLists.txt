@@ -27,6 +27,7 @@ set(RESONITH_CORE_SOURCES
     src/maf_typed.cpp
     src/multichannel.cpp
     src/partial_graph.cpp
+    src/persistent_cell.cpp
     src/seek.cpp
     src/status.cpp
     src/stream.cpp
@@ -569,6 +570,18 @@ if(BUILD_TESTING)
     set_target_properties(resonith_maf_test PROPERTIES CXX_EXTENSIONS OFF)
     resonith_enable_warnings(resonith_maf_test)
     add_test(NAME maf_dsp_conformance COMMAND resonith_maf_test)
+
+    add_executable(resonith_persistent_cell_test
+        tests/persistent_cell_test.cpp
+    )
+    target_compile_features(resonith_persistent_cell_test PRIVATE cxx_std_23)
+    target_link_libraries(resonith_persistent_cell_test PRIVATE Resonith::Core)
+    set_target_properties(
+        resonith_persistent_cell_test
+        PROPERTIES CXX_EXTENSIONS OFF
+    )
+    resonith_enable_warnings(resonith_persistent_cell_test)
+    add_test(NAME persistent_cell_conformance COMMAND resonith_persistent_cell_test)
 
     add_executable(resonith_maf_typed_test
         tests/maf_typed_test.cpp

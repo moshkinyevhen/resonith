@@ -11835,3 +11835,73 @@ i32 end_gain_q15
   returned **GO**. R-268 authorizes only the six-path, 1,500-line bounded S15
   implementation. Audio execution, S16 comparison, syntax/default promotion,
   versioning and release remain separately gated.
+
+## R-269 — S15 anonymous real-speech proposer binding
+
+- Date: 2026-08-03
+- Status: **INDEPENDENT GO; BOUNDED LONG-FIRST IMPLEMENTATION AUTHORIZED**.
+- The focused R-268 implementation reconstructs the frozen two-Cell control
+  exactly and rejects impulse, white-noise and zero modelling in favor of the
+  byte-identical S12 fallback. This does not yet establish speech value.
+- The smallest real-speech proposer uses one causal 320-sample numeric window
+  every 80 samples, anonymous lag search from 40 through 267, bounded order-10
+  Levinson reflection estimates, a positive residual-pulse phase/gain proposal
+  and the already frozen four lambda values. It introduces no speech label,
+  source identity, semantic AI or new decoder DSP.
+- The native twelve-predecessor DP constructs immutable Cells with exact
+  80-sample complementary crossfades. Each lambda path receives one native
+  synthesis, checked PCM16 Truth, one unchanged accepted-S12 Truth encode and
+  actual decode. Complete bytes and frozen quality gates select the path;
+  byte-identical accepted S12 remains the free fallback.
+- Reusing the old R-267 blockwise source-filter oracle was rejected: it is a
+  different model, previously exposed prohibitive Python candidate cost and
+  would obscure whether R-268 persistence itself supplied value. Performing
+  no real-speech test was also rejected because the synthetic control alone
+  cannot support S15.
+- The falsifiable prediction is unchanged: long speech must pass first, then
+  short speech. Failure records S15 no-change without S16 corpus execution.
+  One independent auditor returned GO, explicitly noting that estimator
+  weakness may reduce discovery power but cannot invalidate the evidence
+  because actual decoding, complete Truth cost and fallback close the result.
+
+## R-270 — R-268 S15 terminal long-first no-change result
+
+- Date: 2026-08-03
+- Status: **LONG GATE FAILED; S15 NO-CHANGE; SHORT AND S16 SUPPRESSED**.
+- The focused controls passed in 3.21685 wall seconds. The two-Cell interaction
+  reconstructed the frozen PCM hash exactly in native and scalar decoders.
+  Arm D used 192 bytes versus A 113,264, B 64,832, C 48,624 and accepted S12
+  33,980 bytes. Impulse, white and zero selected byte-identical S12 fallback.
+- Two fail-closed dry executions exposed and closed encoder/adapter domain
+  defects before a result: lag 267 crossed below the 60-Hz decoder bound, and
+  expanded 5-ms excitation endpoints did not share D's internal phase-domain
+  normalization. The parser and gates were not weakened. A later output was
+  discarded because its S12 encoder options did not reproduce the frozen
+  975,280-byte baseline; the final gate now asserts that identity before
+  proposal analysis.
+- The sole valid long run used source PCM SHA-256
+  `335384eab75a6a092adf5003c732a44b8a0ff9d4e710c3e8897d626f224d1b7f`.
+  Accepted S12 was 975,280 bytes; the smallest D candidate was 995,104 bytes
+  with 38 Cells, 68 events and 991,600 Truth bytes. D was smaller than B
+  3,040,320 and C 2,527,384 bytes, and all four arm model PCM hashes equal
+  `a7c23db47d3ea4cecd48d1e66210fb3c40794b5e820be4283ca48b4d8cce5810`.
+- Candidate versus accepted S12 was: SNR 19.43374 versus 20.63562 dB, STOI
+  0.944079 versus 0.953386, ESTOI 0.865256 versus 0.887884, log-mel RMSE
+  5.698991 versus 7.284686, and magnitude cosine 0.920975 versus 0.920089.
+  The Cell changes the error profile favorably on log-mel but loses bytes,
+  waveform accuracy and intelligibility. It closes at least 10% of only one
+  S12-to-Opus gap, not the required two.
+- Frozen route one and route two both fail. No short speech, registered corpus,
+  product version, syntax promotion or release is authorized. The encoded
+  diagnostic remains local at
+  `G:/Resonith/artifacts/r268-s15-long-speech-valid/candidate.resonith`; the
+  complete machine result SHA-256 is
+  `e0b4da772555d6dfe75ec8003fd4534edf7049e2e804c01aad0b6154d312696e`.
+- Execution recorded 437.252804 wall seconds and 473.890625 CPU seconds;
+  retained evidence is 22,419,028 bytes. A contemporaneous external process
+  observation showed peak working set 1,369,952,256 bytes, but the gate failed
+  to bind peak RSS into its machine result. Independent terminal audit therefore
+  returned NO-GO for resource-evidence completeness while confirming every
+  byte, PCM, anchor and quality decision. No measurement-only rerun is made:
+  the candidate already fails frozen byte/quality/gap gates, so an RSS rerun
+  cannot change no-change and would be a test performed only for testing.

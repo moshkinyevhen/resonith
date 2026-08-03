@@ -1307,3 +1307,30 @@ preflight and manifest. The next safe action is now the declared six-path,
 1,500-line bounded implementation, followed by its focused controls. The full
 corpus and Opus comparison occurs once at S16 only after a real candidate
 passes. No restoration rerun or evidence-harness expansion is authorized.
+
+## R-270 S15 terminal no-change checkpoint
+
+The bounded R-268 implementation passed its frozen focused controls. Native
+and scalar decoders reconstruct the two-Cell interaction exactly; Arm D is 192
+bytes versus accepted S12 33,980, and impulse, white-noise and zero select
+byte-identical fallback.
+
+The sole valid long-first speech comparison reproduced the exact accepted-S12
+975,280-byte baseline. Its smallest candidate uses 38 Cells, 68 events and
+991,600 Truth bytes for 995,104 complete bytes. Log-mel RMSE improves from
+7.284686 to 5.698991, but SNR falls from 20.635623 to 19.433737 dB, STOI from
+0.953386 to 0.944079 and ESTOI from 0.887884 to 0.865256. Only one Opus-gap
+axis closes by at least 10%. Both admission routes fail.
+
+Machine result is
+`G:/Resonith/artifacts/r268-s15-long-speech-valid/speech-result.json`, SHA-256
+`e0b4da772555d6dfe75ec8003fd4534edf7049e2e804c01aad0b6154d312696e`.
+Independent audit confirmed all byte, PCM, anchor and quality decisions but
+returned resource-evidence NO-GO because peak RSS was observed externally and
+not recorded in the JSON. No rerun is authorized because resource evidence
+cannot reverse the existing quality/byte failure. S15 is no-change; S16 is
+resolved as not applicable without short or corpus execution.
+
+All 63 stable IDs remain visible: S01-S16 are resolved, S17 is active, and
+S18-S63 are pending. The next action is evidence-first design and independent
+pre-code audit of the deterministic inharmonic-partial field.
