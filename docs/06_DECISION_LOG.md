@@ -11989,3 +11989,58 @@ i32 end_gain_q15
   conformance ran exactly once and returned zero. No audio or Opus ran. Source
   closure, one auditor seed, one freezer invocation, and one sealed long gate
   are the only remaining S17-focused actions before terminal pass/no-change.
+
+## R-276 — Resource-verdict taxonomy and S11-S17 recovery map
+
+- Date: 2026-08-03
+- Status: **ACCEPTED AFTER INDEPENDENT AUDIT; NO HISTORICAL RESULT CHANGED**.
+- Within this S11-S17 resource-versus-codec-result audit, a resource, runtime,
+  observation, or implementation-size ceiling is a gate for the declared
+  execution profile. Crossing it before candidate publication is
+  `PROFILE_NEGATIVE`, not evidence that the information model is useless. A
+  harness failure before codec execution is `HARNESS_NEGATIVE`. An actually
+  decoded candidate that loses the declared complete-byte or quality predicate
+  is `ALGORITHM_NEGATIVE`. Correctness, conformance, security, portability,
+  decoder-work, random-access, clipping, and failure-behavior violations remain
+  independent `ADMISSION_NEGATIVE` outcomes and are not weakened by R-276.
+- Decoder, consumer-encoder, and Foundry-encoder resource profiles are now
+  explicitly separate. The normative decoder remains small and bounded. A
+  consumer encoder must pass its selected tier. Foundry search may receive a
+  larger but still frozen, reproducible budget. No profile may silently prune
+  the candidate lattice, and success in a Foundry tier is not consumer-profile
+  admission.
+- S12 remains the accepted narrow evidence baseline, but it did not admit S11.
+  All nineteen retained streams selected direct Truth and were later proved
+  byte-identical to the pre-S11 payloads and decoded PCM. Eighteen inputs ran
+  the S11 analyzer and selected fallback. Full Mozart did not run it because
+  its 28,405,440-observation upper bound exceeded the frozen 3,500,000 cap.
+  S11 is therefore retained as a research substrate, while its full-Mozart
+  value remains profile-inconclusive.
+- S13 is not restored unchanged: Mozart and long LibriSpeech produced no
+  eligible phase-free lane before the later resource failure. Phase economics
+  may return only inside S33-S36 structures that produce eligible harmonic or
+  cross-channel laws.
+- R-232 is profile-inconclusive because per-candidate Python synthesis/FFT hit
+  900 seconds before a valid codec gate. Its RDO idea returns in S39-S40 and
+  native/GPU evaluation in S47-S48. R-253 through R-266 failed in the evidence
+  harness before codec execution; their executable lineage remains quarantined
+  while the immutable-LPC-law reuse idea may be independently reimplemented in
+  S37-S38 or S47-S48.
+- R-268 is a real algorithm-negative result and is not restored. Its valid long
+  candidate was 995,104 bytes versus accepted-S12 975,280 and regressed SNR,
+  STOI, and ESTOI despite better log-mel.
+- The exact R-271 S17 generation is terminal profile-negative. Its sealed long
+  execution reached 2,762,260,480 peak-RSS bytes against 2,147,483,648 and was
+  stopped before a result transaction; N1, corpus, Opus, and S18 never ran.
+  The frozen ceiling is not raised and the disclosed-seed run is not repeated.
+  The inharmonic-resonator hypothesis may be re-derived in S37-S38, bounded
+  streaming/full-lattice evaluation belongs to S47-S48, and optional proposer
+  recall expansion belongs to S49-S50.
+- The independent audit is
+  `docs/reviews/R276_RESOURCE_VERDICT_AND_RECOVERY_AUDIT_2026-08-03.md`.
+  It found no S11-S17 codec mechanism rejected primarily by LOC. LOC caps
+  constrained specific evidence packages but supplied no codec verdict.
+- Stable panel `R204-63-V1` remains unchanged. S17 closes no-change for the
+  exact R-271 generation, S18 resolves as not applicable, and S19 becomes the
+  next dependency-ready step. Every preserved mechanism remains subject to its
+  later step's independent pre-code audit and complete R-198 comparison.

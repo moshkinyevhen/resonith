@@ -170,6 +170,7 @@
 | [reviews/R273_S17_V6_DELTA_AUDIT_2026-08-03.md](reviews/R273_S17_V6_DELTA_AUDIT_2026-08-03.md) | Independently approved one-LSB P0 fixture and unbounded-knot-span remediation |
 | [reviews/R274_S17_IMPLEMENTATION_CLOSURE_REMEDIATION_2026-08-03.md](reviews/R274_S17_IMPLEMENTATION_CLOSURE_REMEDIATION_2026-08-03.md) | Minimal proposer closure, complete enumeration, bounded clustering, units, and fail-closed selector remediation |
 | [reviews/R275_S17_IMPLEMENTATION_CLOSURE_AUDIT_2026-08-03.md](reviews/R275_S17_IMPLEMENTATION_CLOSURE_AUDIT_2026-08-03.md) | Independent final static GO authorizing one sealed S17 focused gate |
+| [reviews/R276_RESOURCE_VERDICT_AND_RECOVERY_AUDIT_2026-08-03.md](reviews/R276_RESOURCE_VERDICT_AND_RECOVERY_AUDIT_2026-08-03.md) | Independent S11-S17 classification separating algorithm, profile, and harness failures, with recovery mapping into the unchanged 63-step plan |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |

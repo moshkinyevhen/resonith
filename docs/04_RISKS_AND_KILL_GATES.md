@@ -85,3 +85,29 @@ A new mechanism is not included in Main if it:
 - does not have a universal Innovation fallback;- worsens deterministic random access.
 
 A bad idea is closed rather than saved by additional modes.
+
+## 5. Resource-profile verdicts
+
+One memory, time, GPU, or implementation-size ceiling MUST NOT serve as a
+universal verdict on a codec hypothesis.
+
+- Decoder bounds are normative and remain strict, small, deterministic, and
+  suitable for the declared profile/level.
+- Consumer-encoder bounds are product-tier admission requirements.
+- Foundry-encoder bounds may be materially larger, but remain explicit,
+  reproducible, fail-closed, and charged in the complete report.
+
+Crossing a resource ceiling before a decodable candidate exists rejects only
+that execution profile. A harness failure before codec execution supplies no
+algorithm evidence. A hypothesis is closed as algorithm-negative on rate or
+quality only after an actual decoded candidate loses its frozen complete-byte
+or quality predicate. Correctness, conformance, security, portability,
+decoder-work, random-access, clipping, and failure-behavior gates remain
+independent reasons for admission rejection and are never weakened by this
+resource taxonomy.
+
+A failed transaction is never rerun with a retroactively raised ceiling or a
+disclosed seed. Recovery requires a new audited generation. It may optimize
+memory layout, stream or batch the same complete search, or use a separately
+declared Foundry tier, but MUST NOT silently prune candidates or weaken decoder
+bounds. The R-276 recovery map applies this rule to S11-S17.

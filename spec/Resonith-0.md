@@ -34,6 +34,24 @@ Resonith-0:
 - MUST separate Truth Core from Optional Perceptual Detail;
 - MUST allow the Lossless profile to reconstruct exact PCM.
 
+### 2.1 Encoder resource tiers
+
+Encoder resource tiers are not carried as executable code and do not change
+standalone decoding semantics. An implementation MAY expose Realtime,
+Consumer, Studio, or Foundry search tiers, but every tier MUST declare finite
+CPU, GPU, memory, time, and retained-storage bounds before encoding. Search-tier
+failure MUST NOT create a non-conforming stream or weaken the stream-declared
+decoder profile/level.
+
+Decoder profile/level bounds remain normative and independent of the resources
+used to discover a valid stream. A Foundry encoder MAY use materially greater
+resources than a consumer encoder, while the resulting stream MUST still pass
+the same declared decoder limits. Research evidence MUST distinguish an
+algorithm-negative decoded result from an encoder-profile resource failure.
+This distinction does not relax correctness, conformance, security,
+portability, decoder-work, random-access, clipping, or failure-containment
+requirements.
+
 ## 3. Canonical signal
 
 \[

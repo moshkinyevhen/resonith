@@ -620,3 +620,32 @@ algorithm generation begins, the complete R-198 registered-music comparison
 must run through actual Resonith and official Opus decoders against both the
 immediately preceding accepted Resonith generation and the frozen
 maximum-effort official Opus anchor.
+
+## 17. R-276 resource-verdict recovery map
+
+Resource limits govern declared execution profiles; they do not silently erase
+information-model hypotheses. Historical transactions and their caps remain
+immutable, while later independently designed steps may recover mechanisms that
+never received a codec byte/quality verdict.
+
+- S11 persistent multi-partial state remains a research substrate for S19,
+  S21, S33, S35, and S41. S27 must remove its monolithic observation blind spot
+  and S39 must judge it through one global complete-cost RDO.
+- The frozen S13 carry/reset experiment is not repeated. Phase-continuous and
+  locked alternatives return only within eligible harmonic structures in
+  S33-S34 or channel-route structures in S35-S36.
+- The R-232 decoder-domain cost idea returns in S39-S40. Its scalable exact
+  evaluation belongs to S47-S48. The failed Python form and its timeout are not
+  restored.
+- R-253 through R-266 remain quarantined. Immutable resonator/LPC-law reuse may
+  be reimplemented under new authority in S37-S38 or as an output-identical
+  accelerator in S47-S48.
+- The R-268 38-Cell candidate is algorithm-negative and does not return. A new
+  persistent resonator hypothesis remains possible in S37-S40.
+- The R-271 IMF1 generation is terminal for its frozen 2-GiB profile. A new
+  inharmonic-resonator derivation belongs to S37-S38; full-lattice streaming or
+  batching belongs to S47-S48; optional recall expansion belongs to S49-S50.
+
+The complete classification and independent audit are recorded in
+[`reviews/R276_RESOURCE_VERDICT_AND_RECOVERY_AUDIT_2026-08-03.md`](reviews/R276_RESOURCE_VERDICT_AND_RECOVERY_AUDIT_2026-08-03.md).
+No stable step is added, removed, renumbered, or reordered.

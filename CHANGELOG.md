@@ -11,6 +11,13 @@ version.
 
 ### Evidence and repository history
 
+- Classified the S11-S17 terminal evidence under R-276. S12 is retained as a
+  direct-Truth evidence baseline rather than S11 admission; the full-Mozart S11
+  path and exact R-271 S17 generation are resource-profile-inconclusive, early
+  S15 rescoring is profile-inconclusive, the R-253 through R-266 lineage is a
+  harness failure, and R-268 remains a genuine byte/quality loss. The useful
+  mechanisms are mapped into existing S19-S50 steps without changing the
+  immutable 63-step panel or relabelling historical runs.
 - Added the R-275 bounded native/scalar IMF1 and IMU1 deterministic
   inharmonic-field research path. Independent static audit closed proposer
   identity, full enumeration, eight-Basis clustering, folded phase, complete

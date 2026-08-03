@@ -13,16 +13,14 @@ Panel SHA-256:
 Canonical plan:
 `docs/20_LSPF_MASTER_EXECUTION_PLAN.md`
 
-Repository branch: `codex/maf-r193-alpha`
+Repository branch: `codex/maf-s15-s12-restart`
 
-Repository HEAD and public branch before the uncommitted R-224/R-226 S13
-predecessor-closure package:
-`29e3590d96e60b1c886b0645e09c7d291eb92616`
+Repository HEAD and public branch before the R-276 documentation package:
+`90faef32cd81fe2c87d76e7e0314525f540abf14`
 
-Worktree state: completed R-224 predecessor execution and independent audit;
-not clean. The owner's
-untracked development-plan DOCX and unrelated worktree changes are outside
-project edits and must not be staged, moved, modified, or removed.
+Worktree state: tracked R-275 implementation closure is synchronized. The
+R-276 documentation package is uncommitted. Unrelated untracked files are
+outside project edits and must not be staged, moved, modified, or removed.
 
 Historical `git status --porcelain=v1 -uall` identity at the R-205 V26
 implementation checkpoint (retained evidence, not the current worktree):
@@ -33,10 +31,11 @@ implementation checkpoint (retained evidence, not the current worktree):
 
 ## Stable step status
 
-- `S01`–`S12`: completed.
-- `S13`: active; predecessor identity closure complete, Stage-1-specific
-  oracle freeze next.
-- `S14`–`S63`: pending.
+- `S01`–`S18`: resolved. S17 is terminal no-change for exact R-271 after a
+  profile-bound failure; S18 is not applicable because no S17 candidate was
+  published.
+- `S19`: active; evidence-first transient-event theory and pre-code audit next.
+- `S20`–`S63`: pending.
 
 Accepted evidence: R-223 independently admits the saved R-221 complete
 registered direct comparison under the owner's explicit narrow S12 amendment.
@@ -53,13 +52,14 @@ Incumbent identities:
 
 - analyzer production revision:
   `ecfee1a3ed4a2a62848da91c91acc098f873cbd6`;
-- documentation-only repository checkpoint:
-  `69c0d341b626d29dff6d951ec3485a437d42e767`;
-- current research incumbent: the R-215 S11 implementation measured by the
-  independently admitted R-221/R-223 S12 direct comparison. R-224 proves every
-  registered selected output is the unchanged direct-Truth fallback, so the
-  S13 oracle must establish an active eligible persistent lane before any
-  phase-law experiment;
+- current synchronized research checkpoint:
+  `90faef32cd81fe2c87d76e7e0314525f540abf14`;
+- accepted codec-output incumbent: the direct-Truth streams retained by the
+  independently admitted R-221/R-223 S12 comparison. R-224 proves every S12
+  selected output is byte-identical to the pre-S11 direct-Truth generation.
+  S13 and S15 are resolved no-change; exact R-271 is terminal
+  profile-negative. S19 therefore starts from accepted S12 while later R-276
+  steps retain the independently mapped research mechanisms;
 - fixed official Opus identity used by the admitted S12 direct anchor:
   `opusenc` SHA-256
   `0b8d4e8db7697bd8981e9246de1bd8a1df05c2bbb98bba2b2090d7bb585e70f9`,
@@ -71,17 +71,15 @@ Incumbent identities:
 
 ## Active substep
 
-Continue S13 with the independently authorized Stage-1 free-oracle boundary:
+Begin S19 with the R-185/R-196 evidence-first protocol:
 
-1. freeze the exact four long PCM inputs, source hashes, S11 observations,
-   paths, supports, Basis and gain/frequency laws, direct-Truth configuration,
-   candidate order, resource ceilings, runner and focused tests;
-2. compare direct Truth, exact S11, a pure phase-blind continuous arm, and a
-   zero-byte exact-phase upper-bound oracle without changing syntax or decoder;
-3. admit further phase work only if the oracle reduces compressed final-Truth
-   bytes by at least 10% on at least three deterministically eligible complete
-   inputs while preserving a decoder-domain quality Pareto point;
-4. obtain a separate implementation audit before the first Stage-1 execution.
+1. freeze the accepted-S12 incumbent, transient corpus, Opus identity, source
+   closure, candidate-cost model, decoder bounds, and minimal evidence budget;
+2. brainstorm and falsify sparse excitation-event, short local Innovation, and
+   no-change alternatives without mixing stochastic or harmonic ownership;
+3. define pre-echo, onset, complete-byte, decoder-work, memory, random-access,
+   fallback, long-first, and full R-198 admission predicates;
+4. obtain independent binary pre-code GO before implementation.
 
 ## Frozen identities
 
@@ -1400,3 +1398,24 @@ All 63 stable IDs remain visible: S01-S16 are resolved, S17 is active, and
 S18-S63 are pending. The next action is the source/binary closure and coherent
 GitHub checkpoint, then one post-freeze auditor seed and one sealed long gate.
 No further pre-gate test is authorized.
+
+## R-276 S11-S17 resource-verdict checkpoint
+
+The single sealed R-271 long execution crossed its frozen 2-GiB peak-RSS bound
+at 2,762,260,480 bytes and was stopped after the admission outcome became
+irreversible. No result transaction, N1, corpus, Opus, or S18 execution exists.
+The exact generation is terminal profile-negative, not an algorithm byte or
+quality verdict.
+
+Independent audit then classified S11-S17 evidence. S12 did not admit S11: all
+nineteen selected streams are direct Truth, eighteen ran the analyzer and fell
+back, and full Mozart skipped analysis because 28,405,440 possible observations
+exceeded the 3,500,000 cap. S13 is dependency-negative on its two executed real
+inputs; R-232 is profile-negative; R-253 through R-266 are harness-negative;
+R-268 is algorithm-negative; R-271 is profile-negative.
+
+Recovery mappings are fixed in R-276 without altering panel `R204-63-V1`.
+S01-S18 are resolved, S19 is active, and S20-S63 are pending. The next safe
+action is S19 theory, source review, alternatives, falsification, frozen gates,
+and independent pre-code audit. No historical limit is raised and no frozen
+seed or failed harness is reused.
