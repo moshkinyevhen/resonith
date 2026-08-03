@@ -11777,3 +11777,61 @@ i32 end_gain_q15
   receive a fresh evidence-first theory review and independent pre-code GO.
 - R-267 is an exact active-surface restoration, not an algorithm change. It
   triggers neither R-198 audio/Opus comparison nor a product version change.
+
+## R-268 — persistent excitation-resonator Cell pre-code hypothesis
+
+- Date: 2026-08-03
+- Status: **FINAL REMEDIATION FROZEN; IMPLEMENTATION NO-GO PENDING DUAL CONFIRMATION**.
+- Source-filter coding, LPC/LSF interpolation, long-term prediction,
+  pulse/noise excitation and sinusoidal trajectories are established prior
+  art. R-268 makes no mechanism-novelty or superiority claim.
+- The only hypothesis is that anonymous, bounded, long-lived excitation Cells
+  plus one additive accepted-S12 Truth correction can improve the accepted S12
+  frontier when every Cell, state event, residual, container and fallback is
+  charged by complete serialized cost.
+- The remediated experiment uses one mono 16-kHz lane, Q32 phase-continuous
+  pulse/noise excitation, immutable stable resonators, no more than two Cells
+  under complementary crossfade, whole-file byte-identical S12 fallback,
+  actual decoding and a four-arm persistence ablation.
+- The frozen bounded Core remains the only sample-DSP implementation. New
+  native C++23 work is limited to segmented DP and event/batch scheduling over
+  those primitives. Python may orchestrate and independently verify but may
+  not perform per-candidate sample DSP or enter shipped decoding.
+- R-253 through R-266 executable evidence remains quarantined and excluded.
+  Exact model, alternatives, complete byte ledger, decoder contract, controls,
+  resource bounds and kill gates are frozen in R-268 for independent review.
+- Two independent auditors returned **NO-GO** on the first exact preflight,
+  SHA-256
+  `1040fb8133651d68ccb228448804829dc06f660a95d640af6e4d3cb15767a665`.
+  Blocking findings covered the Core reflection-domain mismatch, unsafe
+  arbitrary filter switching, incomplete dual-law checkpoint state, undefined
+  PCM16 Truth narrowing, unbounded DP/parser costs, insufficiently bound
+  controls/budgets and an admission predicate that did not require Arm D.
+- The selected remediation removes seek/reset/checkpoint behavior from S15 and
+  never switches coefficients inside recursive state. A new immutable stable
+  Cell starts when the resonator changes; no more than two Cells overlap under
+  complementary bounded crossfade weights. All sample DSP remains in frozen
+  Core primitives.
+- The research stream now uses exact fixed-size little-endian records, checked
+  PCM16 Truth rejection, explicit count/size/parser limits, a twelve-edge
+  segmented DP, exact long/short input and anchor identities, per-metric
+  tolerances, cumulative wall/CPU/RSS/storage/LOC caps and an Arm-D-only narrow
+  S16 predicate. The first remediated document SHA-256 was
+  `996590298246722366d808dbd615d199d40709dc85332b499939a59615d443bf`.
+- Dual re-audit accepted the repaired architecture but returned local schema
+  NO-GO: two overlapping Cells exceeded single-track count bounds; crossfade
+  endpoints and simultaneous-record order were not canonical; retained-byte
+  phase caps were ambiguous; and S16 did not bind tolerances for every
+  published quality axis.
+- The final remediation permits at most twice the global control count across
+  two Cells, freezes complementary endpoint-exact Q15 crossfade and total sort
+  formulas, makes later storage caps inclusive, and binds every S16 quality
+  axis to the existing hash-identified metric policy plus explicit tolerances.
+  Final document SHA-256 is
+  `c0d419931f1d7bb9b54c3b782136c92de228cf89fd9a2822e9b195f6d8e310f9`;
+  final manifest SHA-256 is
+  `9dc52479e60e328789f3015daac05ee2d6c1aeb5bcad0b3051b735506e4b3ddc`.
+  Both independent auditors verified the exact final document and manifest and
+  returned **GO**. R-268 authorizes only the six-path, 1,500-line bounded S15
+  implementation. Audio execution, S16 comparison, syntax/default promotion,
+  versioning and release remain separately gated.

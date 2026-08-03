@@ -11,6 +11,13 @@ version.
 
 ### Evidence and repository history
 
+- Froze the dual-audited R-268 S15 persistent-Cell implementation contract.
+  Two NO-GO rounds removed arbitrary recursive-state switching, random-access
+  scope and underspecified record laws; the final bounded design uses immutable
+  resonators, at most two complementary crossfaded Cells, checked PCM16 Truth,
+  a twelve-edge segmented DP, exact complete-byte fallback and a narrow S16
+  admission predicate. This is pre-code authority, not a codec improvement or
+  version change; no audio or Opus rerun is due at this checkpoint.
 - Completed the output-identical R-218 S11 analyzer acceleration at commit
   `64521b19551d4b9688de10fe01c5302607a5beb1`; codec payload and decoded PCM
   identities are unchanged.

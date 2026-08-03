@@ -164,6 +164,7 @@
 | [reviews/R264_R263_BOUNDED_HOSTILE_GATE_DUAL_AUDIT_2026-08-03.md](reviews/R264_R263_BOUNDED_HOSTILE_GATE_DUAL_AUDIT_2026-08-03.md) | Independent dual static GO and terminal R-263 runtime outcome |
 | [results/R263_S15_RUN1_TERMINAL_FAILURE_2026-08-03.md](results/R263_S15_RUN1_TERMINAL_FAILURE_2026-08-03.md) | Immutable terminal Run-1 failure, containment proof and S12 handoff law |
 | [reviews/R267_S15_ACCEPTED_S12_HANDOFF_2026-08-03.md](reviews/R267_S15_ACCEPTED_S12_HANDOFF_2026-08-03.md) | Dual-audited exact accepted-S12 active-surface restoration and clean S15 restart boundary |
+| [reviews/R268_S15_PERSISTENT_EXCITATION_RESONATOR_CELL_PREFLIGHT_2026-08-03.md](reviews/R268_S15_PERSISTENT_EXCITATION_RESONATOR_CELL_PREFLIGHT_2026-08-03.md) | Dual-audited bounded S15 persistent excitation and immutable-resonator Cell implementation contract |
 | [results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md](results/OPENAI_SOL_BYTE_PATTERN_2026-07-27.md) | R-153 frozen Sol maximum-compute A/B and current provider-access result |
 | [results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md](results/SOL_ULTRA_VS_GEMINI_BYTE_PATTERN_2026-07-27.md) | R-154 blind Codex Sol Ultra proposer comparison against Gemini and exact CUDA |
 | [REFERENCES.md](REFERENCES.md) | Primary Sources |

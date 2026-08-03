@@ -1279,3 +1279,31 @@ source-filter hypothesis against accepted S12, followed by the smallest
 coherent implementation and its S16 full comparison. No additional R-267
 test, R-263 retry, audio/Opus rerun, version increment or release is due at
 this restoration boundary.
+
+## R-268 S15 excitation-resonator theory checkpoint
+
+R-268 freezes one new pre-code hypothesis after independent theory and prior-
+art red-teams. It makes no novelty claim for source-filter mechanisms. The
+candidate is one anonymous mono-16-kHz persistent excitation-resonator Cell
+plus one additive accepted-S12 Truth correction, complete-cost whole-file S12
+fallback and a four-arm persistence ablation. Its decoder is a thin event
+scheduler over the already frozen bounded Core; a second sample-DSP
+implementation is forbidden.
+
+The first exact R-268 preflight received dual NO-GO. Its checkpoint and
+arbitrary time-varying-filter complexity were removed rather than repaired by
+another subsystem. The remediated candidate uses immutable stable resonators,
+at most two overlapping Cells, checked PCM16 Truth, whole-file decode, fixed
+records and bounded segmented DP. Its first re-audit found only local count,
+crossfade, order, storage and metric-policy gaps; all were closed without an
+architecture change. Exact final preflight SHA-256 is
+`c0d419931f1d7bb9b54c3b782136c92de228cf89fd9a2822e9b195f6d8e310f9`;
+control-manifest SHA-256 is
+`9dc52479e60e328789f3015daac05ee2d6c1aeb5bcad0b3051b735506e4b3ddc`.
+
+All 63 stable IDs remain visible: S01-S14 are complete, S15 is active, and
+S16-S63 are pending. Both independent auditors returned GO for the exact final
+preflight and manifest. The next safe action is now the declared six-path,
+1,500-line bounded implementation, followed by its focused controls. The full
+corpus and Opus comparison occurs once at S16 only after a real candidate
+passes. No restoration rerun or evidence-harness expansion is authorized.

@@ -1,0 +1,159 @@
+{
+  "schema": "resonith-r268-s15-persistent-cell-controls-1",
+  "sample_format": "signed-pcm16-little-endian",
+  "sample_rate": 16000,
+  "control_samples": 80,
+  "frozen_core": {
+    "maf_h_sha256": "436e9bf136a782e8d42b2dc0f17aa966c76846726d06e38d24079d09cdeee9a3",
+    "maf_cpp_sha256": "c3df8c2248b0be2f6e058dc99195240fd35030c78df521edd66309b57a6f4ee4",
+    "trajectory_h_sha256": "d64b1e41d4c2d56968910041fa7b1479c5e71e2e08e771bfdca635b5318e9769",
+    "trajectory_cpp_sha256": "a1a68d4a59b1e0fb77c8d7afd1d043f21db45a541abd53726eed96190b483480",
+    "composition_h_sha256": "fd4c162514b3b4865dc424d0860d3bf3398f7f7e356134eed9f7fcef87b28ebf",
+    "composition_cpp_sha256": "ea874a6f2cc998e2c99b0471a26ec1f53a1b9ec89022c5e46ab62abf78c97374"
+  },
+  "synthetic_controls": [
+    {
+      "id": "two-cell-interaction",
+      "sample_count": 160000,
+      "pcm16_payload_sha256": "51dd55d68928090c55b651366ada57fa2983504b7032c4ae4918028a47ca3ab9",
+      "pulse_period_samples": 64,
+      "pulse_amplitude": 4000,
+      "first_cell": {
+        "start": 0,
+        "stop": 80000,
+        "order_one_reflection_q15": -8192
+      },
+      "second_cell": {
+        "start": 78400,
+        "stop": 160000,
+        "order_one_reflection_q15": -16384
+      },
+      "crossfade_samples": 1600,
+      "rounding": "maf-round-shift-q15",
+      "expected_peak_abs": 4001
+    },
+    {
+      "id": "isolated-impulse",
+      "sample_count": 16000,
+      "impulse_index": 8000,
+      "impulse_value": 16000,
+      "pcm16_payload_sha256": "8d8c41fb470bd1063509335b47b7dc5483727e81d3be84715a2c69de35b7eca1"
+    },
+    {
+      "id": "xorshift32-white",
+      "sample_count": 16000,
+      "seed_u32": 1296123442,
+      "shifts": [13, -17, 5],
+      "output": "signed-high-u16",
+      "pcm16_payload_sha256": "bd8056ac76ab46c9f349aedb1fa1c232a93fe1e1d61ad9c4cf0384252e8633a6"
+    },
+    {
+      "id": "zero",
+      "sample_count": 16000,
+      "pcm16_payload_sha256": "0c92bddb4e96f3ea9ec9f0f64a668255a6c15527ac09f6f119cafde60c7c4a39"
+    }
+  ],
+  "speech_inputs": [
+    {
+      "id": "librispeech-long-speech-319s",
+      "registered": false,
+      "path": "G:/Resonith/artifacts/corpus/librispeech-r220/librispeech-speaker-long-5min.wav",
+      "file_sha256": "0191f7d14edfc27ec9f0354adc9cbba77fc2482c5fd09505ffc5463ecb7316c8",
+      "pcm16_payload_sha256": "335384eab75a6a092adf5003c732a44b8a0ff9d4e710c3e8897d626f224d1b7f",
+      "sample_count": 5110080,
+      "duration_seconds": 319.38,
+      "s12": {
+        "complete_bytes": 975280,
+        "snr_db": 20.6356,
+        "stoi": 0.953386,
+        "estoi": 0.887884,
+        "log_mel_rmse": 7.28469,
+        "magnitude_cosine": 0.920089
+      },
+      "opus_1_6_1": {
+        "complete_bytes": 975265,
+        "snr_db": 7.9615,
+        "stoi": 0.994818,
+        "estoi": 0.986529,
+        "log_mel_rmse": 3.16581,
+        "magnitude_cosine": 0.938424
+      },
+      "receipt_sha256": "ba164297f985f05b780038583d473a3151759e69c9eaefee618895b9ee542689"
+    },
+    {
+      "id": "speech",
+      "registered": true,
+      "path": "G:/Orkela/comparison/public-benchmark-2026-07-26/speech-original.wav",
+      "file_sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46",
+      "pcm16_payload_sha256": "156e1e1821700d4c4ad31a63e6d901a5088d5ee155fafd02a9d0d2de37f771e6",
+      "sample_count": 93680,
+      "duration_seconds": 5.855,
+      "s12": {
+        "complete_bytes": 18697,
+        "snr_db": 20.1347,
+        "stoi": 0.954079,
+        "estoi": 0.908387,
+        "log_mel_rmse": 10.43225,
+        "magnitude_cosine": 0.81000
+      },
+      "opus_1_6_1": {
+        "complete_bytes": 18702,
+        "snr_db": 9.3378,
+        "stoi": 0.993335,
+        "estoi": 0.988931,
+        "log_mel_rmse": 0.62545,
+        "magnitude_cosine": 0.97200
+      },
+      "receipt_sha256": "e7744c4642261c523437bcb86998900c6da1031cac3ea858006fb24f91ca82f1"
+    }
+  ],
+  "accepted_s12": {
+    "half_window": 512,
+    "band_count": 24,
+    "coefficients_per_frame": 68,
+    "aggregate_sha256": "f8aeed2a205e7c802fd093d9de90bf1b4df9b751b1225d5b00592020889acfcf"
+  },
+  "official_opus": {
+    "version": "1.6.1",
+    "true_vbr": true,
+    "complexity": 10,
+    "frame_ms": 20,
+    "application": "speech",
+    "expected_loss_percent": 0,
+    "maximum_delay_ms": 1000,
+    "rate_selection": "four bitrate-only attempts; complete-byte nearest before quality"
+  },
+  "segmented_dp": {
+    "predecessor_durations_controls": [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1000, 2000],
+    "lambda_q8": [0, 64, 256, 1024],
+    "proxy_weights": {
+      "phase_step_shift": 12,
+      "pulse_gain": 4,
+      "noise_gain": 4,
+      "reflection": 1
+    },
+    "tie_order": "lower-total-cost, longer-segment, lower-predecessor-index, lower-lambda"
+  },
+  "metric_tolerances": {
+    "complete_bytes_fraction": 0.0005,
+    "snr_db": 0.05,
+    "stoi": 0.001,
+    "estoi": 0.001,
+    "log_mel_rmse": 0.01,
+    "magnitude_cosine": 0.0001,
+    "s16_quality_axes_policy": "experiments/r216_s12_metrics.py:quality_axes",
+    "s16_quality_axes_policy_sha256": "ab9f4a3e755d031f14fa7e6df88e4b11e65c44c5f6feb236ff4045be0f84f3e3",
+    "waveform_si_sdr_db": 0.05,
+    "waveform_segmental_snr_db": 0.05,
+    "waveform_maximum_absolute_error": 1.0,
+    "waveform_rms_error": 0.5,
+    "log_spectral_distance_db": 0.05,
+    "multiresolution_stft": 0.01,
+    "mean_pre_echo_error_db": 0.1,
+    "worst_pre_echo_error_db": 0.1,
+    "phase_mae_or_rmse_radians": 0.001,
+    "stereo_correlation_error": 0.001,
+    "stereo_mid_side_ratio_error_db": 0.05,
+    "unlisted_numeric_axis": 1e-09
+  }
+}
