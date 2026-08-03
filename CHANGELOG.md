@@ -138,6 +138,14 @@ version.
   `9864dccc...22f2`. Run 2, retry and R-263 remediation are forbidden; the
   unadmitted R-253 path is excluded from release and performance lineage, and
   S15 must restart as a genuinely new hypothesis from accepted S12 identities.
+- Completed the dual-audited R-267 handoff on branch
+  `codex/maf-s15-s12-restart`. Commit
+  `f8c8341dc9bd4051a0934df9202fabab90e23a94` restores exactly the three active
+  S12 source-filter files to their accepted identities; both auditors verified
+  ancestry, hashes, import-closure exclusion of quarantined R-253 through
+  R-266 executables, preservation of unrelated untracked files, and equality
+  of local and remote heads. This is an output-identity restoration, not a new
+  codec generation, so no audio/Opus comparison or version increment is due.
 
 ### Research
 

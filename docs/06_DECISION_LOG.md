@@ -11757,3 +11757,23 @@ i32 end_gain_q15
   must hand off to accepted S12 identities before a genuinely new S15 proposal;
   this is not an R-263 retry. No algorithm generation was accepted, so R-198
   comparison is not triggered.
+
+## R-267 — accepted-S12 active-surface handoff
+
+- Date: 2026-08-03
+- Status: **DUAL GO; S15 MAY RESTART FROM ACCEPTED S12**.
+- A new branch, `codex/maf-s15-s12-restart`, was created from the preserved
+  R-266 quarantine history. Preflight commit `98d64b3` records the handoff law;
+  restore commit `f8c8341dc9bd4051a0934df9202fabab90e23a94` changes exactly the
+  three active source-filter files and restores their accepted S12 bytes.
+- Both independent auditors verified the exact ancestry
+  `aa25637 -> 98d64b3 -> f8c8341`, the three frozen SHA-256 identities, absence
+  of R-253 through R-266 authority or execution references from the restored
+  active surface, unchanged quarantine evidence, unchanged unrelated untracked
+  inventory, and equality of local and remote branch heads.
+- Stored R-253 through R-266 executables remain negative evidence and are
+  forbidden from every new S15 import closure, runner, authority and claim.
+  A genuinely new S15 hypothesis must use only the accepted S12 identities and
+  receive a fresh evidence-first theory review and independent pre-code GO.
+- R-267 is an exact active-surface restoration, not an algorithm change. It
+  triggers neither R-198 audio/Opus comparison nor a product version change.

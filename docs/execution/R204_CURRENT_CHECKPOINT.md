@@ -1259,3 +1259,23 @@ complete, S15 remains active, and S16-S63 remain pending. The next action is an
 evidence-preserving quarantine/handoff to the accepted S12 identities, followed
 by a genuinely new S15 source-filter proposal against S12. No codec algorithm
 was admitted, so R-198 audio/Opus comparison is not triggered by this failure.
+
+## R-267 accepted-S12 handoff checkpoint
+
+The clean active S12 source-filter surface is restored on branch
+`codex/maf-s15-s12-restart` at
+`f8c8341dc9bd4051a0934df9202fabab90e23a94`. The restore changes exactly
+`reference/maf_p0/maf_source_filter_oracle.py`,
+`tests/test_maf_source_filter_oracle.py`, and
+`experiments/r232_s15_source_filter_gate.py`; their SHA-256 identities match
+the frozen accepted S12 values. Both independent auditors returned GO and the
+remote branch head equals the local head.
+
+All 63 stable IDs remain individually visible: S01-S14 are complete, S15 is
+active, and S16-S63 are pending. R-253 through R-266 remain stored but
+quarantined and must not enter a new import closure, runner, authority or
+claim. The next safe action is an evidence-first, genuinely new S15
+source-filter hypothesis against accepted S12, followed by the smallest
+coherent implementation and its S16 full comparison. No additional R-267
+test, R-263 retry, audio/Opus rerun, version increment or release is due at
+this restoration boundary.
