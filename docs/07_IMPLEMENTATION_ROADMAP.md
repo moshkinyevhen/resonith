@@ -76,6 +76,57 @@ Detailed measurements are in
 [10_MAF_P0_IMPLEMENTATION.md](10_MAF_P0_IMPLEMENTATION.md) and
 [12_LIFTPACK_AND_STATE_RDO.md](12_LIFTPACK_AND_STATE_RDO.md).
 
+## Active STEP — R-159/R-161 Latent Source Pattern Field
+
+Priority: **IN PROGRESS / BEFORE ORKELA PACKAGING**
+
+1. **DONE — theory and finite language:** anonymous minimum-description
+   fields, one final Truth, bounded transform ISA, exact sparse event ledger,
+   kill gates, and prior-art map.
+2. **DONE — first executable grammar:** non-circular alignment, cross-channel
+   reuse, byte-selected pair and multi-step gapped motifs, literal/constant/
+   affine/RLE/sparse-exception laws, exact decoder round-trip.
+3. **HIGHEST PRIORITY — R-182 whole-track self-supervised Foundry:** learn
+   anonymous vector partial shapes, resonators, gap returns, motifs, and
+   cross-channel routes from the complete input; alternate quantized
+   parameter and structural edits; admit only actual independently decoded
+   complete-file Pareto points. All following analysis work is subordinate to
+   this gate.
+4. **IN PROGRESS — R-179 minimum-description causal program:** one global
+   decoder-in-loop objective over overlapping anonymous emitters, immutable
+   leaf/CompoundBasis memory, independently indexed state laws, routes,
+   checkpoints, and one final Truth; semantic names never enter the program.
+5. **IN PROGRESS — convolutive anonymous fields:** finite NMFD/CNMF and
+   time-domain convolutional proposals, perfect-reconstruction partial-spectrum
+   fields, bounded phase/time/formant laws, and cross-channel routes.
+6. **IN PROGRESS — physical-law competition:** persistent source-filter,
+   stochastic, transient, coherent-partial, inharmonic, and route columns
+   compete simultaneously inside the R-179 program instead of becoming
+   mutually exclusive whole-track modes.
+7. **IN PROGRESS — Causal Sequence Atlas and long grammar:** exact
+   suffix-automaton coverage of every canonical causal-event origin and
+   repeated-length interval; separate lane ledgers and factorized timing,
+   pitch, phase, gain, envelope, resonator, and route atlases before bounded
+   synchronized composition; multiple motifs, hierarchical CompoundBasis DAG,
+   and persistent parameter laws.
+8. **IN PROGRESS — global audio RDO:** R-176 CBF1 now translates compressed
+   one-timeline Basis-warp events into sample-identical native MFT1 prediction
+   and adds one final Truth; R-179 replaces threshold admission with bounded
+   exact-or-beam add/remove/swap selection over complete decoder-produced
+   bytes and quality.
+9. **PENDING — native Foundry:** batched C++23/CUDA candidates with portable CPU
+   parity, bounded memory, full candidate manifest, and at most 30x encode gate.
+10. **PENDING — complete evidence and player:** full R-118 corpus, reports,
+   listening artifacts, Orkela LIVE/HISTORY/OVERVIEW visualization, packaging,
+   changelog, version, and publication.
+
+The complete accepted order, artifact layout, tests, and kill gates are in
+[20_LSPF_MASTER_EXECUTION_PLAN.md](20_LSPF_MASTER_EXECUTION_PLAN.md).
+
+Every numbered item runs the R-162 dual-duration gate: focused short clips and
+continuous inputs of at least 120 seconds in the same generation. The encoder
+publishes its deterministic duration/structure adaptation plan.
+
 ## Milestone 0 - Golden Core
 
 Artifacts:

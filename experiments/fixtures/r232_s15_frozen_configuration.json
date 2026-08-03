@@ -1,0 +1,60 @@
+{
+  "analysis": {
+    "band_count": 24,
+    "block_size": 128,
+    "filter_basis_count": 16,
+    "filter_basis_iterations": 8,
+    "filter_order": 10,
+    "half_window": 512,
+    "parameter_lambda": 0.0
+  },
+  "encoder": {
+    "adaptive_quality_guard_q12": 4608,
+    "basis_search_limit": 4,
+    "dictionary_bases_per_band": 0,
+    "dictionary_pulses_per_basis": 24,
+    "excitation_backend": "epvq",
+    "excitation_basis_correction_pulses": 0,
+    "excitation_basis_count": 0,
+    "excitation_basis_iterations": 4,
+    "excitation_basis_pulses": 16,
+    "excitation_basis_search_limit": 8,
+    "excitation_pulses": 8,
+    "excitation_quality_guard_q12": 4096,
+    "excitation_subframe_size": 64,
+    "maximum_pulses_per_frame": 192,
+    "pvq_guard_q12": null,
+    "rate_lambda_q20": 8192,
+    "stream_seed": 1380275023,
+    "synthesis_aware_rdo": false
+  },
+  "execution": {
+    "blas_threads": 1,
+    "native_core_sha256": "f12c6ad9061089d2d4088a5bfd2e20e845148ebcd303afaecc3bb2dc6be042ed",
+    "numpy": "2.5.1",
+    "python": "3.14.6",
+    "python_executable_sha256": "03168c01b7b7491423350e82c26fee71f35b43694d1319d3c668bda6903a0c38",
+    "python_hash_seed": 0,
+    "windows_build": "10.0.22631"
+  },
+  "frozen_incumbent_reference": {
+    "decoded_wav_sha256": "b105da972c12a373c826a1fee4a6911a1dc63cb08bcfe4b87851b7d3da50d873",
+    "stream_bytes": 12554,
+    "stream_sha256": "f0c3abf0a71ee7d40bdd4f5c022291264b8e39a40c2e9bdc58f14fd23f87a8a6"
+  },
+  "rescoring": {
+    "candidate_set": "within each arm and choice, both functionals consume the identical ordered sealed realized list; cross-arm lists may diverge only after the first different committed winner",
+    "clipping_rule": "candidate_count_lte_legacy_count",
+    "fft_size": 256,
+    "log_energy_floor": 1e-10,
+    "mel_bands": 40,
+    "mel_ratio_floor": 1e-30,
+    "quality_weights": [
+      0.5,
+      0.5
+    ],
+    "rounding": "ieee754_float64_then_round_half_even_to_q20",
+    "waveform_ratio_denominator_floor": 1
+  },
+  "schema": "resonith-r232-s15-frozen-configuration-1"
+}

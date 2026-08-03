@@ -1,115 +1,1161 @@
-name: Mobile Core
+name: Mobile Core Evidence
 
 on:
   push:
+    branches:
+      - main
   pull_request:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: read
 
+env:
+  ANDROID_NDK_VERSION: 29.0.14206865
+  ANDROID_RUNTIME_API: "26"
+
 jobs:
-  android:
-    name: Android ${{ matrix.preset }}
+  linux-sanitizers:
+    name: Linux Clang ASan UBSan and bounded fuzz
     runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Configure sanitized native Core
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S native -B build/linux-sanitized -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" \
+            -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined" \
+            -DBUILD_TESTING=ON \
+            -DRESONITH_BUILD_CUDA_FOUNDRY=OFF \
+            -DRESONITH_BUILD_FUZZERS=ON \
+            -DRESONITH_BUILD_TOOLS=OFF \
+            -DRESONITH_WARNINGS_AS_ERRORS=ON
+
+      - name: Build sanitized Core, tests, and partial-graph fuzzer
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build/linux-sanitized --parallel 4
+
+      - name: Execute every sanitized native test
+        shell: bash
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: |
+          set -euo pipefail
+          mkdir -p build/linux-sanitized/evidence
+          ctest --test-dir build/linux-sanitized \
+            --output-on-failure \
+            --no-tests=error \
+            2>&1 | tee build/linux-sanitized/evidence/ctest.log
+
+      - name: Capture exact ABI-v3 stateful and failpoint evidence
+        shell: bash
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: |
+          set -euo pipefail
+          evidence="$PWD/build/linux-sanitized/evidence"
+          mkdir -p "$evidence"
+          build/linux-sanitized/resonith_partial_graph_fuzz_smoke \
+            2>&1 | tee "$evidence/reachability.json"
+          build/linux-sanitized/resonith_partial_graph_allocation_ordinal_test \
+            2>&1 | tee "$evidence/allocation-ordinal.json"
+          python3 - "$evidence" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          evidence = pathlib.Path(sys.argv[1])
+          reachability = json.loads(
+              (evidence / "reachability.json").read_text(encoding="utf-8")
+          )
+          expected_reachability = {
+              "schema": "resonith-r202-v3-reachability-1",
+              "branches": 11,
+              "minimum_hits": 100,
+              "v2_mutation_fuzz": False,
+              "stress_inputs": 0,
+              "device_bytes": 0,
+          }
+          if reachability != expected_reachability:
+              raise SystemExit(
+                  "unexpected ABI-v3 reachability evidence: "
+                  f"{reachability!r}"
+              )
+
+          ordinal = json.loads(
+              (evidence / "allocation-ordinal.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          expected_ordinal = {
+              "schema": "resonith-r202-allocation-ordinal-1",
+              "r190_preflight": 10,
+              "r190_fill": 16,
+              "v3_preflight": 313,
+              "v3_fill": 613,
+              "campaign_calls": 2864,
+              "trace_hash": "56204c224ae7c4c3",
+              "terminal_live_allocations": 0,
+              "device_bytes": 0,
+          }
+          if ordinal != expected_ordinal:
+              raise SystemExit(
+                  "unexpected allocation-ordinal evidence: "
+                  f"{ordinal!r}"
+              )
+
+          summary = {
+              "schema": "resonith-r202-sanitized-stateful-gate-1",
+              "reachability": reachability,
+              "allocation_ordinal": ordinal,
+          }
+          (evidence / "stateful-gate.json").write_text(
+              json.dumps(summary, indent=2, sort_keys=True) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Run quantitative ABI-v3 partial-graph fuzz floors
+        shell: bash
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: |
+          set -euo pipefail
+          executable="$PWD/build/linux-sanitized/resonith_partial_graph_fuzz"
+          evidence="$PWD/build/linux-sanitized/evidence"
+          mkdir -p "$evidence/count"
+          pids=()
+          for shard in 0 1 2 3; do
+            crashes="$evidence/count/crashes-${shard}"
+            mkdir -p "$crashes"
+            "$executable" \
+              -runs=500000 \
+              -max_total_time=0 \
+              -max_len=96 \
+              -timeout=5 \
+              -seed="$((202600 + shard))" \
+              -print_final_stats=1 \
+              -artifact_prefix="${crashes}/" \
+              > "$evidence/count/shard-${shard}.log" 2>&1 &
+            pids+=("$!")
+          done
+          for pid in "${pids[@]}"; do
+            wait "$pid"
+          done
+          grep -h "stat::number_of_executed_units:" \
+            "$evidence"/count/shard-*.log \
+            > "$evidence/count-executed-units.txt"
+          test "$(wc -l < "$evidence/count-executed-units.txt")" -eq 4
+          awk '
+            {
+              if ($2 != 500000) exit 1
+              total += $2
+            }
+            END {
+              print "total_executed_units=" total
+              if (total != 2000000) exit 1
+            }
+          ' "$evidence/count-executed-units.txt" \
+            > "$evidence/count-gate.txt"
+          grep -hE '^Done 500000 runs in [0-9]+ second\(s\)$' \
+            "$evidence"/count/shard-*.log \
+            > "$evidence/count-duration.txt"
+          test "$(wc -l < "$evidence/count-duration.txt")" -eq 4
+          awk '
+            {
+              if ($5 < 900) exit 1
+              total += $5
+              if (minimum == 0 || $5 < minimum) minimum = $5
+              if ($5 > maximum) maximum = $5
+            }
+            END {
+              print "minimum_seconds=" minimum
+              print "maximum_seconds=" maximum
+              print "aggregate_cpu_seconds=" total
+            }
+          ' "$evidence/count-duration.txt" \
+            > "$evidence/duration-gate.txt"
+          if find "$evidence/count" \
+              -path '*/crashes-*/*' -type f -print -quit \
+              | grep -q .; then
+            echo "libFuzzer produced a crash artifact" >&2
+            exit 1
+          fi
+
+      - name: Record sanitizer evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/linux-sanitized/evidence
+          {
+            echo "source_sha=${GITHUB_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            echo "runner_image=${ImageOS:-unknown}-${ImageVersion:-unknown}"
+            clang --version | head -n 1
+            cmake --version | head -n 1
+            ninja --version
+          } > build/linux-sanitized/evidence/BUILD-METADATA.txt
+          find build/linux-sanitized/evidence \
+            -type f ! -name SHA256SUMS -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > build/linux-sanitized/evidence/SHA256SUMS
+
+      - name: Upload sanitizer evidence
+        if: always()
+        id: upload-sanitizer-evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: resonith-linux-sanitizers-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/linux-sanitized/evidence
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish sanitizer artifact identity
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Linux sanitizer evidence"
+            echo "- Artifact ID: ${{ steps.upload-sanitizer-evidence.outputs.artifact-id }}"
+            echo "- Service digest: \`${{ steps.upload-sanitizer-evidence.outputs.artifact-digest }}\`"
+            echo "- Scope: all native tests under ASan/UBSan, exhaustive allocation ordinals, exact ABI-v3 reachability, and 4 x 500000 structured fuzz inputs with at least 900 seconds per seed"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  linux-coverage:
+    name: Linux Clang ABI-v3 95/90 coverage
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Configure source-based coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S native -B build/linux-coverage -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_FLAGS="-fprofile-instr-generate -fcoverage-mapping" \
+            -DCMAKE_CXX_FLAGS="-fprofile-instr-generate -fcoverage-mapping" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fprofile-instr-generate" \
+            -DBUILD_TESTING=ON \
+            -DRESONITH_BUILD_SHARED=OFF \
+            -DRESONITH_BUILD_CUDA_FOUNDRY=OFF \
+            -DRESONITH_BUILD_FUZZERS=OFF \
+            -DRESONITH_BUILD_TOOLS=OFF \
+            -DRESONITH_WARNINGS_AS_ERRORS=ON
+
+      - name: Build focused ABI-v3 coverage drivers
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build/linux-coverage --parallel 4 --target \
+            resonith_partial_graph_test \
+            resonith_partial_graph_allocation_tripwire_test \
+            resonith_partial_graph_allocation_ordinal_test \
+            resonith_partial_graph_concurrency_test \
+            resonith_partial_graph_fuzz_smoke
+
+      - name: Execute focused coverage corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/linux-coverage/profiles/canonical
+          mkdir -p build/linux-coverage/profiles/supplemental
+          mkdir -p build/linux-coverage/evidence
+          LLVM_PROFILE_FILE='build/linux-coverage/profiles/canonical/%m-%p.profraw' \
+            build/linux-coverage/resonith_partial_graph_test
+          LLVM_PROFILE_FILE='build/linux-coverage/profiles/supplemental/%m-%p.profraw' \
+            build/linux-coverage/resonith_partial_graph_allocation_tripwire_test
+          LLVM_PROFILE_FILE='build/linux-coverage/profiles/supplemental/%m-%p.profraw' \
+            build/linux-coverage/resonith_partial_graph_allocation_ordinal_test
+          LLVM_PROFILE_FILE='build/linux-coverage/profiles/supplemental/%m-%p.profraw' \
+            build/linux-coverage/resonith_partial_graph_concurrency_test 1000
+          LLVM_PROFILE_FILE='build/linux-coverage/profiles/supplemental/%m-%p.profraw' \
+            build/linux-coverage/resonith_partial_graph_fuzz_smoke 100000
+          find build/linux-coverage/profiles/canonical \
+            -type f -name '*.profraw' -printf '%P\t%s\n' \
+            | sort > build/linux-coverage/evidence/canonical-profile-inventory.txt
+          find build/linux-coverage/profiles/supplemental \
+            -type f -name '*.profraw' -printf '%P\t%s\n' \
+            | sort > build/linux-coverage/evidence/supplemental-profile-inventory.txt
+          test -s build/linux-coverage/evidence/canonical-profile-inventory.txt
+          test -s build/linux-coverage/evidence/supplemental-profile-inventory.txt
+          find build/linux-coverage/profiles/canonical \
+            -type f -name '*.profraw' -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > build/linux-coverage/evidence/canonical-profile-sha256.txt
+          find build/linux-coverage/profiles/supplemental \
+            -type f -name '*.profraw' -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > build/linux-coverage/evidence/supplemental-profile-sha256.txt
+
+      - name: Enforce public-entry 95/90 coverage floor
+        shell: bash
+        run: |
+          set -euo pipefail
+          llvm_major="$(clang -dumpversion | cut -d. -f1)"
+          llvm_bin="/usr/lib/llvm-${llvm_major}/bin"
+          llvm_cov="${llvm_bin}/llvm-cov"
+          llvm_profdata="${llvm_bin}/llvm-profdata"
+          test -x "$llvm_cov"
+          test -x "$llvm_profdata"
+          mapfile -d '' canonical_profiles < <(
+            find build/linux-coverage/profiles/canonical \
+              -type f -name '*.profraw' -print0 | sort -z
+          )
+          mapfile -d '' supplemental_profiles < <(
+            find build/linux-coverage/profiles/supplemental \
+              -type f -name '*.profraw' -print0 | sort -z
+          )
+          test "${#canonical_profiles[@]}" -gt 0
+          test "${#supplemental_profiles[@]}" -gt 0
+          "$llvm_profdata" merge -sparse "${canonical_profiles[@]}" \
+            -o build/linux-coverage/evidence/coverage.profdata
+          # Separately linked executables can assign incompatible counter
+          # layouts to the same static Core. Only the canonical conformance
+          # executable may contribute semantic counters; supplemental profiles
+          # remain retained behavior evidence and never enter this merge.
+          objects=(
+            build/linux-coverage/resonith_partial_graph_test
+          )
+          "$llvm_cov" export "${objects[@]}" \
+            -instr-profile=build/linux-coverage/evidence/coverage.profdata \
+            -summary-only \
+            > build/linux-coverage/evidence/coverage-summary-canonical.json
+          "$llvm_cov" export "${objects[@]}" \
+            -instr-profile=build/linux-coverage/evidence/coverage.profdata \
+            native/src/partial_graph.cpp \
+            > build/linux-coverage/evidence/coverage-export.json
+          "$llvm_cov" report "${objects[@]}" \
+            -instr-profile=build/linux-coverage/evidence/coverage.profdata \
+            -show-functions \
+            native/src/partial_graph.cpp \
+            > build/linux-coverage/evidence/coverage-report.txt
+          "$llvm_cov" show "${objects[@]}" \
+            -instr-profile=build/linux-coverage/evidence/coverage.profdata \
+            -name-regex='^resonith_partial_graph_(edges_cpu|paths_cpu_v3)$' \
+            -show-line-counts-or-regions \
+            -show-branches=count \
+            native/src/partial_graph.cpp \
+            > build/linux-coverage/evidence/coverage-annotated.txt
+          python3 scripts/enforce_partial_graph_coverage.py \
+            --report build/linux-coverage/evidence/coverage-report.txt \
+            --annotated build/linux-coverage/evidence/coverage-annotated.txt \
+            --export build/linux-coverage/evidence/coverage-export.json \
+            --source native/src/partial_graph.cpp \
+            --contract native/tests/partial_graph_coverage_contract.json \
+            --llvm-cov-version "$("$llvm_cov" --version | head -n 1)" \
+            --output build/linux-coverage/evidence/coverage-gate.json
+
+      - name: Record coverage evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/linux-coverage/evidence
+          {
+            echo "source_sha=${GITHUB_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            clang --version | head -n 1
+            llvm_major="$(clang -dumpversion | cut -d. -f1)"
+            "/usr/lib/llvm-${llvm_major}/bin/llvm-cov" --version \
+              | head -n 1
+            "/usr/lib/llvm-${llvm_major}/bin/llvm-profdata" --version \
+              | head -n 1
+          } > build/linux-coverage/evidence/BUILD-METADATA.txt
+          find build/linux-coverage/evidence \
+            -type f ! -name SHA256SUMS -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > build/linux-coverage/evidence/SHA256SUMS
+
+      - name: Upload coverage evidence
+        if: always()
+        id: upload-coverage-evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: resonith-linux-coverage-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/linux-coverage/evidence
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish coverage artifact identity
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Linux public-entry coverage evidence"
+            echo "- Artifact ID: ${{ steps.upload-coverage-evidence.outputs.artifact-id }}"
+            echo "- Service digest: \`${{ steps.upload-coverage-evidence.outputs.artifact-digest }}\`"
+            echo "- Scope: R-190 and ABI-v3 public entries, 95% line / 90% branch floor"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  linux-tsan:
+    name: Linux Clang TSan concurrent ABI-v3
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Configure ThreadSanitizer Core
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S native -B build/linux-tsan -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_C_COMPILER=clang \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_C_FLAGS="-fsanitize=thread -fno-omit-frame-pointer" \
+            -DCMAKE_CXX_FLAGS="-fsanitize=thread -fno-omit-frame-pointer" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=thread" \
+            -DBUILD_TESTING=ON \
+            -DRESONITH_BUILD_SHARED=OFF \
+            -DRESONITH_BUILD_CUDA_FOUNDRY=OFF \
+            -DRESONITH_BUILD_FUZZERS=OFF \
+            -DRESONITH_BUILD_TOOLS=OFF \
+            -DRESONITH_WARNINGS_AS_ERRORS=ON
+
+      - name: Build concurrent ABI-v3 gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build/linux-tsan --parallel 4 \
+            --target resonith_partial_graph_concurrency_test
+
+      - name: Execute 100000 independent concurrent sequences
+        shell: bash
+        env:
+          TSAN_OPTIONS: halt_on_error=1:history_size=7
+        run: |
+          set -euo pipefail
+          mkdir -p build/linux-tsan/evidence
+          build/linux-tsan/resonith_partial_graph_concurrency_test 100000 \
+            2>&1 | tee build/linux-tsan/evidence/concurrency.log
+
+      - name: Record TSan evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/linux-tsan/evidence
+          {
+            echo "source_sha=${GITHUB_SHA}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            clang --version | head -n 1
+            cmake --version | head -n 1
+            ninja --version
+          } > build/linux-tsan/evidence/BUILD-METADATA.txt
+          find build/linux-tsan/evidence \
+            -type f ! -name SHA256SUMS -print0 \
+            | sort -z \
+            | xargs -0 sha256sum \
+            > build/linux-tsan/evidence/SHA256SUMS
+
+      - name: Upload TSan evidence
+        if: always()
+        id: upload-tsan-evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: resonith-linux-tsan-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/linux-tsan/evidence
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish TSan artifact identity
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Linux ThreadSanitizer evidence"
+            echo "- Artifact ID: ${{ steps.upload-tsan-evidence.outputs.artifact-id }}"
+            echo "- Service digest: \`${{ steps.upload-tsan-evidence.outputs.artifact-digest }}\`"
+            echo "- Scope: 100000 independent concurrent R-190/v3 preflight/fill sequences"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  macos-native:
+    name: macOS ARM64 AppleClang runtime
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Select newest installed stable Xcode
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcode_path="$(
+            python3 - <<'PY'
+          import glob
+          import re
+
+          candidates = []
+          for path in glob.glob("/Applications/Xcode_*.app"):
+              if "beta" in path.lower() or "rc" in path.lower():
+                  continue
+              match = re.search(r"Xcode_([0-9]+(?:\.[0-9]+)*)", path)
+              if match:
+                  version = tuple(int(part) for part in match.group(1).split("."))
+                  candidates.append((version, path))
+          if not candidates:
+              raise SystemExit("No stable Xcode installation was found")
+          print(max(candidates)[1])
+          PY
+          )"
+          sudo xcode-select -s "$xcode_path"
+          xcodebuild -version
+          xcrun --sdk macosx --show-sdk-version
+
+      - name: Configure and build native AppleClang Core
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S native -B build/macos-native -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON \
+            -DRESONITH_BUILD_CUDA_FOUNDRY=OFF \
+            -DRESONITH_BUILD_FUZZERS=OFF \
+            -DRESONITH_BUILD_TOOLS=OFF \
+            -DRESONITH_WARNINGS_AS_ERRORS=ON
+          cmake --build build/macos-native --parallel 4
+
+      - name: Execute every native AppleClang test
+        shell: bash
+        run: |
+          set -euo pipefail
+          ctest --test-dir build/macos-native \
+            --output-on-failure \
+            --no-tests=error
+
+  android:
+    name: Android ${{ matrix.abi }} ${{ matrix.claim }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        preset:
-          - android-arm64
-          - android-x86_64
+        include:
+          - preset: android-arm64
+            abi: arm64-v8a
+            elf_machine: AArch64
+            claim: compile-link
+            runtime: false
+          - preset: android-x86_64
+            abi: x86_64
+            elf_machine: Advanced Micro Devices X86-64
+            claim: API-26-runtime
+            runtime: true
     steps:
-      - uses: actions/checkout@v5
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
-      - name: Select stable NDK r29
+      - name: Select stable Android NDK r29
         shell: bash
         run: |
-          ndk="$ANDROID_HOME/ndk/29.0.14206865"
+          set -euo pipefail
+          ndk="$ANDROID_HOME/ndk/$ANDROID_NDK_VERSION"
           if [[ ! -d "$ndk" ]]; then
             "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
-              "ndk;29.0.14206865"
+              "ndk;$ANDROID_NDK_VERSION"
           fi
           test -x "$ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
           echo "ANDROID_NDK_ROOT=$ndk" >> "$GITHUB_ENV"
-
-      - name: Record toolchain
-        shell: bash
-        run: |
           cmake --version
           ninja --version
-          "$ANDROID_HOME/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++" \
-            --version
+          "$ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++" --version
 
-      - name: Configure
+      - name: Configure the single evidence build
         working-directory: native
-        run: cmake --preset ${{ matrix.preset }}
-
-      - name: Build
-        working-directory: native
-        run: cmake --build --preset ${{ matrix.preset }}
-
-      - name: Verify artifacts
         shell: bash
         run: |
-          static="build/${{ matrix.preset }}/libresonith_core.a"
-          shared="build/${{ matrix.preset }}/libresonith_core_shared.so"
+          set -euo pipefail
+          cmake --preset "${{ matrix.preset }}" -DBUILD_TESTING=ON
+
+      - name: Build the exact production libraries and closed test set
+        working-directory: native
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build --preset "${{ matrix.preset }}"
+
+      - name: Verify Android architecture, exports, dependencies, and tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          build="build/${{ matrix.preset }}"
+          llvm_root="$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          static="$build/libresonith_core.a"
+          shared="$build/libresonith_core_shared.so"
+          tests=(
+            resonith_liftpack_test
+            resonith_c_header_test
+            resonith_c_header_shared_test
+            resonith_cibs_test
+            resonith_trajectory_test
+            resonith_composition_test
+            resonith_basis_test
+            resonith_pipeline_test
+            resonith_player_test
+            resonith_seek_test
+            resonith_lapped_test
+            resonith_maf_test
+            resonith_maf_typed_test
+            resonith_partial_graph_test
+            resonith_partial_graph_allocation_tripwire_test
+            resonith_partial_graph_allocation_ordinal_test
+            resonith_partial_graph_fuzz_smoke
+            resonith_maf_fuzz_smoke
+            resonith_maf_typed_fuzz_smoke
+          )
           test -s "$static"
           test -s "$shared"
-          ! "$ANDROID_HOME/ndk/29.0.14206865/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf" \
-            -d "$shared" \
-            | grep -q 'libc++_shared'
-          stat --printf='%n %s bytes\n' "$static" "$shared"
-          sha256sum "$static" "$shared"
+          "$llvm_root/llvm-ar" t "$static" > "$build/static-members.txt"
+          test -s "$build/static-members.txt"
+          "$llvm_root/llvm-readelf" -h "$shared" \
+            > "$build/shared-elf-header.txt"
+          grep -F "Machine:" "$build/shared-elf-header.txt" \
+            | grep -F "${{ matrix.elf_machine }}" > /dev/null
+          "$llvm_root/llvm-readelf" -d "$shared" \
+            > "$build/libresonith_core_shared.dynamic.txt"
+          grep -Fq "(NEEDED)" "$build/libresonith_core_shared.dynamic.txt"
+          ! grep -Fq \
+            "libc++_shared" \
+            "$build/libresonith_core_shared.dynamic.txt"
+          "$llvm_root/llvm-nm" -D --defined-only "$shared" \
+            > "$build/shared-exported-symbols.txt"
+          for symbol in \
+            resonith_partial_graph_edges_cpu \
+            resonith_partial_graph_paths_cpu_v2 \
+            resonith_partial_graph_paths_cpu_v3; do
+            grep -Fq "$symbol" "$build/shared-exported-symbols.txt"
+          done
+          for test_name in "${tests[@]}"; do
+            test -x "$build/$test_name"
+            "$llvm_root/llvm-readelf" -h "$build/$test_name" \
+              > "$build/$test_name.elf-header.txt"
+            grep -F "Machine:" "$build/$test_name.elf-header.txt" \
+              | grep -F "${{ matrix.elf_machine }}" > /dev/null
+          done
 
-      - uses: actions/upload-artifact@v4
+      - name: Install and start the pinned API-26 Android emulator
+        if: matrix.runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          package="system-images;android-${ANDROID_RUNTIME_API};google_apis;x86_64"
+          export ANDROID_USER_HOME="${RUNNER_TEMP}/resonith-android-user"
+          export ANDROID_AVD_HOME="${ANDROID_USER_HOME}/avd"
+          mkdir -p "$ANDROID_AVD_HOME"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "emulator" \
+            "platform-tools" \
+            "$package"
+          export PATH="$ANDROID_HOME/platform-tools:$PATH"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" \
+            create avd \
+            --force \
+            --name resonith-api26 \
+            --package "$package" \
+            --device "pixel_2" \
+            --path "$ANDROID_AVD_HOME/resonith-api26.avd" \
+            < /dev/null
+          "$ANDROID_HOME/emulator/emulator" -list-avds \
+            | grep -Fx resonith-api26 > /dev/null
+          sudo chown "$(id -un)" /dev/kvm
+          "$ANDROID_HOME/emulator/emulator" @resonith-api26 \
+            -no-window \
+            -no-audio \
+            -no-boot-anim \
+            -no-snapshot \
+            -gpu swiftshader_indirect \
+            > build/${{ matrix.preset }}/emulator.log 2>&1 &
+          echo "$!" > build/${{ matrix.preset }}/emulator.pid
+          timeout 60 adb wait-for-device
+          ready=0
+          for _ in $(seq 1 120); do
+            if [[ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" == "1" ]]; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          test "$ready" -eq 1
+          actual_api="$(
+            adb shell getprop ro.build.version.sdk \
+              | tr -d '\r'
+          )"
+          test "$actual_api" = "$ANDROID_RUNTIME_API"
+
+      - name: Execute the closed Android API-26 test set
+        if: matrix.runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          build="build/${{ matrix.preset }}"
+          remote="/data/local/tmp/resonith"
+          tests=(
+            resonith_liftpack_test
+            resonith_c_header_test
+            resonith_c_header_shared_test
+            resonith_cibs_test
+            resonith_trajectory_test
+            resonith_composition_test
+            resonith_basis_test
+            resonith_pipeline_test
+            resonith_player_test
+            resonith_seek_test
+            resonith_lapped_test
+            resonith_maf_test
+            resonith_maf_typed_test
+            resonith_partial_graph_test
+            resonith_partial_graph_allocation_tripwire_test
+            resonith_partial_graph_allocation_ordinal_test
+            resonith_partial_graph_fuzz_smoke
+            resonith_maf_fuzz_smoke
+            resonith_maf_typed_fuzz_smoke
+          )
+          adb shell "rm -rf '$remote' && mkdir -p '$remote'"
+          adb push "$build/libresonith_core_shared.so" "$remote/"
+          for test_name in "${tests[@]}"; do
+            adb push "$build/$test_name" "$remote/"
+          done
+          adb shell "chmod 0755 '$remote'/*"
+          : > "$build/android-executed-tests.txt"
+          for test_name in "${tests[@]}"; do
+            echo "$test_name" | tee -a "$build/android-executed-tests.txt"
+            adb shell "cd '$remote' && LD_LIBRARY_PATH='$remote' './$test_name'"
+          done
+
+      - name: Stop Android emulator
+        if: always() && matrix.runtime
+        shell: bash
+        run: |
+          adb emu kill >/dev/null 2>&1 || true
+
+      - name: Package exact Android evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          build="build/${{ matrix.preset }}"
+          stage="$build/evidence"
+          tests=(
+            resonith_liftpack_test
+            resonith_c_header_test
+            resonith_c_header_shared_test
+            resonith_cibs_test
+            resonith_trajectory_test
+            resonith_composition_test
+            resonith_basis_test
+            resonith_pipeline_test
+            resonith_player_test
+            resonith_seek_test
+            resonith_lapped_test
+            resonith_maf_test
+            resonith_maf_typed_test
+            resonith_partial_graph_test
+            resonith_partial_graph_allocation_tripwire_test
+            resonith_partial_graph_allocation_ordinal_test
+            resonith_partial_graph_fuzz_smoke
+            resonith_maf_fuzz_smoke
+            resonith_maf_typed_fuzz_smoke
+          )
+          mkdir -p "$stage/lib" "$stage/tests" "$stage/logs"
+          cp "$build/libresonith_core.a" "$stage/lib/"
+          cp "$build/libresonith_core_shared.so" "$stage/lib/"
+          for test_name in "${tests[@]}"; do
+            cp "$build/$test_name" "$stage/tests/"
+          done
+          if [[ -f "$build/emulator.log" ]]; then
+            cp "$build/emulator.log" "$stage/logs/"
+          fi
+          cp "$build/libresonith_core_shared.dynamic.txt" "$stage/logs/"
+          if [[ -f "$build/android-executed-tests.txt" ]]; then
+            cp "$build/android-executed-tests.txt" "$stage/"
+          fi
+          TARGET_PRESET="${{ matrix.preset }}" \
+          TARGET_ABI="${{ matrix.abi }}" \
+          TARGET_CLAIM="${{ matrix.claim }}" \
+          python3 - <<'PY' > "$stage/BUILD-METADATA.json"
+          import json
+          import os
+          import subprocess
+
+          def output(*command):
+              return subprocess.check_output(command, text=True).strip()
+
+          print(json.dumps({
+              "schema": 1,
+              "source_sha": os.environ["GITHUB_SHA"],
+              "run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+              "runner_image": {
+                  "os": os.environ.get("ImageOS", "unknown"),
+                  "version": os.environ.get("ImageVersion", "unknown"),
+              },
+              "target": {
+                  "preset": os.environ["TARGET_PRESET"],
+                  "abi": os.environ["TARGET_ABI"],
+                  "claim": os.environ["TARGET_CLAIM"],
+                  "android_api_floor": 26,
+              },
+              "toolchain": {
+                  "ndk": os.environ["ANDROID_NDK_VERSION"],
+                  "cmake": output("cmake", "--version").splitlines()[0],
+                  "ninja": output("ninja", "--version"),
+              },
+              "integrity_claim": "GitHub-built artifact integrity; not reproducible-build proof",
+          }, indent=2, sort_keys=True))
+          PY
+          (
+            cd "$stage"
+            find . -type f ! -name SHA256SUMS -print0 \
+              | sort -z \
+              | xargs -0 sha256sum > SHA256SUMS
+          )
+          tarball="resonith-${{ matrix.preset }}-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.tar.gz"
+          tar -czf "$build/$tarball" -C "$stage" .
+
+      - name: Upload exact Android evidence
+        if: always()
+        id: upload-android
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: resonith-${{ matrix.preset }}
-          path: |
-            build/${{ matrix.preset }}/libresonith_core.a
-            build/${{ matrix.preset }}/libresonith_core_shared.so
+          name: resonith-${{ matrix.preset }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/${{ matrix.preset }}/resonith-${{ matrix.preset }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}.tar.gz
           if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish Android artifact identity
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Android ${{ matrix.abi }}"
+            echo "- Claim: ${{ matrix.claim }}"
+            echo "- Artifact ID: ${{ steps.upload-android.outputs.artifact-id }}"
+            echo "- Service digest: \`${{ steps.upload-android.outputs.artifact-digest }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   ios:
-    name: ${{ matrix.preset }}
-    runs-on: macos-26
+    name: iOS ${{ matrix.target }} compile-link
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
-        preset:
-          - ios-device-arm64
-          - ios-simulator-x86_64
+        include:
+          - preset: ios-device-arm64
+            target: device-arm64
+            runner: macos-26
+            expected_arch: arm64
+            sdk: iphoneos
+          - preset: ios-simulator-arm64
+            target: simulator-arm64
+            runner: macos-26
+            expected_arch: arm64
+            sdk: iphonesimulator
+          - preset: ios-simulator-x86_64
+            target: simulator-x86_64
+            runner: macos-26-intel
+            expected_arch: x86_64
+            sdk: iphonesimulator
     steps:
-      - uses: actions/checkout@v5
-
-      - name: Select stable Xcode
-        shell: bash
-        run: |
-          sudo xcode-select -s /Applications/Xcode_26.4.1.app
-          xcodebuild -version
-          xcrun --sdk iphoneos --show-sdk-version
-          cmake --version
-
-      - name: Configure
-        working-directory: native
-        run: cmake --preset ${{ matrix.preset }}
-
-      - name: Build
-        working-directory: native
-        run: cmake --build --preset ${{ matrix.preset }}
-
-      - name: Verify static Core
-        shell: bash
-        run: |
-          artifact="$(find "build/${{ matrix.preset }}" \
-            -name libresonith_core.a -print -quit)"
-          test -n "$artifact"
-          test -s "$artifact"
-          xcrun lipo -info "$artifact"
-          stat -f '%N %z bytes' "$artifact"
-          shasum -a 256 "$artifact"
-
-      - uses: actions/upload-artifact@v4
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          name: resonith-${{ matrix.preset }}
-          path: build/${{ matrix.preset }}/**/libresonith_core.a
+          persist-credentials: false
+
+      - name: Select newest installed stable Xcode
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcode_path="$(
+            python3 - <<'PY'
+          import glob
+          import re
+
+          candidates = []
+          for path in glob.glob("/Applications/Xcode_*.app"):
+              if "beta" in path.lower() or "rc" in path.lower():
+                  continue
+              match = re.search(r"Xcode_([0-9]+(?:\.[0-9]+)*)", path)
+              if match:
+                  version = tuple(int(part) for part in match.group(1).split("."))
+                  candidates.append((version, path))
+          if not candidates:
+              raise SystemExit("No stable Xcode installation was found")
+          print(max(candidates)[1])
+          PY
+          )"
+          sudo xcode-select -s "$xcode_path"
+          xcodebuild -version
+          xcrun --sdk "${{ matrix.sdk }}" --show-sdk-version
+
+      - name: Configure the single iOS evidence build
+        working-directory: native
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --preset "${{ matrix.preset }}" -DBUILD_TESTING=ON
+
+      - name: Build exact iOS libraries and link the closed test set
+        working-directory: native
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build --preset "${{ matrix.preset }}"
+
+      - name: Verify iOS Mach-O architecture and closed test set
+        shell: bash
+        run: |
+          set -euo pipefail
+          build="build/${{ matrix.preset }}"
+          tests=(
+            resonith_liftpack_test
+            resonith_c_header_test
+            resonith_cibs_test
+            resonith_trajectory_test
+            resonith_composition_test
+            resonith_basis_test
+            resonith_pipeline_test
+            resonith_player_test
+            resonith_seek_test
+            resonith_lapped_test
+            resonith_maf_test
+            resonith_maf_typed_test
+            resonith_partial_graph_test
+            resonith_partial_graph_allocation_tripwire_test
+            resonith_partial_graph_allocation_ordinal_test
+            resonith_partial_graph_fuzz_smoke
+            resonith_maf_fuzz_smoke
+            resonith_maf_typed_fuzz_smoke
+          )
+          static="$(find "$build" -type f -name libresonith_core.a -print -quit)"
+          test -n "$static"
+          test -s "$static"
+          xcrun lipo -archs "$static" | tr ' ' '\n' \
+            | grep -Fxq "${{ matrix.expected_arch }}"
+          : > "$build/ios-linked-tests.txt"
+          for test_name in "${tests[@]}"; do
+            binary="$(find "$build" -type f -name "$test_name" -print -quit)"
+            test -n "$binary"
+            test -s "$binary"
+            xcrun lipo -archs "$binary" | tr ' ' '\n' \
+              | grep -Fxq "${{ matrix.expected_arch }}"
+            printf '%s\t%s\n' "$test_name" "$binary" \
+              >> "$build/ios-linked-tests.txt"
+          done
+
+      - name: Package exact iOS compile-link evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          build="build/${{ matrix.preset }}"
+          stage="$build/evidence"
+          mkdir -p "$stage/lib" "$stage/tests"
+          static="$(find "$build" -type f -name libresonith_core.a -print -quit)"
+          test -n "$static"
+          cp "$static" "$stage/lib/"
+          test -s "$build/ios-linked-tests.txt"
+          cp "$build/ios-linked-tests.txt" "$stage/"
+          while IFS=$'\t' read -r test_name binary; do
+            cp "$binary" "$stage/tests/$test_name"
+          done < "$build/ios-linked-tests.txt"
+          TARGET_PRESET="${{ matrix.preset }}" \
+          TARGET_NAME="${{ matrix.target }}" \
+          TARGET_ARCH="${{ matrix.expected_arch }}" \
+          TARGET_SDK="${{ matrix.sdk }}" \
+          python3 - <<'PY' > "$stage/BUILD-METADATA.json"
+          import json
+          import os
+          import subprocess
+
+          def output(*command):
+              return subprocess.check_output(command, text=True).strip()
+
+          print(json.dumps({
+              "schema": 1,
+              "source_sha": os.environ["GITHUB_SHA"],
+              "run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "run_attempt": int(os.environ["GITHUB_RUN_ATTEMPT"]),
+              "runner_image": {
+                  "os": os.environ.get("ImageOS", "unknown"),
+                  "version": os.environ.get("ImageVersion", "unknown"),
+              },
+              "target": {
+                  "preset": os.environ["TARGET_PRESET"],
+                  "name": os.environ["TARGET_NAME"],
+                  "architecture": os.environ["TARGET_ARCH"],
+                  "sdk": os.environ["TARGET_SDK"],
+                  "ios_deployment_floor": "15.0",
+                  "claim": "compile-link only; no iOS runtime claim",
+              },
+              "toolchain": {
+                  "xcode": output("xcodebuild", "-version").splitlines(),
+                  "sdk_version": output(
+                      "xcrun", "--sdk", os.environ["TARGET_SDK"],
+                      "--show-sdk-version",
+                  ),
+                  "cmake": output("cmake", "--version").splitlines()[0],
+              },
+              "integrity_claim": "GitHub-built artifact integrity; not reproducible-build proof",
+          }, indent=2, sort_keys=True))
+          PY
+          (
+            cd "$stage"
+            find . -type f ! -name SHA256SUMS -print0 \
+              | sort -z \
+              | xargs -0 shasum -a 256 > SHA256SUMS
+          )
+          tarball="resonith-${{ matrix.preset }}-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.tar.gz"
+          tar -czf "$build/$tarball" -C "$stage" .
+
+      - name: Upload exact iOS compile-link evidence
+        if: always()
+        id: upload-ios
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: resonith-${{ matrix.preset }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: build/${{ matrix.preset }}/resonith-${{ matrix.preset }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}.tar.gz
           if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish iOS artifact identity
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### iOS ${{ matrix.target }}"
+            echo "- Claim: compile/link only"
+            echo "- Artifact ID: ${{ steps.upload-ios.outputs.artifact-id }}"
+            echo "- Service digest: \`${{ steps.upload-ios.outputs.artifact-digest }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  mobile-gate:
+    name: mobile-gate
+    if: always()
+    needs:
+      - linux-sanitizers
+      - linux-coverage
+      - linux-tsan
+      - macos-native
+      - android
+      - ios
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Require every evidence job
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ needs.linux-sanitizers.result }}" = "success"
+          test "${{ needs.linux-coverage.result }}" = "success"
+          test "${{ needs.linux-tsan.result }}" = "success"
+          test "${{ needs.macos-native.result }}" = "success"
+          test "${{ needs.android.result }}" = "success"
+          test "${{ needs.ios.result }}" = "success"
+
+      - name: Build the successful-run artifact index
+        id: build-index
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts?per_page=100"
+          curl --fail --silent --show-error \
+            --retry 3 \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "$api" \
+            | jq \
+              --arg sha "$GITHUB_SHA" \
+              --argjson run_id "$GITHUB_RUN_ID" \
+              --argjson attempt "$GITHUB_RUN_ATTEMPT" \
+              '{
+                schema: 1,
+                source_sha: $sha,
+                run_id: $run_id,
+                run_attempt: $attempt,
+                claim: "GitHub artifact integrity/provenance index; not reproducible-build proof",
+                artifacts: [
+                  .artifacts[]
+                  | {
+                      id,
+                      name,
+                      size_in_bytes,
+                      archive_download_url,
+                      digest,
+                      expired,
+                      created_at,
+                      expires_at
+                    }
+                ]
+              }' > run-index.json
+          test "$(jq '.artifacts | length' run-index.json)" -ge 6
+          sha256sum run-index.json > run-index.SHA256SUMS
+
+      - name: Upload successful-run artifact index
+        id: upload-index
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: resonith-mobile-run-index-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            run-index.json
+            run-index.SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish stable gate summary
+        shell: bash
+        run: |
+          {
+            echo "## Resonith mobile evidence gate passed"
+            echo "- Source: \`${GITHUB_SHA}\`"
+            echo "- Run: ${GITHUB_RUN_ID}, attempt ${GITHUB_RUN_ATTEMPT}"
+            echo "- Index artifact ID: ${{ steps.upload-index.outputs.artifact-id }}"
+            echo "- Index service digest: \`${{ steps.upload-index.outputs.artifact-digest }}\`"
+            echo "- Runtime: Android x86_64 at API 26 and native macOS ARM64"
+            echo "- Compile/link: Android ARM64 and iOS device/simulator ARM64/x86_64"
+            echo "- No APK, IPA, iOS-runtime, physical-device, performance, energy, or reproducible-build claim"
+          } >> "$GITHUB_STEP_SUMMARY"

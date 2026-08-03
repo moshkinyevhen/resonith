@@ -1,0 +1,552 @@
+{
+  "files": {
+    "bootstrap": {
+      "path": "experiments/r257_source_execution_bootstrap.py",
+      "sha256": "463002769637422d4dc4b6de32056212d5623313779530bcc4699dd5fdb62a7f"
+    },
+    "configuration": {
+      "path": "experiments/fixtures/r232_s15_frozen_configuration.json",
+      "sha256": "5fea557eb517f0e02f318e87f205ba116b0032e61b852a0dd3a8fe06a194e0fc"
+    },
+    "gate": {
+      "path": "experiments/r232_s15_source_filter_gate.py",
+      "sha256": "c4529ffaee118d8fd51360babda6e88d7051b0c1fdeabacca200d11ff04ea908"
+    },
+    "golden": {
+      "path": "tests/fixtures/r250_s15_lpc_golden.json.gz",
+      "sha256": "793bff4e748435c079668920a5a2a6cc97b932250bb1bca1df69ed2c6958cc35"
+    },
+    "native_core": {
+      "path": "build/cpp23-clang22-ninja/libresonith_core_shared.dll",
+      "sha256": "f12c6ad9061089d2d4088a5bfd2e20e845148ebcd303afaecc3bb2dc6be042ed"
+    },
+    "r253_preflight": {
+      "path": "docs/reviews/R253_S15_EXACT_LPC_PHASE_B_PREFLIGHT_2026-08-02.md",
+      "sha256": "38dfc62cd8ac68e912a6b5c83b9bb4323ae523dd37aaaf023fae657947dfc277"
+    },
+    "r257_preflight": {
+      "path": "docs/reviews/R257_S15_SOURCE_EXECUTION_AUTHORITY_PREFLIGHT_2026-08-02.md",
+      "sha256": "4c933257e53fe67605a612403ad0c82f43902a9ec1a21344ebdae9fa655e8538"
+    },
+    "r260_probe": {
+      "path": "experiments/r260_import_cache_startup_probe.py",
+      "sha256": "63df2cef060307bc8b401b15b840e52438adca8bd249b71455f9b58dd0ba7c4e"
+    },
+    "r260_probe_runner": {
+      "path": "experiments/r260_import_cache_probe_runner.py",
+      "sha256": "b8c1f1837446f771c32f57c993b7943bb2636be8fd4e9f3f8ad9131721774522"
+    },
+    "r260_probe_summary": {
+      "path": "experiments/fixtures/r260_import_cache_probe_summary_v1.json",
+      "sha256": "3808484165a21a6c798e78ffc4f9162ee2eee8bcbb18c96c67876399ba4aab5a"
+    },
+    "r260_remediation": {
+      "path": "docs/reviews/R260_R257_BOOTSTRAP_CACHE_SENTINEL_REMEDIATION_2026-08-03.md",
+      "sha256": "e8b81b668860c8a68931fb1e840006f7273aa6ef87f8c243d3ba44846ca0a8c5"
+    },
+    "r262_remediation": {
+      "path": "docs/reviews/R262_R261_BOUND_NAMESPACE_PACKAGE_REMEDIATION_2026-08-03.md",
+      "sha256": "3fe1d1a097a4bba85b1e6cd8ff7d77abeeac37b6af7307b4e05939af030561e5"
+    },
+    "r263_remediation": {
+      "path": "docs/reviews/R263_R262_BOUNDED_TRANSACTIONAL_HOSTILE_GATE_REDESIGN_2026-08-03.md",
+      "sha256": "dcb8ecc6f8936dbcc40c3e88d57ab64fcc95311f8b81c09327df396850a0ea10"
+    },
+    "test_module": {
+      "path": "tests/test_maf_source_filter_oracle.py",
+      "sha256": "ab70ba0f807ec4f7f3332a852c06e1ac5a9b8462889c232ac504258dddf81ede"
+    }
+  },
+  "legacy_identity": {
+    "decoded_wav_sha256": "b105da972c12a373c826a1fee4a6911a1dc63cb08bcfe4b87851b7d3da50d873",
+    "source_sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46",
+    "stream_bytes": 12554,
+    "stream_sha256": "f0c3abf0a71ee7d40bdd4f5c022291264b8e39a40c2e9bdc58f14fd23f87a8a6"
+  },
+  "local_imports": {
+    "cibs0": {
+      "package": true,
+      "path": "reference/cibs0/__init__.py",
+      "sha256": "1651e86dda03cf2ecda9a142d9a7d6313282b060e631f1f50a467d12e5b67ed4"
+    },
+    "cibs0.cibs0": {
+      "package": false,
+      "path": "reference/cibs0/cibs0.py",
+      "sha256": "87342c30825aa432e065635af95faf98309a6e0f9e07f018d3c0ffa4fe8f3161"
+    },
+    "maf_p0": {
+      "package": true,
+      "path": "reference/maf_p0/__init__.py",
+      "sha256": "40cedb88d8f3307bd8097039605f71b503cce9380c5e6103da174042ef098c6b"
+    },
+    "maf_p0.additive_oracle": {
+      "package": false,
+      "path": "reference/maf_p0/additive_oracle.py",
+      "sha256": "54dcf41f9d7ab41026915d615f84b1c4e043de01b9ad5de14972a67a37628080"
+    },
+    "maf_p0.analytic_oracle": {
+      "package": false,
+      "path": "reference/maf_p0/analytic_oracle.py",
+      "sha256": "09f9701be3333f372afb6981ab405a4e6c0fbfad05ac015e1b87275903109b2b"
+    },
+    "maf_p0.anonymous_causal_program": {
+      "package": false,
+      "path": "reference/maf_p0/anonymous_causal_program.py",
+      "sha256": "968cbe3041a129bc143c223c22b75268d8f51f6a0f0e4d06fb3fda187f867202"
+    },
+    "maf_p0.anonymous_spectral_factor": {
+      "package": false,
+      "path": "reference/maf_p0/anonymous_spectral_factor.py",
+      "sha256": "ca638bb8644b63a5ba181f4fd24177f886a9bdecf42e3c8d28f7bfbceac8f094"
+    },
+    "maf_p0.basis_section": {
+      "package": false,
+      "path": "reference/maf_p0/basis_section.py",
+      "sha256": "00660effe32f708e831b8c3f3be8ed1aff76ae821b92d898bc03d6e7962eeb51"
+    },
+    "maf_p0.cached_additive_oracle": {
+      "package": false,
+      "path": "reference/maf_p0/cached_additive_oracle.py",
+      "sha256": "19c573b321b682cb3b6dea5f708027656b0668d4e3940d893527ed3ee61a1f48"
+    },
+    "maf_p0.causal_basis_field": {
+      "package": false,
+      "path": "reference/maf_p0/causal_basis_field.py",
+      "sha256": "8c5863a5ea2c2c11f7cdeb3a678f05e0041dd5967da15bf6cb56799c6c3a2b2a"
+    },
+    "maf_p0.causal_basis_truth_candidate": {
+      "package": false,
+      "path": "reference/maf_p0/causal_basis_truth_candidate.py",
+      "sha256": "744b1589121d1b8785505b5eee6cf260ced0b7fdada9e641737be15614a97875"
+    },
+    "maf_p0.causal_event_ledger": {
+      "package": false,
+      "path": "reference/maf_p0/causal_event_ledger.py",
+      "sha256": "69ff0d327a23923630a37f3c1bc467061330a3fe6aeb6682b8ee7e4fc7c01816"
+    },
+    "maf_p0.causal_law_grammar": {
+      "package": false,
+      "path": "reference/maf_p0/causal_law_grammar.py",
+      "sha256": "8908424ee481411f6dcef189274f008bc79d3652d1b2ae2d124d6594b05e88a3"
+    },
+    "maf_p0.causal_sequence_atlas": {
+      "package": false,
+      "path": "reference/maf_p0/causal_sequence_atlas.py",
+      "sha256": "9f2f5dbfbc2ee99a283aa957c8ae5f77c565895483fb560100b410100d82d8a6"
+    },
+    "maf_p0.codec": {
+      "package": false,
+      "path": "reference/maf_p0/codec.py",
+      "sha256": "9692ab2dcfee1933db01097148d5c557c0f33abc7acb62a3edac36f9be29ce87"
+    },
+    "maf_p0.coherent_partial_bundle": {
+      "package": false,
+      "path": "reference/maf_p0/coherent_partial_bundle.py",
+      "sha256": "edc7dae40e1db8d1130d91f7e910550446545e2eb2e75368a4fd9d3bf2bf479a"
+    },
+    "maf_p0.complete_pattern_field": {
+      "package": false,
+      "path": "reference/maf_p0/complete_pattern_field.py",
+      "sha256": "ca97710f26d97104a422cb3e93cc6811ba50a5968a31a143c284aef6b2004253"
+    },
+    "maf_p0.composition": {
+      "package": false,
+      "path": "reference/maf_p0/composition.py",
+      "sha256": "febe70a1afda74bbda0dd92c05bf0ea5acd9d83011ba6cb650c68190d3574773"
+    },
+    "maf_p0.container": {
+      "package": false,
+      "path": "reference/maf_p0/container.py",
+      "sha256": "774381598515609e2c8cb6cb3d7991d2789bbf766b81d59f559964e48f9e2124"
+    },
+    "maf_p0.convolutive_anonymous_field": {
+      "package": false,
+      "path": "reference/maf_p0/convolutive_anonymous_field.py",
+      "sha256": "924dad1dbfc547033efbe1f7f88915d33c0152309df5a5598d985a0d546f18d7"
+    },
+    "maf_p0.convolutive_factorized_latent_field": {
+      "package": false,
+      "path": "reference/maf_p0/convolutive_factorized_latent_field.py",
+      "sha256": "f173271ef4305fabcb89554a42112542cc7ec01f8635d8d1a9d02b0e044c11e8"
+    },
+    "maf_p0.factorized_latent_field": {
+      "package": false,
+      "path": "reference/maf_p0/factorized_latent_field.py",
+      "sha256": "66251136a859d08506e1b869d8d85ae069a05d4b356403bdaee172ce7a5ccc4f"
+    },
+    "maf_p0.finite_state_oracle": {
+      "package": false,
+      "path": "reference/maf_p0/finite_state_oracle.py",
+      "sha256": "ae6766958bdc6d64a9783d87ecfbbb1c735676a2379b6b87fb133d46ec98d4fa"
+    },
+    "maf_p0.fixed_lapped": {
+      "package": false,
+      "path": "reference/maf_p0/fixed_lapped.py",
+      "sha256": "e9ac1f026d034b29b9d4d77b613fda3258710bfbd5e809f84df374097a6b60d0"
+    },
+    "maf_p0.foundry_cuda": {
+      "package": false,
+      "path": "reference/maf_p0/foundry_cuda.py",
+      "sha256": "420feaedfd20d588404bccf0ed745fe9241e21d86be1fbba3208a7fc05c1e015"
+    },
+    "maf_p0.gridless_pattern_field": {
+      "package": false,
+      "path": "reference/maf_p0/gridless_pattern_field.py",
+      "sha256": "d10602530b3f82bbb6c000d5bdfc174bc1b728bb88c7387775c652d0a5d2f7df"
+    },
+    "maf_p0.gridless_truth_rdo": {
+      "package": false,
+      "path": "reference/maf_p0/gridless_truth_rdo.py",
+      "sha256": "ab82ea8a8670279057eae253fe51db2325f984e5150bc2df3622329c2a61f9b0"
+    },
+    "maf_p0.hierarchical_grammar": {
+      "package": false,
+      "path": "reference/maf_p0/hierarchical_grammar.py",
+      "sha256": "54844fe82fda714147bf0897bb69da6385d50c4569b222ff84e99de5157e3298"
+    },
+    "maf_p0.lapped_oracle": {
+      "package": false,
+      "path": "reference/maf_p0/lapped_oracle.py",
+      "sha256": "e89cc95a10bf80d8de390807616c678535230aec4736364876dccf7acb1ab908"
+    },
+    "maf_p0.lapped_streaming": {
+      "package": false,
+      "path": "reference/maf_p0/lapped_streaming.py",
+      "sha256": "45dbdd243faa162cc3830b6d70ad23f30f00404ab6c55d5edaf7d79ca1675834"
+    },
+    "maf_p0.latent_source_field": {
+      "package": false,
+      "path": "reference/maf_p0/latent_source_field.py",
+      "sha256": "ab5da14bbe084dc3b0e9bec1e7e3f8de6f685b4ad8c82cfc1202c018a9e1cd3d"
+    },
+    "maf_p0.lpc_oracle": {
+      "package": false,
+      "path": "reference/maf_p0/lpc_oracle.py",
+      "sha256": "52cf5a3d1fbd27b0a13f8836c6f745c72091e0820b1a31745e7332b2ec8e9247"
+    },
+    "maf_p0.lspf_analysis_policy": {
+      "package": false,
+      "path": "reference/maf_p0/lspf_analysis_policy.py",
+      "sha256": "d7f1b8bbca54fea4ff8ba5b86b0b7fed39cc1d1a8d48ceb59611fe24ddb0b5d7"
+    },
+    "maf_p0.lspf_duration_rdo": {
+      "package": false,
+      "path": "reference/maf_p0/lspf_duration_rdo.py",
+      "sha256": "c85d4117713d7dd29e1fc7778dc525c2149401113b55a0deaae66f20a0795afb"
+    },
+    "maf_p0.maf_cell_oracle": {
+      "package": false,
+      "path": "reference/maf_p0/maf_cell_oracle.py",
+      "sha256": "91d31f634138329b990dfd6c9e97ada267944d4946304ca975118a065848f77d"
+    },
+    "maf_p0.maf_source_filter_oracle": {
+      "package": false,
+      "path": "reference/maf_p0/maf_source_filter_oracle.py",
+      "sha256": "736292ac28b5a3dcb7ca33db6a4be0c451909a67b96dab0c393b435b5656382e"
+    },
+    "maf_p0.maf_typed": {
+      "package": false,
+      "path": "reference/maf_p0/maf_typed.py",
+      "sha256": "f3cd7fc71f2fff24b3ef07841adf6ffa07a40f83fb82de8370c186b463098fc5"
+    },
+    "maf_p0.maf_typed_candidate": {
+      "package": false,
+      "path": "reference/maf_p0/maf_typed_candidate.py",
+      "sha256": "a866c3d093bca566916be272024784d026e0de91f419f26c5a7324b086469ce4"
+    },
+    "maf_p0.main0": {
+      "package": false,
+      "path": "reference/maf_p0/main0.py",
+      "sha256": "ba8f2a5dcbc075cd24e230d6efdeaab06beb36171cb406e0185c124de6ca9cc5"
+    },
+    "maf_p0.model": {
+      "package": false,
+      "path": "reference/maf_p0/model.py",
+      "sha256": "43aadb105ababb44ff7c8bc931dbf968b2e78a761c6263dc5dedca4bf0244ffd"
+    },
+    "maf_p0.morphing_partial_field": {
+      "package": false,
+      "path": "reference/maf_p0/morphing_partial_field.py",
+      "sha256": "3bdb7baa6321b478cd2aa4f544af9aa4254cd5450d15d0a4a698dcd6beddd5e1"
+    },
+    "maf_p0.motif_orbit": {
+      "package": false,
+      "path": "reference/maf_p0/motif_orbit.py",
+      "sha256": "9bb9ca0b6ef6dae5e95784dd1ccfebeb2c3669496b15fe8fd2c8299369daf546"
+    },
+    "maf_p0.multichannel": {
+      "package": false,
+      "path": "reference/maf_p0/multichannel.py",
+      "sha256": "732f7e9e8495da35d3396b19ff61886cb9b90ba8c4a909ffa1cb846ca3c87ba4"
+    },
+    "maf_p0.native_core": {
+      "package": false,
+      "path": "reference/maf_p0/native_core.py",
+      "sha256": "32c514e5c9cf4f1beffba61c62d262489f35e2fb0c2e74c3cfdae2a132694045"
+    },
+    "maf_p0.opus_anchor": {
+      "package": false,
+      "path": "reference/maf_p0/opus_anchor.py",
+      "sha256": "f3da22a860630f280360fd8acae9510551981c0d4c610d66709a797499e3d0d0"
+    },
+    "maf_p0.opus_max_effort": {
+      "package": false,
+      "path": "reference/maf_p0/opus_max_effort.py",
+      "sha256": "d5594f5ff243a1daec501bb715c3f7ab6e375d9a08ad720437336754e376c66f"
+    },
+    "maf_p0.packet_loss": {
+      "package": false,
+      "path": "reference/maf_p0/packet_loss.py",
+      "sha256": "dfc322ae33337eeb8c1231105e4ae8ddb20603073d96a85b3208f7bb8d9a5ec0"
+    },
+    "maf_p0.partial_basis_trajectory": {
+      "package": false,
+      "path": "reference/maf_p0/partial_basis_trajectory.py",
+      "sha256": "7fcc9df13ef9a89f41310e2e599ce84bc45a990133409fa59a6fe4906b7ae4c8"
+    },
+    "maf_p0.partial_spectrum_latent_field": {
+      "package": false,
+      "path": "reference/maf_p0/partial_spectrum_latent_field.py",
+      "sha256": "da65443baae752ef758a31c80d26c2e8eb599459fb9ec9e71b773c5189ea8818"
+    },
+    "maf_p0.partial_spectrum_orbit": {
+      "package": false,
+      "path": "reference/maf_p0/partial_spectrum_orbit.py",
+      "sha256": "fcaa62a6ae94c0db771620e50a5a6a2bff5e1a6d6278065889a87ef9c97281a5"
+    },
+    "maf_p0.perceptual_metrics": {
+      "package": false,
+      "path": "reference/maf_p0/perceptual_metrics.py",
+      "sha256": "4c02f3a7d2b04f26a0c51646c567daaeae391f1b1d23ba19974cf5780663c425"
+    },
+    "maf_p0.periodic": {
+      "package": false,
+      "path": "reference/maf_p0/periodic.py",
+      "sha256": "0cb44f865376ef87346baecb9d411558dcd6bf3fd5fad065991e9dd297d724b4"
+    },
+    "maf_p0.pvq_envelope_oracle": {
+      "package": false,
+      "path": "reference/maf_p0/pvq_envelope_oracle.py",
+      "sha256": "85a184267df10c52ec57ebffbbf96546a8488558befa4ab9ffd20c7f505baddb"
+    },
+    "maf_p0.residual": {
+      "package": false,
+      "path": "reference/maf_p0/residual.py",
+      "sha256": "c3eb7dce66bc699188db1e12dcd3a76114cd26f09b79f2d37d005710cc4b055b"
+    },
+    "maf_p0.rsc1": {
+      "package": false,
+      "path": "reference/maf_p0/rsc1.py",
+      "sha256": "20340df2fb0863ae49ce11421698fcce8371f9a852e41bf3fc53691150339e1b"
+    },
+    "maf_p0.segmentation": {
+      "package": false,
+      "path": "reference/maf_p0/segmentation.py",
+      "sha256": "661aff0c12048502ab424240f2560b991fdaf7c1a5f7d872356787040b7fefb7"
+    },
+    "maf_p0.sparse_entropy": {
+      "package": false,
+      "path": "reference/maf_p0/sparse_entropy.py",
+      "sha256": "1a7ced4acfd9011cc1f41d2279ca38691cad37318ef3b6ad75fab658e51735da"
+    },
+    "maf_p0.sparse_motif_grammar": {
+      "package": false,
+      "path": "reference/maf_p0/sparse_motif_grammar.py",
+      "sha256": "ce01dfacd79fb465e1a49178cc84640db8d5d5aade1d13942abb788dfb6be11f"
+    },
+    "maf_p0.stateful": {
+      "package": false,
+      "path": "reference/maf_p0/stateful.py",
+      "sha256": "45c9f177dfb109006da0299ee51331d8489d6dc530cf8d12adefef0120505763"
+    },
+    "maf_p0.stream_sections": {
+      "package": false,
+      "path": "reference/maf_p0/stream_sections.py",
+      "sha256": "6ebfe342506d0165567f0cf5615c5f30021b970348ab62fd2ae6659be432c115"
+    },
+    "maf_p0.transient": {
+      "package": false,
+      "path": "reference/maf_p0/transient.py",
+      "sha256": "b7fc3c758e96ab20f3edab01727abfe8bb8f6779091f0c21189eb1c25a465fc6"
+    },
+    "maf_p0.warp_dictionary": {
+      "package": false,
+      "path": "reference/maf_p0/warp_dictionary.py",
+      "sha256": "8c60c085cee48da690c2ff714ed5ffc29692b8c96a39dd924194d0c4afecdb5d"
+    },
+    "maf_p0.wav_io": {
+      "package": false,
+      "path": "reference/maf_p0/wav_io.py",
+      "sha256": "a9604db6c290406614cc6a44c195bea250a752bb701d111a4262c3dbefdbd576"
+    },
+    "objective_audio_metrics": {
+      "package": false,
+      "path": "experiments/objective_audio_metrics.py",
+      "sha256": "284e27fca406775e90f0c0db075808b5203c9075600ccebf090e0065cb1c9bc5"
+    },
+    "r216_s12_metrics": {
+      "package": false,
+      "path": "experiments/r216_s12_metrics.py",
+      "sha256": "ab9f4a3e755d031f14fa7e6df88e4b11e65c44c5f6feb236ff4045be0f84f3e3"
+    },
+    "r232_s15_source_filter_gate": {
+      "package": false,
+      "path": "experiments/r232_s15_source_filter_gate.py",
+      "sha256": "c4529ffaee118d8fd51360babda6e88d7051b0c1fdeabacca200d11ff04ea908"
+    },
+    "test_maf_source_filter_oracle": {
+      "package": false,
+      "path": "tests/test_maf_source_filter_oracle.py",
+      "sha256": "ab70ba0f807ec4f7f3332a852c06e1ac5a9b8462889c232ac504258dddf81ede"
+    }
+  },
+  "local_modules": {
+    "experiments/objective_audio_metrics.py": "284e27fca406775e90f0c0db075808b5203c9075600ccebf090e0065cb1c9bc5",
+    "experiments/r216_s12_metrics.py": "ab9f4a3e755d031f14fa7e6df88e4b11e65c44c5f6feb236ff4045be0f84f3e3",
+    "experiments/r232_s15_source_filter_gate.py": "c4529ffaee118d8fd51360babda6e88d7051b0c1fdeabacca200d11ff04ea908",
+    "reference/cibs0/__init__.py": "1651e86dda03cf2ecda9a142d9a7d6313282b060e631f1f50a467d12e5b67ed4",
+    "reference/cibs0/cibs0.py": "87342c30825aa432e065635af95faf98309a6e0f9e07f018d3c0ffa4fe8f3161",
+    "reference/maf_p0/__init__.py": "40cedb88d8f3307bd8097039605f71b503cce9380c5e6103da174042ef098c6b",
+    "reference/maf_p0/additive_oracle.py": "54dcf41f9d7ab41026915d615f84b1c4e043de01b9ad5de14972a67a37628080",
+    "reference/maf_p0/analytic_oracle.py": "09f9701be3333f372afb6981ab405a4e6c0fbfad05ac015e1b87275903109b2b",
+    "reference/maf_p0/anonymous_causal_program.py": "968cbe3041a129bc143c223c22b75268d8f51f6a0f0e4d06fb3fda187f867202",
+    "reference/maf_p0/anonymous_spectral_factor.py": "ca638bb8644b63a5ba181f4fd24177f886a9bdecf42e3c8d28f7bfbceac8f094",
+    "reference/maf_p0/basis_section.py": "00660effe32f708e831b8c3f3be8ed1aff76ae821b92d898bc03d6e7962eeb51",
+    "reference/maf_p0/cached_additive_oracle.py": "19c573b321b682cb3b6dea5f708027656b0668d4e3940d893527ed3ee61a1f48",
+    "reference/maf_p0/causal_basis_field.py": "8c5863a5ea2c2c11f7cdeb3a678f05e0041dd5967da15bf6cb56799c6c3a2b2a",
+    "reference/maf_p0/causal_basis_truth_candidate.py": "744b1589121d1b8785505b5eee6cf260ced0b7fdada9e641737be15614a97875",
+    "reference/maf_p0/causal_event_ledger.py": "69ff0d327a23923630a37f3c1bc467061330a3fe6aeb6682b8ee7e4fc7c01816",
+    "reference/maf_p0/causal_law_grammar.py": "8908424ee481411f6dcef189274f008bc79d3652d1b2ae2d124d6594b05e88a3",
+    "reference/maf_p0/causal_sequence_atlas.py": "9f2f5dbfbc2ee99a283aa957c8ae5f77c565895483fb560100b410100d82d8a6",
+    "reference/maf_p0/codec.py": "9692ab2dcfee1933db01097148d5c557c0f33abc7acb62a3edac36f9be29ce87",
+    "reference/maf_p0/coherent_partial_bundle.py": "edc7dae40e1db8d1130d91f7e910550446545e2eb2e75368a4fd9d3bf2bf479a",
+    "reference/maf_p0/complete_pattern_field.py": "ca97710f26d97104a422cb3e93cc6811ba50a5968a31a143c284aef6b2004253",
+    "reference/maf_p0/composition.py": "febe70a1afda74bbda0dd92c05bf0ea5acd9d83011ba6cb650c68190d3574773",
+    "reference/maf_p0/container.py": "774381598515609e2c8cb6cb3d7991d2789bbf766b81d59f559964e48f9e2124",
+    "reference/maf_p0/convolutive_anonymous_field.py": "924dad1dbfc547033efbe1f7f88915d33c0152309df5a5598d985a0d546f18d7",
+    "reference/maf_p0/convolutive_factorized_latent_field.py": "f173271ef4305fabcb89554a42112542cc7ec01f8635d8d1a9d02b0e044c11e8",
+    "reference/maf_p0/factorized_latent_field.py": "66251136a859d08506e1b869d8d85ae069a05d4b356403bdaee172ce7a5ccc4f",
+    "reference/maf_p0/finite_state_oracle.py": "ae6766958bdc6d64a9783d87ecfbbb1c735676a2379b6b87fb133d46ec98d4fa",
+    "reference/maf_p0/fixed_lapped.py": "e9ac1f026d034b29b9d4d77b613fda3258710bfbd5e809f84df374097a6b60d0",
+    "reference/maf_p0/foundry_cuda.py": "420feaedfd20d588404bccf0ed745fe9241e21d86be1fbba3208a7fc05c1e015",
+    "reference/maf_p0/gridless_pattern_field.py": "d10602530b3f82bbb6c000d5bdfc174bc1b728bb88c7387775c652d0a5d2f7df",
+    "reference/maf_p0/gridless_truth_rdo.py": "ab82ea8a8670279057eae253fe51db2325f984e5150bc2df3622329c2a61f9b0",
+    "reference/maf_p0/hierarchical_grammar.py": "54844fe82fda714147bf0897bb69da6385d50c4569b222ff84e99de5157e3298",
+    "reference/maf_p0/lapped_oracle.py": "e89cc95a10bf80d8de390807616c678535230aec4736364876dccf7acb1ab908",
+    "reference/maf_p0/lapped_streaming.py": "45dbdd243faa162cc3830b6d70ad23f30f00404ab6c55d5edaf7d79ca1675834",
+    "reference/maf_p0/latent_source_field.py": "ab5da14bbe084dc3b0e9bec1e7e3f8de6f685b4ad8c82cfc1202c018a9e1cd3d",
+    "reference/maf_p0/lpc_oracle.py": "52cf5a3d1fbd27b0a13f8836c6f745c72091e0820b1a31745e7332b2ec8e9247",
+    "reference/maf_p0/lspf_analysis_policy.py": "d7f1b8bbca54fea4ff8ba5b86b0b7fed39cc1d1a8d48ceb59611fe24ddb0b5d7",
+    "reference/maf_p0/lspf_duration_rdo.py": "c85d4117713d7dd29e1fc7778dc525c2149401113b55a0deaae66f20a0795afb",
+    "reference/maf_p0/maf_cell_oracle.py": "91d31f634138329b990dfd6c9e97ada267944d4946304ca975118a065848f77d",
+    "reference/maf_p0/maf_source_filter_oracle.py": "736292ac28b5a3dcb7ca33db6a4be0c451909a67b96dab0c393b435b5656382e",
+    "reference/maf_p0/maf_typed.py": "f3cd7fc71f2fff24b3ef07841adf6ffa07a40f83fb82de8370c186b463098fc5",
+    "reference/maf_p0/maf_typed_candidate.py": "a866c3d093bca566916be272024784d026e0de91f419f26c5a7324b086469ce4",
+    "reference/maf_p0/main0.py": "ba8f2a5dcbc075cd24e230d6efdeaab06beb36171cb406e0185c124de6ca9cc5",
+    "reference/maf_p0/model.py": "43aadb105ababb44ff7c8bc931dbf968b2e78a761c6263dc5dedca4bf0244ffd",
+    "reference/maf_p0/morphing_partial_field.py": "3bdb7baa6321b478cd2aa4f544af9aa4254cd5450d15d0a4a698dcd6beddd5e1",
+    "reference/maf_p0/motif_orbit.py": "9bb9ca0b6ef6dae5e95784dd1ccfebeb2c3669496b15fe8fd2c8299369daf546",
+    "reference/maf_p0/multichannel.py": "732f7e9e8495da35d3396b19ff61886cb9b90ba8c4a909ffa1cb846ca3c87ba4",
+    "reference/maf_p0/native_core.py": "32c514e5c9cf4f1beffba61c62d262489f35e2fb0c2e74c3cfdae2a132694045",
+    "reference/maf_p0/opus_anchor.py": "f3da22a860630f280360fd8acae9510551981c0d4c610d66709a797499e3d0d0",
+    "reference/maf_p0/opus_max_effort.py": "d5594f5ff243a1daec501bb715c3f7ab6e375d9a08ad720437336754e376c66f",
+    "reference/maf_p0/packet_loss.py": "dfc322ae33337eeb8c1231105e4ae8ddb20603073d96a85b3208f7bb8d9a5ec0",
+    "reference/maf_p0/partial_basis_trajectory.py": "7fcc9df13ef9a89f41310e2e599ce84bc45a990133409fa59a6fe4906b7ae4c8",
+    "reference/maf_p0/partial_spectrum_latent_field.py": "da65443baae752ef758a31c80d26c2e8eb599459fb9ec9e71b773c5189ea8818",
+    "reference/maf_p0/partial_spectrum_orbit.py": "fcaa62a6ae94c0db771620e50a5a6a2bff5e1a6d6278065889a87ef9c97281a5",
+    "reference/maf_p0/perceptual_metrics.py": "4c02f3a7d2b04f26a0c51646c567daaeae391f1b1d23ba19974cf5780663c425",
+    "reference/maf_p0/periodic.py": "0cb44f865376ef87346baecb9d411558dcd6bf3fd5fad065991e9dd297d724b4",
+    "reference/maf_p0/pvq_envelope_oracle.py": "85a184267df10c52ec57ebffbbf96546a8488558befa4ab9ffd20c7f505baddb",
+    "reference/maf_p0/residual.py": "c3eb7dce66bc699188db1e12dcd3a76114cd26f09b79f2d37d005710cc4b055b",
+    "reference/maf_p0/rsc1.py": "20340df2fb0863ae49ce11421698fcce8371f9a852e41bf3fc53691150339e1b",
+    "reference/maf_p0/segmentation.py": "661aff0c12048502ab424240f2560b991fdaf7c1a5f7d872356787040b7fefb7",
+    "reference/maf_p0/sparse_entropy.py": "1a7ced4acfd9011cc1f41d2279ca38691cad37318ef3b6ad75fab658e51735da",
+    "reference/maf_p0/sparse_motif_grammar.py": "ce01dfacd79fb465e1a49178cc84640db8d5d5aade1d13942abb788dfb6be11f",
+    "reference/maf_p0/stateful.py": "45c9f177dfb109006da0299ee51331d8489d6dc530cf8d12adefef0120505763",
+    "reference/maf_p0/stream_sections.py": "6ebfe342506d0165567f0cf5615c5f30021b970348ab62fd2ae6659be432c115",
+    "reference/maf_p0/transient.py": "b7fc3c758e96ab20f3edab01727abfe8bb8f6779091f0c21189eb1c25a465fc6",
+    "reference/maf_p0/warp_dictionary.py": "8c60c085cee48da690c2ff714ed5ffc29692b8c96a39dd924194d0c4afecdb5d",
+    "reference/maf_p0/wav_io.py": "a9604db6c290406614cc6a44c195bea250a752bb701d111a4262c3dbefdbd576"
+  },
+  "prefix_root": "G:\\Resonith\\artifacts",
+  "runtime": {
+    "external_packages": {
+      "cffi": "2.1.0",
+      "numpy": "2.5.1",
+      "pystoi": "0.4.1",
+      "scipy": "1.18.0",
+      "soundfile": "0.14.0"
+    },
+    "python": "3.14.6",
+    "windows_build": "10.0.22631"
+  },
+  "runtime_files": {
+    "python.exe": "03168c01b7b7491423350e82c26fee71f35b43694d1319d3c668bda6903a0c38",
+    "python3.dll": "22c6e46d8bd563cdb072650901461ef68be2ea6cb1e80af859559d9395a27e39",
+    "python314.dll": "fde89cdb5c2d08ae65de7ef4abca1876c93ba3796002f5ac0bf7e4d4f5a94da0",
+    "vcruntime140.dll": "052ad6a20d375957e82aa6a3c441ea548d89be0981516ca7eb306e063d5027f4",
+    "vcruntime140_1.dll": "6a99bc0128e0c7d6cbbf615fcc26909565e17d4ca3451b97f8987f9c6acbc6c8"
+  },
+  "runtime_trees": {
+    "DLLs": "7b6085f4148afe0dc20bc1c9f87b4d47d9e64403a09fdb21ad7017449afb0e21",
+    "Lib": "79706ee268142d73a05b9f8d67c9ab53af59010e89bc8afb8d96041cff2b9936"
+  },
+  "schema": "resonith-r257-source-execution-authority-1",
+  "scope": "R-263 bounded transactional focused evidence and R-253 bounded controller/worker evidence; no codec-generation or real-audio admission",
+  "site_packages": "G:\\Resonith\\artifacts\\tools\\python-3.14.6-amd64\\Lib\\site-packages",
+  "source_execution": {
+    "digest": "resonith-r257-filtered-tree-1",
+    "file_finder_loaders": [
+      [
+        ".cp314-win_amd64.pyd",
+        "_frozen_importlib_external",
+        "ExtensionFileLoader"
+      ],
+      [
+        ".pyd",
+        "_frozen_importlib_external",
+        "ExtensionFileLoader"
+      ],
+      [
+        ".py",
+        "_frozen_importlib_external",
+        "SourceFileLoader"
+      ],
+      [
+        ".pyw",
+        "_frozen_importlib_external",
+        "SourceFileLoader"
+      ],
+      [
+        ".pyc",
+        "_frozen_importlib_external",
+        "SourcelessFileLoader"
+      ]
+    ],
+    "python_flags": {
+      "stage0": [
+        "-I",
+        "-S",
+        "-B"
+      ],
+      "stage1": [
+        "-S",
+        "-P",
+        "-B"
+      ]
+    },
+    "python_executable_path": "G:\\Resonith\\artifacts\\tools\\python-3.14.6-amd64\\python.exe",
+    "r263_launcher_sha256": "62cc7ef42d96f078ddc9c636ca2cba9921e069e14f85e3e10dd4ce3f5bc7ecdb",
+    "r263_launcher_source": "import sys as s,json as j,hashlib as h,pathlib as p;q=lambda c:c or (_ for _ in()).throw(RuntimeError());o=s.orig_argv;v=lambda n:s.argv[s.argv.index(n)+1];q(o[1:7]==[\"-I\",\"-S\",\"-B\",\"-X\",f\"pycache_prefix={s.pycache_prefix}\",\"-c\"]);q(all(s.argv.count(n)==1 for n in (\"--authority\",\"--expected-authority-sha256\")));a=p.Path(v(\"--authority\")).resolve(1);x=v(\"--expected-authority-sha256\").lower();b=a.read_bytes();d=j.loads(b);q(h.sha256(b).hexdigest()==x and d.get(\"schema\")==\"resonith-r257-source-execution-authority-1\");l=d[\"source_execution\"];q(l[\"r263_launcher_source\"]==o[7] and h.sha256(o[7].encode()).hexdigest()==l[\"r263_launcher_sha256\"]);e=l[\"python_executable_path\"];z=p.Path(s.executable).resolve(1);q(str(z)==e and h.sha256(z.read_bytes()).hexdigest()==d[\"runtime_files\"][\"python.exe\"]);g=d[\"files\"][\"gate\"];f=(a.parents[2]/g[\"path\"]).resolve(1);b=f.read_bytes();q(h.sha256(b).hexdigest()==g[\"sha256\"]);s.argv=[str(f),*s.argv[1:]];exec(compile(b,str(f),\"exec\"),{\"__name__\":\"__main__\",\"__file__\":str(f)})",
+    "required_local_imports": {
+      "controller": [
+        "r232_s15_source_filter_gate"
+      ],
+      "focused": [
+        "maf_p0.maf_source_filter_oracle",
+        "r232_s15_source_filter_gate",
+        "test_maf_source_filter_oracle"
+      ]
+    }
+  }
+}

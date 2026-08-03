@@ -5,6 +5,80 @@ from .analytic_oracle import (
     AnalyticOracleResult,
     run_analytic_oscillator_oracle,
 )
+from .anonymous_spectral_factor import (
+    AnonymousSpectralFactorization,
+    AnonymousSpectralLanguage,
+    infer_anonymous_spectral_factors,
+)
+from .anonymous_causal_program import (
+    AnonymousCausalProgramCandidate,
+    AnonymousCausalProgramLanguage,
+    AnonymousProgramColumn,
+    compile_anonymous_causal_program,
+    decode_anonymous_causal_program,
+)
+from .morphing_partial_field import (
+    MorphingPartialLanguage,
+    MorphingPartialPrediction,
+    fit_morphing_partial_prediction,
+)
+from .convolutive_anonymous_field import (
+    ConvolutiveAnonymousField,
+    ConvolutiveAnonymousLanguage,
+    factor_convolutive_magnitude,
+    infer_convolutive_anonymous_fields,
+    reconstruct_convolutive_magnitude,
+)
+from .convolutive_factorized_latent_field import (
+    ConvolutiveFactorizedLatentField,
+    infer_convolutive_factorized_latent_field,
+)
+from .coherent_partial_bundle import (
+    CausalLaneField,
+    CausalLaneObservation,
+    CoherentPartialBasis,
+    CoherentPartialLanguage,
+    PartialBundleObservation,
+    infer_causal_lane_field,
+)
+from .causal_sequence_atlas import (
+    CanonicalCausalStream,
+    CausalAtlasLanguage,
+    CausalEvent,
+    MultiLaneCausalSequenceAtlas,
+    CausalSequenceAtlas,
+    CausalSequenceCandidate,
+    build_causal_sequence_atlas,
+    build_multilane_causal_sequence_atlas,
+    causal_events_from_lane_observations,
+    causal_events_from_partial_bases,
+    canonicalize_causal_events,
+    factorized_causal_event_laws,
+    project_causal_events,
+)
+from .causal_law_grammar import (
+    CausalLawGrammarCandidate,
+    CausalLawGrammarLanguage,
+    CausalLawRule,
+    decode_causal_law_tokens,
+    encode_causal_law_tokens,
+)
+from .causal_event_ledger import (
+    CausalEventLedgerCandidate,
+    decode_causal_event_ledger,
+    encode_causal_event_ledger,
+)
+from .causal_basis_field import (
+    CausalBasisFieldCandidate,
+    CausalBasisFieldInfo,
+    encode_causal_basis_field_from_mft1,
+    parse_causal_basis_field,
+)
+from .causal_basis_truth_candidate import (
+    CausalBasisTruthCandidate,
+    decode_causal_basis_truth_candidate,
+    encode_causal_basis_truth_candidate,
+)
 from .cached_additive_oracle import (
     CachedAdditiveOracleResult,
     pack_registry_model,
@@ -15,6 +89,10 @@ from .foundry_cuda import (
     FoundryCudaError,
     FoundryCudaEvidence,
     GainPhaseCudaFoundry,
+)
+from .factorized_latent_field import (
+    FactorizedLatentField,
+    infer_factorized_latent_field,
 )
 from .complete_pattern_field import (
     CompletePatternResult,
@@ -38,7 +116,22 @@ from .hierarchical_grammar import (
     StateAtom,
     discover_affine_state_compounds,
     discover_exact_compounds,
+    discover_interval_compounds,
     select_minimum_description,
+)
+from .gridless_truth_rdo import (
+    GridlessTruthCandidate,
+    GridlessWarpMatch,
+    GridlessWarpSearch,
+    encode_gridless_truth_candidate,
+    search_gridless_warp_field,
+)
+from .latent_source_field import (
+    LatentComponent,
+    LatentOccurrence,
+    LatentSourceField,
+    LatentSourceLanguage,
+    infer_latent_source_pattern_field,
 )
 from .model import (
     encode_basis_latent,
@@ -54,6 +147,16 @@ from .lpc_oracle import (
     encode_lpc_liftpack_oracle,
     index_lpc_liftpack_blocks,
     run_lpc_liftpack_oracle,
+)
+from .lspf_analysis_policy import (
+    LspfAnalysisPlan,
+    LspfPolicyRequest,
+    choose_lspf_analysis_plan,
+)
+from .lspf_duration_rdo import (
+    LspfDurationCandidate,
+    LspfDurationSelection,
+    select_lspf_duration_candidate,
 )
 from .lapped_oracle import (
     LappedAnalysis,
@@ -107,6 +210,15 @@ from .motif_orbit import (
     encode_multichannel_gain_orbit_candidate,
     encode_optimized_independent_truth,
 )
+from .partial_spectrum_latent_field import (
+    PartialSpectrumBandField,
+    PartialSpectrumLatentField,
+    infer_partial_spectrum_latent_field,
+)
+from .partial_basis_trajectory import (
+    PartialBasisTrajectoryPrediction,
+    fit_partial_basis_trajectory_prediction,
+)
 from .native_core import (
     NativeMain0Decoder,
     NativeMultichannelDecodeResult,
@@ -118,9 +230,32 @@ from .packet_loss import (
     simulate_lapped_packet_loss,
 )
 from .opus_anchor import run_opus_multichannel_anchor
+from .opus_max_effort import (
+    OpusEffortConfig,
+    OpusEffortPoint,
+    OpusMaxEffortFrontier,
+    opus_max_effort_configurations,
+    run_opus_max_effort_frontier,
+)
 from .periodic import PhaseTrajectory
 from .residual import ResidualPacket, decode_liftpack, encode_liftpack
 from .segmentation import SegmentationResult, segment_acoustic_states
+from .sparse_motif_grammar import (
+    ComponentTokenObservation,
+    LatentFieldEventLedger,
+    SparseMotifCandidate,
+    SparseMotifDefinition,
+    SparseMotifLanguage,
+    SparsePathCandidate,
+    SparsePathDefinition,
+    SparsePathLanguage,
+    decode_sparse_motif_events,
+    discover_and_pack_sparse_pair_motifs,
+    discover_and_pack_sparse_path_motifs,
+    pack_latent_field_event_ledger,
+    pack_flat_observations,
+    pack_basis_grouped_observations,
+)
 from .stateful import (
     decode_stateful_bytes,
     encode_stateful_rdo_samples,
@@ -134,20 +269,56 @@ from .wav_io import (
 )
 
 __all__ = [
+    "AnonymousCausalProgramCandidate",
+    "AnonymousCausalProgramLanguage",
+    "AnonymousProgramColumn",
+    "MorphingPartialLanguage",
+    "MorphingPartialPrediction",
     "AdditiveOracleResult",
     "AnalyticOracleResult",
+    "AnonymousSpectralFactorization",
+    "AnonymousSpectralLanguage",
+    "ConvolutiveAnonymousField",
+    "ConvolutiveAnonymousLanguage",
+    "ConvolutiveFactorizedLatentField",
+    "CausalLaneField",
+    "CausalLaneObservation",
+    "CanonicalCausalStream",
+    "CausalAtlasLanguage",
+    "CausalEvent",
+    "CausalLawGrammarCandidate",
+    "CausalLawGrammarLanguage",
+    "CausalLawRule",
+    "CausalEventLedgerCandidate",
+    "CausalBasisFieldCandidate",
+    "CausalBasisFieldInfo",
+    "CausalBasisTruthCandidate",
+    "MultiLaneCausalSequenceAtlas",
+    "CausalSequenceAtlas",
+    "CausalSequenceCandidate",
+    "CoherentPartialBasis",
+    "CoherentPartialLanguage",
     "CachedAdditiveOracleResult",
     "DecodeResult",
     "EncodeResult",
     "FoundryCudaError",
     "FoundryCudaEvidence",
+    "FactorizedLatentField",
     "GainPhaseCudaFoundry",
+    "GridlessTruthCandidate",
+    "LatentComponent",
+    "LatentOccurrence",
+    "LatentSourceField",
+    "LatentSourceLanguage",
+    "GridlessWarpMatch",
+    "GridlessWarpSearch",
     "CompoundDiscovery",
     "GrammarSelection",
     "GrammarSpan",
     "StateAtom",
     "discover_affine_state_compounds",
     "discover_exact_compounds",
+    "discover_interval_compounds",
     "select_minimum_description",
     "Main0DecodeResult",
     "Main0EncodeResult",
@@ -156,6 +327,10 @@ __all__ = [
     "IndependentChannelEncodeResult",
     "LPCOracleResult",
     "LPCBlockInfo",
+    "LspfAnalysisPlan",
+    "LspfPolicyRequest",
+    "LspfDurationCandidate",
+    "LspfDurationSelection",
     "LappedDecodeResult",
     "LappedEncodeResult",
     "LappedAnalysis",
@@ -167,7 +342,14 @@ __all__ = [
     "NativeMultichannelDecodeResult",
     "NativeMultichannelRequirements",
     "MotifOrbitCandidate",
+    "PartialSpectrumBandField",
+    "PartialSpectrumLatentField",
+    "PartialBundleObservation",
+    "PartialBasisTrajectoryPrediction",
     "PacketLossSimulationResult",
+    "OpusEffortConfig",
+    "OpusEffortPoint",
+    "OpusMaxEffortFrontier",
     "analyze_lapped_source",
     "decode_bytes",
     "decode_main0_raw_stream",
@@ -179,6 +361,37 @@ __all__ = [
     "encode_multichannel_gain_orbit_candidate",
     "encode_optimized_independent_truth",
     "encode_samples",
+    "encode_gridless_truth_candidate",
+    "infer_latent_source_pattern_field",
+    "infer_factorized_latent_field",
+    "infer_anonymous_spectral_factors",
+    "fit_morphing_partial_prediction",
+    "compile_anonymous_causal_program",
+    "decode_anonymous_causal_program",
+    "factor_convolutive_magnitude",
+    "infer_convolutive_anonymous_fields",
+    "infer_convolutive_factorized_latent_field",
+    "infer_causal_lane_field",
+    "reconstruct_convolutive_magnitude",
+    "infer_partial_spectrum_latent_field",
+    "fit_partial_basis_trajectory_prediction",
+    "choose_lspf_analysis_plan",
+    "build_causal_sequence_atlas",
+    "build_multilane_causal_sequence_atlas",
+    "causal_events_from_lane_observations",
+    "decode_causal_law_tokens",
+    "decode_causal_event_ledger",
+    "decode_causal_basis_truth_candidate",
+    "encode_causal_law_tokens",
+    "encode_causal_event_ledger",
+    "encode_causal_basis_field_from_mft1",
+    "encode_causal_basis_truth_candidate",
+    "factorized_causal_event_laws",
+    "project_causal_events",
+    "parse_causal_basis_field",
+    "causal_events_from_partial_bases",
+    "canonicalize_causal_events",
+    "select_lspf_duration_candidate",
     "pack_main0_cibs_stream",
     "pack_main0_raw_stream",
     "pack_main0_lpc_residual_stream",
@@ -212,6 +425,20 @@ __all__ = [
     "synthesize_lapped_selected_grid",
     "index_lpc_liftpack_blocks",
     "SegmentationResult",
+    "ComponentTokenObservation",
+    "LatentFieldEventLedger",
+    "SparseMotifCandidate",
+    "SparseMotifDefinition",
+    "SparseMotifLanguage",
+    "SparsePathCandidate",
+    "SparsePathDefinition",
+    "SparsePathLanguage",
+    "decode_sparse_motif_events",
+    "discover_and_pack_sparse_pair_motifs",
+    "discover_and_pack_sparse_path_motifs",
+    "pack_latent_field_event_ledger",
+    "pack_flat_observations",
+    "pack_basis_grouped_observations",
     "segment_acoustic_states",
     "simulate_aligned_packet_loss",
     "simulate_lapped_packet_loss",
@@ -226,6 +453,9 @@ __all__ = [
     "run_cached_additive_oracle",
     "run_lpc_liftpack_oracle",
     "run_opus_multichannel_anchor",
+    "opus_max_effort_configurations",
+    "run_opus_max_effort_frontier",
+    "search_gridless_warp_field",
     "write_pcm16_mono",
     "write_pcm16_channels",
 ]

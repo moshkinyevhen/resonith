@@ -5311,3 +5311,6449 @@ new oscillator opcode.
   - the frozen R-152 authority explicitly excludes later reverse-transform
     candidates because reverse was not described in the blind provider
     prompt.
+
+## R-155 — Bounded fractional Basis warp instance
+
+- Status: **NORMATIVE-DRAFT — STEP M-151 TRANSFORM EXPANSION**
+- Date: 2026-07-27
+- Purpose:
+  - schema-1 integer placement cannot express fractional phase, pitch
+    resampling, bounded time stretch, or a continuous pitch/time trajectory;
+  - these transforms are required to test whether one objective micro-Basis
+    can replace many related speech, music, and cross-channel fragments
+    without semantic labels.
+- New record:
+  - add `BASIS_WARP_INSTANCE` as record type 8 rather than changing the
+    already executable schema-1 `BASIS_INSTANCE`;
+  - canonical schema-1 payload:
+
+```text
+u16 instance_id
+u16 emitter_id
+u16 basis_id
+u16 flags: bit 0 CIRCULAR, bit 1 LINEAR_GAIN, bit 2 LINEAR_STEP
+u32 output_start
+u32 output_sample_count
+i32 source_position_q16
+i32 source_step_start_q16
+i32 source_step_end_q16
+i32 start_gain_q15
+i32 end_gain_q15
+```
+
+- Deterministic synthesis:
+  - the source coordinate is signed Q16.16. One source sample per output
+    sample is `65536`; negative steps express reverse playback;
+  - source step is constant unless `LINEAR_STEP` is set. A linear law is
+    evaluated from the absolute instance-local output index with one closed
+    integer expression, so callback partitioning cannot accumulate drift;
+  - schema-1 uses fixed two-tap linear interpolation with signed
+    ties-away-from-zero rounding. Integer coordinates reproduce the selected
+    Basis sample exactly;
+  - circular instances use Euclidean modulo. Non-circular instances require
+    every source coordinate to remain inside `[0, basis_samples - 1]`;
+  - constant and linear signed Q1.15 gain retain the existing normative
+    rounding and saturation rules.
+- Bounds:
+  - `abs(source_step_q16) <= 8 * 65536`;
+  - one warp instance contains at most 65535 output samples; longer laws are
+    split at canonical absolute positions without decoder-state carry;
+  - a linear step cannot cross zero inside one instance; a reversal is split
+    into separate instances;
+  - `LINEAR_STEP` requires at least three output samples and
+    `LINEAR_GAIN` requires at least two;
+  - warp and integer instances share the Main limit of 4096 placements and
+    are preflighted against declared operation and memory bounds.
+- Admission:
+  - the record is not a compression claim. It must first pass native/Python
+    parity, callback partition, corruption, resource, Android/iOS compile,
+    exact Truth correction, Orkela playback, and the complete R-118 gate;
+  - the encoder SHALL compare complete Basis, instance, correction, entropy,
+    checkpoint, and operation cost against independent Truth. A warped
+    prediction that is larger or worse is rejected.
+
+## R-156 — Gridless Multiscale Pattern Field
+
+- Status: **NORMATIVE-DRAFT — PRIMARY ENCODER STEP**
+- Date: 2026-07-27
+- Decision:
+  - Resonith SHALL NOT make a fixed analysis block, transform frame, or CUDA
+    tile the semantic unit of an acoustic pattern;
+  - normative Basis instances remain events with arbitrary integer
+    `output_start` and `output_sample_count`. Implementation tiles MAY batch
+    analysis, entropy, checkpoints, and rendering, but their boundaries SHALL
+    NOT restrict candidate onset, duration, frequency support, or composition;
+  - this is the **gridless meaning, tiled execution** contract.
+- Required discovery union:
+  1. rolling exact fingerprints at every source-sample origin for every
+     declared exact duration, followed by byte/sample verification;
+  2. content-defined anchors derived from original PCM independently on every
+     declared channel and perfect-reconstruction frequency cell;
+  3. overlapping regular origins at every declared duration scale, with the
+     hop and origin set published in the run manifest;
+  4. cross-channel and cross-band candidates whose intervals may start and end
+     at different implementation-tile positions;
+  5. direct longer spans and bottom-up `CompoundBasis` spans, neither of which
+     may be removed because shorter candidates were found first.
+- Anti-blindness:
+  - a pattern crossing one or many analysis-tile boundaries remains eligible;
+  - discovery at one scale cannot claim samples or suppress overlapping,
+    nested, shifted, longer, shorter, cross-band, or cross-channel candidates;
+  - fingerprints, embeddings, Gemini, and other learned proposers MAY schedule
+    work but SHALL NOT establish equality or remove a declared Foundry
+    candidate;
+  - only the global complete-cost interval/field selector assigns ownership.
+- Evidence:
+  - the R-155 fixed lattice checked 18,494 transformed pairs at 4,096 samples
+    and 49,924 pairs at 1,024 samples on the complete Mozart reference but
+    selected zero Basis instances at the two-percent fit limit;
+  - both complete candidates therefore collapsed to a 104-byte empty MFT1
+    predictor plus Truth and measured 7,003,168 bytes, versus the 6,521,233-byte
+    stable reference. All R-135 quality checks passed, so the failure isolates
+    discovery and complete-byte economics rather than decoder correctness;
+  - these runs are retained as the fixed-grid A/B baseline, not promoted as
+    the new algorithm.
+- Completion gate:
+  - synthetic spans beginning at every possible offset around a tile boundary
+    MUST have identical recall to spans wholly inside a tile;
+  - CPU results MUST be invariant to tile size and thread order;
+  - at least one real speech, tonal, transient, stochastic, dense-mix, and
+    multichannel item MUST emit active arbitrary-interval Basis candidates;
+  - exact Truth, full-byte RDO, complete R-118 evidence, and Orkela playback
+    remain mandatory before promotion.
+
+## R-157 — Batched CUDA Warp Foundry
+
+- Status: **NORMATIVE-DRAFT — FOLLOWS R-156 CANDIDATE GENERATION**
+- Date: 2026-07-27
+- Decision:
+  - move the expensive R-155 transform fitter from per-candidate Python/NumPy
+    calls into large C++23/CUDA batches;
+  - the finite lattice includes every declared direction, integer and
+    fractional phase, signed constant/linear gain, bounded constant/linear
+    pitch/time step, and every explicitly declared fixed-point neighbour;
+  - CUDA batching MAY change residency and evaluation order but SHALL NOT
+    reduce candidate membership. Python remains only the experiment manifest,
+    orchestration, and report layer.
+- Required proof:
+  - one portable CPU reference and the CUDA backend produce identical selected
+    parameters, reconstructed PCM, squared error, and candidate cardinality;
+  - results are invariant to CUDA tile size, host spill boundaries, and
+    callback/render partitioning;
+  - every accepted warp is decoded by the normative C++23 Core before rate or
+    quality scoring;
+  - GPU failure falls back to the same finite CPU search or a clearly labelled
+    `Fast` profile, never to a silently pruned Foundry result.
+- Implemented evidence:
+  - the C++23 C ABI exposes complete warp cardinality plus portable CPU and
+    CUDA execution for ordered pairs, fractional phase, both directions,
+    bounded constant/linear pitch-time step, and constant/linear signed gain;
+  - an RTX 2080 Super / NVRTC 13.3 gate evaluated `6,912/6,912` candidates in
+    unequal `4,099 + 2,813` tiles. Every 48-byte result record was identical
+    between CPU and CUDA, and a known fractional-phase, linearly changing
+    pitch-time law produced zero correction;
+  - the Python 3.14 layer only declares tiles and consumes fixed result
+    records. It performs no per-candidate transform, gain fit, synthesis, or
+    squared-error loop;
+  - the first integrated gridless exact-RDO diagnostic evaluated
+    `7,168/7,168` candidates, selected one immutable Basis with eight
+    arbitrary placements, reconstructed PCM exactly, and measured 704 bytes
+    versus 1,156 bytes for independent lossless Truth (`-39.10%`). This is a
+    favorable synthetic construction and is not an Opus or real-audio claim.
+
+## R-158 — Multiscale economic lifetime gate
+
+- Status: **NORMATIVE-DRAFT — REQUIRED BEFORE WHOLE-FILE PROMOTION**
+- Date: 2026-07-27
+- Evidence that changes the next implementation:
+  - the first R-157 Fast structural union evaluated
+    `21,012,480/21,012,480` declared candidates on all 19 R-118 content types
+    in 103.122 seconds;
+  - short 64-sample search found from zero to 691,200 fit-eligible
+    relationships per item, including speech, tonal, transient, stochastic,
+    dense, and multichannel material, but complete byte RDO selected
+    independent exact Truth for all `19/19` items;
+  - therefore relationship recall is no longer the immediate limiter. Flat
+    micro-Basis activation, placement, and correction cost is.
+- Decision:
+  - every next gate SHALL search direct original-PCM spans independently at
+    64, 256, and 1,024 samples before whole-file encoding;
+  - longer direct spans and bottom-up CompoundBasis candidates SHALL remain in
+    the same global chart as micro-spans. Finding a short relation cannot
+    remove, claim, or synthesize a longer one;
+  - one persistent transform law MAY replace consecutive compatible
+    placements only when its exact rendered PCM plus correction and complete
+    signalling cost less than the unmerged path;
+  - Fast diagnostics MAY declare fewer content/regular origins at longer
+    scales to bound wall time, but SHALL publish every origin and evaluate
+    100% of the resulting finite lattice. Such a run is not a whole-file
+    Foundry claim;
+  - whole-file lossy/Opus work begins only after a real corpus item activates
+    a structured span under actual complete-byte exact RDO, or an ablation
+    proves that lossy correction changes that conclusion without violating
+    the R-118 quality floor.
+
+## R-159 — Latent Source Pattern Field
+
+- Status: **NORMATIVE-DRAFT — OWNER-DIRECTED PRIMARY R-158 MECHANISM**
+- Date: 2026-07-27
+- Decision:
+  - the Foundry encoder SHALL search reusable patterns both in observed
+    channels and in objective latent additive layers inferred from changing
+    mixtures;
+  - a layer is not an instrument, speaker, phoneme, note, or environmental
+    label. It is only a decoder-verifiable term in
+    `Y_c(t) = sum_i Route_ci(t) Transform_i(Basis_i, t) + Truth_c(t)`;
+  - every inferred layer is searched independently by the same gridless,
+    multiscale, phase-aware, cross-channel R-156/R-157 dictionary machinery.
+- Candidate union:
+  1. direct observed-channel patterns remain mandatory;
+  2. complex time-frequency factorization SHALL retain magnitude, phase and
+     cross-channel transfer evidence rather than separating magnitude alone;
+  3. cross-occurrence robust consensus SHALL infer a recurring component from
+     several differently overlapped observations;
+  4. layer counts, origin sets, transform families, factorization iterations,
+     and fixed-point neighbours form a published finite language;
+  5. direct mixtures, composite Basis candidates, every inferred layer family,
+     and independent Truth coexist in the global selector. A separator cannot
+     remove a direct candidate.
+- Exactness and safety:
+  - source recovery is not assumed identifiable. Two physical decompositions
+    may explain the same PCM, and neither semantic explanation is normative;
+  - each complete candidate is rendered by the bounded MAF decoder, summed in
+    its normative order, and corrected by Truth. Lossless admission requires
+    exact PCM; lossy admission requires all R-118 quality floors;
+  - if factorization is wrong, its dictionary, route, transform and correction
+    bytes make it lose to a composite Basis or independent Truth.
+- First implementation:
+  - add a deterministic encoder-side latent-layer oracle using multiscale
+    complex spectral signatures, bounded phase/alignment and gain fitting,
+    robust cross-occurrence consensus, iterative residual peeling, and
+    cross-channel routing;
+  - CUDA performs the declared warp/phase/gain lattice. Python declares the
+    layer language and orchestrates reports only; it is not shipped;
+  - publish a synthetic changing-overlap recovery gate before making any
+    bitrate claim, then run speech-plus-noise, stereo music, orchestra,
+    ambience and the full R-118 union.
+- Completion gate:
+  - demonstrate at least one mixture where no direct mixed chunk repeats but a
+    decoder-verifiable latent Basis is reused under different overlaps;
+  - compare direct-mixture dictionary, latent-layer dictionary and independent
+    Truth by complete bytes and decoded quality;
+  - report latent candidate recall, correction energy/bytes, route bytes,
+    wall time, peak CPU/GPU memory, and exact reconstruction hash.
+
+## R-160 — Minimum-Description Anonymous Field Grammar
+
+- Status: **NORMATIVE-DRAFT — PRIMARY LSPF INTEGRATION CONTRACT**
+- Date: 2026-07-27
+- Problem:
+  - source separation, shift-invariant sparse coding, convolutive/NMF
+    dictionaries, sinusoidal/stochastic models, long-term prediction and neural
+    codebooks already demonstrate important parts of the proposed mechanism;
+  - they do not by themselves define a universal codec whose decoder receives
+    anonymous reusable fields, discontinuous long motifs, finite transform
+    laws, cross-channel routes and one final exact correction selected by full
+    serialized cost;
+  - physical source recovery is non-identifiable, unrestricted sparse search is
+    combinatorial, and arbitrary transform programs would merely hide a second
+    codec inside each file.
+- Decision:
+  - Resonith SHALL optimize a minimum-description explanation of PCM, not claim
+    to recover the true speaker, instrument or environmental source;
+  - an anonymous field is a decoder-verifiable additive component with a
+    reusable immutable Basis dictionary, persistent transform/route laws and a
+    sparse event ledger;
+  - a long motif MAY join non-adjacent observations. Unrelated or overlapping
+    events between its steps remain independent, so `A -> gap -> B` is one
+    legal motif without requiring the entire mixture between A and B to repeat;
+  - a long macro SHOULD normally be a DAG/grammar of smaller Basis references
+    and laws. Raw long PCM Basis payloads are admitted only when their complete
+    amortized byte cost wins;
+  - analysis boundaries are gridless and multiscale. CUDA tiles, entropy pages
+    and checkpoints are implementation details and SHALL NOT restrict event
+    onset, duration, partial-spectrum support or motif boundaries;
+  - the initial finite law language is `literal`, `constant`, `affine`,
+    `run-length` and `sparse-exception`. The decoder transform ISA remains
+    fixed, bounded and non-Turing-complete;
+  - partial-spectrum components SHALL be represented by
+    perfect-reconstruction integer lifting pairs; magnitude-only subtraction is
+    forbidden. Integer sample alignment is non-circular, and fractional
+    phase claims require a separately tested normative transform;
+  - routes MAY reuse one Basis across channels with gain, phase, delay and
+    bounded filter laws. The summed rendering receives one final Truth
+    correction; each hypothetical source SHALL NOT pay an independent exact
+    correction.
+- RDO:
+  - direct channel patterns, anonymous fields, composite Basis, stochastic
+    fields, source-filter atoms, transient atoms and independent Truth compete
+    in one global selector;
+  - admission is determined by the complete decoder-produced stream size and
+    the R-118 quality contract, including dictionary, event, route, law,
+    checkpoint, entropy and correction bytes;
+  - event-ledger compression is evidence about grammar signalling only and
+    SHALL NOT be reported as complete audio compression.
+- First exact evidence:
+  - a synthetic changing-overlap signal with no exactly repeated mixed block
+    reused one 128-sample anonymous Basis ten times with varying gains and
+    sparse contamination;
+  - the exact prototype reconstructed identical PCM by SHA-256 and cost
+    1,815 bytes versus a 2,491-byte independent lossless proxy, a 676-byte
+    or 27.14% proxy reduction;
+  - the same RDO rejected a short candidate that cost 49 bytes more than
+    independent Truth;
+  - the R-160 event grammar exactly round-tripped a 24-occurrence cross-channel
+    `token 0 -> affine gap -> token 7` motif while preserving unrelated
+    intervening events and selected it only when its actual serialized ledger
+    was smaller;
+  - these are **Synthetic / Proxy** results, not Opus, FLAC or full Resonith
+    wins.
+- First real diagnostic:
+  - exact reversible partial-spectrum search on 12 seconds of EBU dense
+    orchestra admitted two anonymous Basis entries with 1,082 occurrences and
+    explained 55.24% of waveform energy;
+  - its complete exact structural proxy cost 1,296,657 bytes versus 1,302,123
+    independent proxy bytes, a 5,466-byte or 0.42% reduction;
+  - a phase-preserving anonymous NMF proposer found one 40-occurrence field on
+    three seconds of EBU female speech, but the structured candidate cost
+    190,025 versus 189,099 bytes, so RDO selected independent Truth;
+  - this is **Real PCM / Fast diagnostic / Proxy**, not a FLAC, Opus or final
+    Resonith result. It proves that explained energy is not sufficient;
+    correction entropy and complete overhead are the blocking quantities.
+- Kill gates:
+  - changing-overlap synthetic: at least 15% complete-stream reduction versus
+    the best direct-dictionary/Truth path;
+  - anonymous-field correction: no more than 50% of the independent covered
+    cost, and the latent path must beat the direct dictionary by at least 5%;
+  - blind inference: within 15% of a known-stem oracle on controlled mixtures;
+  - real lossless corpus: at least 5% median complete-byte improvement over the
+    best current Truth/FLAC anchor before standard promotion;
+  - perceptual corpus: first gate at no more than 90% of matched-quality Opus;
+    the research target remains 60%, never a guaranteed universal ratio;
+  - Foundry gate: no more than 30x track duration and 7 GiB encoder VRAM for the
+    declared profile; CPU-only bounded decode and seek pre-roll remain required.
+- Novelty status:
+  - the combination is a research candidate, not a novelty or patent claim;
+    formal prior-art and freedom-to-operate searches remain mandatory before
+    such a claim or a standards submission.
+
+## R-161 — LSPF Priority Lock and Evidence-Carrying Generations
+
+- Status: **ACCEPTED — OWNER-DIRECTED HIGHEST PRIORITY**
+- Date: 2026-07-27
+- Priority:
+  - Latent Source Pattern Field is the only active compression-architecture
+    priority until every R-161 work package has either passed its gate or been
+    explicitly rejected by complete evidence;
+  - unrelated player polish, container expansion, provider integration,
+    marketing, and speculative syntax SHALL NOT displace an open LSPF gate;
+  - Orkela work remains mandatory only where it produces the listening,
+    inspection, and release artifact for the current verified codec
+    generation.
+- Required implementation order:
+  1. convolutive anonymous fields;
+  2. bounded pitch, time, phase, formant, envelope, and route laws;
+  3. persistent source-filter, stochastic, transient, and cross-channel
+     competition inside every observed or anonymous field;
+  4. multiple sparse motif definitions, arbitrary-gap CompoundBasis DAGs, and
+     persistent parameter laws;
+  5. correction-entropy-driven global RDO over every dictionary, event, route,
+     law, checkpoint, final Truth, and independent fallback byte;
+  6. C++23/CUDA Foundry execution with portable fixed-integer CPU parity and
+     the unchanged bounded decoder;
+  7. the complete R-118 quality/byte frontier and only then syntax promotion.
+- Non-negotiable selection rule:
+  - explained energy, separation quality, semantic plausibility, or proposer
+    confidence cannot promote a mechanism;
+  - a candidate first satisfies exact reconstruction or the applicable R-118
+    quality floors, then wins by actual complete bytes and bounded decode cost;
+  - only the final mixture-domain Truth correction is authoritative.
+- Evidence-carrying generation:
+  - every material work package SHALL produce an English machine report,
+    configuration, input/output hashes, wall time, resource use, ablation,
+    previous-Resonith comparison, and current official Opus anchor where a
+    perceptual comparison is meaningful;
+  - every generation SHALL retain the original input, actual decoded Resonith
+    PCM, encoded `.resonith`, actual decoded Opus PCM, and complete `.opus`
+    anchor in a stable generation directory;
+  - Orkela SHALL be updated to decode and inspect the promoted generation
+    before a release may be tagged. The report SHALL link the exact local
+    player executable and every listening artifact;
+  - Fast diagnostics MAY use a declared subset, but are never a milestone,
+    release, or general compression claim;
+  - every material milestone SHALL run the complete three-reference plus
+    sixteen-class R-118 union, including full-length Mozart.
+- Failure policy:
+  - losing candidates remain research evidence or are removed; they do not add
+    normative opcodes;
+  - no work package is declared complete while encoded listening files,
+    released-decoder output, Orkela compatibility, or required R-118 rows are
+    missing;
+  - ideas discovered during implementation are recorded immediately, but do
+    not interrupt the active gate unless they change its mathematical validity
+    or are required to prevent irreversible syntax error.
+
+## R-162 — Simultaneous Short- and Long-Duration Adaptation Gate
+
+- Status: **ACCEPTED — MANDATORY FOR EVERY LSPF WORK PACKAGE**
+- Date: 2026-07-27
+- Decision:
+  - every material LSPF mechanism SHALL be evaluated on short and long inputs
+    in the same generation;
+  - short inputs diagnose onset, phase, transient, boundary, local transform,
+    low-latency, and parameter-fit behavior;
+  - long inputs of at least 120 seconds diagnose dictionary amortization,
+    persistent-law drift, long motifs, checkpoint/index cost, memory growth,
+    random access, throughput, and fallback stability;
+  - a short pass cannot substitute for a long pass, and a long average cannot
+    hide a short transient, speech-intelligibility, or boundary failure.
+- Automatic adaptation:
+  - Live, Studio, and Foundry are encoder search/resource policies over one
+    decoder and one syntax family;
+  - the encoder SHALL derive a deterministic analysis plan from duration,
+    sample rate, channels, latency target, memory limit, signal structure, and
+    requested quality;
+  - duration MAY change scale union, candidate residency, checkpoint cadence,
+    dictionary lifetime, search depth, and parallel scheduling;
+  - duration SHALL NOT disable exact fallback, quality floors, corruption
+    bounds, or decoder conformance;
+  - automatic decisions and every candidate family enabled or skipped SHALL be
+    published in the generation manifest.
+- Minimum evidence:
+  - Fast development pairs each short diagnostic with at least one continuous
+    input of 120 seconds or longer;
+  - a material milestone still requires the complete full-length speech,
+    Emotional piano, 400.773-second Mozart, and all sixteen R-111 classes under
+    R-118;
+  - both per-file rows and duration-bucket aggregates SHALL be published. No
+    average-only result is sufficient.
+
+## R-163 — Duration-Pareto Preservation
+
+- Status: **ACCEPTED — MANDATORY FOR AUTOMATIC ADAPTATION**
+- Date: 2026-07-27
+- Decision:
+  - a mechanism that wins on long material by complete bytes at the applicable
+    quality floor, or by quality at an equal complete-byte budget, SHALL remain
+    an available RDO candidate while short-material behavior is improved;
+  - short-track tuning SHALL add or refine a duration-specialized search plan.
+    It SHALL NOT remove, weaken, or silently retune a proven long-track branch;
+  - the reciprocal rule applies to a proven short-track branch.
+- Selection:
+  - the encoder always evaluates the applicable incumbent, new specialized
+    candidate, and independent Truth/fallback under the same decoder-produced
+    byte and quality accounting;
+  - a new default is selected per input, never by an average that hides a
+    duration-bucket regression;
+  - exact lossless candidates compare complete bytes. Lossy candidates first
+    pass per-item quality floors and then compare complete bytes; equal-byte
+    quality claims require a declared equivalence budget and the full metric
+    panel.
+- Evidence:
+  - every generation manifest records the incumbent candidate identifier,
+    duration class, all evaluated alternatives, rejection reason, and selected
+    winner;
+  - short, medium, and long Pareto frontiers are retained independently;
+  - long-only success is a valid retained capability, not a failed experiment.
+    It is not promoted as a universal win until the other declared duration
+    classes pass their own gates.
+
+## R-164 — Long-First Gate and Dual-Axis Success
+
+- Status: **ACCEPTED — OWNER-DIRECTED TEST ORDER**
+- Date: 2026-07-27
+- Execution order:
+  1. run every generation on the declared continuous long inputs first;
+  2. freeze the long-input result, configuration, metrics, hashes, stream, and
+     Pareto candidates;
+  3. only then run the short corpus and tune a short-specialized search plan;
+  4. rerun any affected long candidate before changing a shared default.
+- Success criterion for one duration bucket:
+  - **rate success:** lower decoder-produced complete bytes while every
+    applicable quality floor remains satisfied; or
+  - **quality success:** objectively and, for a promotion claim, subjectively
+    better quality inside the declared matched-complete-byte tolerance.
+- Retention:
+  - either success axis makes the generation a retained successful Pareto
+    candidate; improvement on both axes is preferred but not required;
+  - a rate/quality trade-off outside the declared equivalence tolerance is
+    retained and labelled as an alternative operating point, not silently
+    installed as the universal default;
+  - failure on short material cannot erase a long-material success, and
+    short-material success cannot erase the frozen long incumbent.
+- Reporting:
+  - reports SHALL be written in actual execution order: long rows and frozen
+    frontier first, short rows and tuning second, final per-duration selection
+    last;
+  - byte equivalence tolerance, metric deltas, quality floors, and listening
+    protocol SHALL be declared before the comparison.
+
+## R-165 — Dual-Axis Refinement Before Generation Freeze
+
+- Status: **ACCEPTED — OWNER-DIRECTED COMPLETION RULE**
+- Date: 2026-07-27
+- Decision:
+  - a first pass that wins only rate or only quality SHALL immediately trigger
+    a bounded refinement pass targeting the missing axis before the generation
+    is frozen;
+  - after a rate-only win, the encoder tunes representation, allocation,
+    correction, entropy, and operating point to improve quality without losing
+    the rate success;
+  - after a quality-only win, it tunes state reuse, signalling, correction
+    entropy, allocation, and operating point to reduce complete bytes without
+    losing the quality success.
+- Completion:
+  - a two-axis win may be frozen immediately after verification;
+  - a one-axis win may be frozen only after the declared refinement lattice,
+    time/resource budget, and stop conditions have been exhausted and recorded;
+  - the surviving one-axis win remains a successful Pareto candidate. Failure
+    to improve the second axis does not erase it.
+- Evidence:
+  - the generation report SHALL contain the initial winning point, every
+    refinement candidate, both axis deltas, rejection reasons, selected final
+    point, and whether the refinement budget was exhausted;
+  - no release version or fixed generation identifier is assigned while a
+    required dual-axis refinement pass is still open.
+
+## R-166 — Maximum-Effort Official Opus Anchor
+
+- Status: **ACCEPTED — MANDATORY EXTERNAL ANCHOR**
+- Date: 2026-07-27
+- Decision:
+  - every real-audio material generation SHALL include the current project-
+    pinned official libopus encoder and decoder at their strongest lawful
+    offline settings;
+  - `OPUS_SET_COMPLEXITY(10)` is mandatory. The anchor search SHALL also
+    evaluate all applicable application, signal, frame-duration, bandwidth,
+    VBR/constrained-VBR, channel, and file-coding controls that can improve the
+    measured point without changing the source or comparison contract;
+  - bitrate is searched against the declared complete-byte target or quality
+    target. One convenient preset is not an adequate anchor.
+- Selection:
+  - every Opus candidate is decoded by the official decoder;
+  - the winning Opus point is chosen by the same predeclared quality floors,
+    complete-container bytes, objective panel, and listening protocol used for
+    the Resonith comparison;
+  - encoder delay, pre-skip, sample count, channel mapping, metadata, and
+    container overhead are included consistently.
+- Evidence:
+  - reports retain the complete Opus search configuration, rejected points,
+    winning `.opus`, decoded PCM, hashes, encoder/decoder versions, and wall
+    time;
+  - a lossless structural proxy MAY report Opus as contextual evidence but
+    SHALL NOT rank lossy Opus bytes against lossless exact bytes as a codec
+    victory;
+  - if the official pinned Opus version changes, anchors are regenerated before
+    any current comparative claim.
+
+## R-167 — Coherent Partial Bundle Dictionary
+
+- Status: **ACCEPTED — REQUIRED LSPF ANALYTIC CANDIDATE**
+- Date: 2026-07-27
+- Decision:
+  - LSPF SHALL search repeated coherent spectral bundles in addition to direct
+    waveform, transform, anonymous-field, source-filter, stochastic, transient,
+    and Truth candidates;
+  - a bundle is an unnamed group of partials whose frequency ratios,
+    amplitude/envelope evolution, phase trajectories, and channel routes are
+    jointly predictable. It is not required to be labelled as a voice or
+    instrument;
+  - one immutable `PartialBasis` stores normalized partial ratios, complex
+    phase relations, spectral/formant envelope, and optional inharmonic offsets.
+    Instances carry bounded pitch, absolute phase, gain/envelope, time, and
+    route laws.
+- Analysis:
+  - candidate grouping uses joint temporal co-modulation, harmonic or bounded
+    inharmonic ratio consistency, complex phase continuity, onset/decay
+    coherence, and cross-channel covariance;
+  - matching SHALL be multiscale and independent of fixed transform-frame
+    boundaries. Perfect-reconstruction filterbank tiles MAY be used internally;
+    they do not define event boundaries;
+  - harmonicity is evidence, not a semantic classifier and not an admission
+    rule.
+- Exactness and fallback:
+  - coherent bundles, stochastic fields, transient events, direct Basis, and
+    independent Truth compete per region and may overlap additively;
+  - the sum receives one final mixture-domain Truth correction;
+  - a claim that arbitrary audio is reconstructed without distortion is valid
+    only after the normative decoder plus final Truth reproduces the declared
+    exact PCM hash. A bundle alone is never assumed complete.
+- RDO:
+  - dictionary partials, parameter trajectories, phase anchors, route laws,
+    entropy state, checkpoints, and compressed final correction are priced;
+  - a large explained-energy fraction does not admit a bundle when its complete
+    bytes or applicable quality point loses;
+  - an initial one-axis win follows R-165 dual-axis refinement before the
+    generation may be fixed.
+
+## R-168 — Causal Acoustic Mechanism Objective
+
+- Status: **ACCEPTED — MAF NORTH-STAR OBJECTIVE**
+- Date: 2026-07-27
+- Signal model:
+  - MAF treats decoded pressure as the sum of unnamed causal emitters, their
+    bounded resonant dynamics, propagation/routes, and one final Truth:
+    `Pressure_c(t) = sum_s Route_c,s(Resonator_s(Excitation_s, State_s)) +
+    Truth_c(t)`;
+  - excitation may combine coherent/quasiperiodic trajectories, sparse
+    impulses, and counter-addressed stochastic innovation;
+  - resonant state may contain harmonic/inharmonic partial bundles,
+    source-filter/formant laws, decay, modulation, and a short stable room or
+    body response;
+  - routes contain bounded delay, gain, phase, channel covariance, and stable
+    propagation filters.
+- Representation:
+  - the encoder performs multiscale system identification: micro cycles and
+    attacks, meso acoustic states, and macro sparse motifs/parameter laws
+    compete together;
+  - a law, state, Basis, or motif is paid once and remains alive until an event
+    changes or expires it;
+  - semantic class names are never needed for conformance or admission.
+- Search objective:
+  - the preferred latent explanation is the one minimizing complete dictionary,
+    state, event, route, checkpoint, entropy, final-Truth, distortion, decode,
+    and seek cost;
+  - neural or semantic analysis MAY propose causes and boundaries but cannot
+    remove deterministic search, decoder verification, quality floors, or
+    independent Truth;
+  - physical plausibility and predicted continuation are useful priors, not
+    proof of compression.
+- Information boundary:
+  - Resonith does not claim that arbitrary audio has zero conditional entropy or
+    can always be compressed;
+  - distortion-free reconstruction of arbitrary supported PCM is provided only
+    by the complete bounded rendering plus final Truth and verified hash;
+  - if causal modelling does not reduce complete bytes or improve a matched-rate
+    quality point, RDO retains the simpler incumbent.
+
+## R-169 — Separate Causal Lanes with Single Ownership
+
+- Status: **ACCEPTED — REQUIRED MAF DECOMPOSITION**
+- Date: 2026-07-27
+- Lanes:
+  - coherent harmonic partial bundles;
+  - deterministic bounded-inharmonic partial bundles;
+  - sparse onset-addressed transients;
+  - counter-addressed stochastic fields;
+  - phase-, delay-, decay-, room-, and cross-channel route laws;
+  - direct innovation/Truth for everything not economically explained.
+- Ownership:
+  - these lanes MAY overlap in time and frequency because physical causes add,
+    but one primary lane owns each admitted explanatory coefficient/sample
+    region for rate accounting;
+  - a harmonic lane SHALL NOT absorb a transient or stochastic tail merely to
+    avoid signalling another representation;
+  - no lane carries an independent full residual. All selected lanes are summed
+    first and receive one final mixture-domain Truth correction.
+- Interference:
+  - linear reinforcement and cancellation are rendered by complex phase and
+    channel/route laws, not encoded as a duplicate source;
+  - unexplained nonlinear interaction or estimation error remains final Truth.
+- Selection:
+  - local lane proposals feed one global complete-byte RDO;
+  - the selector prices Basis/state, partials, events, phase, routes, entropy,
+    checkpoints, overlap composition, and compressed final Truth;
+  - a separate lane is admitted only when it reduces complete bytes or creates
+    a successful matched-rate quality point under R-164/R-165.
+
+## R-170 — Retire Magnitude-CNMF as a Primary Coding Path
+
+- Status: **ACCEPTED — FAST GATE REJECTION / PROPOSER RETAINED**
+- Date: 2026-07-27
+- Long-first evidence:
+  - the first R-165 gate analyzed the first continuous 120 seconds of the pinned
+    full Mozart input before any short tuning;
+  - the exact structural candidate selected zero latent components and cost
+    19,874,554 bytes versus 19,874,458 independent compressed-Truth proxy bytes,
+    a 96-byte or 0.000483% loss;
+  - exact reconstruction passed; wall time was 484.787 seconds, or 4.040 times
+    source duration.
+- Short-second evidence:
+  - 12-second EBU female speech found three active anonymous fields and 144
+    placements but cost 0.485516% more than independent Truth;
+  - 12-second EBU dense orchestra and pink noise admitted no field and lost
+    0.009830% and 0.009173% respectively on structural overhead;
+  - all cases reconstructed exact PCM.
+- Decision:
+  - mixture-phase-preserving magnitude CNMF remains an encoder proposal and
+    ablation, but SHALL NOT be developed as the primary MAF coding
+    representation;
+  - the primary refinement moves to phase-aware/time-domain convolutional
+    sparse fields plus the R-167/R-169 coherent, inharmonic, transient,
+    stochastic, and route lanes;
+  - future CNMF use must propose onsets, masks, partial groups, or boundaries
+    whose decoder-verifiable causal representation wins complete RDO. CNMF
+    magnitude factors themselves are not transmitted.
+- Claim boundary:
+  - these are **Real PCM / Fast diagnostic / Exact structural proxy** results,
+    not full Resonith, FLAC, or Opus comparisons;
+  - no `.resonith` generation or Orkela release is created for this rejected
+    proxy candidate.
+
+## R-171 — Causal Sequence Atlas
+
+- Status: **ACCEPTED — HIGHEST-PRIORITY PATTERN SEARCH**
+- Date: 2026-07-27
+- Decision:
+  - pattern search moves from repeated whole-waveform windows to canonical
+    causal event streams derived from the R-167/R-169 lanes;
+  - event coordinates include anonymous Basis/partial state, arbitrary time
+    gap, pitch/frequency law, complex phase law, gain/envelope, formant/spectral
+    shape, decay/resonator state, and channel/route state;
+  - absolute pitch, phase, gain, onset, and channel position are separated from
+    their transition laws so one motif can cover transformed performances.
+- Completeness:
+  - for each declared finite quantization and transform family, the Foundry
+    SHALL build an exact suffix automaton or equivalent compressed index over
+    every event origin;
+  - one automaton state represents the complete interval of repeated substring
+    lengths sharing an end-position class. The candidate manifest records that
+    covered interval rather than silently testing only a few preferred lengths;
+  - separate canonical streams SHALL cover at least literal, constant-offset,
+    first-difference, and bounded second-difference pitch/gain/phase/route laws;
+  - approximate matching MAY use landmarks, LSH, DTW, learned separation, or AI
+    as additional proposers, but no proposer may prune the exact declared
+    canonical language.
+- Grammar:
+  - arbitrary gaps and unrelated intervening events remain explicit;
+  - maximal repeated sequences and their shorter suffix-automaton intervals
+    feed multiple motif definitions and bounded `CompoundBasis` DAG selection;
+  - micro patterns may merge into longer candidates, while direct long
+    candidates continue to compete independently.
+- Admission:
+  - discovery does not imply coding gain. Complete dictionary, transform,
+    event, entropy, checkpoint, render, and final-Truth bytes are compared with
+    the incumbent and maximum-effort Opus under R-164 through R-166;
+  - the long-first gate is mandatory because musical amortization and motif
+    structure may not appear in short clips.
+
+## R-172 — All-Lane Causal Event Atlas
+
+- Status: **ACCEPTED — REQUIRED R-171 COMPLETION**
+- Date: 2026-07-27
+- Evidence:
+  - the first R-171 long-first diagnostic indexed 20,849 harmonic causal events
+    from the first continuous 120 seconds of the pinned Mozart input and found
+    681 repeated end-position classes in 38.693 seconds;
+  - 680 classes were found by bounded second-difference laws and one by
+    constant-offset/first-difference laws. The longest reported class covered
+    four events and the most frequent covered six occurrences;
+  - 12-second female speech produced 1,216 events and 11 repeated classes;
+  - dense orchestra produced only eight harmonic events, while its
+    deterministic-inharmonic, transient, and stochastic lanes owned nearly all
+    coefficients. This is an event-extraction coverage failure, not evidence
+    that the mixture contains no repeated causal state.
+- Decision:
+  - every R-169 lane SHALL expose its own strictly ordered anonymous causal
+    event stream: coherent harmonic, deterministic inharmonic, sparse
+    transient, stochastic law, and phase/room/channel route;
+  - each lane is indexed independently so simultaneous events never overwrite
+    one another and cross-lane ownership remains explicit;
+  - the joint grammar may reference synchronized events from several lanes,
+    but it SHALL NOT merge them into one opaque waveform token;
+  - stochastic events describe repeated distributions, envelopes,
+    correlations, and modulation laws. They do not require repeated random
+    sample realizations;
+  - one final mixture-domain Truth remains the only authoritative correction.
+- Admission:
+  - the all-lane atlas is a proposer until dictionary, event, transform,
+    entropy, checkpoint, render, and final-Truth bytes are priced together;
+  - the R-171 diagnostic is sequence-discovery evidence only and makes no
+    bitrate, quality, or Opus claim.
+
+## R-173 — Factorized Law Atlases Before Joint Composition
+
+- Status: **ACCEPTED — CORRECTION TO R-172 SEARCH**
+- Date: 2026-07-27
+- Failed conjunction:
+  - the first all-lane implementation required time, pitch, phase, gain,
+    envelope, resonator, and route coordinates to repeat as one indivisible
+    token;
+  - on the first 120 seconds of Mozart this indexed 64,501 lane events but
+    reported zero joint classes, even though the simpler harmonic R-171
+    language had already found 681 classes;
+  - this is a false-negative construction: an unrelated coordinate, especially
+    stochastic realization phase or small route drift, can destroy a real
+    repetition in every other causal law.
+- Decision:
+  - each lane SHALL maintain independent exact atlases for timing, pitch,
+    phase, gain, envelope, resonator, and route laws;
+  - the full joint event atlas remains an optional high-specificity proposal,
+    not a prerequisite for discovering a reusable law;
+  - a bounded synchronized grammar composes separately reusable laws and prices
+    their shared lifetime, exceptions, and final Truth. It need not retransmit
+    a combined opaque token;
+  - stochastic phase realizations are excluded from predictive state. Their
+    distribution and channel correlation remain eligible laws.
+- Completeness boundary:
+  - exact completeness is claimed separately for every declared finite
+    projected event language and every event origin;
+  - cross-law composition is complete only for the explicitly bounded grammar
+    family declared by the evidence generation;
+  - learned, approximate, and semantic proposers may add joint candidates but
+    cannot prune any exact factorized-law candidate.
+
+## R-174 — Byte-Priced Hierarchical Causal-Law Grammar
+
+- Status: **ACCEPTED — EXECUTABLE RESEARCH LEDGER**
+- Date: 2026-07-27
+- Decision:
+  - factorized causal-law tokens SHALL compete as an exact literal ledger, a
+    token dictionary, and a bounded acyclic hierarchical pair grammar;
+  - a grammar rule is a `CompoundBasis` over two literal or earlier-rule
+    symbols. Repeated rules may therefore grow micro patterns into longer
+    structures without fixed waveform blocks;
+  - every proposed rule is packed, entropy-coded, and admitted only when it
+    reduces the complete causal-law payload at that step;
+  - the decoder validates vocabulary, rule direction, expansion count, token
+    width, checksum, and trailing bytes before accepting the ledger.
+- Scope:
+  - this first executable grammar prices and reproduces canonical event tokens
+    exactly. It does not yet price acoustic Basis payloads, synchronized
+    cross-law composition, renderer state, checkpoints, or final audio Truth;
+  - therefore a token-ledger byte win is architecture evidence only, not a
+    Resonith or Opus compression claim.
+- Semantic boundary:
+  - input names such as speech, Mozart, orchestra, or noise identify corpus
+    files in evidence reports only;
+  - the term `end-position class` denotes a suffix-automaton mathematical
+    equivalence family, never a classified sound, speaker, instrument, or
+    content type;
+  - neither R-173 discovery nor R-174 grammar requires or transmits semantic
+    source classes. Admission uses anonymous numeric causal laws and bytes.
+
+## R-175 — One Timeline per Causal Lane
+
+- Status: **ACCEPTED — REQUIRED LEDGER DEDUPLICATION**
+- Date: 2026-07-27
+- R-174 evidence:
+  - on the first 120 seconds of Mozart, independently packed factorized token
+    ledgers decreased from 611,298 to 514,946 bytes, or 15.761871%, with exact
+    token round-trip;
+  - female speech, dense orchestra, and pink noise token ledgers decreased by
+    10.577340%, 6.074323%, and 11.925028% respectively;
+  - most Mozart savings came from immutable token dictionaries. Hierarchical
+    grammar won only coherent-harmonic timing and sparse-transient timing,
+    demonstrating that rule admission correctly rejects gratuitous macros.
+- Correction:
+  - R-174 priced every factorized law independently and therefore repeated the
+    same event timeline across pitch, phase, gain, envelope, resonator, and
+    route columns;
+  - one causal lane SHALL encode one ordered event clock. Its numeric law
+    columns reference event ordinals or shared lifetimes;
+  - constant/default columns and empty mono routes SHALL be omitted and
+    reconstructed from declared defaults;
+  - a complete row ledger, shared-timeline column ledger, and incumbent direct
+    representation compete by actual packed bytes and exact decode.
+- Claim boundary:
+  - the R-174 percentages apply only to canonical causal token ledgers. They
+    exclude acoustic Basis, rendering, checkpoints, synchronization, and final
+    Truth and are not full Resonith or Opus gains.
+- R-175 result:
+  - the first 120 seconds of Mozart selected the shared-timeline column form in
+    every lane and reduced the exact event ledger from 602,415 to 471,002
+    bytes, or 21.814364%;
+  - female speech, dense orchestra, and pink noise reduced their exact event
+    ledgers by 8.105210%, 9.904385%, and 14.411588%;
+  - short transient and very small harmonic lanes selected complete row
+    fallback, proving that column factorization is not forced when its headers
+    cost more;
+  - all selected ledgers reproduced every anonymous numeric event exactly, and
+    all analytic lane renders plus final Truth reproduced the PCM hashes.
+
+## R-176 — Causal Basis Field Research Transport
+
+- Status: **ACCEPTED — DECODER-IN-LOOP INTEGRATION STEP**
+- Date: 2026-07-27
+- Decision:
+  - the first complete integration SHALL replace repeated MFT1
+    `BASIS_WARP_INSTANCE` records with one immutable Basis dictionary and one
+    R-175 event ledger per anonymous emitter;
+  - each event carries only bounded numeric render state: onset, Basis ID,
+    source position/phase, start/end source step, start/end gain, finite
+    lifetime, and flags. It carries no source class;
+  - the research decoder parses and bounds this `CBF1` transport, reconstructs
+    the equivalent MFT1 bounded-DSP program, executes the existing native
+    decoder, and then adds one independently decoded lapped Truth;
+  - direct MFT1 and direct Truth remain complete-byte fallbacks.
+- Admission:
+  - the `CBF1` predictor must reproduce the native MFT1 prediction sample for
+    sample before any residual comparison;
+  - complete `CBF1 + Truth` bytes and decoded quality compete against direct
+    Truth under the same quality floor;
+  - this translation transport is research-only until a native C++23 parser
+    renders the same events directly with CPU parity and declared bounds.
+- Long-first result:
+  - the first 120 seconds of Mozart selected direct Truth at 1,883,620 bytes;
+    fixed-block CBF1 plus Truth cost 1,885,808 bytes, only 2,188 bytes more,
+    but the proposer found one Basis and two instances covering 2,048 samples;
+  - female speech, dense orchestra, and pink noise also selected Truth.
+    CBF1 compressed the dense-orchestra predictor from 133,804 to 52,968 bytes,
+    but its insufficiently isolated prediction made complete Truth correction
+    and quality substantially worse;
+  - all CBF1 translations were sample-identical to their native MFT1
+    predictors. The transport passes; R-155 fixed-block discovery is rejected
+    as the primary real-audio predictor under R-177.
+
+## R-177 — Anonymous Partial-Basis Trajectories Replace Fixed-Block Proposals
+
+- Status: **ACCEPTED — PRIMARY R-176 ANALYZER REFINEMENT**
+- Date: 2026-07-28
+- Evidence:
+  - on the 12-second speech smoke input, R-176 compressed the bounded predictor
+    from 8,792 MFT1 bytes to 6,131 CBF1 bytes, but the fixed 1,024-sample warp
+    proposer covered only 10,240 of 529,200 samples;
+  - complete CBF1 plus Truth cost 97,837 bytes and had larger SSE than the
+    91,120-byte direct Truth, so exact RDO selected fallback;
+  - transport and native translation therefore work; inadequate causal
+    coverage and residual reduction are the blocker.
+- Decision:
+  - fixed waveform blocks remain a direct-dictionary candidate but cease to be
+    the primary CBF1 analyzer;
+  - coherent observations SHALL be clustered into multiple anonymous immutable
+    partial-shape Basis states using normalized amplitude ratios and relative
+    complex phase, without instrument or voice labels;
+  - contiguous observations are compiled into long bounded source-position,
+    source-step, gain, and route trajectories at arbitrary sample boundaries;
+  - each Basis count, clustering, segmentation, and trajectory refinement
+    competes by complete CBF1 plus final-Truth bytes. One global median Basis is
+    never assumed sufficient;
+  - inharmonic, transient, stochastic, and route lanes remain separate and
+    continue to compete with direct Truth.
+
+## R-178 — Persistent Anonymous State and Decoder-Domain Admission
+
+- Status: **ACCEPTED — REQUIRED R-177 CORRECTION**
+- Date: 2026-07-28
+- Failed behavior:
+  - the first R-177 boundary smoother raised one Basis from zero gain to its
+    fitted gain and returned it to zero across the complete lifetime;
+  - this suppressed most of a long-lived cause merely to avoid a boundary
+    discontinuity. On the 12-second female-speech diagnostic it improved the
+    complete candidate from the earlier R-176 result, but still cost 96,067
+    bytes versus 91,120 direct-Truth bytes and produced `1.007334` times the
+    direct-Truth SSE;
+  - analytic coherent-lane fit therefore cannot by itself admit a transported
+    Basis. The actual residual transform, quantizer, entropy payload, and
+    decoded reconstruction are authoritative.
+- Decision:
+  - an anonymous cause persists at its fitted gain and phase for its useful
+    lifetime. Boundary smoothing is confined to short bounded edge ramps and
+    SHALL NOT taper the entire lifetime to zero;
+  - subdivision for CUDA, analysis windows, entropy pages, or checkpoints
+    SHALL preserve source position, phase, gain, and law state. An internal
+    chunk boundary is not an acoustic event;
+  - adjacent compatible state intervals SHOULD be chained before transport.
+    A new event is emitted only for an objectively measured state change;
+  - candidate admission SHALL compare the actual decoder-produced
+    `Basis + events + final Truth` stream with the incumbent at complete bytes
+    and decoded quality. Analytic lane error is a proposer score only;
+  - bounded local or beam RDO MAY use an exact affected-transform-domain
+    delta before the final complete-stream decode. It SHALL retain direct
+    Truth and SHALL NOT use semantic content names or classifier confidence.
+- Evidence order:
+  - every generation runs a long input first and freezes its Pareto point;
+  - short speech, orchestra, noise, and heterogeneous diagnostics follow;
+  - a rate-only or quality-only candidate receives the bounded refinement of
+    the missing axis required by R-164 before it is frozen.
+
+## R-179 — Minimum-Description Anonymous Causal Program
+
+- Status: **ACCEPTED — PRIMARY MAF COMPILER OBJECTIVE**
+- Date: 2026-07-28
+- Correction:
+  - tuning one waveform Basis, threshold, frame mode, or semantic source class
+    at a time cannot realize MAF. The 12-second R-177 diagnostic assigned
+    90.546% of signal energy to its analytic coherent lane, yet the primitive
+    single-cycle trajectory language covered only a small fraction
+    economically and did not beat direct Truth;
+  - this is a representation failure, not evidence that the recording lacks
+    causal structure. The compiler must optimize the complete anonymous
+    program rather than force one representation to explain every cause.
+- Objective:
+  - for a declared finite program language, the Foundry minimizes
+    `L(program) + L(events, routes, state | program) + L(final Truth | program)
+    + lambda * distortion + mu * decode cost + nu * seek cost`;
+  - the byte terms are actual packed streams from the independent decoder.
+    Explained energy, separation score, semantic confidence, and analytic
+    error are proposal evidence only;
+  - Lossless fixes distortion to zero. Perceptual profiles retain a
+    decoder-produced matched-quality Pareto frontier and direct Truth.
+- Anonymous causal program:
+  - a program contains unnamed additive emitters, immutable leaf Basis,
+    excitation laws, resonator/state laws, deterministic inharmonic partials,
+    transient events, stochastic distributions, phase-continuous parameter
+    trajectories, channel/room routes, and bounded acyclic CompoundBasis;
+  - these mechanisms may overlap in time but have single primary ownership in
+    the perfect-reconstruction analysis domain. They are summed before one
+    mixture-domain Truth; per-lane exact residuals are forbidden;
+  - timing, pitch, complex phase, gain, envelope, resonator, and route remain
+    independently indexed and are composed only when the complete program
+    becomes shorter;
+  - source, instrument, speaker, note, speech, music, and noise names are not
+    program fields. Optional AI, separation, embeddings, fingerprints, and
+    semantic models may add columns but cannot delete any candidate in the
+    declared deterministic language.
+- Search:
+  - proposer union includes direct complex/time-domain patterns, anonymous
+    convolutive factors, coherent partial bundles, source-filter,
+    deterministic inharmonic, transient, stochastic, cross-channel route, and
+    direct Truth candidates at overlapping scales and arbitrary origins;
+  - a bounded exact oracle is used for small candidate families. Scalable
+    encoding uses column generation plus deterministic add/remove/swap beam
+    RDO and an actual final pack/decode pass;
+  - short events may form long sparse gap motifs, while direct long
+    candidates remain independent. CUDA tiles, transforms, and entropy pages
+    never define acoustic boundaries.
+- Decoder and limits:
+  - the decoder executes a fixed resource-bounded integer ISA; it performs no
+    search, classification, separation, or neural inference;
+  - arbitrary programs, shaders, callbacks, floating-point normative state,
+    and transmitted neural networks remain forbidden;
+  - every program declares bounded Basis bytes, active emitters, expanded
+    events, grammar depth, operations per frame, checkpoint dependency, and
+    workspace before rendering.
+- Falsifiable gates:
+  - first prove the free-oracle bound on changing-overlap synthetic mixtures;
+  - then run long real material before short tuning and report Basis, event,
+    route, checkpoint, final-Truth, total-byte, quality, and wall-time budgets;
+  - no architecture or Opus claim is made until the complete R-118 union and
+    maximum-effort official Opus frontier pass from actual decoders.
+
+## R-181 — Theory-Before-Syntax Research Protocol
+
+- Status: **ACCEPTED — MANDATORY PROJECT METHOD**
+- Date: 2026-07-28
+- Scope:
+  - before implementing any new codec mechanism, opcode, normative state, AI
+    role, transform family, or material encoder heuristic, the project SHALL
+    complete a written theory review;
+  - ordinary defect fixes, tests for already accepted behavior, mechanical
+    portability work, and measurement-only runs do not require a new review.
+- Required review:
+  1. state the signal model, invariant, objective, and what existing candidate
+     fails;
+  2. derive the information, identifiability, approximation, and worst-case
+     limits. Separate possible compression from impossible universal claims;
+  3. search current primary scientific and engineering sources online,
+     including prior art, successful methods, negative results, and practical
+     implementations. Record direct references and the date;
+  4. compare at least the direct-Truth incumbent, the simplest bounded
+     candidate, the strongest practical alternative, and the proposed union;
+  5. define decoder ISA, fixed-point state, memory, operations, security,
+     random access, packet-loss, mobile, and ASIC consequences before syntax;
+  6. publish a falsifiable byte/quality budget, expected activation domain,
+     ablation plan, and kill gate;
+  7. declare long-first and short-second real inputs, synthetic oracle bounds,
+     maximum-effort anchors, exact artifacts, and independent-decode checks;
+  8. record the decision before code and update the theory if evidence
+     contradicts an assumption.
+- Per-file oracle:
+  - manual, visual, AI-assisted, and exhaustive analysis of each evidence file
+    is encouraged for discovering the best attainable anonymous program;
+  - such analysis is an encoder oracle, never transmitted semantics. A useful
+    manual explanation must be converted into deterministic mathematics,
+    reproduced automatically, and validated on held-out files before a
+    general codec claim;
+  - no benchmark-specific table, hand-authored event map, filename, or content
+    label may enter a released encoder default.
+- Scientific basis:
+  - Rissanen's minimum-description principle justifies charging the model and
+    the data together;
+  - McAulay-Quatieri and Serra justify time-varying sinusoidal/partial laws and
+    separate deterministic/stochastic representations;
+  - phase-aware complex factorization shows that magnitude-only separation is
+    insufficient;
+  - MixIT shows label-free latent separation is possible but not unique, while
+    sparse-solution NP-hardness requires an explicitly bounded search rather
+    than an unprovable claim of a universal exact optimum.
+
+## R-182 — Whole-Track Self-Supervised Causal Foundry
+
+- Status: **ACCEPTED — HIGHEST-PRIORITY RESEARCH ARCHITECTURE**
+- Date: 2026-07-28
+- Problem:
+  - isolated frame, block, or locally fitted Basis candidates do not learn how
+    one anonymous cause evolves, disappears, returns, routes between channels,
+    or participates in a longer gapped law across the complete recording;
+  - a separator optimized for human source names is neither identifiable from
+    a mixture nor aligned with minimum complete codec bytes;
+  - fitting a per-track neural function without charging its quantized weights
+    can merely hide the waveform in an unreported second payload.
+- Formal signal model:
+  - for channel \(c\), the analysis hypothesis is
+    \(x_c[n]=\sum_s Route_{c,s}(n)\{Resonator_s(State_s,
+    Excitation_s)[n]+Transient_s[n]+Stochastic_s[n]\}+Truth_c[n]\);
+  - an anonymous point-cause state is a vector rather than one pitch:
+    \(f_{s,k}(n)=k f_{s,0}(n)+Delta f_{s,k}(n)\), with separately persistent
+    amplitude, complex phase, waveform-shape, resonator, envelope, and route
+    coordinates for each retained partial;
+  - causes may overlap and need not equal physical instruments. They exist only
+    when they shorten the decoded explanation.
+- Authoritative objective:
+  - the per-track Foundry minimizes the actual packed description
+    \(L(P)+L(E,R,S,C\mid P)+L(Truth\mid P,E,R,S,C)+lambda D+mu C_{decode}
+    +nu C_{seek}\);
+  - learned parameters, immutable Basis samples, dictionaries, events, routes,
+    checkpoints, entropy state, and the single final Truth are all charged;
+  - explained energy, separator confidence, likelihood, training loss, and
+    semantic plausibility are proposal diagnostics only.
+- Deterministic training loop:
+  1. analyze the complete input at overlapping phase-preserving resolutions
+     and arbitrary content-defined origins;
+  2. propose anonymous coherent-vector, bounded-inharmonic, source-filter,
+     transient, stochastic, convolution/resonator, route, direct long-Basis,
+     and sparse gapped-motif columns;
+  3. initialize parameters from deterministic DSP, an optional local learned
+     proposer, or an external AI proposer, without allowing any proposer to
+     prune the declared deterministic union;
+  4. alternate quantized parameter re-estimation with add, remove, split,
+     merge, link, unlink, route-share, motif-grow, and Basis-deduplicate edits;
+  5. pack and independently decode every frontier edit, compute the one final
+     mixture Truth, and admit an edit only on the complete rate-distortion-
+     resource Pareto frontier;
+  6. analyze the decoder-domain residual to generate the next columns while
+     preserving single ownership and preventing per-lane correction streams;
+  7. stop deterministically when a complete pass produces no admitted edit or
+     a declared Foundry resource bound is reached.
+- Whole-track learning rule:
+  - all samples and channels MAY train the file-specific model. This is not a
+    generalization task: overfitting is controlled by charging every emitted
+    parameter and its final correction, not by pretending weights are free;
+  - long-range state, returns, gapped motifs, cross-channel transfer, and
+    repeated transformations are learned before short-only refinement;
+  - internal FFT windows, CUDA tiles, batches, entropy pages, and checkpoints
+    are implementation units and SHALL NOT define acoustic boundaries.
+- Solver:
+  - bounded exact subset search remains the oracle for small column sets;
+  - scalable Foundry uses deterministic column generation plus reproducible
+    add/remove/swap/split/merge beam search. It MUST publish the finite
+    hypothesis manifest and the gap to every available exact subproblem;
+  - global optimum over unrestricted sparse programs is not claimed.
+- Decoder and privacy:
+  - per-track training, source separation, gradients, Python, CUDA, and cloud
+    models are encoder-only. The decoder receives only bounded integer ISA
+    records already permitted by the selected profile;
+  - a transmitted neural network, arbitrary executable graph, content label,
+    filename identity, or cloud response is forbidden as a decoding
+    dependency;
+  - private PCM is local by default. External AI receives data only under an
+    explicit user policy and remains a non-authoritative proposer.
+- Prior-art review, checked 2026-07-28:
+  - Rissanen supports charging the model and data jointly through minimum
+    description length;
+  - McAulay-Quatieri and Serra support evolving sinusoidal partials and
+    deterministic-plus-stochastic analysis;
+  - phase-aware complex factorization shows that magnitude-only factors lose
+    a decisive coordinate;
+  - MixIT and Sparse MixIT show label-free mixture learning and the need to
+    penalize over-separation, but do not make the inferred sources unique;
+  - per-signal implicit neural representations demonstrate train-on-the-file
+    compression, while their quantized weights and slow fitting confirm that
+    a learned representation must be charged and compiled into a bounded
+    decoder language;
+  - sparse program selection is NP-hard in general, so the declared finite
+    exact/beam split is a required honesty boundary.
+- Falsifiable budgets and kill gates:
+  - for every selected structure,
+    `saved final-Truth bytes > added program + event + route + checkpoint
+    bytes` at the admitted quality point;
+  - an alternative matched-byte quality point may be retained, but receives
+    the required bounded refinement of the missing rate axis before freeze;
+  - synthetic mixtures with known evolving causes test parameter recovery and
+    independent decoded reconstruction, but do not authorize a real-audio
+    compression claim;
+  - long real inputs run first. Their Pareto incumbents are frozen before short
+    tuning. A family that never reaches a Pareto frontier is disabled from the
+    default without being hidden from the report;
+  - only actual complete files decoded by the independent Core can pass.
+    R-118 plus maximum-effort official Opus remains the promotion gate.
+
+## R-183 — Multivoice Causal Basis Ledger
+
+- Status: **ACCEPTED — REQUIRED R-182 TRANSPORT**
+- Date: 2026-07-28
+- Evidence that triggered the decision:
+  - the first R-180 vector-partial synthetic fit explained approximately
+    99.4% of event-domain energy but represented 2 seconds with 1,620 raw MFT1
+    warp records and 71,424 predictor bytes;
+  - this is a signaling failure, not a compression result. Repeating the full
+    record header for every partial and analysis hop prevents a useful causal
+    model from repaying itself.
+- Design:
+  - extend the CBF research transport from one identity-routed emitter per
+    output to up to 64 anonymous emitter ledgers plus one bounded static output
+    mix;
+  - one emitter ledger owns one time-ordered partial or Basis trajectory.
+    Several ledgers may overlap and route to the same output channel;
+  - all ledgers share the Basis dictionary and total timeline. Their event
+    fields retain exact onset, lifetime, source position, start/end step, and
+    start/end gain;
+  - the transport is a lossless lowering to the already bounded MFT1 decoder
+    subset. It adds no oscillator, inference, floating-point behavior, or
+    arbitrary program to the decoder.
+- Alternatives:
+  - raw MFT1 is retained as the exact fallback;
+  - collapsing all partials into one PCM Basis reduces signaling but prevents
+    independent frequency, phase, amplitude, and detuning evolution;
+  - a neural waveform function may be more compact on some inputs, but its
+    weights require a new decoder and must be charged. It remains an encoder
+    proposer, not this transport.
+- Limits and security:
+  - output channels remain at most 8, emitters at most 64, Basis at most 256,
+    and every ledger is strictly ordered with bounded event count;
+  - the static mix is validated before MFT1 construction. Dynamic routes remain
+    a separate future candidate and are not smuggled into this transport;
+  - parser expansion is resource-preflighted and independently decoded.
+- Kill gate:
+  - conversion MUST reproduce the source MFT1 program and native PCM exactly;
+  - it is selected only when its complete bytes are smaller than raw MFT1;
+  - vector-partial compression claims remain forbidden until this transport,
+    the final Truth, and complete program bytes beat the incumbent frontier.
+
+## R-184 — Global Complex-Partial Flow Before Cause Grouping
+
+- Status: **ACCEPTED — REQUIRED CORRECTION TO R-182 ANALYSIS**
+- Date: 2026-07-28
+- Rejected shortcut:
+  - greedily selecting several fundamental frequencies in each STFT frame is
+    allowed only as a labeled diagnostic proposer;
+  - it is not the primary Foundry architecture because it can select
+    subharmonics, switch identities at crossings, duplicate leaked energy,
+    discard inharmonic causes, and spend an independent phase value for every
+    channel and hop.
+- Signal objects:
+  - a primitive observation is an anonymous complex spectral partial
+    \(p=(t,f,A,phi,route,uncertainty)\), estimated at sub-bin precision from
+    overlapping phase-preserving analyses;
+  - a partial trajectory is a path through such observations with continuous
+    or explicitly corrected integrated phase, amplitude/frequency laws,
+    births, deaths, and bounded gap edges;
+  - a causal field is an optional group of partial trajectories that shares
+    enough frequency modulation, amplitude envelope, resonator state, event
+    timing, or channel route to reduce complete description length.
+- Required analysis order:
+  1. generate complex partial observations at all declared resolutions,
+     without first assigning fundamentals or source classes;
+  2. form a global time-frequency continuation graph over the complete track.
+     Edges encode frequency, phase-integration, amplitude, route, gap, and
+     residual consequences;
+  3. select non-duplicating partial paths using exact min-cost flow where costs
+     are additive and deterministic bounded beam/column generation where
+     higher-order laws break that reduction;
+  4. retain every selected path as an independent fallback;
+  5. propose harmonic, bounded-inharmonic, common-modulation, common-envelope,
+     resonator, motif, and route groupings only after paths exist;
+  6. admit a grouping only when its shared law plus corrections is cheaper
+     than the independent paths and produces a complete decoded Pareto point.
+- Phase and channels:
+  - phase is a state coordinate, not an afterthought. A continuous path derives
+    phase by integrating frequency and adds sparse phase innovations only when
+    they are cheaper than a restart;
+  - cross-channel phase is first proposed as a shared route law, including
+    delay-induced frequency-dependent phase, gain, polarity, decay, and a
+    bounded transfer correction. Independent per-channel phase remains the
+    exact fallback;
+  - magnitude-only tracking cannot authorize a selected field.
+- Other lanes:
+  - transient, stochastic, convolution/resonator, and direct long-Basis
+    candidates compete separately. A partial graph never forces them into a
+    sinusoidal explanation;
+  - the final Truth is computed once after the native sum of all selected
+    lanes. Graph confidence and path coverage are diagnostics only.
+- Primary-source review, checked 2026-07-28:
+  - McAulay-Quatieri established time-varying sinusoidal tracks with phase
+    related to the integral of instantaneous frequency;
+  - PARSHL and Serra's spectral modeling track frequency, amplitude, and phase
+    of spectral lines and explicitly retain a stochastic residual;
+  - phase-aware complex factorization and phase-aware harmonic/percussive
+    optimization show why magnitude-only assignment is insufficient;
+  - published SMS implementations also document identity switching and the
+    need for track continuation rules, confirming that frame-local nearest or
+    pitch-guided matches are not a complete solution.
+- Solver and complexity:
+  - the declared observation and edge graph is finite. Exact flow is used for
+    additive first-order tracking; spline, shared-law, and route groupings use
+    bounded deterministic search with the independent paths always available;
+  - unrestricted joint separation, grouping, and sparse-program selection is
+    not claimed tractable or uniquely identifiable.
+- Falsifiable gates:
+  - synthetic crossing chirps, disappearing/reappearing tracks, harmonic and
+    inharmonic bundles, opposite polarity, channel delay, and transient/noise
+    overlap MUST be included;
+  - the global tracker MUST report observation recall, identity switches,
+    phase-integration error, grouped versus independent bytes, final-Truth
+    bytes, and independently decoded PCM;
+  - a grouped cause is rejected unless its actual total is smaller than the
+    independent-track representation at admitted quality;
+  - long real material remains first. No result from a frame-local
+    multi-fundamental proposer may be presented as R-182 evidence.
+
+## R-185 — Mandatory Adversarial Design Review Before Material Changes
+
+- Status: **ACCEPTED — MANDATORY PROJECT METHOD**
+- Date: 2026-07-28
+- Scope:
+  - applies before every material codec improvement, correction of an
+    architectural assumption, syntax or state addition, search-family change,
+    model/AI role, quality objective, transport, or resource-policy change;
+  - ordinary typo fixes, mechanical refactors with proven identical behavior,
+    tests of an already accepted invariant, and emergency restoration of a
+    previously passing decoder do not require a new review.
+- Required sequence:
+  1. state the observed failure and freeze the evidence that exposed it;
+  2. perform a divergent brainstorm containing the direct-Truth incumbent, the
+     simplest bounded fix, at least one materially different alternative, and
+     the strongest plausible combined approach;
+  3. attempt to reject every alternative through information limits,
+     identifiability, counterexamples, adversarial signals, complexity,
+     security, seek/loss behavior, mobile/ASIC consequences, and actual-byte
+     accounting;
+  4. review several independent sources of truth: primary theory, current
+     research, working implementations or standards, negative evidence, and
+     the project's measured decoder output;
+  5. assign an independent red-team subagent that did not author the proposal.
+     The auditor SHALL inspect the theory, code if any, assumptions, budgets,
+     tests, and stopping rule and SHALL return explicit accepted, rejected, and
+     unresolved claims;
+  6. resolve every blocking audit item in writing, revise or reject the design,
+     and record the decision and kill gates;
+  7. only then implement or continue the material change.
+- Draft-code boundary:
+  - exploratory code written before the audit is non-admitted scratch. It
+    SHALL NOT become a default, result claim, release, or basis for subsequent
+    architecture until the audit is closed;
+  - preserving a draft for inspection is allowed, but its status and failing
+    assumptions must be explicit.
+- Evidence:
+  - the decision record SHALL list rejected alternatives and why they lost;
+  - a material result report SHALL link the audit, primary sources, synthetic
+    counterexamples, independent decode, and long-first real gate;
+  - agreement by the author is not an audit. If the auditor finds no weakness,
+    a second counterexample pass is required before implementation.
+
+## R-186 — Audited Complex-Partial Analyzer Manifest and Quarantine
+
+- Status: **ACCEPTED — ANALYZER/TEST WORK ONLY**
+- Date: 2026-07-28
+- Audit disposition:
+  - R-185 red-team accepts R-184 observation and tracking research only after
+    the restrictions below;
+  - predictor integration, phase syntax, R-183 lowering, cause grouping,
+    long-real compression gates, default changes, and claims remain blocked
+    until a second audit after native sparse-graph parity.
+- Accepted foundations:
+  - anonymous complex observations precede fundamentals and source grouping;
+  - independent partial paths remain available;
+  - phase is required state, while the current draft is phase evidence only;
+  - transient, stochastic, direct-Basis, factorization, sparse-convolution,
+    learned-proposer, and direct-Truth families remain in the union;
+  - an additive first-order disjoint-path subproblem may have an exact
+    diagnostic solution, but it is not the codec objective.
+- Rejected current claims:
+  - authoritative phase, all-resolution coverage, persistent phase paths,
+    cross-channel route sharing, non-duplicating ownership, actual byte RDO,
+    grouping, R-183 use, and scalable global flow are not implemented;
+  - energy ranking, observation coverage, or arbitrary edge benefit cannot
+    select a codec program.
+- Finite research manifest:
+  - declared resolutions are `(512,128)`, `(2048,512)`, and `(8192,2048)`
+    samples by default; a gate may publish a smaller explicit subset;
+  - 24 logarithmic bands, at most 2 observations per band and 48 total per
+    detector/frame; aggregate and each channel are separate detector
+    hypotheses with duplicate provenance and later ownership conflicts;
+  - direct complex-DTFT and reassigned/phase-derivative estimates are distinct
+    hypotheses. The first implementation supports only direct DTFT and reports
+    that subset;
+  - every observation carries resolution, centered time origin, detector,
+    complex channel values, local SNR, frequency and phase uncertainty,
+    resolvability, and provenance;
+  - gap hypotheses are `1, 2, 4, 8` local hops; at most 4 neighbors per gap;
+    second-order state contains frequency slope/acceleration, amplitude slope,
+    route change, endpoint phase error, and cycle offsets `m0 + {-2..2}`;
+  - bounded K-best width is 8 per terminal state, with deterministic numeric
+    tie breaks; exact diagnostics are limited to at most 512 observations and
+    4,096 continuation hypotheses;
+  - original PCM plus strongest-first and lowest-correction decoder-residual
+    observation orders form the finite order union, with at most 2 residual
+    passes per order. Original candidates are never erased by a peel;
+  - an evidence run declares at most 65,536 retained path hypotheses, 7 GiB
+    VRAM, and 16 GiB host RAM. Crossing those limits yields a bounded-search
+    report, never silent pruning or a completeness claim.
+- Phase convention:
+  - direct DTFT uses a symmetric declared window and complex exponential whose
+    time zero is the observation center sample;
+  - low-SNR phase does not affect continuation cost;
+  - endpoint phase compilation is forbidden in this generation. A future
+    phase law must enumerate integer cycle counts near the integrated-frequency
+    prediction and compare `CONTINUE(m)` against `RESTART`.
+- Resolvability and truth:
+  - perfectly symmetric crossings, sub-Rayleigh close tones, and complete
+    destructive cancellation are scored modulo permutation or marked
+    unidentifiable; they do not become false tracker failures;
+  - direct, convolutional, factorization, and Truth alternatives remain
+    available for all unresolved content.
+- Ordered implementation gate:
+  1. analytic resolvability oracle and counterexample tests;
+  2. corrected observation records and DTFT phase;
+  3. exact small first/second-order diagnostics with restart/birth/death and
+     minimum length inside the state;
+  4. bounded K-best sparse tracker;
+  5. native C++23/CUDA sparse graph parity;
+  6. stop for a second R-185 audit before any phase synthesis or transport.
+- Accounting preconditions:
+  - publish observation/track diagnostics on known analytic signals;
+  - publish a free-oracle lower bound that charges proposed path, phase, event,
+    and route records and shows whether zero-cost grouping could plausibly
+    repay them;
+  - failure of the lower bound blocks syntax design.
+
+## R-187 — Audited Multi-Objective Partial-Path Hypothesis Union
+
+- Status: **ACCEPTED — ANALYZER PROPOSER ONLY**
+- Date: 2026-07-28
+- Frozen failure:
+  - a continuity-only R-186 draft followed stable window sidelobes through a
+    two-chirp crossing because every retained observation was assigned the
+    same artificial independent-observation value;
+  - on the declared crossing test it emitted two long paths, but their median
+    nearest-ground-truth frequency errors were approximately 125 Hz and
+    186 Hz. The draft is rejected as evidence of partial identity;
+  - assigning `base + scale * log(amplitude)` "saved bits" was also rejected:
+    without a decoded residual experiment this is neither an entropy bound nor
+    an estimate of Truth bytes.
+- Brainstorm and falsification:
+  - **continuity only** is retained as one hypothesis family, but rejected as
+    the sole ranker because coherent leakage can be temporally smoother than a
+    crossing partial;
+  - **strongest energy only** is rejected because it removes the planted
+    approximately -47.6 dB weak line and biases every path toward dominant
+    sources;
+  - **higher detection thresholds** are rejected because they hide rather than
+    solve ownership and weak-line recall;
+  - **semantic or neural classification** is rejected as an authority because
+    it can neither prove phase identity nor suppress a mathematically valid
+    anonymous candidate;
+  - **a calibrated residual delta per candidate** is the future authoritative
+    value, but evaluating it for the complete raw graph is too expensive for
+    the present analyzer. It is required before codec admission;
+  - the accepted bounded proposer is the deterministic union of three
+    materially different rankings: continuity, uncertainty-aware local
+    potential, and frequency-stratified protected weak lines.
+- Score separation:
+  - `potential_node_value_q` is a dimensionless fixed-point search heuristic,
+    not bits. It is zero when the lower confidence amplitude is non-positive
+    and decreases with amplitude uncertainty, frequency uncertainty, phase
+    uncertainty, low prominence, and leakage risk;
+  - amplitude entering that heuristic is normalized by the declared window
+    coherent gain, detector channel count, and analysis resolution;
+  - `program_cost_bits` separately reports the provisional birth, continuation,
+    cycle, phase, gap, and death syntax estimate. It is never subtracted from a
+    dimensionless value to claim byte savings;
+  - each path separately reports continuity score, potential value,
+    uncertainty/leakage penalty, program cost, conflict count, family, and
+    phase error.
+- Ownership and union:
+  - duplicate observations from channel, aggregate, resolution, or sidelobe
+    hypotheses remain explicit conflicts and cannot be rewarded twice inside a
+    selected set;
+  - the retained top-K union SHALL include value-weighted, continuity-only,
+    and protected weak-line paths. Selection by one family SHALL NOT prune the
+    candidates of another family;
+  - weak-line protection is stratified by frequency band and confidence. It
+    preserves a candidate for later exact residual testing; it does not force
+    a weak line into the codec program.
+- Determinism and bounds:
+  - all ranking values are signed saturating fixed-point integers with
+    published constants and lexicographic ties on family, observation IDs, and
+    cycle counts;
+  - the R-186 graph, K-best, path, host-memory, and accelerator bounds remain;
+    hitting a bound is reported as pruning, never completeness;
+  - partial tracking literature supports global lattice/path optimization over
+    greedy continuation, but does not establish this heuristic as a codec
+    objective. The full decoder-domain MDL remains authoritative.
+- Kill gates:
+  - both planted crossing chirps MUST occur in the emitted top-K equivalence
+    set modulo permutation, and stable sidelobes MUST NOT displace them;
+  - the approximately -47.6 dB line MUST survive in at least one protected
+    weak-line path;
+  - the 440.3 Hz clean-tone frequency, centered-phase, and path-continuity
+    results MUST not regress;
+  - reports MUST expose each score component and ownership conflict count;
+  - no path may enter a predictor, syntax, R-183 transport, long-real claim, or
+    release until a second R-185 audit and complete
+    `pack -> native decode -> one final Truth -> actual bytes` comparison.
+
+## R-188 — Canonical Spectral Peaks Before Band Allocation
+
+- Status: **ACCEPTED — AUDITED ANALYZER CORRECTION**
+- Date: 2026-07-28
+- Frozen failure:
+  - the R-186 detector searched each logarithmic band independently and
+    inserted `argmax(band)` whenever that band had no interior local maximum;
+  - a monotonic band edge is not a spectral peak. Around two planted crossing
+    chirps this fallback emitted pairs near 453.1/459.6 Hz and 940.2/953.1 Hz;
+  - the later Rayleigh test then treated each artifact as a second physical
+    line, rejected the true observation, and left stable sidelobes for the
+    path tracker.
+- Alternatives and audit:
+  - raising amplitude, SNR, or prominence thresholds is rejected because it
+    can remove genuine weak lines without fixing the false feature;
+  - choosing one representative from every sub-Rayleigh ambiguity cluster is
+    rejected as the first correction because it can silently collapse two
+    genuine close lines;
+  - immediate multi-line deconvolution or reassignment remains a separate
+    bounded observation hypothesis and is not necessary to remove this
+    detector artifact;
+  - the independent R-185 auditor accepts canonical full-spectrum peak
+    detection as the smallest causal correction and blocks representative
+    clustering until a later separately audited proposal.
+- Required detector order:
+  1. identify plateau-aware local maxima once over the complete positive
+     spectrum, excluding DC and Nyquist;
+  2. map every canonical peak bin into exactly one half-open logarithmic band.
+     A peak exactly on a boundary belongs to the upper band;
+  3. apply the per-band and per-detector resource caps only after this mapping.
+     A band without a genuine local maximum emits no coherent partial;
+  4. fit sub-bin frequency, direct DTFT, amplitude, phase, prominence, and
+     uncertainty only for canonical bins;
+  5. retain every genuine sub-Rayleigh member, attach an unresolved
+     equivalence group, and mark no member as an authoritative resolved
+     partial. Do not replace the group by a synthetic representative;
+  6. preserve cross-detector and cross-resolution alternatives with ownership
+     conflicts.
+- Kill gates:
+  - the frozen chirp frame MUST retain one canonical feature near each planted
+    460 Hz and 940 Hz component and remove the band-boundary duplicates;
+  - both chirps MUST then survive the R-187 top-K equivalence gate;
+  - the approximately -47.6 dB weak genuine maximum and clean 440.3 Hz phase
+    tests MUST not regress;
+  - if canonical peaks alone do not clear the crossing failure, stop for a new
+    R-185 audit before adding ambiguity representatives or deconvolution.
+
+## R-189 — Canonical-Pool Admission and Protected Band Slots
+
+- Status: **ACCEPTED — AUDITED ANALYZER CORRECTION**
+- Date: 2026-07-28
+- Frozen failure:
+  - after R-188 removed false boundary features, a genuine 460 Hz chirp peak
+    was still omitted because its three-bin Hann main lobe had a median of
+    4,948 amplitude units. Treating that self-energy as noise and applying a
+    3 dB gate rejected the 6,624-unit maximum;
+  - a within-band median or percentile dominated by the candidate's own main
+    lobe is not a noise estimator.
+- Accepted rule:
+  - every full-spectrum canonical local maximum enters the candidate pool;
+    SNR, prominence, leakage, and uncertainty annotate and rank candidates but
+    SHALL NOT reject them before the declared resource allocation;
+  - the first band slot uses deterministic conservative salience based on
+    coherent-gain-normalized peak amplitude, a lower-confidence proxy, and
+    prominence;
+  - the second band slot uses an independent protected-line ordering based on
+    relative prominence and leakage resistance. If both slots select the same
+    peak, the next deterministic candidate fills the available slot;
+  - remaining configured slots use the published lexicographic salience order;
+    at global allocation, one protected candidate per occupied band precedes
+    second candidates whenever the global cap permits;
+  - all pruning reports pool count, retained and discarded candidate IDs, and
+    `resource_pruned=true`. Retained candidates are never called complete.
+- Confidence:
+  - an optional diagnostic noise estimate uses a window-specific annulus
+    outside the declared main-lobe guard and excludes guards belonging to all
+    other canonical peaks;
+  - if too few unowned bins remain, SNR is unknown and phase is unusable.
+    Neither outcome removes the magnitude proposal;
+  - noise confidence never authorizes candidate admission.
+- Kill gates:
+  - both 460 Hz and 940 Hz frozen-frame peaks survive while the old boundary
+    artifacts remain absent;
+  - the approximately 0.30 Hz crossing-path result, the -47.6 dB weak line,
+    clean 440.3 Hz phase, and white-noise resource bounds all pass;
+  - every detector/frame exposes resource-allocation diagnostics.
+
+## R-190 — Native Sparse-Graph Parity and Optional CUDA Edge Scoring
+
+- Status: **ACCEPTED — CONDITIONAL IMPLEMENTATION MANIFEST**
+- Date: 2026-07-28
+- Approved milestone wording:
+  - **C++23 native sparse-graph parity with optional bit-exact CUDA
+    edge-score acceleration**;
+  - `CUDA tracker`, `full-GPU graph`, predictor, codec, or compression claims
+    are forbidden in this generation. Canonical enumeration and the dependent
+    K-best frontier remain deterministic C++23 CPU work.
+- Alternatives:
+  - porting the full FFT/DTFT analyzer to CUDA first is rejected because
+    window/FFT differences would obscure graph parity and repeat detector
+    errors before the accepted graph is stable;
+  - CPU-only C++23 is retained as the mandatory fallback and oracle but does
+    not satisfy accelerator evidence;
+  - a fully GPU-resident K-best/min-cost tracker is deferred because
+    cross-frontier dependencies, atomics, reductions, and tie order create a
+    larger determinism problem. Official CUDA documentation notes that
+    floating-point and atomic/reduction ordering can vary;
+  - the accepted first phase enumerates the complete declared fixed-point graph
+    on the host, maps one canonical candidate ID to one output record, scores
+    every independent edge/cycle record on CPU or optional NVRTC CUDA, and
+    runs the complete bounded R-187 path-family union in C++23.
+- Scalar domains:
+  - sample rate is `1..384000` Hz; declared analysis frequencies are
+    `0..sample_rate/2`;
+  - frequency and frequency delta use signed `int64_t` Q20 Hz. Frequency
+    uncertainty uses unsigned `uint64_t` Q20 Hz;
+  - normalized amplitude and amplitude uncertainty use unsigned `uint32_t`
+    Q16 PCM-amplitude units, inclusive range `0..0xffffffff`. Normalization is
+    direct-DTFT amplitude divided by window coherent gain and aggregate
+    detector amplitude divided by square root of channel count;
+  - phase is `phase_turn_u32`, one turn modulo `2^32`. Wrapped subtraction is
+    interpreted as `int32_t`. Endpoint error is `phase_error_u31` in
+    `[0,2^31]`; phase uncertainty uses the same half-turn domain;
+  - `phase_step_u32` is
+    `round(frequency_hz / sample_rate * 2^32) mod 2^32` and is carried in the
+    observation fixture. Phase-invalid observations set the phase-usable flag
+    to zero; no sentinel phase value is interpreted;
+  - potential, uncertainty/leakage penalty, protected rank, continuity, and
+    provisional program cost use signed Q8. Edge fields are bounded `int32_t`;
+    path accumulation uses signed saturating `int64_t`. Dimensionless value and
+    provisional bits remain separate objectives.
+- Multiresolution and provenance:
+  - the manifest contains at most eight resolution records with
+    `resolution_id`, `fft_samples`, and `hop_samples`;
+  - every observation carries `uint64_t center_sample`, local frame index,
+    resolution, signed detector ID, band, ambiguity identity, canonical
+    ownership component, local-resolvability and phase flags, protected rank,
+    neighbor priority, potential, and uncertainty penalty;
+  - center-sample delta is authoritative. Frame index is a
+    resolution-local index and an edge is valid only when its center delta
+    equals a declared gap multiplied by that resolution's hop;
+  - ownership input is the deterministic union-find transitive closure of all
+    detector, resolution, sidelobe, and duplicate relations. It is a disjoint
+    equivalence partition before ABI entry. Non-transitive relations MUST use
+    explicit CSR adjacency in a future ABI rather than being silently merged;
+  - ambiguity identity is separate and does not authorize ownership or a
+    representative.
+- Integer laws:
+  - neighbor membership and order are fixed-point only. Rank is normalized
+    frequency distance Q8, then descending precomputed anonymous neighbor
+    priority, then target observation ID;
+  - `log2(1+n/d)` is a published integer Q8 operation: form a saturated Q16
+    ratio capped at 65535, normalize with integer leading-bit position, then
+    derive eight fractional bits by repeated unsigned Q31 squaring with
+    round-down at every step. No lookup table or floating point participates;
+  - phase advance computes
+    `round((step0+step1)*center_delta/2) mod 2^32` by quotient/remainder
+    decomposition. Only low 32-bit factors are multiplied; an odd step sum
+    adds `ceil(center_delta/2) mod 2^32`. CPU and CUDA use the same unsigned
+    operations and never require `__int128`;
+  - every addition, multiplication used for cardinality/bytes, and signed
+    score accumulation is checked or saturating before allocation or launch.
+- C ABI:
+  - every public manifest, resolution, observation, candidate, edge, and path
+    record uses exact-width fields, `struct_size`, `abi_version`, explicit
+    reserved-zero storage, a fixed packed layout, and compile-time size/offset
+    assertions;
+  - records are an in-memory ABI, not the Resonith serialized bitstream.
+    Callers provide pointer/count spans; no uninitialized padding is hashed or
+    compared;
+  - invalid detector is not a sentinel: aggregate is explicitly `-1`, channel
+    detectors are nonnegative. `UINT32_MAX` denotes absent ambiguity identity;
+    ownership component is always present.
+- Execution and reporting:
+  - host enumeration, host-to-device transfer, CUDA scoring, device-to-host
+    transfer, and CPU frontier times are reported separately;
+  - CUDA tiles cannot change candidate membership, ID, order, score, or hash.
+    CUDA absence or loader failure selects the identical CPU result;
+  - host memory is capped at 16 GiB and VRAM at 7 GiB. Bound hits report
+    explicit pruning/stopping and never a complete-search claim;
+  - if host enumeration plus frontier exceeds 50% of wall time, the only
+    allowed performance claim is edge-score acceleration.
+- Kill gates:
+  - CPU and CUDA edge arrays are bit-exact on every R-187/R-189 fixture,
+    adversarial scalar extrema, every cycle offset, randomized valid
+    manifests, and CUDA tile sizes `1,31,32,255,256,1024`;
+  - C++23 path-family union, conflicts, component scores, tie order, bound
+    reports, and exact-small selected set are bit-exact to a separate Python
+    fixed-point oracle;
+  - candidate cardinality and byte products are checked in 64-bit; maximum
+    sample rate, center delta, gap, frequency, amplitude, score, path length,
+    and invalid-manifest cases are covered;
+  - the frame-50 460/940 Hz observations, approximately 0.30 Hz crossing
+    paths, -47.6 dB protected line, and clean 440.3 Hz result do not regress;
+  - Windows and Linux C++23 plus Android/iOS CPU-only compile gates pass;
+  - a 120-second sparse and dense graph reports peak memory and stage times;
+  - no output is imported by a predictor, R-183 transport, syntax, Orkela, or
+    a real-audio compression report before the mandatory second R-185 audit.
+
+## R-191 — Separate Transactional Path ABI and Frozen Second-Order Law
+
+- Status: **QUARANTINED — POST-IMPLEMENTATION AUDIT BLOCKED**
+- Date: 2026-07-28
+- Trigger:
+  - the first R-190 implementation achieved bit-exact Python/C++23 parity for
+    the fixed 80-byte edge records, but the edge manifest did not declare the
+    complete R-187 K-best frontier policy and the edge ABI could not represent
+    variable-length paths;
+  - implementing an implicit C++ policy would have violated R-185 by hiding
+    pruning, resource use, tie order, and path ownership behind implementation
+    defaults.
+- Brainstormed alternatives:
+  - **A — preserve edge ABI v1 and add a separate path ABI** is accepted.
+    First-order independent edge scoring and dependent path search have
+    different lifetimes, storage, and resource policy. Paths use fixed records
+    plus a bounded CSR entry arena;
+  - **B — replace the edge manifest with ABI v2** is rejected. It would mix
+    independent edge scoring with frontier policy, invalidate frozen edge
+    fixtures and hashes, and still require a variable-length output arena;
+  - **C — compile K and other limits into C++** is rejected. It prevents exact
+    preflight, makes the search language invisible to callers, and can turn a
+    bound hit into silent pruning;
+  - inline fixed-length path arrays and per-path allocation are rejected.
+    The former imposes an artificial maximum on causal lifetime; the latter
+    prevents exact capacity checks and stable cross-language layout.
+- Independent red-team result:
+  - two independent auditors selected alternative A;
+  - both blocked implementation until amplitude-log scaling, temporal
+    extrapolation, median-band assignment, transactional capacity behavior,
+    ownership conflicts, and exact-small tie order were frozen;
+  - this decision resolves those blockers before path code is admitted.
+- Public in-memory ABI:
+  - `resonith_partial_path_manifest` is separate from and does not modify
+    `resonith_partial_graph_manifest` v1;
+  - `resonith_partial_path`, `resonith_partial_path_entry`, and
+    `resonith_partial_path_report` use exact-width integer fields,
+    `struct_size`, `abi_version`, explicit reserved-zero bytes, packed fixed
+    layouts, and compile-time size and offset checks;
+  - one path record names a half-open slice in one bounded entry arena.
+    Entry zero uses `UINT64_MAX` as the birth edge; every later entry references
+    the stable incoming R-190 edge candidate ID. Gap, cycle, and phase data are
+    not duplicated;
+  - path identity is the complete tuple of observation IDs followed by incoming
+    edge candidate IDs. Hashes are diagnostics only and never break a tie;
+  - the API is two-pass and transactional. A null-output preflight returns the
+    complete required path and entry counts and an input/config fingerprint.
+    A fill request supplies that expected fingerprint. Stale input,
+    insufficient capacity, invalid data, or a declared bound hit writes
+    neither semantic output array;
+  - all count, byte, offset, and work products are checked in `uint64_t` before
+    conversion to `size_t` or allocation.
+- Declared resource policy:
+  - the path manifest independently declares K per terminal state for the
+    local-potential and continuity objectives; top-K reservations for
+    local-potential, continuity, and protected-weak families; protected
+    paths per frequency band; minimum and maximum observations per path;
+    maximum output paths, total entries, frontier states, work units, and host
+    bytes; and the exact-small candidate limit;
+  - frequency bands are explicit strictly increasing Q20-Hz upper edges.
+    Bands are half-open and an exact boundary belongs to the upper band. The
+    last band includes the declared Nyquist endpoint;
+  - bounds are checked at canonical deterministic work checkpoints. Wall time
+    may cancel a run but never defines a reproducible retained subset;
+  - a bound hit sets an explicit termination and pruning report and cannot be
+    described as a complete search.
+- Canonical graph order correction:
+  - source observations are enumerated by
+    `(center_sample, resolution_id, detector_id, frequency_q20,
+    observation_id)`, independent of caller array order;
+  - declared gaps and cycle offsets are strictly increasing; target order is
+    normalized frequency distance, descending anonymous neighbor priority,
+    then target observation ID;
+  - changing input permutation, CPU thread count, or CUDA tile order cannot
+    change candidate IDs, records, paths, or selection.
+- Fixed second-order frequency law, version 1:
+  - for three observations with positive center deltas
+    `dt01=t1-t0` and `dt12=t2-t1`, define
+    `df01=f1-f0` and `df12=f2-f1` in signed Q20 Hz;
+  - `predicted_df12 = scale_nearest_even(df01, dt12, dt01)`.
+    Scaling uses sign/magnitude quotient-and-remainder arithmetic and never
+    evaluates a potentially overflowing wide product;
+  - frequency residual is
+    `abs(df12-predicted_df12)`. Its denominator is the saturating unsigned sum
+    of all three Q20 frequency uncertainties, clamped to the manifest's
+    positive Q20 sigma floor;
+  - frequency acceleration cost is the frozen R-190 integer
+    `log2(1+residual/denominator)` Q8 operation.
+- Fixed second-order amplitude law, version 1:
+  - replace each unsigned Q16 normalized amplitude `a` by
+    `max(a, amplitude_floor_q16)`, where the declared floor is positive;
+  - define `dlog01=ilog2_ratio_q8(a1,a0)` and
+    `dlog12=ilog2_ratio_q8(a2,a1)`. `ilog2_ratio_q8` is the signed use of the
+    frozen R-190 integer `log2(1+n/d)` law: zero for equality, positive for
+    growth, and negative for decay;
+  - `predicted_dlog12 =
+    scale_nearest_even(dlog01,dt12,dt01)`. The amplitude residual is
+    `abs(dlog12-predicted_dlog12)`;
+  - with the manifest's positive `amplitude_residual_weight_q8`, amplitude
+    acceleration cost is
+    `ilog2_1p_q8(residual * weight_q8 / 65536)`. The multiplication is checked
+    or evaluated by quotient/remainder decomposition;
+  - frequency and amplitude second-order costs are separate components before
+    saturating addition. No floating point participates.
+- `scale_nearest_even`:
+  - division rounds to nearest; an exact half selects the even magnitude;
+  - an unsigned product/division is evaluated as quotient plus a bit-serial
+    remainder product, so CPU, CUDA, 32-bit, and 64-bit hosts require no
+    `__int128`;
+  - an unrepresentable result saturates to the declared signed path score
+    limit and increments the report saturation count.
+- Frontier, families, and ownership:
+  - local-potential and continuity states are retained independently per
+    terminal `(previous,current)` state, then unioned by canonical path
+    identity. Dimensionless Q8 heuristic accumulators and provisional-bit Q8
+    accumulators remain separate and are never compared across domains;
+  - a protected-weak path contains at least one observation carrying
+    `RESONITH_PARTIAL_OBSERVATION_PROTECTED_WEAK`. It is ranked within the
+    lower-median frequency band by descending protected-observation count,
+    descending saturating sum of nonnegative protected rank, descending
+    continuity score, then canonical identity;
+  - the path's frequency is the lower median Q20 value at index `(n-1)/2`
+    after integer sorting. No floating-point or averaged even median is used;
+  - a repeated ownership component inside one path increments its internal
+    conflict count and makes that path ineligible for selected-set output.
+    Cross-path conflicts are intersections of ownership components; ambiguity
+    components never confer ownership;
+  - exact-small selection maximizes the sum of
+    `max(0, local_potential_score, continuity_score)`. Equal totals select the
+    lexicographically smaller sorted tuple of canonical path IDs. Above the
+    exact limit, deterministic greedy order uses descending selection score
+    then canonical identity and is reported as non-exact;
+  - protected retention reserves hypotheses for later measurement; it never
+    overrides ownership and never forces final selection.
+- Signed half-score correction:
+  - randomized Python/C++ parity exposed that language-default division differs
+    for a negative odd continuity score: Python produced
+    `floor(-833/2)=-417`, while C++ truncated to `-416`;
+  - an independent follow-up audit selected floor toward negative infinity.
+    Truncation can erase a `-1` penalty and nearest-even adds parity-dependent
+    tie behavior;
+  - `half_score(x)` is therefore `x/2` followed by decrement when `x<0` and
+    the remainder is nonzero. Implementations SHALL NOT rely on signed right
+    shift. Required vectors include `-833 -> -417`, `-1 -> -1`, `1 -> 0`,
+    and the minimum stored score.
+- Report requirements:
+  - required and written path/entry counts; raw, retained, deduplicated and
+    per-family counts; frontier peak; deterministic work units; host bytes;
+    internal and cross-path conflict counts; exact-small candidates and
+    selections; solver and termination enums; score-saturation count;
+    pruning/bound flags; and canonical input/config/output fingerprints;
+  - neither path scores nor the report are predictor bytes, Truth savings,
+    compression results, or bitstream syntax.
+- Kill gates:
+  - edge ABI v1 sizes, existing golden bytes, hashes, and the 14 current
+    analyzer/edge tests remain unchanged;
+  - a separate Python fixed-point oracle and C++23 implementation produce
+    identical path, entry, family, selected-set, and report records;
+  - caller input permutations, CPU thread counts, and CUDA tile sizes do not
+    alter canonical output;
+  - constant and linear chirps, amplitude ramps, irregular positive deltas,
+    phase-invalid magnitude evidence, the approximately -47.6 dB protected
+    line, odd/even medians, exact band boundaries, equal-score selections,
+    ownership transitive closures, internal conflicts, and cross-path
+    conflicts pass;
+  - minimum and maximum path lengths, every arena boundary, stale preflight,
+    insufficient capacity, count/offset/byte overflow, work exhaustion, and
+    scalar extrema produce the declared status with no partial semantic write;
+  - exact-small output matches an independent brute-force solver;
+  - Windows and Linux C++23 plus Android and iOS CPU-only compile gates pass;
+  - predictor, syntax, compression, Opus, release, and Orkela integration
+    remain blocked until the second R-185 audit required by R-190.
+- Second R-185 post-implementation result:
+  - the independent auditor returned **NO-GO** for predictor admission;
+  - path ABI v1 is an experimental fixture and SHALL NOT be release-frozen;
+  - the audit demonstrated that path input validation accepted backward and
+    internally inconsistent edge records instead of verifying that the edge
+    array was the exact output of the declared graph;
+  - reported work and host bytes covered neither the cumulative copied state
+    frontier nor all temporary containers, pair comparisons, fingerprint
+    sorting, and edge preflight materialization;
+  - second-order dimensionless curvature had been added to both continuity and
+    provisional-program accumulators, contrary to the domain separation above;
+  - state/family truncation did not set the pruning flag or expose the promised
+    discard counts;
+  - exact-small totals used silent saturation, so the selected set was not
+    exact under score overflow;
+  - irregular-gap frequency uncertainty omitted the extrapolation ratio. For
+    `q=dt12/dt01`, a conservative independent-error bound is
+    `u2 + (1+q)u1 + q*u0`, not `u0+u1+u2`;
+  - the 32 randomized CPU cases and one nine-edge CUDA fixture did not satisfy
+    the declared resource, overflow, selector, scalar-extrema, cross-platform,
+    and randomized CPU/CUDA kill gates.
+- Audited remediation direction, pending a separate pre-code review:
+  - edge ABI v1 remains frozen, but path ABI advances experimentally. The path
+    call receives the resolution table and validates the caller's canonical
+    edge array against a shared streaming edge enumerator and scorer. Local
+    delta checks or a diagnostic fingerprint alone are insufficient;
+  - edge preflight becomes count-only streaming enumeration; semantic output
+    is filled only after capacity succeeds. It SHALL NOT materialize the full
+    edge vector merely to count it;
+  - copied path vectors and cumulative historical maps are replaced by a
+    fixed-record state arena with parent backpointers and indexed terminal
+    ranges. A counting `pmr::memory_resource` enforces peak live allocated
+    bytes; a work meter charges before scans, comparisons, sorts, pair tests,
+    and state creation;
+  - path ABI v2 reports raw, retained, deduplicated, and discarded states,
+    per-family truncation, every bound hit, peak live bytes, and every
+    authoritative saturation. Any unrepresentable selector total terminates
+    with a profile bound; exact-small never uses saturating set totals;
+  - second-order curvature affects only dimensionless continuity ranking until
+    an independently packed coding-cost model exists;
+  - irregular-gap uncertainty uses the ratio-scaled conservative law with
+    checked quotient/remainder arithmetic and exact Python/C++ parity;
+  - transactional canary tests, an arbitrary-precision brute-force selector,
+    resource/overflow extremes, randomized CPU/CUDA cases, ABI offsets, and
+    Windows/Linux/Android/iOS gates are mandatory before another predictor
+    admission audit.
+- Pre-code remediation audit:
+  - verdict is **conditional GO for analyzer remediation only**; predictor
+    admission remains NO-GO;
+  - supplied edges SHALL be in canonical `candidate_id` order and SHALL match
+    the shared streaming enumerator field-for-field. Observation order remains
+    caller-independent. Resolutions and ordering policy enter the fingerprint;
+  - fill SHALL finish enumeration, fingerprint, exact count, and capacity
+    validation before the first semantic write;
+  - arena nodes use checked integer parent indices, a declared sentinel,
+    indexed terminal buckets, reference-counted reclamation, and collision-free
+    canonical sequence equality. Reconstructed identities, medians, ownership,
+    and output entries consume declared work;
+  - all dynamic project-controlled temporary containers use one bounded PMR
+    resource. The report states `peak_live_managed_bytes`, not process RSS or
+    allocator metadata. Environmental allocation failure is distinct from a
+    declared profile bound;
+  - sorting receives a published implementation-independent precharge;
+    all possible pair tests, bucket scans, state creation, traversal, and
+    reconstruction are charged before execution;
+  - path API v2 uses a new symbol and never reads a v1-sized record. It reports
+    generated, duplicate, retained, K-discarded, family-presented,
+    family-discarded, output-deduplicated, and bound-rejected counts. Normal
+    finite K/top-K truncation sets `PRUNED`;
+  - exact-small totals are checked and unsaturated. Overflow terminates at the
+    profile bound; equal totals compare full sorted canonical path identities;
+  - frequency uncertainty law v2 is the estimator L1 proxy
+    `u2 + u1 + ceil(dt12*(u0+u1)/dt01)`. Amplitude acceleration remains a
+    weighted heuristic until amplitude uncertainty has its own audited law.
+
+## R-192 — Multi-Partial Predictor Preflight
+
+- Status: **ACCEPTED PREFLIGHT — IMPLEMENTATION BLOCKED BY R-191**
+- Date: 2026-07-28
+- Decision:
+  - retain independent anonymous complex-partial paths as the first candidate
+    source for decoder-domain prediction;
+  - compare integrated phase and explicit endpoint-locked phase as finite,
+    mutually exclusive hypotheses for the same path interval;
+  - quantize and render every hypothesis through the prospective bounded
+    integer decoder before measuring one final mixture-domain Truth;
+  - preserve direct Truth as a complete fallback and admit no predictor record
+    from analyzer scores alone.
+- Rejected:
+  - one frame-local fundamental as a universal representation;
+  - magnitude-only synthesis;
+  - a normative neural waveform decoder;
+  - one independently corrected residual per inferred source;
+  - syntax work before the quarantined R-191 graph passes its second
+    post-remediation audit.
+- Evidence and counterexamples are recorded in
+  `docs/reviews/R192_MULTI_PARTIAL_PREDICTOR_PREFLIGHT_2026-07-28.md`.
+
+## R-193 — Phase-Innovation Anchor Gate for Persistent Complex Partials
+
+- Status: **ACCEPTED FUTURE EVIDENCE GATE — NO OPCODE ADMITTED**
+- Date: 2026-07-28
+- Trigger:
+  - the project owner proposed replacing repeated phase estimates with one
+    persistent oscillator state and sparse objective phase-lock events;
+  - an independent R-185 red-team audit was required before adding the idea to
+    the execution plan.
+- What the audit accepted:
+  - a small frequency error integrates into a large phase error over a long
+    coherent lifetime;
+  - integrated phase and explicit phase innovation must compete by complete
+    decoder-in-loop rate/distortion cost;
+  - long material is the correct first amortization and drift gate.
+- Corrections to the proposal:
+  - transform and predictive codecs do not simply forget phase. Opus uses
+    lapped MDCT, inter-frame energy prediction, pitch filtering, and SILK
+    long-term prediction; FLAC reconstructs the exact sample sequence;
+  - continuous sinusoidal tracking and phase-continuous interpolation are
+    established prior art, including McAulay–Quatieri models and MPEG-4 HILN;
+  - a spectral peak or energy maximum does not uniquely define physical phase
+    under window-origin changes, overlap, cancellation, or gauge ambiguity;
+  - a large Truth reduction is a falsifiable target, not an established
+    consequence.
+- Current implementation boundary:
+  - R-029 and the existing trajectory core already provide absolute integer
+    phase state and partition-independent rendering;
+  - R-190/R-191 observations and edges carry phase, phase-step, uncertainty,
+    and endpoint-error evidence;
+  - the Python research union already names `continuous` and `phase-locked`
+    columns, but it emits short absolute-position warp instances. It does not
+    implement sparse phase-innovation events or prove their byte economy;
+  - no audited graph path currently drives persistent native synthesis,
+    phase-anchor syntax, recovery checkpoints, or Orkela playback.
+- Admitted research model for partial \(k\):
+
+  \[
+  z_k[n] = a_k[n]e^{i\theta_k[n]},
+  \qquad
+  \theta_k[n] =
+  \theta_{0,k}+\Phi_{\omega_k}(n)
+  \sum_j \Delta_{k,j}G(n-\tau_{k,j})
+  \pmod {2^{32}}.
+  \]
+
+  `Phi` is an absolute bounded integer frequency integral. Each transmitted
+  `Delta` is an objective phase innovation. `G` is one fixed bounded causal
+  correction ramp. An instantaneous hidden phase reset is forbidden: a
+  discontinuity uses a declared rebirth/crossfade candidate.
+- Required alternatives and ablations:
+  1. direct Truth;
+  2. the preceding short harmonic/event predictor;
+  3. persistent amplitude/frequency knots without phase anchors;
+  4. denser frequency knots;
+  5. persistent state plus phase-innovation anchors;
+  6. rebirth plus deterministic crossfade using existing primitives;
+  7. a free exact-phase oracle as an upper-bound diagnostic;
+  8. magnitude-only or randomized phase as a negative control;
+  9. shared oscillator plus cross-channel route versus independent channels.
+- Admission and kill gates:
+  - stop before syntax if the free exact-phase oracle fails to reduce compressed
+    final Truth by at least 10% in at least three long coherent classes;
+  - anchor mode must beat no-anchor, dense-frequency-knot, and
+    rebirth/crossfade alternatives by at least 3% complete bytes on at least
+    two long real coherent classes at the declared quality floor;
+  - a stationary sinusoid and exactly representable linear chirp use no phase
+    anchors after onset; a ten-minute bounded-vibrato case uses no more than
+    one anchor per second;
+  - close tones below nominal resolution, beating, crossing chirps,
+    cancellation, onset/offset, noise, impulses, reverberation, anti-phase
+    stereo, and changing inter-channel delay are mandatory counterexamples;
+  - IDs, births/deaths, knots, anchors, routes, checkpoints, entropy, decoder
+    work/memory, and final Truth all enter the complete cost;
+  - callback partition and random-access slice cannot alter decoded PCM;
+    corruption recovery must be bounded by a declared checkpoint;
+  - no opcode is proposed until the oracle gate, native deterministic
+    synthesis, complete R-118, current maximum-effort Opus, and listening gates
+    pass.
+- Execution order:
+  - this is appended after the current final Orkela-coupled evidence step;
+  - it does not bypass the active R-191 quarantine or R-192 predictor gate;
+  - successful results amend R-192 instead of creating a parallel codec
+    architecture.
+
+## R-194 — Continuous MAF-to-1.0 Completion Train
+
+- Status: **ACCEPTED PROJECT EXECUTION CONTRACT**
+- Date: 2026-07-29
+- Decision:
+  - a passing diagnostic, architecture gate, alpha, beta, release candidate,
+    or Orkela integration checkpoint is not a project stopping condition while
+    a dependency-ready Resonith 1.0 item remains;
+  - continue in the dependency order recorded in
+    `docs/20_LSPF_MASTER_EXECUTION_PLAN.md` until Resonith 1.0 and its native
+    Orkela integration are publicly released, unless the project owner stops
+    the work or a genuine external blocker prevents useful progress;
+  - the active technical spine remains the anonymous causal MAF model:
+    persistent multi-source partial/resonator/excitation/route states,
+    gridless multiscale patterns, transformed immutable Basis instances,
+    separately owned coherent, bounded-inharmonic, transient, stochastic and
+    route lanes, one final Truth, global decoder-in-loop RDO, GPU proposer
+    search, and a bounded integer decoder;
+  - R-191 remediation remains first. R-192 prediction and R-193 phase
+    innovations cannot bypass its quarantine;
+  - focused tests follow each change. The complete R-118, maximum-effort Opus,
+    cross-platform, listening, and Orkela matrices run at declared generation
+    and release boundaries, or earlier only when a focused failure proves that
+    the broad gate is necessary;
+  - every test names the risk it controls and the decision its pass enables.
+    Testing without a release or architecture decision is not progress.
+- Completion order:
+  1. publish the accepted Orkela alpha needed for listening evidence;
+  2. remediate and re-audit R-191;
+  3. implement and measure R-192 persistent anonymous multi-partial synthesis;
+  4. run the R-193 free phase oracle before any new anchor syntax;
+  5. integrate gridless patterns, transformed Basis, separated causal lanes,
+     persistent entropy/state, and global byte-quality-compute RDO;
+  6. move exhaustive proposer/search kernels to GPU with a complete CPU
+     fallback while retaining a CPU-only bounded decoder;
+  7. run long-first Pareto generations against the maximum-effort official
+     Opus frontier, then refine short inputs without deleting the long
+     incumbent;
+  8. freeze the v1 bitstream only after conformance, corruption, random access,
+     packet loss, resource, deterministic synthesis, and cross-platform gates;
+  9. publish Resonith 1.0 encoder, decoder, SDK, CLI, specification,
+     reproducible benchmark corpus, and Orkela integration.
+- Rejected:
+  - treating one successful test as completion;
+  - repeatedly rerunning the full corpus after isolated implementation edits;
+  - bypassing analyzer quarantine to create parallel syntax;
+  - preserving a mechanism merely because implementation effort was spent;
+  - stopping at a target or hypothesis without measured decoder output.
+
+## R-195 — MAF-First Architecture Jump
+
+- Status: **ACCEPTED PRIORITY AMENDMENT**
+- Date: 2026-07-29
+- Supersedes:
+  - R-194 completion-order item 1 only. Publishing an existing Orkela alpha is
+    no longer a prerequisite for the next Resonith architecture generation.
+    R-194's continuous-completion contract remains active.
+- Decision:
+  - complete one integrated MAF architecture generation before returning to
+    non-blocking Orkela product expansion;
+  - Orkela work during this interval is limited to the exact listening,
+    visualization, A/B, and conformance support required by the current codec
+    generation;
+  - implement the architecture as one decoder-in-loop candidate union rather
+    than a sequence of isolated percentage tweaks.
+- Required integrated mechanisms:
+  1. remediated anonymous multi-partial graph and persistent causal
+     source/resonator/excitation/route states;
+  2. objective continuous and phase-locked trajectories plus the R-193 free
+     phase oracle;
+  3. content-defined exact motif cache at arbitrary sample starts and lengths;
+  4. gridless multiscale approximate-pattern search across time, frequency,
+     fixed analysis tiles, and channels;
+  5. CompoundBasis and sparse gap laws that compose useful distant events;
+  6. immutable transformed-Basis orbits covering bounded alignment, phase,
+     pitch, time, gain, envelope, filter, crop, reverse, polarity, delay, and
+     route laws;
+  7. Cached Integer Basis Synthesis for encoder-learned per-file atoms,
+     materialized once by the bounded decoder and then immutable;
+  8. separately owned coherent, bounded-inharmonic, transient, stochastic,
+     and room/channel-route lanes plus one final TruthCorrection;
+  9. source-filter and resonator lifetime models for slowly changing
+     excitation, vocal-tract/instrument response, room tail, and gain/envelope
+     state;
+  10. exact inter-channel delay, phase, polarity, attenuation, common-source,
+      and route reuse;
+  11. persistent entropy and allocation state;
+  12. one complete-byte, decoded-quality, decoder-compute and memory RDO over
+      every model candidate and direct Truth;
+  13. full GPU proposer/search batching without reducing the declared
+      candidate union, with deterministic CPU fallback and a CPU/DSP-only
+      normative decoder;
+  14. optional Gemini and local-model proposals that may expand search but
+      never label the bitstream or override local RDO;
+  15. Foundry decision-trace capture and distillation into a compact consumer
+      top-K router, with exact local RDO retaining final authority.
+- Evidence order:
+  - long speech, music, stochastic ambience, transient-rich and multichannel
+    material first;
+  - complete R-118 union at the integrated generation boundary;
+  - maximum-effort official Opus frontier, preceding Resonith and direct Truth
+    anchors from the identical PCM;
+  - missing-axis refinement for any rate-only or quality-only win;
+  - short-input tuning only after the long frontier is frozen.
+- Kill rule:
+  - each mechanism remains optional in the RDO union and is rejected for an
+    input when its Basis, state, events, transforms, checkpoints, entropy,
+    correction, decoder work and memory cost exceed direct Truth;
+  - loss on one class cannot delete a proven Pareto win on another class;
+  - no semantic source name, cloud response, hidden stem, or manual annotation
+    is required for decoding or default encoding.
+
+## R-196 — Material-Step Audit and Full Improvement Acceptance
+
+- Status: **ACCEPTED AFTER INDEPENDENT AUDIT**
+- Date: 2026-07-29
+- Audit verdict:
+  - **NO-GO** for literal review of every source edit and a complete corpus
+    and platform rerun after every commit;
+  - **GO** when a step means one independently falsifiable material work
+    package and an improvement becomes accepted only after its full
+    comparative gate.
+- Material-step boundary:
+  - a material step can change normative syntax, decoded samples/state,
+    compatibility, an admitted encoder candidate/search/RDO/default/quality
+    floor, bounded resource/security/seek/loss/mobile/ASIC behavior, a shipped
+    ABI/API/platform or observable Orkela behavior, evidence semantics, corpus,
+    anchor, metric, threshold, or public claim;
+  - a source file, function, commit, test case, or ordinary implementation
+    phase is not automatically a material step;
+  - tightly coupled edits MAY form one step only when they share one frozen
+    model and evidence plan, cannot be evaluated meaningfully in isolation,
+    and retain individual ablations. Unrelated changes cannot be bundled;
+  - changing the reviewed signal model, admitted scope, normative behavior,
+    resource bounds, risk, or kill gate starts a new material step.
+- Mandatory pre-implementation protocol:
+  1. freeze the observed failure, incumbent, and reproducible baseline;
+  2. compare direct Truth/incumbent, the simplest bounded correction, at least
+     one materially different alternative, and the strongest plausible
+     combined design;
+  3. attempt to falsify every alternative against theory, identifiability and
+     information limits, counterexamples, prior measurements, complete bytes,
+     decoder resources, security, seek, loss, latency, mobile and ASIC
+     consequences as applicable;
+  4. review current primary research, standards, working implementations,
+     negative evidence, and project measurements;
+  5. declare byte, quality, resource and compatibility budgets, stopping rule,
+     focused tests, and the full promotion evidence plan;
+  6. obtain a written binary GO or NO-GO from an independent auditor subagent
+     that did not author the proposal.
+- Audit semantics:
+  - GO authorizes only the reviewed bounded implementation and declared gate;
+  - every unresolved blocking finding is NO-GO until resolved or the proposal
+    is rejected;
+  - exploratory calculations and code may exist only as marked non-admitted
+    scratch before GO;
+  - audit preparation, execution, remediation, verification, and publication
+    are control activities and are not recursively material steps;
+  - the same auditor may close findings in one case. A new audit is required
+    when the proposal materially changes, independence is lost, a prior
+    decision requires post-implementation audit, or this acceptance policy
+    changes.
+- Codec improvement acceptance:
+  - an improvement is not accepted, retained as an admitted generation or
+    default, versioned, released, or publicly claimed until its full gate
+    executes long inputs first, freezes the long frontier, then encodes and
+    decodes the complete R-118 union;
+  - identical PCM is compared against the preceding Resonith generation,
+    direct Truth/fallback, and the current maximum-effort official Opus
+    frontier with complete-file byte accounting;
+  - the report publishes all per-item bytes, actual-decoder quality metrics,
+    resource results, hashes, source revision, versions, wall times, losses,
+    fallbacks and retained incumbents;
+  - affected corruption, determinism, seek/reset, packet loss, transient,
+    stereo/spatial, latency, memory, throughput, listening, ABI and conformance
+    gates are mandatory;
+  - the complete supported-platform matrix is mandatory when bitstream,
+    decoder, ABI/shared runtime or portability changes, and at every
+    release-candidate and release boundary.
+- Player improvement acceptance:
+  - an Orkela user-visible or released improvement is not accepted until the
+    Player Acceptance Gate compares it with the preceding Orkela version on
+    every platform claimed by that version;
+  - the report includes pinned short speech, full Mozart, backward
+    compatibility and affected formats; real transport, seek, visualization,
+    resize/DPI/settings behavior; startup/seek latency, underruns, PCM identity
+    where applicable, CPU/GPU, peak memory and A/V synchronization; malformed
+    inputs, associations, screenshots/traces, binaries, hashes and
+    regressions;
+  - a player-only UI improvement does not rerun codec compression R-118 unless
+    it changes decoding, PCM delivery, codec integration or listening
+    evidence. A codec-only encoder-search change does not run the complete
+    Orkela product matrix unless it changes stream, decoder, compatibility or
+    the listening package.
+- Exclusions:
+  - mechanical refactors with proven identical stream and PCM, formatting,
+    typo fixes, tests of an accepted invariant, and non-normative
+    documentation receive focused validation only;
+  - performance-only refactors additionally publish identical output and a
+    reproducible before/after resource report;
+  - a failed or unpromoted hypothesis receives a scoped negative report but
+    not an automatic full matrix unless that matrix was its declared decision
+    boundary;
+  - a defect fix restoring already specified behavior receives focused
+    regression evidence; changing specified behavior, compatibility,
+    resource/security bounds, or a released claim is a material step.
+
+## R-197 — R-191 Transactional Remediation Preflight
+
+- Status: **INDEPENDENT PRE-IMPLEMENTATION GO**
+- Date: 2026-07-29
+- Final independent verdict:
+  - **GO** after closure of the exact-work, ABI, alias, transaction, bounded
+    memory, case-generator and quantitative-gate findings;
+  - implementation authority is limited to the frozen R-190/R-191 analyzer
+    remediation. Predictor, syntax, compression, Opus and product claims remain
+    blocked until the post-implementation evidence closes R-197.
+- Frozen incumbent:
+  - R-191 predictor admission remains NO-GO;
+  - current work accounting omits repeated enumeration, sorting, scanning and
+    reconstruction work;
+  - R-190 edge fill retains unbounded default-resource containers and an
+    exception/partial-write C-ABI risk;
+  - fuzz dispatch and boundary/oracle/platform evidence are incomplete.
+- Independently audited alternatives:
+  - bounded materialized canonical edge vector: retained as an oracle and
+    fallback, not the default;
+  - hash-only validation: rejected because collision or stale data cannot
+    replace field-for-field canonical comparison;
+  - formula-only global work precharge: rejected as the sole meter;
+  - hybrid per-operation charging with deterministic sort precharge: accepted;
+  - monotonic arena: permitted only when total reserved allocation is reported
+    as the memory cost;
+  - reclaiming arena: preferred only with checked generation-tagged lifetime
+    proof.
+- Transactional fill contract:
+  1. validate ABI, reserved fields, input/output non-overlap, bounds and
+     immutable-input ownership;
+  2. regenerate and compare the complete canonical edge stream field-for-field
+     while computing exact count, diagnostic fingerprint and deterministic
+     work ledger, with zero semantic caller writes;
+  3. validate capacities and every declared work, managed-byte, state, path,
+     frontier, entry and exact-small bound;
+  4. stage all fallible output in bounded managed storage;
+  5. commit caller arrays only after every fallible operation succeeds.
+  - an allocation-free third emission pass may replace staging only after a
+    proof that no failure remains possible and the API forbids overlapping or
+    concurrently mutated inputs and outputs;
+  - every non-success status preserves caller output and canaries byte-for-byte.
+- Work-ledger contract:
+  - work units are a platform-independent specified ledger, not measured CPU
+    instructions;
+  - charge before every validation pass, edge enumeration pair, field
+    comparison, target-list construction, bucket scan, state creation, pair
+    test, traversal, reconstruction, selector comparison, staging traversal
+    and commit traversal;
+  - use a specified deterministic sort or precharge a published conservative
+    comparison bound. Runtime `std::sort` comparison counts are not normative;
+  - repeated passes are charged independently;
+  - arithmetic overflow returns the declared overflow status before the
+    affected operation. Exact totals never saturate.
+  - work-law v1 is a versioned per-event ledger for validation, input snapshot
+    and canonical serialization, every fixed-pass radix operation, graph
+    enumeration and comparison, table/bucket work, state and reference work,
+    selection, reconstruction, allocation/reclamation, staging/commit,
+    fingerprint bytes and synchronized CUDA enqueue/transfer/completion;
+  - the 22 event kinds, multiplicity, 4,096-byte page, canonical 8-bit LSD
+    radix keys/passes, signed-key mapping, stable bottom-up merge order and
+    tie rule are frozen in the R-197 preflight review;
+  - pass 1 consumes actual work, then reserves the exact stage-and-commit tail
+    atomically before any semantic caller write; every event boundary has a
+    reproducible `k-1` rejection case.
+- Hard analyzer ceilings:
+  - at most 1,048,576 observations, 4,194,304 edges, 65,536 paths,
+    4,194,304 entries, 1,048,576 frontier states, 4,194,304 arena states and
+    path depth 1,048,576;
+  - at most `2^48-1` work events, 8 GiB counted host storage, 4 GiB counted
+    device storage and checked output products;
+  - one CUDA launch is capped at 65,535 blocks by 1,024 threads and uses
+    checked 64-bit logical indices over at most 4,194,304 records;
+  - all caller limits only reduce these ceilings. Raising a ceiling requires a
+    new reviewed profile version.
+- Storage and C-ABI contract:
+  - every project-controlled dynamic allocation uses one bounded counting PMR
+    resource; no default-resource vector, unordered map or hidden dynamic sort
+    storage is permitted inside the C boundary;
+  - catch `std::bad_alloc`, `std::exception`, and all other exceptions and map
+    them to declared statuses;
+  - report reserved arena bytes, committed arena bytes, allocator peak-live
+    bytes and peak-live state slots separately;
+  - snapshot bounded caller inputs before semantic processing; input and output
+    ranges cannot overlap and caller mutation during the call is forbidden;
+  - fingerprints serialize named integer fields in fixed little-endian order;
+    raw padding, floating object representations, NaNs, signed zero and
+    toolchain-dependent bytes never enter identity or scoring;
+  - parent references use checked index plus generation identity. A slot cannot
+    be reused while a child, terminal bucket or reconstruction cursor can
+    reference its previous generation;
+  - refcount overflow/underflow, stale generation, ownership mismatch and rank
+    inversion are recoverable errors; no analyzer path calls `terminate`;
+  - a post-initialization global-allocation tripwire proves that every
+    project-controlled allocation flows through the counted resource;
+  - reconstruction is iterative and bounded.
+- Failure semantics:
+  - null/pair/version/size precedes alignment/range, overlap, reserved/hard
+    profile, canonical input, stale identity, capacity, resource, OOM and
+    internal-state errors;
+  - path and entry payloads are never changed on failure. After its own valid
+    header, the report may be committed once with zero written counts and
+    required counts, termination, consumed work, memory and fingerprints;
+  - CUDA work synchronizes before returning and maps asynchronous errors to a
+    declared status.
+  - the review freezes pairwise disjoint ranges for every input, output and
+    report object, exact first-failure precedence, status/termination mapping
+    and which report diagnostics may change;
+  - fingerprint law v1 freezes domain bytes, ordered logical fields, integer
+    widths, two's-complement signed encoding, little-endian byte order, hash
+    states/primes and output ordering; no implementation object bytes enter it;
+  - the allocation tripwire is armed before the first ABI entry and permits
+    upstream allocation only from explicitly counted host/device scopes.
+  - R-190 stages its complete edge stream and atomically reserves edge payload
+    plus `output_count`; only success and `OUTPUT_TOO_SMALL` may publish the
+    exact required count, while every other failure preserves it and payload;
+  - one R-191 report-stage token and one report-commit token are reserved before
+    fallible analysis; staging is consumed immediately and publication retains
+    the commit token. If both cannot be reserved, the report remains unchanged;
+  - R-197 introduces path ABI v3 and
+    `resonith_partial_graph_paths_cpu_v3`, 22 event counters, separate
+    host/device reserved/committed/peak metrics and
+    `INTERNAL_MALFORMED`; v2 remains a no-write `UNSUPPORTED_VERSION` stub for
+    one migration cycle. R-190 ABI/record layout remains version 1.
+- Fuzz and exact kill gates:
+  - every mutation opcode has an independently addressable deterministic test,
+    including `candidate_id`, `gap_hops` and `flags`;
+  - canaries remain unchanged for every invalid ABI/reserved field,
+    stale/missing fingerprint, forged edge field, insufficient capacity,
+    resource bound, injected allocation failure, overflow and corrupt-parent
+    result;
+  - `limit-1` fails and `limit` succeeds for work, managed bytes, states,
+    entries, frontier, path length and exact-small count;
+  - an independent arbitrary-precision brute-force oracle matches IDs, order
+    and totals for exhaustive small graphs, randomized ties and scalar extrema;
+  - observation and resolution permutations are byte-identical; missing,
+    duplicate, extra, forged and permuted supplied edges fail;
+  - arena release/reuse covers every boundary without stale-parent access and
+    preserves truthful reserved/peak-live reporting;
+  - CPU results are repeat- and order-invariant; CUDA matches for randomized
+    cases and tile sizes 1, 31, 32, 255, 256 and 1024;
+  - sanitizer fuzzing checks statuses and output canaries in addition to crash
+    freedom;
+  - structure-aware fuzz repairs dependent IDs/sizes/fingerprints, publishes
+    per-branch reachability, exercises stateful preflight/fill and allocator
+    faults, and guards both host and device memory;
+  - exact work/fingerprint golden vectors, global-allocation tripwire,
+    null/alignment/range/overlap/version/status-precedence matrices and
+    cross-compiler fixed-point/serialization parity are required;
+  - quantitative floors are fixed by the hashed R-197 case manifest: every
+    observation permutation through five observations, 64 deterministic
+    SplitMix permutations for six and seven, 10,000 seeded CPU cases, 10,000 seeded
+    CPU/CUDA cases per tile, 2,000,000 inputs plus 15 minutes per structured
+    parser/API target, 1,000,000 sequences plus 10 minutes per stateful fault
+    target, 100,000 TSan sequences, at least 100 hits per semantic reachability
+    counter and at least 95% line/90% branch coverage of both exported analyzer
+    functions;
+  - every hard-profile dimension is tested at ceiling-minus-one, ceiling and
+    ceiling-plus-one by the pure checked ceiling validator in addition to
+    end-to-end declared-profile boundaries;
+  - the exact finite value alphabet, topology enumeration and deterministic
+    random-case generator are frozen and hashed in the R-197 case manifest
+    before admitted implementation.
+  - Windows MSVC/Clang/GCC, Linux GCC/Clang ASan+UBSan, Android NDK
+    ARM64/x86-64 and Apple-SDK iOS compile gates run on one exact commit.
+- Claim boundary:
+  - a passing R-197 result proves bounded analyzer infrastructure only;
+  - predictor, bitstream, compression, Opus and product claims remain blocked.
+
+### R-197 implementation checkpoint A
+
+- Status: **FOCUSED GATE PASSED — R-197 REMAINS OPEN**
+- Hard ceilings, checked ranges, pairwise no-alias validation and bounded input
+  snapshots are active in the R-190 edge call and quarantined R-191 analyzer.
+- R-190 failure count preservation, empty-input preflight, payload/report
+  overlap rejection, deterministic native output and the independent
+  fixed-point oracle passed.
+- Focused evidence:
+  - Clang 22 C++23 native conformance executable: passed;
+  - independent Python suite: 39 passed in 2.27 seconds.
+- Result:
+  [R-197 Hard-Profile and Snapshot Gate](results/R197_HARD_PROFILE_SNAPSHOT_GATE_2026-07-29.md).
+- This checkpoint admits no predictor, syntax, compression or product claim.
+  The next dependency is the separately visible transactional v3
+  count/stage/commit API.
+
+## R-198 — Every Algorithm Change Runs the Complete Music Manifest
+
+- Status: **ACCEPTED**
+- Date: 2026-07-29
+- Rule:
+  - every codec algorithm change is a separate evidence generation;
+  - before another algorithm generation begins, encode and decode every item in
+    the complete versioned registered-music manifest;
+  - compare per file against both the immediately preceding Resonith generation
+    and the current maximum-effort official Opus anchor from identical PCM;
+  - publish detailed English human- and machine-readable per-file and aggregate
+    bytes, bitrate, objective quality, spectral/phase/transient/channel
+    behavior, encode/decode time, CPU/GPU, memory, hashes, fallbacks, wins,
+    losses and regressions;
+  - retain originals, encoded alternatives, actual decoded evaluation signals,
+    commands, versions and reports.
+- Scope:
+  - all pinned music files and duration/structure classes, not only the three
+    principal references;
+  - this gate is additional to the non-negotiable R-118 union;
+  - only a mechanical refactor with proven bitstream and PCM identity receives
+    the focused identical-output exception.
+
+### R-197 implementation checkpoint B
+
+- Status: **FOCUSED GATE PASSED — R-197 REMAINS OPEN**
+- Transactional path ABI v3 now owns the public native and Python bridge:
+  - complete preflight, bounded staging and one semantic commit;
+  - exact no-write behavior for precedence rows one through five;
+  - no path/entry mutation on missing or stale identity, insufficient
+    capacity, profile failure, allocation failure or malformed input;
+  - packed cross-language layouts and deterministic successful output;
+  - ABI v2 is a no-write `UNSUPPORTED_VERSION` compatibility stub.
+- Focused evidence:
+  - Clang 22 C++23 warnings-as-errors native gate: passed;
+  - independent Python native/oracle suite: 40 passed in 1.87 seconds.
+- Result:
+  [R-197 Transactional Path ABI v3 Gate](results/R197_TRANSACTIONAL_ABI_V3_GATE_2026-07-29.md).
+- This checkpoint changes analyzer infrastructure only, so R-198's
+  algorithm-change music gate is not triggered.
+- The next dependency is the exact 22-event ledger and canonical ABI v3
+  fingerprint law; no predictor or compression claim is admitted.
+
+## R-199 — Caller-Bounded Failure Precedence
+
+- Status: **ACCEPTED AMENDMENT — R-197 REMAINS OPEN**
+- Date: 2026-07-29
+- Finding:
+  - the original absolute precedence of semantic rows 6 through 8 over
+    resource row 9 was impossible under arbitrary caller work/memory limits;
+  - discovering a later malformed, stale, or insufficient-capacity result may
+    itself require more than the caller budget;
+  - continuing only to discover that result would create hidden uncounted work.
+- Decision:
+  - rows 1 through 5 remain absolute and ordered;
+  - after the report reservation transition, rows 6 through 8 are semantic
+    checkpoints and row 9 is a per-operation guard;
+  - a known semantic failure wins, but resource exhaustion wins if it occurs
+    before that predicate is determinable;
+  - no ABI, record-layout, fingerprint-domain, or bitstream change is made.
+- Required implementation order:
+  - bounded canonical snapshot and semantic validation;
+  - missing expected identity on fill;
+  - canonical fingerprint and stale identity;
+  - pass-one solver and exact capacity;
+  - complete staging, payload commit reservation, payload commit, report
+    commit.
+- Evidence boundary:
+  - this is analyzer-infrastructure remediation, not a codec algorithm change,
+    so R-198's full music gate is not triggered;
+  - R-191 stays blocked pending exact boundary tests and independent GO/NO-GO.
+- Review:
+  [R-199 R-197 Failure-Precedence Amendment](reviews/R199_R197_PRECEDENCE_AMENDMENT_2026-07-29.md).
+- Focused implementation evidence:
+  [R-199 Exact Work-Ledger and Fingerprint Gate](results/R199_WORK_LEDGER_FINGERPRINT_GATE_2026-07-29.md).
+- Independent result:
+  - **GO for Step 6** on `partial_graph.cpp` SHA-256
+    `B3B893D70828C6813C8B3ECD696AB648E9EF0C142051604BC8E1733123B0597D`;
+  - no blocker was found in the R-199 phase order, exact typed ledger,
+    canonical fingerprints, transactional publication, or focused claims;
+  - Steps 7 through 10 retain arena-completeness, memory-provenance,
+    broad-fuzz/platform, and final R-191 obligations.
+
+## R-200 — Generation-Safe Arena Ownership
+
+- Status: **ACCEPTED — IMPLEMENTED — INDEPENDENT STEP-7 GO**
+- Date: 2026-07-29
+- Decision:
+  - only the arena may manufacture an owning path-state reference;
+  - owning creation/retention use RAII and one typed release reservation per
+    live reference;
+  - raw handles are generation-checked non-owning borrows;
+  - roots have rank two; children match parent generation, rank, first
+    observation, and previous/current linkage before refcount mutation;
+  - zero-ref release is iterative and uses a deterministic LIFO free list;
+  - solver success requires zero live states and zero arena-owned outstanding
+    reference reservations.
+- Red-team additions:
+  - remove public raw-handle adoption;
+  - prove parent/owner/PMR failure rollback;
+  - prove multi-slot ABA/LIFO and no reuse under retained/child ownership;
+  - audit refcount/reservation equality and complete free-list integrity.
+- Rejected:
+  arena UUIDs, hazard pointers, shared ownership, lock-free reclamation, and a
+  production provenance graph.
+- Design:
+  [R-200 Generation-Safe Arena Design](reviews/R200_GENERATION_SAFE_ARENA_DESIGN_2026-07-29.md).
+- Focused evidence:
+  [R-200 Generation-Safe Arena Focused Gate](results/R200_GENERATION_SAFE_ARENA_GATE_2026-07-29.md).
+- This is ownership infrastructure only; it makes no predictor, bitstream,
+  compression, Opus, or product claim.
+- Independent result:
+  - **GO, zero blockers** on `partial_graph.cpp` SHA-256
+    `D5E960011F78609AE7B0FA83820DECADCB4AEDF1A9E26BA2AA6BA687E670E413`;
+  - Steps 8 through 10 retain full memory provenance, broad fuzz/platform
+    coverage, and final R-191 admission.
+
+## R-201 — Exact Host/Device Memory Provenance
+
+- Status: **ACCEPTED — IMPLEMENTED — INDEPENDENT STEP-8 GO**
+- Date: 2026-07-29
+- Decision:
+  - reserved, committed, and live memory are independent per-call high-water
+    transitions, ordered `reserved >= committed >= peak-live`;
+  - admitted upstream OOM raises only reserved high-water provenance and rolls
+    current state back;
+  - page prepare/commit/cancel/release transitions are checked against one
+    immutable work ceiling;
+  - every reachable project-controlled R-190/R-191 allocation uses one
+    counting PMR resource;
+  - a test-only permit surrounds only its checked upstream calls;
+  - the CPU path reports device bytes and CUDA work as exactly zero rather
+    than estimating unavailable device activity.
+- Rejected:
+  fake CUDA accounting, a production-wide replacement allocator, a shared
+  ownership rewrite, and deletion of unreachable legacy code without evidence.
+- Preflight:
+  [R-201 Memory Provenance Preflight](reviews/R201_MEMORY_PROVENANCE_PREFLIGHT_2026-07-29.md).
+- Focused evidence:
+  [R-201 Memory Provenance Focused Gate](results/R201_MEMORY_PROVENANCE_GATE_2026-07-29.md).
+- Evidence boundary:
+  this is analyzer infrastructure only; allocation-ordinal fuzzing, sanitizers,
+  platform breadth, and final R-191 admission remain Steps 9 and 10.
+- Independent result:
+  - **GO, zero Step-8 blockers** on `partial_graph.cpp` SHA-256
+    `79C66C04CA270E5942A06263AAC713B531726964BC4C80DB611BC911B522F369`;
+  - tripwire SHA-256
+    `42992C32EAD0A940BAB4C9E0A569084A66AAE6B4CBBCBF7F6A88936114D4FDC8`;
+  - all eight individual first/repeated R-190/R-191 entries exercised the
+    counted permit path; `1,904` permitted and zero forbidden allocations;
+  - Step 9 retains ordinal fault campaigns, sanitizers, structured fuzzing and
+    platform breadth.
+
+## R-202 — Stateful ABI-v3 Fuzz, Coverage, and Staging-Guard Evidence
+
+- Status: **ACCEPTED — INDEPENDENT STEP-9 GO**
+- Date: 2026-07-29
+- Problem:
+  the output-staging managed-memory guard at the v3 publication boundary is
+  defensive, but the first proposed coverage witness emitted only one
+  protected path and therefore could not test whether complete legacy-plus-v3
+  staging could exceed the solver's measured historical peak.
+- Rejected alternatives:
+  - increasing only `top_k_protected` from 1 to 128 is rejected: every
+    514-observation candidate has a 440 Hz median and is truncated by the
+    per-band limit before the global protected reservoir;
+  - lowering the measured peak, excluding legitimate allocations, adding a
+    test-only production bypass, or accepting a coverage percentage without a
+    semantic witness are rejected;
+  - redesigning 128 paths to have distinct median-frequency bands remains a
+    valid alternative but adds unnecessary fixture complexity.
+- Independently challenged decision:
+  - the first corrected 128-path fixture was killed after producing exactly
+    128 paths and 65,792 entries because its measured historical peak was
+    12,310,952 bytes versus 6,350,848 staging bytes;
+  - the failure is dominated by crossing the 65,536-entry geometric vector
+    capacity boundary and does not prove the guard unreachable;
+  - one final bounded witness raises both public-valid protected limits to 256,
+    uses a 4,094-observation shared prefix, 16 intermediate branches and 16
+    terminal neighbors per branch, and requires exactly 256 paths of length
+    4,096 and 1,048,576 entries;
+  - production code, ABI, algorithm, bitstream, work law, and memory
+    accounting remain unchanged;
+  - the fixture must prove exactly 256 output paths and 1,048,576 entries, a
+    protected-family population, measured historical peak below complete
+    staging, exact-peak preflight reproducibility, `PROFILE_BOUND` at fill,
+    unchanged output payload, and bounded Clang/GCC runtime and memory.
+- Falsifiable prediction:
+  the power-boundary shared-prefix fixture either produces the declared counts
+  with `historical_peak < 100,732,928` staging bytes and reaches the
+  transactional staging guard, or it is rejected without further threshold
+  tuning. Focused runtime must remain at most 10 seconds and process RSS at
+  most 512 MiB.
+- Measured falsification:
+  - the fixture produced exactly 256 paths, 1,048,576 entries and 4,365 edges
+    in 1.702 seconds;
+  - historical peak was 116,675,808 bytes, exceeding 100,732,928 staging
+    bytes by 15,942,880;
+  - no larger fixture is permitted without allocation-component evidence.
+- Final allocation proof:
+  - at the final legacy entry-vector growth boundary, old and new buffers
+    coexist and contribute at least `72E` for current supported STL growth;
+  - protected and union identities add `16E + 16E`, ownership adds `4E`, and
+    family/union object backing adds `272P`;
+  - consequently `historical_peak >= 108E + 272P`, while the later guard
+    computes `stage_bytes = 96E + 272P`;
+  - successful preflight already proves
+    `historical_peak <= maximum_managed_bytes`, so for every non-empty output
+    the wrapper predicate `stage_bytes > maximum_managed_bytes` is impossible;
+  - the independent verdict is GO for a pure checked arithmetic helper and
+    strict hash-bound semantic allowlist, and NO-GO for another public witness,
+    a manufactured failpoint, or allocation behavior changed only for
+    coverage.
+- Local implementation result:
+  - the failed 256-by-4,096 witness and diagnostic trace were removed;
+  - production and tests share one pure overflow/limit helper;
+  - Clang 22 and GCC 16 each pass all five focused partial-graph tests;
+  - strict source/helper/proof hashes and exact missing-set equality reject
+    stale, new, or silently covered contract entries;
+  - LLVM-MinGW 22 is rejected as an admission authority after reporting both
+    false negatives and an impossible `2^63 - 1` branch counter;
+  - the sole admission contract is bound to Ubuntu 24.04 and exact LLVM
+    18.1.3 toolchain identity; automatic profile inference and unioned outcome
+    sets are prohibited;
+  - a second unchanged Ubuntu run proved that mixed profiles from separately
+    linked executables are themselves unstable;
+  - semantic coverage now admits only the canonical conformance executable;
+    tripwire, ordinal, concurrency, and fuzz profiles are retained and hashed
+    as mandatory supplemental evidence but cannot enter semantic counters;
+  - the first canonical Ubuntu artifact seeds only a candidate contract; two
+    independent identical canonical runs are required before freezing it;
+  - the first canonical-only artifact exposed three reachable cases hidden by
+    the former mixed profile: R-190 environmental OOM, invalid observations
+    after a valid manifest, and entry-only v3 insufficient capacity;
+  - independent review returned NO-GO for allowlisting them; focused
+    transactional tests now cover all three, and Clang 22/GCC 16 each pass
+    all five partial-graph gates;
+  - the pre-test artifact is invalid as a contract seed; two independent
+    post-test-change Ubuntu LLVM 18.1.3 canonical runs remain mandatory;
+  - raw coverage is 93.3702% lines and 90.8696% branches;
+  - proof-adjusted coverage is 96.1320% lines and 92.4779% branches;
+  - independent post-implementation verdict is **GO with zero local design
+    blockers**;
+  - independent cross-toolchain audit rejected MinGW admission, then returned
+    **GO with zero blockers** for the sole Ubuntu LLVM 18 contract and explicit
+    version binding;
+  - independent audit returned GO for canonical/supplemental separation with
+    predicted canonical-only adjusted coverage of 95.79% lines and 91.59%
+    branches;
+  - two independent post-fix Ubuntu LLVM 18.1.3 canonical artifacts now have
+    identical target totals, exact missing sets, profile identity, raw
+    93.3702%/90.8696% and adjusted 96.1320%/92.4779% line/branch coverage;
+  - GitHub run 30454668805 proved all sanitized CTests and all four
+    500,000-input fuzz shards, but falsified the redundant two-phase schedule:
+    the count shards already ran 1,938--1,971 seconds each before four
+    equivalent 900-second shards caused the 45-minute timeout;
+  - independent audit returned GO to retain one four-seed 2,000,000-input
+    campaign, require at least 900 seconds per seed, capture exact eleven-branch
+    reachability, retain the exhaustive 952-ordinal/2,864-call failpoint gate
+    and the eight-thread/100,000-sequence TSan gate, and remove only the
+    duplicate time phase;
+  - the former `1,000,000 sequences plus 10 minutes per stateful fault target`
+    requirement is revoked: no distinct stateful/fault mutation grammar
+    existed. Exhaustive ordinal injection and deterministic retry prove the
+    fault space directly instead of relabeling duplicate random fuzz;
+  - final GitHub run
+    [`30471669754`](https://github.com/moshkinyevhen/resonith/actions/runs/30471669754)
+    passed all nine evidence jobs and the aggregate mobile gate on source
+    revision `ecfee1a3ed4a2a62848da91c91acc098f873cbd6`;
+  - the sanitizer/fuzz job completed in 32 minutes 49 seconds, 20/20 sanitized
+    CTests passed, and four fixed seeds completed exactly 500,000 units each,
+    at least 900 seconds each, and 2,000,000 total with zero sanitizer findings
+    or crash artifacts;
+  - exact reachability covered all eleven outcomes at least 100 times; all 952
+    allocation ordinals and 2,864 calls reproduced trace hash
+    `56204c224ae7c4c3` and terminated with zero live allocations;
+  - the eight-thread/100,000-sequence TSan gate, Android, Apple, Linux,
+    canonical semantic coverage, and final aggregate gates passed;
+  - the sanitizer artifact's 13/13 and coverage artifact's 11/11 SHA-256
+    inventories matched locally;
+  - companion test run
+    [`30471677677`](https://github.com/moshkinyevhen/resonith/actions/runs/30471677677)
+    passed all ten repository test jobs;
+  - the final independent auditor returned **GO with zero remaining Step-9
+    blockers**. Step 10 remains the final R-191 conformance and admission
+    decision.
+- Evidence:
+  [R-202 Stateful ABI and Semantic Coverage Gate](results/R202_STATEFUL_ABI_COVERAGE_GATE_2026-07-29.md).
+- Evidence boundary:
+  this is test and coverage infrastructure only. It does not trigger the R-198
+  music/Opus gate and does not admit R-191.
+- Review:
+  [R-202 Stateful ABI-v3 Fuzz and Failpoint Preflight](reviews/R202_V3_FUZZ_AND_FAILPOINT_PREFLIGHT_2026-07-29.md).
+
+## R-203 — Final R-191 Admission Remediation
+
+- Status: **INDEPENDENT REMEDIATION GO — CURRENT ADMISSION NO-GO**
+- Date: 2026-07-29
+- Problem:
+  Step 9 proves sanitizer, fuzz, allocation, concurrency, platform, and
+  semantic-coverage properties, but the frozen R-197 final-admission corpus
+  has not been executed. The current evidence therefore cannot admit R-191
+  path output even as bounded analyzer infrastructure.
+- Independently confirmed blockers:
+  - the frozen case-generator document has the correct SHA-256
+    `10e24fa8721dfe69c2e1be82f9ffcc83e5dc7b32da0a038d29ec46b943d761bc`,
+    but no versioned executable generator, JSONL corpus, expected-status
+    artifact, or admission runner exists;
+  - exhaustive permutations through five observations, 64 deterministic
+    permutations at six and seven observations, the 10,000-case SplitMix CPU
+    campaign, and 10,000 identical CPU/CUDA cases on each tile
+    `1/31/32/255/256/1024` have not run;
+  - GitHub reference jobs use `unittest discover`, so the free pytest
+    functions in `test_partial_graph_fixed.py` are not CI authority;
+  - the independent oracle does not yet cover the complete ABI-v3 report,
+    22-event ledger, field-wise input/output fingerprint law, and every
+    precedence status;
+  - the exact-small brute-force test currently selects from native-produced
+    candidate paths and therefore does not independently prove completeness of
+    the native family union;
+  - v3 layout assertions cover only selected offsets, while the frozen
+    contract requires every field across C, C++, and Python;
+  - the public v2 comment describes a working analyzer although the retained
+    symbol is an unconditional no-write `UNSUPPORTED_VERSION` migration stub;
+  - the fixed hostile corpus does not yet cover every status, event kind,
+    hard-ceiling boundary, maximal depth, arena transition, and CUDA error
+    class;
+  - successful payload publication still contains ledger/health failure
+    branches after the first caller path byte is written;
+  - no single semantic JSONL/hash has been compared across the admitted
+    Clang, GCC, MSVC, Apple, and Android implementations, and the old v2 result
+    remains stale without an explicit supersession.
+- Alternatives rejected:
+  - declaring Step 9 sufficient is rejected because R-202 explicitly excludes
+    final R-191 admission;
+  - adding more undirected fuzz iterations is rejected because random
+    reachability does not prove the frozen finite oracle, every ABI field, or
+    exact CUDA tile parity;
+  - using one native implementation as generator, oracle, and comparator is
+    rejected as circular;
+  - reducing the frozen 10,000-case or six-tile floors is rejected because it
+    would silently change the audited R-197 hypothesis.
+- Accepted remediation package:
+  1. create one versioned orchestrator around separate independent case
+     generator/oracle, native ABI/transaction runner, CUDA runner, and
+     cross-toolchain comparator;
+  2. publish the exact generated JSONL and its hash, execute the complete
+     frozen finite, CPU, CUDA, hostile, boundary, and two-pass campaigns, and
+     retain raw outputs;
+  3. make the Python oracle an explicit pytest CI authority and remove circular
+     candidate reuse from exact-small proof;
+  4. assert every packed v2/v3 C/C++/ctypes size and offset and exhaustively
+     prove the v2 no-write stub;
+  5. independently serialize every fingerprint field, compare preflight/fill
+     twice, mutate every serialized field one at a time, and compare complete
+     paths, entries, reports, event counts, statuses, and output hashes;
+  6. before the first caller payload write, finish all staging, fingerprint,
+     resource-health, report, and cleanup-reservation checks, then consume
+     payload-plus-report commit tokens once. The remaining copy tail must be
+     branch-free, allocation-free, ledger-free, and statically
+     no-throw/trivially-copyable;
+  7. publish one twice-replayed semantic hash across every admitted toolchain
+     and supersede all stale v2/pending evidence.
+- Falsifiable prediction and kill gate:
+  Step 10 remains NO-GO on any corpus-hash mismatch, oracle/native payload or
+  status difference, v2 write, v3 layout difference, fingerprint omission,
+  preflight/fill mismatch, CUDA tile difference, toolchain semantic-hash
+  difference, post-write failure path, sanitizer/leak/race/canary finding,
+  resource-ceiling breach, or incomplete frozen campaign.
+- R-198 boundary:
+  this package changes analyzer safety and evidence infrastructure, not
+  Resonith syntax, the released encoder default, encoded bytes, decoded PCM,
+  or RDO. The structural publication refactor receives the focused
+  identical-output exception only if successful analyzer paths, entries,
+  reports, current encoded streams, and decoded PCM are proven identical
+  before/after. Any semantic analyzer-output change or integration into
+  typed-stream/RDO/codec behavior triggers the complete registered-music and
+  maximum-effort Opus gate before acceptance.
+- Independent verdict:
+  **GO to implement this exact remediation package; NO-GO for R-191 admission
+  until every gate passes.**
+- Pre-implementation oracle finding:
+  - the first independent field serializer reproduced native fingerprint lane
+    zero but falsified lanes one through three;
+  - the frozen law reduces `byte + 53 * lane` modulo 256 before XOR, while the
+    C++ expression currently promotes both operands to `int` and can XOR a
+    value through 510;
+  - changing the frozen document is rejected because its reviewed SHA-256 is
+    an admission input; accepting lane zero alone is rejected because all four
+    lanes are normative;
+  - the proposed correction is one explicit unsigned-eight-bit reduction in
+    native code, followed by independent golden vectors, every-field mutation,
+    twice-replayed identity, and cross-toolchain hashes;
+  - independent R-198 audit requires correction of native code, not amendment
+    of the frozen law. The explicit reduction remains fingerprint-law version
+    one because ABI-v3/R-191 is quarantined and unadmitted;
+  - no dual acceptance is allowed: old native vectors are retained only as
+    rejected non-normative evidence, and an old expected fingerprint must
+    produce `HASH_MISMATCH` without payload writes;
+  - the correction does not trigger the music/Opus gate only if final evidence
+    proves identical paths, entries, counts, scores, statuses, ledgers,
+    released-encoder bitstreams and decoded PCM, plus no released encoder/RDO
+    consumer of R-191. Any failure of that proof triggers the complete R-198
+    gate;
+  - required regression vectors cover bytes
+    `0/96/97/149/150/202/203/255`, zero/one/extrema/signed/multi-record
+    serializers, two preflights and two fills, stale old tokens, every
+    serialized-field mutation, and exact cross-toolchain hashes;
+  - the final R-203 revision must rerun the affected Step-9 sanitizer, fuzz,
+    ordinal, allocation and TSan matrix. Until that and the complete Step-10
+    campaign pass, R-191 remains NO-GO.
+- Exact-small executable evidence:
+  - the first complete independent corpus contains 9,024 cases and is
+    twice-replayed through the public ABI;
+  - Clang 22 and GCC 16 agree on corpus SHA-256
+    `1bf354dafa223f4350b79719e9e138df2262c52f22ce51a6d028eb4e56d3a306`
+    and semantic SHA-256
+    `cf48eaa45b901934803b76c827f135f03278884ee25617995985cc3aca31ec2a`;
+  - the corpus falsifies its usefulness as a candidate-union proof: every
+    frozen case has zero canonical edges, paths, and entries because
+    `detector_id` cycles across adjacent observations while the only
+    same-detector gap has an insufficient frequency bound;
+  - the frozen corpus remains mandatory ABI, fingerprint, status and
+    permutation evidence and SHALL NOT be edited or relabeled;
+  - a separate candidate-rich supplemental exact domain is blocked pending an
+    independent design audit. It must supplement, never replace, the frozen
+    corpus and must receive its own version and hash.
+- Candidate-rich supplement verdict:
+  - independent review returned GO for
+    `R203-CANDIDATE-RICH-EXACT-1`, a separate 288-case finite corpus;
+  - five topology profiles cover cycle chains, a branch/merge diamond and the
+    exact `559/560/561 Hz` frequency boundary, crossed with unique/conflicting
+    ownership, no/zero/nonzero phase, protected evidence and every
+    observation permutation;
+  - the supplement requires an independently coded graph-theoretic checker
+    that cannot import the production ABI or the existing Python edge/path
+    oracle and cannot receive native candidates;
+  - closed-form edge/path counts, conflict, phase, protected-family, exact
+    solver and permutation invariants are generator kill gates;
+  - the frozen R-197 corpus and this supplement are conjunctive. Neither may
+    replace the other.
+- Review:
+  [R-203 Candidate-Rich Exact Supplement](reviews/R203_CANDIDATE_RICH_EXACT_SUPPLEMENT_2026-07-29.md).
+- Candidate-rich post-implementation audit:
+  - independent review reproduced the 288-case corpus and its SHA-256 but
+    returned NO-GO for admission;
+  - blockers are incomplete raw ABI/report/22-event parity, an Authority B
+    that does not yet independently judge the selected optimum, a
+    non-fail-closed inventory/replay, and missing identical replay across all
+    admitted toolchains;
+  - the corpus and frozen contract remain unchanged; remediation is limited
+    to evidence infrastructure and cannot waive production or R-198 gates.
+- Review:
+  [R-203 Candidate-Rich Post-Implementation Audit](reviews/R203_CANDIDATE_RICH_POST_IMPLEMENTATION_AUDIT_2026-07-29.md).
+- Complete-ledger authority audit:
+  - an independent audit rejected immediate implementation of a Python
+    authority for all 22 work-event families;
+  - eleven event families plus complete fingerprint/stage/commit laws are
+    independently derivable, but merge-site traces, solver operations,
+    arena-reference operations, selection/reconstruction, memory pages, and
+    resource high-water are not fully defined by the frozen public contract;
+  - copying C++ charge sites, importing native vectors, emulating one STL, or
+    ignoring `MEMORY_PAGE` are explicitly rejected as circular;
+  - R-191 stays NO-GO until a declarative solver-ledger schedule and a portable
+    deterministic capacity/allocation law receive independent GO, are
+    implemented, and are interpreted by a genuinely independent authority;
+  - the resulting production resource/schedule change requires the complete
+    registered-music comparison against the preceding Resonith generation and
+    maximum-effort official Opus before admission.
+- Review:
+  [R-203 Complete-Ledger Authority Audit](reviews/R203_COMPLETE_LEDGER_AUTHORITY_AUDIT_2026-07-29.md).
+- Portable-ledger proposal:
+  - status is **INDEPENDENT NO-GO; SUPERSEDED BEFORE IMPLEMENTATION**;
+  - the audit found that a witness trace cannot prove omitted operations,
+    PMR cannot force exact vendor-independent vector capacity, allocation-site
+    instances/lifetimes were incomplete, maximum reservation could change
+    statuses, and the 288-case scope was unsafe for production;
+  - no production implementation was started.
+- Preflight:
+  [R-203 Portable Ledger Schedule Preflight](reviews/R203_PORTABLE_LEDGER_SCHEDULE_PREFLIGHT_2026-07-29.md).
+- Evidence-split proposal:
+  - status is **TWO-AUDITOR GO; EVIDENCE-ONLY IMPLEMENTATION AUTHORIZED**;
+  - cross-toolchain identity remains mandatory for all semantic output and all
+    21 non-memory CPU event counts;
+  - `MEMORY_PAGE` and managed upstream-request byte telemetry remain exact,
+    bounded, twice-repeatable, and fail-closed per toolchain, but are reported
+    rather than falsely required to equal vendor-specific STL request traces;
+  - fourteen closed event laws receive independent exact derivation; seven
+    dynamic solver families receive independent conservative loop/total
+    bounds, complete charge-site inventory, remove/reclassify mutants,
+    identity, prefix-budget, coverage, and cleanup gates without an
+    unsupported exact-formula claim;
+  - resource replay uses ordered pointer-independent
+    prepare/outcome/commit/cancel/release identities and admits zero regression
+    for unchanged toolchain inputs;
+  - the no-failure-after-publication rule remains absolute. Release-callback
+    removal/reorder and release-ledger-consumption mutants are mandatory; an
+    invalid post-publication transition is evidence failure, not an accepted
+    caller-visible failure path;
+  - amendment `R203-EVIDENCE-SPLIT-1` explicitly supersedes R-197's
+    cross-toolchain resource-telemetry identity clause and the conflicting
+    R-203 complete-report/all-22-event independent-oracle clauses;
+  - the proposal changes evidence comparison only and cannot alter production
+    ABI, solver, bitstreams, decoded PCM, or player behavior.
+  - the final audit required and received one last correction: Class-A
+    cross-toolchain status identity applies only outside resource/fault
+    triggering calls; tight-budget, OOM, allocation, cleanup, release, and
+    injected-failure calls use local expected status, no-write, cleanup, and
+    repeatability gates.
+  - a second independent audit then returned NO-GO: Revision 3 now explicitly
+    supersedes the conflicting R-203 complete-report/22-ledger oracle clauses,
+    freezes all 288 ordinary fixture IDs as Class A/B before execution, and
+    retains the absolute no-failure-after-publication rule with mandatory
+    release-callback and release-ledger mutants;
+  - evidence-split code written between the two verdicts is unadmitted scratch
+    until both auditors approve the current text;
+  - both auditors returned binary GO after an exhaustive field partition was
+    added for every ABI-v3 report field; the approved preflight SHA-256 is
+    `c9f736288e67f69622812149c2ab86e5f54439c9778bcf57068acd8b6585aa74`.
+- Preflight:
+  [R-203 Semantic Ledger and Resource Telemetry Split](reviews/R203_SEMANTIC_LEDGER_TELEMETRY_SPLIT_PREFLIGHT_2026-07-29.md).
+- Interim evidence:
+  [R-203 Candidate-Rich Interim Evidence](results/R203_CANDIDATE_RICH_INTERIM_2026-07-29.md).
+- Dynamic charge-site mutation substep:
+  - the first independent audit returned NO-GO for implementation because no
+    reviewed AST inventory, witness map, independent bound table, native
+    mutant generator, or mutation CI gate existed;
+  - grep/line-number inventories, copied native logic, production site IDs and
+    automatic golden regeneration are rejected;
+  - the revised candidate is a pinned Clang-AST bijection plus test-only
+    temporary-source remove/reclassify mutants, one immutable witness per
+    helper invocation, declarative finite bounds, runtime rejection, and
+    production object/bitstream/PCM identity;
+  - current orientation finds 36 dynamic-family references and therefore 72
+    candidate mutants, but neither count is admitted until AST extraction and
+    independent audit pass;
+  - production source or object changes are outside this evidence-only
+    substep and trigger a separate audit and the applicable R-198 gate.
+- Preflight:
+  [R-203 Dynamic Charge-Site Mutation Preflight](reviews/R203_DYNAMIC_CHARGE_SITE_MUTATION_PREFLIGHT_2026-07-29.md).
+- Preflight audit:
+  - an independent auditor returned binary GO on exact preflight SHA-256
+    `253d18a9061560ab05a4650b7b36c305f85904fed114d648462ca3cbe6cb092b`;
+  - authorization is limited to the specified test-only AST inventory,
+    witnesses, finite bounds, isolated mutants, and identity evidence;
+  - no result, R-191 admission, production/native change, post-implementation
+    audit, Step-10 campaign, or R-198 obligation is waived.
+- Audit:
+  [R-203 Dynamic Charge-Site Preflight Audit](reviews/R203_DYNAMIC_CHARGE_SITE_PREFLIGHT_AUDIT_2026-07-29.md).
+
+## R-204 — Continuous Execution and Resumable 63-Step Plan
+
+- Status: **ACCEPTED PROJECT EXECUTION CONTRACT**
+- Date: 2026-07-30
+- Supersedes:
+  - ambiguous persistence wording in R-194 only where R-204 is stricter;
+  - it does not supersede R-185, R-196, R-198, dependency order, quarantine,
+    kill, safety, authority, publication, release, credential, or destructive
+    action gates.
+- Decision:
+  - while the project owner has explicitly authorized execution of the
+    continuous Resonith plan, passing a test, audit, subtask, generation,
+    alpha, beta, or release candidate is a checkpoint rather than project
+    completion;
+  - continue with the earliest dependency-ready, safe, in-scope action while
+    an authorized item remains;
+  - the canonical authority is the versioned
+    `docs/20_LSPF_MASTER_EXECUTION_PLAN.md`, accepted decisions, and their
+    dependency and quarantine gates;
+  - the complete 63-step operational panel is a derived, versioned view with
+    stable step IDs. It must not be shortened, regrouped, renumbered,
+    reordered, reconstructed from memory, or used to override the canonical
+    plan. Its definition, hash, mapping, status, evidence, and current
+    checkpoint must remain durably restorable;
+  - the accepted definition is panel `R204-63-V1` at
+    `docs/23_CONTINUOUS_63_STEP_EXECUTION_PANEL.md`, SHA-256
+    `6b2d1e21436e22231538d1b362657375c3699892b5290d17843ae025f510684e`;
+    mutable state is retained separately in
+    `docs/execution/R204_CURRENT_CHECKPOINT.md`;
+  - continuation never expands authority. Silence does not authorize pushes,
+    publication, releases, paid services, credentials, destructive or
+    irreversible actions, production or user-data mutation, or unrelated work;
+  - any clear owner instruction to stop, pause, wait, reprioritize, supersede,
+    or narrow the task controls in any language.
+- Evidence-generation rule:
+  - one materially scoped codec-algorithm hypothesis and its tightly coupled
+    edits form one frozen evidence generation;
+  - focused risk-based tests run after each implementation edit;
+  - before accepting that generation or starting another algorithm generation,
+    run the complete versioned registered-music manifest through the actual
+    decoders from identical source PCM;
+  - compare the candidate with the immediately preceding accepted Resonith
+    generation and the frozen current maximum-effort official Opus anchor;
+  - retain English machine-readable and written per-file and aggregate
+    complete bytes, bitrate, quality, spectral, phase, transient, channel,
+    runtime, CPU/GPU, memory, hash, fallback, win, loss, and regression
+    evidence;
+  - external publication remains separately authorized;
+  - only a proven bitstream- and decoded-PCM-identical mechanical refactor may
+    use the focused R-198 exception.
+- Pause conditions:
+  - an unambiguous owner stop, pause, wait, reprioritization, supersession, or
+    scope reduction;
+  - completion of the approved plan;
+  - a safety, security, privacy, legal, integrity, host-stability, storage,
+    compute, cost, or evidence-retention risk;
+  - missing authority, approval, credential, artifact, platform, or external
+    dependency without an authorized evidence-equivalent alternative;
+  - conflicting workspace changes, baseline/corpus/tool/hash drift,
+    irreproducibility, dependency or quarantine failure, mandatory audit
+    NO-GO, admission kill gate, or material ambiguity;
+  - a hard resource, tool, session, or execution-window limit.
+- Blocker behavior:
+  - never bypass authority, credentials, immutable evidence, quarantine,
+    dependency, or audit gates;
+  - a NO-GO blocks promotion and dependent work, but explicitly authorized
+    remediation or another independently dependency-ready branch may continue;
+  - a failed kill gate rejects or redirects the candidate; it does not justify
+    rescuing the same failed mechanism by uncontrolled complexity.
+- Resumable checkpoint:
+  - on every pause, blocker, or platform-imposed yield, record the panel
+    version/hash, all 63 stable step states, repository revision and worktree
+    state, active step and evidence generation, incumbent Resonith and Opus
+    identities, completed commands, tool versions, evidence paths and hashes,
+    blocker, clearance authority, invalidation conditions, and next safe
+    action;
+  - a status yield is not project completion;
+  - verify identities before resuming. An explicit owner pause requires an
+    explicit owner resume.
+- Independent audit:
+  - initial wording received **NO-GO** because it treated one stop word as
+    exclusive, left the panel unversioned, blurred edit and generation test
+    timing, implied publication authority, and incentivized bypass attempts;
+  - every blocking finding was accepted and resolved in the rule above;
+  - the corrected R-204 wording received independent binary **GO** before this
+    decision was recorded.
+
+## R-205 — Family-Separated Dynamic-Bound Authority
+
+- Status: **AUDIT CANDIDATE; PRE-IMPLEMENTATION NO-GO**
+- Date: 2026-07-30
+- Scope:
+  - evidence-only closure of the two remaining R-203 dynamic-bound authority
+    defects;
+  - no production source, header, ABI, solver, bitstream, decoded PCM, codec
+    algorithm, or player change;
+  - R-198 is not triggered unless that boundary is violated.
+- Frozen problem:
+  - the rejected runner summed `selection-pair-local` and
+    `exact-set-local` allowances before checking the shared native `SELECT`
+    event. One family could therefore exceed its own bound while unused margin
+    in the other hid the violation;
+  - only candidate-rich and exact-small corpora entered bound replay. Native
+    conformance, bounded greedy, allocation-ordinal, and state-arena
+    contributors supplied coverage but no machine-checked bound evidence;
+  - the previous hostile-greedy label replayed the ordinary greedy fixture and
+    did not create a genuinely resource-constrained rejection.
+- Considered alternatives:
+  - keep one summed `SELECT` bound: rejected because it cannot prove either
+    local family;
+  - subtract exact and greedy executions: rejected because both paths share a
+    `SELECT` prologue;
+  - reclassify whole families into spare event IDs: retained only as an
+    optional cross-check because destination events may contain unrelated
+    work;
+  - reproduce the production solver CFG in Python: rejected as copied,
+    implementation-coupled logic rather than an independent bound authority;
+  - use source coverage alone: rejected because reachability does not bind
+    charge amount, family ownership, phase passes, or per-contributor input
+    ceilings;
+  - add fixed test-only per-site accounting to a temporary source copy:
+    selected as the smallest mechanism that observes family ownership without
+    changing production behavior.
+- Authorized design:
+  1. Freeze an amendment containing a bijective partition of all 36 dynamic
+     sites, including exclusive ownership of every `SELECT` site by exactly one
+     of `selection-pair-local` or `exact-set-local`.
+  2. Generate a temporary instrumented `partial_graph.cpp` from the frozen
+     production bytes. Production source/header/library files remain untouched.
+  3. Give every site fixed-capacity checked counters for attempted, completed
+     emit, reserve, cancel, and consume units. No heap allocation, exception,
+     codec decision, semantic output, or caller-visible ABI may depend on this
+     telemetry.
+  4. Statically prove from the frozen AST that every instrumented dynamic-site
+     call charges exactly one unit. Fail closed on a non-unit amount, overflow,
+     duplicate site, missing site, operation mismatch, or source/hash drift.
+  5. Record actual analyzer-pass counts and per-call public input ceilings.
+     Check them against a versioned pass-ceiling contract instead of assuming
+     the former unlabelled `1/2` multipliers.
+  6. For every successful phase, require:
+     - completed site units grouped by event equal the native event ledger;
+     - `selection-pair-local` site units independently satisfy only their
+       formula;
+     - `exact-set-local` site units independently satisfy only their formula;
+     - their sum equals the native `SELECT` count;
+     - reserve/cancel/consume balance is valid and no telemetry overflow or
+       truncation occurred.
+  7. Replay and bind distinct contributor IDs for candidate-rich, native
+     conformance, ordinary greedy, exact-small, every allocation ordinal,
+     every state-arena subcase, and a genuinely tight-budget hostile greedy
+     rejection. No contributor may be missing, empty, duplicated under another
+     name, or silently replaced by a different fixture.
+  8. Preserve exact Class-A semantics and ordinary Class-B native output
+     between the production library and instrumented build. Telemetry is
+     implementation-conformance evidence only; independent authority remains
+     the frozen formulas, public input limits, AST bijection, contributor
+     manifest, and negative mutants.
+- Mandatory negative evidence:
+  - one wrong-family mutant for every `SELECT` site;
+  - missing, duplicated, wrong-unit, and wrong-operation site mutants;
+  - pass-count under/over-report and contributor omission/duplication mutants;
+  - ledger/site-sum disagreement and counter-overflow mutants;
+  - a tight-budget hostile-greedy case that reaches the greedy lane and returns
+    the declared typed rejection without partial publication.
+- Frozen production identities:
+  - source SHA-256:
+    `ecbc3fcbbb9cd5d38d21d93375503fc05f0b188d33273f27cd0a211010e2df05`;
+  - header SHA-256:
+    `12733d20b54be6209455800f477bfce9b84951d74699972a646dc492b803d49e`;
+  - production shared-library SHA-256:
+    `f12c6ad9061089d2d4088a5bfd2e20e845148ebcd303afaecc3bb2dc6be042ed`.
+- Kill gates:
+  - any frozen production identity changes;
+  - any site lacks exactly one local family or belongs to two local families;
+  - any contributor lacks complete bound and identity evidence;
+  - any telemetry path affects ordinary semantic or Class-B output;
+  - any local, event, aggregate, pass, prefix, transaction, or resource bound
+    is exceeded or hidden by another allowance;
+  - any automatically regenerated golden value replaces independently frozen
+    evidence.
+- Independent audit:
+  - the first orientation auditor confirmed both original defects and
+    recommended the bounded evidence-only direction;
+  - the frozen-document auditor returned **NO-GO** before implementation:
+    audit status had been pre-recorded, pass counts were bounded rather than
+    exact, the new manifest and contributor cardinalities were unfrozen,
+    telemetry API/capacity/concurrency/slot placement were ambiguous,
+    reservation and failure-prefix equations were incomplete, hostile-greedy
+    identity and threshold were unfrozen, the negative-mutant matrix had no
+    exact cardinality, and hostile production/instrumented parity was omitted;
+  - no R-205 implementation code was started;
+  - the current runner, the 72-mutant campaign, R-203 admission, S09 completion,
+    S10, predictor work, syntax work, and any compression claim remain
+    **NO-GO** until a corrected frozen design receives independent binary GO.
+
+### R-205 V2 frozen audit candidate
+
+- Status: **PRE-IMPLEMENTATION NO-GO; INDEPENDENT AUDIT PENDING**
+- Supersedes: the R-205 V1 implementation design, while retaining its NO-GO
+  findings as negative evidence.
+- Frozen V2 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V2_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `481a75b3b752ca5aac1c046d1a71843f1e62dfca9dcf08abab0733b8c9f2aa94`;
+  - `native/tests/r205_family_bound_authority_v1.json`, schema
+    `resonith-r205-family-bound-authority-1`, SHA-256
+    `d02dcdced3707b34f4902b045f5e6eb6d1e68a4d0972689236e67de9172dd509`.
+- Corrections:
+  - replaced arbitrary pass ceilings with exact validation/solver epoch
+    anchors and finite call-kind/status prefix traces;
+  - selected one private test C API, one active call, one fixed record, 36 site
+    slots, 22 event slots, and explicit no-heap/no-exception behavior;
+  - froze source-hook AST bijection, slot and sequencing proof, and the exact
+    production compile-command delta;
+  - replaced the ambiguous contributor partition with exactly 10,276 expanded
+    contributor IDs and 19,596 discovery/admission call records;
+  - froze the seven contributor classes, all 952 allocation ordinals, all nine
+    state-arena subcases, and the deterministic hostile-greedy input and
+    threshold law;
+  - defined prefix reservation, event-ledger, no-write, and hostile
+    production/instrumented parity equations;
+  - froze an exact 285-mutant negative matrix;
+  - split implementation/discovery from admission: pre-implementation GO may
+    authorize only the private evidence harness, and a second binary GO on
+    exact generated identities is required before admission replay.
+- Boundary:
+  - no R-205 implementation code exists at this checkpoint;
+  - the frozen V2 hashes are now submitted to the independent auditor;
+  - S09 remains active and every dependent action remains NO-GO until that
+    auditor returns binary GO.
+
+### R-205 V3 corrected audit candidate
+
+- Status: **PRE-IMPLEMENTATION NO-GO; INDEPENDENT AUDIT PENDING**
+- V2 self-red-team result: **NO-GO before external audit completed**.
+  - V2 modeled only V3 path validation/solver epochs even though 26 frozen
+    allocation ordinals exercise the R190 edge API;
+  - R190 has an intentional no-op work sink and no V3 report, so claiming
+    native-ledger equality for it would be false;
+  - the nine state-arena subcases were outside every V2 epoch.
+- Frozen V3 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V3_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `c49a89fb831c845e3d8d5576e68b8ab06db16cc6992a64d01ae43df00fda4ad3`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V3`, SHA-256
+    `c453495e86eed7a2912d013aaf4e096cd3264f3eb3ea51cfce775cab715df692`.
+- V3 corrections:
+  - separate exact path-validation, path-solver, edge-validation,
+    edge-enumeration, and named state-arena epoch families;
+  - honest `logical-site-formula-only` evidence for R190 rather than inventing
+    a native work ledger;
+  - native event equality remains mandatory for ledger-bearing V3 path and
+    arena evidence;
+  - one arena probe record contains exactly nine named subrecords;
+  - the corrected total is 19,588 discovery/admission call records;
+  - the exact negative matrix is 300 mutants after adding all five epoch
+    families and illegal-overlap evidence.
+- Boundary:
+  - no implementation code is authorized or present;
+  - V3 replaces V2 for the next independent pre-implementation audit;
+  - every S09-dependent action remains NO-GO until binary GO.
+
+### R-205 V4 phase-resolved audit candidate
+
+- Status: **INDEPENDENT PRE-IMPLEMENTATION NO-GO**
+- Independent V3 result: **NO-GO**.
+  - one global 36-site counter set could not identify how repeated merge sites
+    divided work between edge validation and two edge enumerations;
+  - V3 froze right-hand-side edge/arena limits without freezing every measured
+    left-hand-side numerator.
+- Frozen V4 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V4_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `54bdb12c22af946c4aef6bdaeece53e0177264d6e3adbaaa0527f23f6e3e7de8`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V4`, SHA-256
+    `6ebac9d495e9daab43ae4d249bd4a89e3de2f5ab689b63c495d8227c86c7949a`.
+- V4 corrections:
+  - fixed `epoch[17] × site[36] × operation[5]` checked counters;
+  - opening/closing `total`, `reserved`, `counts[22]`, and
+    `reserved_counts[22]` for every ledger-bearing epoch/subrecord;
+  - exact path, edge-validation, edge-enumeration, and arena left-hand-side
+    aggregation rules;
+  - canonical logical JSON serialization; raw private-struct hashing is
+    forbidden;
+  - a compile-time private-record upper bound of 65,536 bytes;
+  - eighteen new phase-resolution, snapshot, numerator, capacity, and
+    serialization mutants, for exactly 318 total.
+- Boundary:
+  - no implementation code is authorized or present;
+  - two independent auditors rejected V4:
+    - `input_fingerprint_v3` executed one frozen dynamic merge site outside
+      every declared epoch;
+    - the machine authority required global boundary `reserved=0` while
+      production intentionally retained an unrelated `COMMIT_RECORD`
+      reservation;
+  - S09 remains active and S10 remains pending.
+
+### R-205 V5 outer-fingerprint and reservation audit candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V5 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V5_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `d5f837dbdcc7df1dbc35075da984a5cbf892bfb710269e3bbf4d94d02fcf64f8`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V5`, SHA-256
+    `f414c0b9437f83c48cc065405d11bd681d7e60fe1bb685c5248be2158df33036`.
+- V5 corrections:
+  - eighteen fixed epochs: three path-validation, two path-solver, one V3
+    input-fingerprint, one edge-validation, two edge-enumeration, and nine
+    named arena subcases;
+  - an exact `F1` trace and a ledger-bearing local numerator for the
+    `input_fingerprint_v3` merge;
+  - explicit AST-falsifiable outer-region coverage: the V3 outer canonical
+    snapshot and output fingerprint invoke no frozen dynamic sites;
+  - zero boundary reservation for each dynamic event independently, while
+    retaining and permitting unrelated wrapper reservations in the full
+    snapshots;
+  - exact arena equality after dynamic-event ownership;
+  - a 65,536-byte fixed private-record ceiling;
+  - exactly 326 typed negative mutants.
+- Validation:
+  - JSON parse passed;
+  - epoch assignment is exactly `18/18`;
+  - the negative matrix recomputes to `326/326`;
+  - contributor and public-call cardinalities remain `10,276` and `19,588`;
+  - the V5 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - no telemetry or production implementation is authorized yet;
+  - the split-authority auditor accepted the runtime epoch model and arithmetic
+    but rejected the stage-2 authority because the machine artifact list
+    omitted both the complete epoch-record set and production/instrumented
+    parity set;
+  - the resource auditor rejected the full-ledger authority because it lacked
+    direct mapping and conservation laws, fixed `COMMIT_RECORD` boundary
+    semantics, and typed wrapper-reservation mutants;
+  - S09 remains active.
+
+### R-205 V6 immutable discovery and full-ledger audit candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V6 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V6_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `76ec68383948de20d61fb78c29f9b575b4e83cb65c20b7aac12e3adfd1eb618e`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V6`, SHA-256
+    `dc73384b7433e2277e6c69aed543859fb299c2110b7e4bd7a2857c2973578a10`.
+- V6 corrections:
+  - direct opening/closing copies of `total`, `reserved`, all 22 counts, and
+    all 22 reserved counts, enforced by AST validation;
+  - full-ledger `total=sum(counts)` and `reserved=sum(reserved_counts)`
+    conservation;
+  - exact `COMMIT_RECORD=1` boundary semantics for every V3 path, solver, and
+    input-fingerprint epoch;
+  - mechanically first nonzero opening and closing `MEMORY_PAGE` witnesses;
+  - exact deterministic call plan for all 19,588 records;
+  - canonical 19,588-line epoch-record and parity JSONL artifacts;
+  - ten-entry stage-2 payload manifest whose own root hash is published
+    externally, avoiding a self-referential hash;
+  - twelve new full-ledger snapshot mutants and eight immutable-freeze
+    mutants, bringing the exact total to 346.
+- Validation:
+  - JSON parse passed;
+  - epoch slots remain `18/18`;
+  - negative arithmetic is `346/346`;
+  - the call plan is `19,588/19,588`;
+  - the authority defines ten payload artifact identities plus one external
+    freeze-manifest root identity;
+  - the V6 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - the split-authority auditor rejected the impossible inclusion of the
+    post-audit admission call in the 19,588 pre-audit executed records;
+  - the resource auditor rejected a `MEMORY_PAGE` witness that identified only
+    a record, not one exact epoch/boundary/event cell or its selection proof;
+  - S09 remains active.
+
+### R-205 V7 stage-separated and cell-addressed audit candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V7 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V7_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `dd02bb90dfbf46adc0adb6dbf0ed9217b988593d9f4129ca8db1e5ddf0a29c1a`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V7`, SHA-256
+    `270f7be5ca3bf2e2d967ea116cc99efcad892070c77c2fa4bdcaa39df6255efc`.
+- V7 corrections:
+  - exactly 19,587 executed discovery records before stage-2 audit;
+  - one immutable expected-admission specification with exact budget,
+    threshold receipt, status, site deltas, and no-write result;
+  - exactly one observed post-audit admission record, kept outside and unable
+    to modify the audited discovery root;
+  - a total witness-cell order over record ordinal, epoch slot, opening/closing
+    boundary, and fixed `MEMORY_PAGE` event index 17;
+  - explicit record ordinal, slot, boundary, event, value, record hash, prefix
+    count, and zero-prefix hash for opening and closing witnesses;
+  - a third independent result audit before the original 72-mutant campaign,
+    R-203/R-191 admission, or S10;
+  - five stage-boundary and seven witness-selection mutants, bringing the
+    exact negative total to 358.
+- Validation:
+  - JSON parse passed;
+  - stage-1 call arithmetic is `19,587/19,587`;
+  - stage 1 plus one admission is `19,588`;
+  - negative arithmetic is `358/358`;
+  - stage 2 binds eleven payload artifacts under one external root hash;
+  - the V7 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors accepted the stage split and exact witness-cell proof;
+  - both rejected the underidentified admission role because it did not freeze
+    preflight versus fill, pointers, capacities, initial buffers, payload hash
+    domains, expected fingerprint, or the exact discovery source of `B`;
+  - S09 remains active.
+
+### R-205 V8 exact fill-topology audit candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V8 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V8_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `3ee15d0fc6550699fb448dffe268c5a8c7b1d2451684448971b3a72f2d96704c`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V8`, SHA-256
+    `6c47d773c4a284319af7dc7ef248e519ee226b2a6d937ab18a063ed90a16d8a3`.
+- V8 corrections:
+  - exact preflight and fill discovery topologies;
+  - threshold source fixed to the ample discovery-fill record;
+  - `B=ledger.total+ledger.reserved` at the target, plus proof that every
+    earlier operation fits and the target unit does not;
+  - admission fixed to a non-null fill using preflight-required capacities,
+    `0xA5` path bytes, `0x5A` entry bytes, and a valid frozen report header;
+  - separate exact path, entry, and report pre-call hash domains;
+  - independent no-public-ABI Python derivation of the four expected
+    fingerprint qwords for budget `B`, including exact byte order and modulo
+    \(2^{64}\) arithmetic;
+  - exact expected status, termination, flags, incomplete trace, attempted and
+    completed site deltas, and unchanged path/entry hashes;
+  - one additional stage-2 derivation receipt and eight topology mutants,
+    bringing the payload and negative totals to 12 and 366.
+- Validation:
+  - JSON parse passed;
+  - stage-1 call arithmetic remains 19,587 and the complete total remains
+    19,588;
+  - negative arithmetic is `366/366`;
+  - the V8 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors rejected the undefined threshold receipt: V8 had aggregate
+    epoch/site counters but no bounded ordered-operation capture, ordinal,
+    canonical commitment, capacity, overflow law, or independently replayable
+    prefix proof;
+  - the resource auditor additionally found that the twelve-payload root did
+    not bind the instrumented binary, transformer, validators, discovery and
+    admission runners, commands, or oracle bytes;
+  - the negative matrix could not detect a truncated, reordered, omitted, or
+    falsified earlier-operation proof or drifted evidence machinery;
+  - S09 remains active.
+
+### R-205 V9 bounded operation-trace and evidence-toolchain candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V9 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V9_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `64a2172859ce42ab51196f1acf1071701e6c60bc272a693e9477e004a3486b7d`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V9`, SHA-256
+    `df90d1f562356ac14da470b0d24e8236d8b8eb2441b3c0c79a7ca4f9e1d93af9`.
+- V9 corrections:
+  - canonical 101-byte tuples for every `emit`, `reserve`, `cancel`, and
+    `consume` ledger operation in exact zero-based ordinal order;
+  - fixed-state standard SHA-256 commitment and checked prefix summaries for
+    every record;
+  - an independently replayable, runner-owned, preallocated trace of at most
+    1,048,576 tuples and 105,906,176 bytes for only the tight discovery-fill
+    record;
+  - a 22-field threshold receipt proving state continuity, complete successful
+    prefix, `required_capacity<=B` before the target, and target
+    `required_capacity=B+1`;
+  - exact nested-meter/global-ledger equivalence obligations;
+  - a 24-payload external root that binds the actual instrumented binary,
+    transformer, validator, separate discovery/admission runners, exact
+    commands, oracle bytes, operation trace, and all result authorities;
+  - 36 new operation-commitment and evidence-toolchain mutants, bringing the
+    exact negative total to 402.
+- Validation:
+  - JSON parse passed;
+  - epoch assignment is `18/18`;
+  - negative arithmetic is `402/402`;
+  - stage-1 records remain `19,587`, followed by one separately authorized
+    admission;
+  - the root payload count is `24`;
+  - the expected admission and threshold receipt define 26 and 22 required
+    fields respectively;
+  - the V9 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors rejected the false equality between every nested meter
+    maximum and the then-current global remainder; the source retains a
+    call-entry maximum across later direct-ledger operations;
+  - the root listed 24 payloads while post-admission immutability named 23;
+  - the fixed-state layout named fourteen `uint64` values although it contained
+    twelve integers and two digests;
+  - invalid raw events and required-capacity overflow lacked unique tuple
+    encodings;
+  - S09 remains active.
+
+### R-205 V10 dominance-replay and exact-root candidate
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V10 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V10_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `8f45a64db7f4f2c666eaeb31720ccc2c0da8e50d02a42445c2a58cf8815bf985`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V10`, SHA-256
+    `e26042f5be6c23b8a6112a84e6e7b1639968bf39b2b393bb9119b58b2f2d94fb`.
+- V10 corrections:
+  - 151-byte operation tuple V2 with full underlying-width raw event,
+    canonical arithmetic-overflow sentinels, and explicit meter context;
+  - correct dominance and replay laws over global footprint, report work,
+    private meter reservation, origin, and the replay maximum derived from
+    `B`;
+  - a bounded trace of at most 1,048,576 tuples and 158,334,976 bytes;
+  - exact 12-`uint64` plus two-digest fixed-state accounting;
+  - 25 stage-2 payloads and 25 same-order contracts with exact IDs, paths,
+    schemas, and record-count laws;
+  - pre/post admission hashes for the root plus every payload, including one
+    mutation per payload;
+  - a non-self-referential typed external root-hash slot whose only realized
+    substitution is recorded after admission;
+  - 40 new typed mutants, including audited-root substitution attacks,
+    bringing the exact negative total to 442.
+- Validation:
+  - JSON parse passed;
+  - epoch assignment remains `18/18`;
+  - negative arithmetic is `442/442`;
+  - stage-1 records remain `19,587` plus one separate admission;
+  - payload and artifact-contract identity/order is exactly `25/25`;
+  - expected admission and threshold receipt define 27 and 23 fields;
+  - the V10 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors accepted the meter-dominance direction but rejected the
+    rooted negative-matrix contract: authority declared 442 mutants while the
+    root required 437 records;
+  - direct-ledger tuples fixed absent meter integers but left
+    `meter_context_valid` ambiguous;
+  - raw-event truncation lacked an explicit non-vacuous value above 255;
+  - S09 remains active.
+
+### R-205 V11 exact-mutant and canonical-context amendment
+
+- Status: **PRE-IMPLEMENTATION NO-GO; ONE INDEPENDENT GO AND ONE INDEPENDENT NO-GO**
+- Frozen V11 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V11_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `5eeb56c40fb59ce97812f79d18d73be03390e3a1eec161a67289bb4549d02761`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V11`, SHA-256
+    `a0c5e4347d037c2b43c9adea186bd9fc4e95e79de01a7d3a6f00b57e471d828f`.
+- V11 corrections:
+  - the declared matrix, computed sum, rooted expansion, and future JSONL line
+    count are exactly `443`;
+  - direct-ledger tuples canonically require `meter_present=0`,
+    `meter_context_valid=0`, and five `UINT64_MAX` meter fields;
+  - a new mutant rejects the alternative absent-context flag;
+  - exact private canonicalization probes include raw events 256, 511, and
+    4,294,967,295, so byte-truncation mutations are non-vacuous;
+  - all 25 artifact paths advance to V11 without changing their identities,
+    schemas, order, or other cardinalities.
+- Validation:
+  - JSON parse passed;
+  - negative arithmetic and root contract are `443/443`;
+  - root IDs and contracts remain `25/25`;
+  - V11 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - the split-authority auditor returned GO;
+  - the resource/canonicalization auditor rejected label-only probe cases that
+    did not freeze complete 25-field inputs, expected hashes, or force the
+    actual instrumented encoder to process them;
+  - S09 remains active.
+
+### R-205 V12 byte-exact encoder probe amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V12 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V12_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `6185c33802a4d53b8a9a5eab8b14f886ca6909ccab25ac11d7115339ce7400d7`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V12`, SHA-256
+    `4286a880adf741c3ac6284a525dd9548b08e4f72a5a2bc62b225df4d07cfa339`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V12 corrections:
+  - twelve complete 25-field probe cases in exact tuple order;
+  - twelve independently recomputed expected SHA-256 values over exact
+    151-byte outputs;
+  - raw events 256, 511, and `UINT32_MAX`, plus global/meter overflow cases;
+  - a private C API that must call the same single C++ tuple encoder as the
+    real ledger observer;
+  - an independent Python serializer forbidden from loading the instrumented
+    library;
+  - AST rejection of a second, copied, or probe-only C++ encoder;
+  - the probe corpus as a required-hash root payload, increasing root
+    cardinality to 26;
+  - eight new root/probe mutants, bringing the exact total to 451.
+- Validation:
+  - all 12 case vectors contain 25 fields;
+  - all 12 expected hashes independently recompute;
+  - authority hash and required probe SHA-256 agree;
+  - negative arithmetic and root contract are `451/451`;
+  - root IDs and contracts are `26/26` in identical order;
+  - V12 authority, probe corpus, and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors found the same surviving implementation: the real observer
+    can truncate `event` before the shared encoder while the probe injects the
+    full-width value directly;
+  - V12 proved the encoder but did not prove pre-encoder observer field
+    construction;
+  - S09 remains active.
+
+### R-205 V13 real-ledger semantic-probe amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V13 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V13_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `134a63653c355247966b59833154b90879b6d5737a6f21377ae4192ecd259059`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V13`, SHA-256
+    `2e859a00fa9386e27fdba5f22063cf988334b19e9c9efc47a97d46c6e0345d7b`;
+  - `native/tests/r205_observer_semantic_probes_v1.json`, SHA-256
+    `015e86ab3e96743a6ab162ef9cf5e118e3c7d91180965a1e67c6c3bad932713c`.
+- V13 corrections:
+  - the probe runner supplies only fourteen semantic inputs, never tuple
+    fields, derived capacity, result, after state, or canonical bytes;
+  - the injected C API constructs a real ledger and invokes exactly one real
+    `emit`, `reserve`, `cancel_reserved`, or `emit_reserved` method;
+  - the real methods and semantic probe therefore traverse the same sole
+    observer field builder and the same sole encoder;
+  - `event_raw` is derived only inside the builder from the complete unsigned
+    enum-underlying representation, with narrow intermediates and masks
+    forbidden;
+  - the independent oracle derives all 25 fields from semantic state before
+    serializing and checking the twelve frozen hashes;
+  - fourteen observer/probe dataflow mutants bring the exact negative total to
+    465.
+- Validation:
+  - JSON parse and two independent structural passes succeeded;
+  - all 12 semantic cases independently derive the 25 expected fields and
+    frozen hashes;
+  - the frozen C++23 toolchain confirms a 32-bit enum underlying
+    representation;
+  - negative arithmetic and the root contract are `465/465`;
+  - root IDs and contracts are `26/26` in identical order;
+  - V13 authority, semantic corpus, and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors rejected the attempt to pass 255, 256, 511, and
+    `UINT32_MAX` through real C++ ledger methods because the non-fixed enum's
+    language-defined range is only 0 through 31;
+  - an out-of-range cast or reconstructed object has undefined behavior, so
+    its observed hashes cannot be evidence;
+  - R-205 is evidence-only and does not replace the mandatory S12
+    registered-music comparison after algorithm step S11;
+  - S09 remains active.
+
+### R-205 V14 defined-enum observer and typed-encoder separation
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V14 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V14_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `e0d1081b1388cdd336587b9c4ac8433ff253f7616841b774c17bfc10bf2e8f69`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V14`, SHA-256
+    `813dec26c602e67b4a4cb97a369fe996011442bc582dcd5e2e5323ed3c7406d5`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V14 corrections:
+  - real ledger calls use only defined enum values 0 through 31;
+  - valid 0/21 and defined-invalid 22/23/24/30/31 exercise the real methods,
+    observer field builder, and encoder;
+  - runner and C API both reject values above 31 before enum conversion;
+  - one active record produces immutable ordinals 0 through 11;
+  - exact AST/dataflow laws prove the absence of narrow intermediates even
+    when current defined values would make an eight-bit truncation
+    behaviorally invisible;
+  - a separate typed `uint64` encoder probe retains 256, 511, and
+    `UINT32_MAX` without constructing an enum or claiming observer
+    equivalence;
+  - the second root payload and out-of-range-enum mutant bring exact root and
+    negative totals to 27 and 467.
+- Validation:
+  - both probe authorities parse and contain 12 exact cases each;
+  - all semantic cases independently derive their 25 fields and hashes;
+  - machine authority, matrix, and root invariants are `467/467` and
+    `27/27`;
+  - every stage-2 artifact path is V14 and unique;
+  - V14 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - one auditor found an impossible call-graph contract: all direct encoder
+    calls were forbidden while the typed encoder probe required one;
+  - the other found a value-domain hole: finite probes omitted epochs 9
+    through 17, allowing a branchless encoder corruption to pass;
+  - S09 remains active.
+
+### R-205 V15 exact encoder-template and two-caller amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V15 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V15_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `6256f3b1701b7997af1764301bf0e1b97c36e3ca8f63f8e973d7954c46edbad3`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V15`, SHA-256
+    `12c0afe87df77ece65e04c55e6320e5362021b65982bf64913e506708b3b73a1`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V15 corrections:
+  - the sole encoder has exactly two callers: the field builder and one named
+    test-only typed probe;
+  - the test-only direct caller is unreachable from all production,
+    discovery, admission, ledger, observer, and semantic-probe graphs;
+  - the encoder tuple type, 25 direct member writes, fixed offsets, `uint8`
+    copy, and eight-byte little-endian helper are closed AST templates;
+  - encoder values cannot enter arithmetic, masks, aliases, lookups, branches,
+    or data-dependent addresses;
+  - the source-template proof covers the complete `uint8` and `uint64`
+    domains, including arena epochs 9 through 17;
+  - one caller mutant and 86 encoder-dataflow mutants bring the exact total to
+    554.
+- Validation:
+  - machine authority parses with `554/554` negative arithmetic;
+  - root IDs and contracts remain `27/27` with unique V15 paths;
+  - both unchanged probe hashes remain bound;
+  - V15 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors found that a caller-supplied output span could overlap the
+    tuple only for unprobed field values, allowing early writes to corrupt
+    later exact reads while the encoder template still passed;
+  - one auditor's separate 544-mutant arithmetic claim was rejected because
+    it counted the 11-member wrong-SELECT-family group as one; the exact V15
+    sum remains 554;
+  - S09 remains active.
+
+### R-205 V16 by-value encoder-output ownership amendment
+
+- Status: **PRE-IMPLEMENTATION NO-GO; ONE INDEPENDENT GO AND ONE INDEPENDENT NO-GO**
+- Frozen V16 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V16_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `dfe750d19c61b966ccdfe8092205fcea1c0278d5876071b2623e23f686e22fe0`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V16`, SHA-256
+    `f06a5ec1b13dcde4042b8435b6b0b81b87880c4b9d0a4b6ae20f3d345cf9cf53`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V16 corrections:
+  - the encoder accepts only a const tuple reference and returns one
+    `std::array<uint8_t,151>` by value;
+  - its only output storage is one local zero-initialized array;
+  - output parameters, spans, pointers, views, external storage, placement
+    construction, storage selection, and reference/view returns are forbidden;
+  - the builder constructs one const tuple aggregate and never mutates or
+    aliases it;
+  - five ownership mutants bring the exact negative total to 559.
+- Validation:
+  - machine authority parses with independent negative arithmetic `559/559`;
+  - root IDs and contracts remain `27/27` with unique V16 paths;
+  - both unchanged probe hashes remain bound;
+  - V16 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - one auditor returned GO;
+  - the other showed that the builder could mutate the returned array after
+    the exact encoder and before commitment because V16 did not const-bind or
+    trace that post-return dataflow;
+  - S09 remains active.
+
+### R-205 V17 immutable encoder-to-commit dataflow amendment
+
+- Status: **PRE-IMPLEMENTATION NO-GO; ONE INDEPENDENT GO AND ONE INDEPENDENT NO-GO**
+- Frozen V17 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V17_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `0df8a8710eea773c92248824c0479b759ac744df96a5620890f38afe5a375b0d`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V17`, SHA-256
+    `fb5ab04397893ca0d5674c8439ade4b4074dde36a5bbf2ec88cd19dd5b1e8b05`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V17 corrections:
+  - the builder binds encoder output exactly as `const auto encoded`;
+  - the sole immediate next action is
+    `commit_operation_tuple_bytes(encoded)`;
+  - the commit function consumes a const array reference and feeds the same
+    exact pointer and literal 151 bytes to SHA-256 and optional trace copy;
+  - no intervening statement, mutable alias, substitution, offset, length
+    drift, transform, or divergent hash/trace source is permitted;
+  - four commit-dataflow mutants bring the exact negative total to 563.
+- Validation:
+  - machine authority parses with independent negative arithmetic `563/563`;
+  - root IDs and contracts remain `27/27` with unique V17 paths;
+  - both unchanged probe hashes remain bound;
+  - V17 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - one auditor returned GO;
+  - the other supplied a valid conforming counterexample containing an
+    unrelated enormous fixed loop or automatic stack object inside the commit
+    function while preserving every frozen byte and SHA/trace dataflow law;
+  - V17 did not freeze the commit signature, body, address lifetime, or rooted
+    resource envelope tightly enough;
+  - S09 remains active.
+
+### R-205 V18 closed commit and rooted resource amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V18 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V18_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `e32bd23b883a2b3dc66c7052b85e80995827ad15500db309d5b39dac75d5f3e8`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V18`, SHA-256
+    `3d6a3be3743b46ca48bd6159b0377e554d6fba62bfde6a09af9262af4132c155`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V18 corrections:
+  - the sole commit has an exact `void ... noexcept` signature and a closed
+    body containing only the required SHA-256 update and optional trace copy;
+  - additional locals, statements, calls, control flow, side effects,
+    recursion, mutable access, persistence, and address escape are forbidden;
+  - the complete rooted builder/encoder/commit/SHA/copy graph has a
+    conservative source-declared automatic-storage ceiling of 4,096 bytes,
+    at most 4,096 dynamic loop iterations per 151-byte commit, zero heap
+    allocation, and no recursion;
+  - eight resource and source-shape mutants bring the exact negative total to
+    571.
+- Validation:
+  - machine authority parses with independent negative arithmetic `571/571`;
+  - root IDs and contracts remain `27/27` in identical order with unique V18
+    paths;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V18 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors independently showed that source-declared automatic storage
+    omits actual ABI frames, return addresses, shadow space, alignment, spills,
+    and stack probes;
+  - a deep acyclic direct-call chain could therefore exhaust the machine stack
+    without recursion, loops, heap use, or source-declared local objects;
+  - a correct SHA implementation could also use arbitrarily large static
+    tables or straight-line code while preserving every V18 byte and source
+    law;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V19 compiled-resource receipt amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V19 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V19_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `d9c0e36fbd55325d4c7d63f6e6ef8372fb2eb261b2581cf8a88c738f6aef7f1b`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V19`, SHA-256
+    `037782719ed7d59c0a4887ab2046cea45516d4a9cac0289399e21f426e86ae17`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V19 corrections:
+  - the exact compiled instrumented PE, not only C++ source, becomes part of
+    the resource proof;
+  - complete sections, imports, relocations, reachable disassembly, and x64
+    unwind/prologue data bound direct-call depth, actual ABI stack, machine
+    instructions, text, static storage, file size, and `SizeOfImage`;
+  - a fresh-process 100,000-commit trial binds elapsed time, peak working set,
+    exit status, SHA-256, and trace identity;
+  - one new resource receipt expands the ordered root to 28 payloads;
+  - eleven compiled-resource mutants plus one new payload-rewrite mutant bring
+    the exact negative total to 583.
+- Validation:
+  - machine authority parses with independent negative arithmetic `583/583`;
+  - root IDs and contracts are `28/28` in identical order with unique V19
+    paths;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V19 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors found that runtime inputs and independent expected hashes
+    were not frozen, permitting an untested rare slow path;
+  - executable hashes did not bind loaded native dependencies or retain raw
+    LLVM outputs as root payload bytes;
+  - stack accounting began at the telemetry suffix and omitted production
+    caller ancestry already occupying the stack;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V20 closed machine-dependency and public-ancestry amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V20 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V20_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `3111c93db6c1ae7e32bd69c69c6bd5f73764b721ed6936826c09f958bb607e12`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V20`, SHA-256
+    `48338e41beec1a08b8d06fe25c45a6a03f09bec8658d1e043d805d26d6a42fcf`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V20 corrections:
+  - tuple values may affect arithmetic data but cannot affect machine control
+    flow, loop bounds, call targets, memory addresses, allocation, stack
+    adjustment, or exception paths;
+  - worst-case dynamic instructions are derived from the complete finite CFG
+    and fixed loop bounds rather than inferred from a sample;
+  - actual stack accounting starts at all three real production public ABI
+    roots and reaches every frozen observer site;
+  - a canonical raw evidence bundle roots LLVM stdout/stderr/argv, Python and
+    native loaded-module identities, OS loader, CPU, affinity, and timer facts;
+  - the runtime stream is fixed as 12 semantic cases repeated 10,000 times,
+    with independent case-index, tuple-cycle, full-stream, SHA, and trace
+    hashes;
+  - one evidence-bundle payload expands the ordered root to 29;
+  - fourteen closure mutants plus one new payload-rewrite mutant bring the
+    exact negative total to 598.
+- Validation:
+  - machine authority parses with independent negative arithmetic `598/598`;
+  - root IDs and contracts are `29/29` in identical order with unique V20
+    paths;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V20 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - V20 required one live 120,000-operation record but froze bytes whose
+    ordinal reset to zero every twelve operations;
+  - the independently correct continuous-ordinal stream hash differs from the
+    frozen repeated-cycle hash, so no implementation could satisfy both laws;
+  - V20 also permitted tuple-tainted arithmetic to enter variable-latency
+    opcodes even when control flow and instruction count remained fixed;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V21 continuous ordinal and operand-latency amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V21 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V21_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `067920cd9e87560a91d2419c1d9eb3a35e36480d1b5d9048421d1d3644028101`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V21`, SHA-256
+    `2f7c1e8a6088066ec999b83eaa3dd348320c4c9bbaf52abf264af943e3442d3e`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V21 corrections:
+  - one active telemetry record now emits continuous ordinals zero through
+    119,999 with no reset, gap, or duplicate;
+  - the independently recomputed 18,120,000-byte expected SHA/trace hash is
+    `d51859d69cc2200d87bdb1a534fd90466c90aae8c67eb20eb88021cccc1e8c58`;
+  - tuple-tainted operands are restricted to a closed constant-latency integer
+    opcode set;
+  - division, multiplication, floating/vector divide or square root,
+    tainted-repeat, gather/scatter, and undocumented variable-latency or
+    microcoded operations are forbidden;
+  - the frozen-CPU table bounds worst-case instructions and cycles per
+    commitment;
+  - two new mutants bring the exact negative total to 600.
+- Validation:
+  - machine authority parses with independent negative arithmetic `600/600`;
+  - root IDs and contracts remain `29/29` in identical order with unique V21
+    paths;
+  - the continuous-ordinal stream hash was independently reproduced;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V21 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - both auditors confirmed the continuous ordinal stream and exact
+    `d518...8c58` hash;
+  - both rejected the absolute cycle-WCET claim because ordinary Windows
+    cache, TLB, paging, interrupt, and scheduling latency is not bounded by the
+    implementation;
+  - the operand allowlist also used the ambiguous term `MOV-family` rather
+    than exact decoded mnemonics and forms;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V22 implementation-owned resource boundary amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION GO VERDICTS; STAGE-1 IMPLEMENTATION AUTHORIZED**
+- Frozen V22 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V22_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `6abf4b0d5a136b110bf875a3ac76908c7cf594d91799752f4643884e1804f0e8`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V22`, SHA-256
+    `83d8968226b0e92860f0713ed8cbf1f902ac17ea824e8006db9e65b9e7fda823`;
+  - `native/tests/r205_observer_semantic_probes_v2.json`, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - `native/tests/r205_canonical_tuple_probes_v1.json`, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V22 corrections:
+  - normative bounds cover implementation-owned code, control, addresses,
+    instructions, loads/stores, pages, bytes, stack, storage, heap, image,
+    imports, and allocation;
+  - external Windows cache, TLB, page-fault, interrupt, preemption, frequency,
+    thermal, firmware, hypervisor, driver, and scheduler latency is explicitly
+    outside the binary-WCET claim;
+  - runtime wall time remains a recorded empirical admission observation;
+  - exact decoded transfer mnemonics, operand forms, widths, prefixes, and
+    opcode bytes replace the `MOV-family` wildcard;
+  - implementation-owned memory operations, pages, and bytes receive static
+    finite bounds;
+  - two new mutants bring the exact negative total to 602.
+- Validation:
+  - machine authority parses with independent negative arithmetic `602/602`;
+  - root IDs and contracts remain `29/29` in identical order with unique V22
+    paths;
+  - the continuous-ordinal stream hash remains independently reproduced;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V22 authorities and preflight contain zero Cyrillic text.
+- Boundary:
+  - two independent read-only auditors returned binary GO on all four exact
+    V22 hashes;
+  - a later read-only implementation guard found an unspecified private C ABI,
+    contradictory command-artifact shapes, and a circular pre-discovery gate;
+  - a preliminary tuple-encoder scaffold was removed immediately and no
+    retained implementation, discovery, admission, codec, bitstream, or PCM
+    change occurred;
+  - V22 is superseded by V23 before retained implementation;
+  - read-modify-write, implicit stack access, stack ancestry, and page-crossing
+    accounting are mandatory implementation-audit checks;
+  - admission, the original 72-mutant campaign, R-203 admission, and S10 remain
+    forbidden until the frozen 29-payload stage-2 root receives two fresh
+    independent GO verdicts;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V23 exact private ABI and non-circular execution amendment
+
+- Status: **PRE-IMPLEMENTATION CANDIDATE; TWO INDEPENDENT AUDITS PENDING**
+- Frozen V23 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V23_PREFLIGHT_2026-07-30.md`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V23`, SHA-256
+    `b7d823108fb28e4923232b0c4160e78f2a828272e7f9d2f7d1dd878b3263c01d`;
+  - unchanged defined-range semantic probes, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - unchanged typed encoder probes, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V23 corrections:
+  - freezes every private C type, field order, status, calling convention,
+    function signature, record-ID law, and trace-buffer law;
+  - defines one canonical command object containing exact argv, cwd,
+    allowlisted environment, executable identity, and path-sorted input hashes;
+  - splits Stage 1 into pre-discovery implementation gates, exactly 19,587
+    discovery calls, and post-discovery validation/root freeze;
+  - adds three authority-closure mutants for a total of 605.
+- Validation:
+  - machine authority parses with independent negative arithmetic `605/605`;
+  - root IDs and contracts are `29/29`, unique, ordered, and all use V23 paths;
+  - both unchanged probe hashes and all frozen production identities remain
+    bound;
+  - V23 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both independent auditors returned NO-GO;
+  - the blockers were unfrozen private-structure layouts, missing status
+    transitions and precedence, a forbidden admission record ID, no observed
+    runtime trace route, and an admission-root self-reference gap;
+  - V23 is superseded by V24 before retained implementation;
+  - admission, the original 72-mutant campaign, R-203 admission, and S10 remain
+    forbidden;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V24 byte-exact ABI and external-root amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V24 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V24_PREFLIGHT_2026-07-30.md`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V24`, SHA-256
+    `954215c985b83bf2917cd8cff86375c9a5a0dda2658967688addd4c20d99ad8d`;
+  - unchanged semantic probes, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - unchanged typed probes, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V24 corrections:
+  - freezes exact size, alignment, and every offset of both private C input
+    structures and requires matching compile-time assertions;
+  - defines a complete five-state status and error-precedence machine;
+  - admits the later admission record ID without adding it to discovery;
+  - adds a distinct 18,120,000-byte measured-runtime trace mode;
+  - replaces the cyclic admission input with one exact out-of-band
+    SHA-bound-file slot and transient argv substitution;
+  - adds five closure mutants for an exact total of 610.
+- Validation:
+  - machine authority parses with independent arithmetic `610/610`;
+  - root IDs/contracts are `29/29`, unique, ordered, and all use V24 paths;
+  - unchanged probes and production identities remain bound;
+  - V24 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both independent auditors returned NO-GO;
+  - the blockers were the contradictory trace-retention law, a
+    `r205_record_read` output-alias route, an incomplete semantic initial-state
+    predicate, and command/root identity ambiguity;
+  - V24 is superseded by V25 before retained implementation;
+  - admission, the original 72-mutant campaign, R-203 admission, and S10 remain
+    forbidden;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V25 observable-probe and rooted-execution amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION NO-GO VERDICTS**
+- Frozen V25 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V25_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `483c0bab6c5356e976ac5419105121bea451760dc84355956bf586df886b0c09`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V25`, SHA-256
+    `d6739d80437531a1ac936976792c26a394dc3e58b500d2ca08afb21e2d95ed8e`;
+  - unchanged semantic probes, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - unchanged typed probes, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V25 corrections:
+  - freezes three independently persisted trace modes with one identical
+    SHA/copy byte source and dedicated non-aliasing runner spans;
+  - makes the twelve real-ledger semantic tuples directly observable;
+  - records exact branchless arithmetic-validity summaries `1,2` for one
+    semantic cycle and `10000,20000` for the measured runtime;
+  - freezes the complete valid semantic initial-state predicate;
+  - rejects `required_bytes`/JSON output range aliasing before any read output;
+  - binds every evidence command to the actual rooted source, interpreter,
+    argv, cwd, environment, and inputs that execute it;
+  - adds eight V25 input/observability mutants plus one command-executor
+    closure mutant for an exact total of 619.
+- Validation:
+  - machine authority parses with independent arithmetic `619/619`;
+  - all twelve semantic inputs pass the frozen domain predicate;
+  - derived validity summaries are exactly `1,2` and `10000,20000`;
+  - root IDs/contracts are `29/29`, unique, ordered, and all use V25 paths;
+  - unchanged probes and production identities remain bound;
+  - V25 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - both independent auditors returned NO-GO on the 619-versus-616 rooted
+    negative-matrix contradiction;
+  - one auditor additionally found that admission compared its realized argv
+    against the immutable placeholder template instead of a derived realized
+    vector;
+  - V25 is superseded by V26 before retained implementation;
+  - admission, the original 72-mutant campaign, R-203 admission, and S10 remain
+    forbidden;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V26 exact matrix and realized-argv amendment
+
+- Status: **TWO INDEPENDENT PRE-IMPLEMENTATION GO VERDICTS; EVIDENCE-ONLY
+  STAGE-1 IMPLEMENTATION AUTHORIZED**
+- Frozen V26 documents:
+  - `docs/reviews/R205_FAMILY_SEPARATED_BOUND_AUTHORITY_V26_PREFLIGHT_2026-07-30.md`,
+    SHA-256
+    `12c82b89c5c21f36f1cca5ad63ba1db6664643ebbc48c1655fe4f9efc8de20a2`;
+  - `native/tests/r205_family_bound_authority_v1.json`, design revision
+    `R205-FAMILY-EPOCH-V26`, SHA-256
+    `a31dc407a2ae6812ff0f42be023c0fe7d70a5d42307070ff0ff4a8da36603341`;
+  - unchanged semantic probes, SHA-256
+    `f7642e6f3ae98b2b7c767a92e1c76d64e286956dfffad181d7d479637cbb7095`;
+  - unchanged typed probes, SHA-256
+    `86cda87aaba7279e0d55ac1c92ef6fae4dc9083d778d2ed4c56f4eb3dd5e95bc`.
+- V26 corrections:
+  - the declared sum, expected total, Phase-C requirement, and rooted JSONL
+    contract now all require exactly 619 negative mutants;
+  - ordinary commands compare observed argv with the immutable template;
+  - admission derives one exact realized argv from the unchanged template and
+    supplied external root before comparing the observed process vectors;
+  - every stage-2 output path advances to V26.
+- Validation:
+  - matrix closure is `619/619/619/619`;
+  - root IDs/contracts are `29/29`, unique, ordered, and all use V26 paths;
+  - the 18,120,000-byte runtime stream still hashes to `d518...8c58`;
+  - unchanged probes and production identities remain bound;
+  - V26 authority and preflight contain zero Cyrillic text.
+- Boundary:
+  - two independent binary GO verdicts cover the exact V26 hashes;
+  - only evidence-only Stage-1 implementation and Phase-A gates are now
+    authorized;
+  - discovery remains blocked until Phase A passes;
+  - admission, the original 72-mutant campaign, R-203 admission, and S10 remain
+    forbidden;
+  - R-205 is evidence-only and does not trigger the registered-music gate;
+  - S09 remains active.
+
+### R-205 V26 record/state-matrix V10 independent rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V10 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V10_CRASH_CLOSED_BOOTSTRAP_2026-08-01.md`;
+  - 13,819 bytes;
+  - SHA-256
+    `b4bf3237b0b1d8a87841208d45af073f6e7a56e6f8c3c3423e14352562e7e719`.
+- Accepted V10 correction:
+  - controller/watchdog death no longer produced false Job-accounting or
+    cleanup claims; `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` remained
+    defense-in-depth only.
+- Blocking findings:
+  - the declared 256-byte WAL record could not contain its fields;
+  - torn-tail handling contradicted crash reconciliation;
+  - the plan mapping had no closed writer/publication/authorization path;
+  - recovery required parent-root handles owned only by the dead process;
+  - the seven-operation Python validator delta omitted substantial system
+    behavior;
+  - `CancelSynchronousIo` could not guarantee bounded worker completion;
+  - Phase-0 residue, evolving output content, and pre/post-code freezes were
+    incomplete.
+- Boundary:
+  - V10 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - all prior artifacts remain negative evidence;
+  - all nine Phase-A gates remain unresolved and S09 remains active.
+
+### R-205 V26 record/state-matrix V11 minimal native-controller candidate
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V11 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V11_MINIMAL_NATIVE_CONTROLLER_2026-08-01.md`;
+  - 22,459 bytes;
+  - SHA-256
+    `b3c57025a44f0f16b30b5ab571d04a0c3274b272237080de2915c44fcf638c90`.
+- Selected architecture:
+  - one minimal C++23 controller is the sole lifecycle authority;
+  - a broker and tool run in distinct zero-capability sibling AppContainers;
+  - the existing Python validator only invokes the exact controller from its
+    existing `state_matrix_gate` and validates bounded atomic output;
+  - no automatic recovery runs after controller death;
+  - one exact 512-byte append-only WAL and explicit short-tail law replace the
+    impossible V10 record;
+  - controller-owned plan publication, Phase-0 residue, output lease/content
+    evolution, provisional data EOF, fixed receipt, sibling isolation, and
+    stuck-I/O self-termination are explicit;
+  - pre-code authority and post-implementation identity freezes are separate.
+- Alternatives rejected before implementation:
+  - expanding the 2,605-line Python validator into a lifecycle authority;
+  - handle-escrow or path-reopening recovery processes;
+  - combining hostile parsing with lifecycle authority;
+  - rescuing V10 through incremental hidden behavior.
+- Prediction and kill gate:
+  - the smaller native trust root should close V10 ownership contradictions;
+  - V11 is killed if Python must own mutation handles, controller must parse raw
+    records, a worker can overlap cleanup, identity must be weakened, or the
+    complete cost fails to close a proof gap.
+- Boundary:
+  - independent audit rejected V11 because synchronous I/O could make even
+    process termination unbounded, future identity lacked a separate observed
+    commitment, output and terminal states were incomplete, profile storage was
+    unbounded, write/flush failures and handle ownership were open, and the
+    validator/build trust chain was not closed;
+  - V11 authority and inert fixtures are forbidden;
+  - no implementation, build, process, profile, ACL, discovery, admission, S10,
+    codec, bitstream, or PCM change is authorized;
+  - the registered-music/Opus comparison remains scheduled at S12 after the
+    next actual codec-algorithm change in S11.
+
+### R-205 V26 record/state-matrix V12 overlapped-LPAC rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V12 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V12_OVERLAPPED_LPAC_CONTROLLER_2026-08-01.md`;
+  - 23,940 bytes;
+  - SHA-256
+    `03e4a49e1057654a1fbeba8442bdf0e2320ba93f19d5e247831ea96d9ca5a0cd`.
+- Selected corrections:
+  - one controller thread and five `FILE_FLAG_OVERLAPPED` channels replace
+    blocking workers and anonymous pipes;
+  - controller passes already-open child handles, retains each OVERLAPPED/event
+    until observed completion, and makes no absolute OS completion-time claim;
+  - the 1 MiB structural result remains in precommitted memory until all
+    child/I/O and cleanup states are terminal;
+  - distinct zero-capability LPAC profiles contain copied frozen closures and
+    are recursively changed to read/execute-only before launch; registry,
+    network, and filesystem writes are denied and probed;
+  - the 512-byte WAL adds exact observed-state and observed-identity fields and
+    closes no/short/full/flush outcomes;
+  - result publication occurs after cleanup and distinguishes
+    `FINAL_PRESENT_UNATTESTED`;
+  - an exact 1,024-byte controller receipt binds WAL head, cleanup, result,
+    resources, profiles, images, run nonce, and required process exit;
+  - the current 179-line `state_matrix_gate` replacement and noncircular
+    pre-code/native/validator/post-manifest/root-command chain are explicit.
+- Rejected alternative:
+  - experimental `CreateProcessInSandbox` is not normative because Microsoft
+    marks it unstable, it forbids inherited handles, has no public header, and
+    still creates an AppContainer profile.
+- Boundary:
+  - independent audit rejected V12 because Phase 0 contradicted result timing,
+    the real one-main plus four-child helper interface was incompatible,
+    profile population and result publication lacked closed WAL transitions,
+    the persistent-state hash was circular, LPAC registry/delete accounting and
+    post-timeout monotonicity were incomplete, the broker receipt was open, and
+    pre-exit resource samples were misnamed as complete process time;
+  - V12 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no implementation/build/process/profile/ACL/discovery/admission/S10 action
+    is authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - no codec algorithm changed, so the full music/Opus gate remains S12.
+
+### R-205 V26 record/state-matrix V13 framed-LPAC transaction rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V13 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V13_FRAMED_LPAC_TRANSACTION_2026-08-01.md`;
+  - 33,246 bytes;
+  - SHA-256
+    `1a18839b53e7d2ab6e761f6a590d8bd5d7cd2a242e05069ff3934bf534b22644`.
+- Selected corrections:
+  - an evidence-only `--output-stdio` helper delta preserves path-mode bytes
+    while supporting the actual one-main plus four-child invocation graph;
+  - controller frames five sequential streams for one bounded hostile-parser
+    broker without parsing state-matrix rows itself;
+  - Phase 0 contains only run root, plan, and journal;
+  - profile create/populate/seal and result create/finalize/promote have closed
+    aggregate WAL ownership and inverse rules;
+  - timeout irreversibly enters `POISONED_WAIT_ONLY`, so late completion cannot
+    resume persistent mutation;
+  - broker and controller receipts are exact contiguous 512- and 1,024-byte
+    layouts; the 256-byte frame and 512-byte WAL layouts also pass machine
+    contiguity checks;
+  - pre-receipt persistent-state hashing explicitly excludes receipt leaves,
+    and resource cutoff samples are distinct from post-exit totals.
+- Boundary:
+  - independent audit rejected V13 because its structural result was not
+    byte-closed, pre-receipt attestation was circularly named, profile monikers
+    were underidentified, rebuild/inspection subprocesses lost an owner, deny
+    canaries contradicted process accounting, partial populate rollback lacked
+    terminal WAL behavior, frame hashing was ambiguous, and pre-delete resource
+    closure was incomplete;
+  - V13 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source, build, process, profile, ACL, discovery, admission, S10, codec,
+    bitstream, or PCM change is authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the next codec algorithm remains S11 and its full registered comparison
+    remains S12.
+
+### R-205 V26 record/state-matrix V14 byte-closed transaction rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V14 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V14_BYTE_CLOSED_TRANSACTION_2026-08-01.md`;
+  - 27,906 bytes;
+  - SHA-256
+    `b7decd83e9d1e7d6787a0e5edae6afb4bcd8ffad4a5401e924cc025db48a3f05`.
+- Selected corrections:
+  - exact 256-byte frame header, 256-byte structural header, 320-byte row
+    header, 512-byte WAL/canary/broker receipts, and 1,024-byte controller
+    receipt all pass independent contiguity arithmetic;
+  - controller result state is `FINAL_PRESENT_CONTROLLER_VERIFIED`; only the
+    validator derives external `ATTESTED` after final receipt and exact exit;
+  - LPAC monikers are exact 60-character domain-separated lower-base32 names;
+  - current rebuild and LLVM inspection work is preserved in an immediately
+    preceding state-toolchain gate with existing bundle names;
+  - two frozen nonmutating deny canaries raise exact child count to eight;
+  - partial populate/seal rollback closes only through durable NOT_APPLIED;
+  - frame length, payload, cumulative, complete-frame, and transcript hash
+    domains are byte-exact;
+  - a fixed ownership registry and source closure prove every profile-associated
+    handle/pointer closed before public-API deletion.
+- Boundary:
+  - independent audit rejected V14 because row grammar admitted producer-
+    impossible length 192, canary plan was not byte-closed, probe targets lacked
+    immutable/WAL ownership, child-launch outcomes did not close process
+    accounting, and pre-receipt hashing included mutable directory state;
+  - V14 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V15 reproducible-canary candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V15 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V15_REPRODUCIBLE_CANARY_TRANSACTION_2026-08-01.md`;
+  - 34,024 bytes;
+  - SHA-256
+    `fe58a1383e9cd39db6b187b69ab356a7ef83ee29324035f42fdeb830eb37e910`.
+- Selected corrections:
+  - broker row label domain is exact producer range 1..191 and 192 is a mutant;
+  - canary input is an exact contiguous 2,048-byte plan;
+  - probe targets are a populate/seal-owned profile file, the pre-existing
+    frozen production source, pre-existing HKCU Software root, fixed loopback,
+    and verified canary image; no probe creates persistent state;
+  - canary emits a 384-byte raw report and controller combines post-exit Job
+    observations into a separate 512-byte receipt;
+  - both denied-before-create and created-then-Job-killed child tuples are
+    exact; complete child process count is 8..10;
+  - pre-receipt state is a domain-separated projection using exact 192-byte
+    root and 320-byte object records, excluding receipt leaves and mutable
+    directory metadata while independently checking the final entry set;
+  - all eleven declared layouts pass machine contiguity and exact-size checks.
+- Boundary:
+  - independent audit returned NO-GO because the UTF-16 maximum contradicted
+    the byte-count bound, primary launches lacked pre-resume Job confinement,
+    canary Job accounting was not reproducible, the raw report overclaimed
+    inherited-handle evidence, helper/toolchain hashes lacked owned channels,
+    and path grammar ambiguously forbade required literal dots;
+  - V15 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V16 pre-resume-confinement candidate
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V16 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V16_PRE_RESUME_CONFINEMENT_2026-08-01.md`;
+  - 45,634 bytes;
+  - SHA-256
+    `72c77a927332a6fa167c0c09835699b6963502c405cdf7748c032b802078e70b`.
+- Selected corrections:
+  - the fixed 520-byte path fields admit even byte counts through 520, with
+    exact NUL and zero-tail laws plus 518/520 boundary mutants;
+  - four distinct Jobs and an exact create-suspended, assign, verify, then
+    single-resume sequence forbid target execution before confinement;
+  - dedicated canary Jobs freeze baseline and final process arithmetic, while
+    the broker and five sequential helpers have separately identified Jobs;
+  - raw canary evidence contains only token facts queryable by the canary;
+    controller receipts separately bind startup capabilities, LPAC/child
+    policy, HANDLE_LIST, inherit-bit audit, token observation, and Job state;
+  - an exact 1,024-byte state-toolchain receipt owns source/image/tool/command/
+    inspection hashes; validator-to-controller and controller-to-broker whole-
+    argument channels bind helper and toolchain hashes noncircularly;
+  - controller rehashes the actual helper before all five launches and verifies
+    the frozen external source before/after each canary without share-deny;
+  - path grammar forbids only whole `.`/`..` components and allows the required
+    literal dots in fixed leaf names;
+  - all twelve declared layouts pass machine contiguity and exact-size checks.
+- Boundary:
+  - independent audit rejected V16 because its Job outcome matrix omitted a
+    documented limit-rejection counter state, five record hashes lacked exact
+    domains/preimages, seventeen pipe handles lacked role-visible stdio routing,
+    three image fields lacked complete producer/reconciliation channels, and
+    pre-code authority ambiguously appeared to predict future source bytes;
+  - V16 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V17 hash-closed-routing rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V17 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V17_HASH_CLOSED_ROUTING_TRANSACTION_2026-08-01.md`;
+  - 53,537 bytes;
+  - SHA-256
+    `6d499280e28ef8ee413724f4800645e483a4f91b0320d97ce9a4dd5b4c5ba414`.
+- Selected corrections:
+  - final canary classification admits pre-association denial, false-return
+    association-limit rejection, and observed created-then-limit-terminated,
+    with two distinct pre-action snapshots and all final Job counters;
+  - WAL genesis/record, raw canary report, canary receipt, broker receipt, and
+    terminal receipt have exact domain-separated zero-field preimages;
+  - all eight processes use exact STARTF_USESTDHANDLES routing and ordered
+    three-handle HANDLE_LISTs; seventeen pipe clients and seven NUL handles are
+    completely typed, inherited, counted, and closed;
+  - the rooted state-toolchain receipt supplies all four image hashes through
+    exact CLI/plan channels, while role self-checks and independent controller/
+    validator rehashes reconcile actual images rather than trusting echoes;
+  - pre-code authority binds existing identities, future paths/contracts/
+    predicates, and hash placeholders, never nonexistent future source bytes;
+  - all twelve fixed layouts and all 14 sections pass machine checks, and the
+    file contains no truncation marker.
+- Boundary:
+  - independent audit rejected V17 because it protected the four rooted source
+    images but did not bind and continuously protect the profile copies actually
+    named by `lpApplicationName`; destination replacement remained possible
+    between rehash, suspended creation, and role self-check;
+  - V17 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V18 sealed-launch-identity rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Immutable V18 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V18_SEALED_LAUNCH_IDENTITY_TRANSACTION_2026-08-01.md`;
+  - 73,617 bytes;
+  - SHA-256
+    `14222c6fcc7baedf9058446f9bacf45305f01d2b2472947dd24f43067fa22c17`.
+- Selected corrections:
+  - exact source-to-profile mapping binds four rooted images to fixed relative
+    leaves under the two runtime-created profile roots without predicting a
+    future absolute path in pre-code authority;
+  - each WAL-owned copy uses a bounded writer, flush/seal and provisional
+    identity capture, then closes the writer and reacquires the unchanged file
+    as a read-only guard denying write/delete before copy COMMITTED;
+  - each of eight launches uses exact nonnull `lpApplicationName`, quoted argv,
+    create-suspended confinement, pre-resume `QueryFullProcessImageNameW`, held-
+    guard/file-ID/hash/security/link reconciliation, and role self-check;
+  - four 512-byte sealed-copy receipts, eight 512-byte launch receipts, and five
+    256-byte helper attestations bind the terminal sealed-launch transcript;
+  - all added link/security/path/file/guard/process/transcript hashes have exact
+    domain-separated preimages, and the WAL observed-state -> committed-record
+    -> copy-receipt edge is one-way rather than circular;
+  - all sixteen fixed layouts pass contiguity and exact-size checks, all 14
+    sections are present, and the candidate is ASCII-clean with no truncation.
+- Boundary:
+  - independent audit rejected V18 because immutable pre-call command-line
+    bytes and exact nonambient Unicode environment/cwd were underdefined;
+    identity producer APIs/flags were not fixed; an early receipt predicted a
+    future guard close; canary did not attest its actual loaded copy; and no
+    late full metadata readback or loader/share/drift gate closed the guard
+    lifetime;
+  - the source -> relative leaf -> runtime profile-copy mapping and one-way
+    WAL -> receipt graph remain accepted positive evidence;
+  - V18 authority, fixtures, source, build, process, profile, and ACL actions
+    are forbidden;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+- Independent result:
+  [R-205 V18 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V18_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 record/state-matrix V19 exact launch-context candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V19 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V19_EXACT_LAUNCH_CONTEXT_GUARD_LIFETIME_2026-08-01.md`;
+  - 87,662 bytes;
+  - SHA-256
+    `4fd5eb0a13e7ed83d1570753092f87a4f6b2a40c25ca8270957a8ffbd828f31e`.
+- Selected coherent remediation:
+  - immutable canonical pre-call application/command/argv evidence is separate
+    from the disposable writable `CreateProcessW` command-line clone;
+  - every primary launch supplies exact nonnull Unicode environment and current
+    directory with a byte-closed ASCII ordering/duplicate/special-name law;
+  - exact Win32 API/flags/bounds own final handle path, FILE_ID, volume, size,
+    attributes/reparse tag, streams, hard links, security descriptor, module
+    self-path, and suspended process image path;
+  - early sealed-copy receipt contains only observed guard-open state; a late
+    terminal guard-lifetime hash records actual post-use close;
+  - canary raw report is 512 bytes and binds actual module identity, state-
+    toolchain receipt, sealed-copy receipt, and launch context before any probe;
+  - every launch receipt follows role exit with a fresh complete destination
+    identity readback, while the threat claim is limited to ordinary share-mode
+    denial plus the stated ACL boundary;
+  - later Windows loader/share and metadata-drift integration behavior is an
+    explicit kill fixture rather than a design assumption;
+  - all sixteen fixed layouts pass exact size/contiguity checks, all 14 sections
+    exist, and the candidate is ASCII-clean without a truncation marker.
+- Boundary:
+  - independent GO is requested only for permission to create later pre-code
+    authority and inert fixtures;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V19 launch-observation rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Audited immutable V19 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V19_EXACT_LAUNCH_CONTEXT_GUARD_LIFETIME_2026-08-01.md`;
+  - 87,662 bytes;
+  - SHA-256
+    `4fd5eb0a13e7ed83d1570753092f87a4f6b2a40c25ca8270957a8ffbd828f31e`.
+- Accepted evidence:
+  - immutable command-line input and disposable writable clone, exact Unicode
+    environment contract, named identity APIs, one-way guard-lifetime evidence,
+    512-byte canary report, complete mapping lists, and absence of a hash cycle
+    are structurally retained;
+  - guard/loader compatibility remains a real Windows kill fixture rather than
+    an assumed design property.
+- Boundary:
+  - independent audit rejected V19 because it mixes parent-only launch inputs
+    with role-observable context; broker/helpers cannot verify expected sealed
+    destination identity before parsing; cwd has two possible textual sources;
+    owner/group/DACL evidence is overstated as a complete security descriptor;
+    and several Win32 in/out length states remain underdefined;
+  - V19 authority, fixtures, source, build, process, profile, and ACL actions are
+    forbidden;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+- Independent result:
+  [R-205 V19 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V19_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 record/state-matrix V20 parent/role identity candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V20 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V20_PARENT_ROLE_IDENTITY_HANDSHAKE_2026-08-01.md`;
+  - 99,612 bytes;
+  - SHA-256
+    `0766904d793768cf31df36aacee5b5c222e578b14554c764c463d843423ec4bb`.
+- Selected coherent remediation:
+  - controller-owned application/flags/inheritance/HANDLE_LIST evidence and
+    role-observed module/command/argv/cwd/environment evidence use separate
+    domains and reconcile only at the launch receipt;
+  - one shared `LAUNCH-TARGET-IDENTITY` domain permits exact expected-versus-
+    actual executable equality without comparing differently domained hashes;
+  - broker and five helpers emit a 320-byte pre-parser attestation; broker's
+    first frame and each helper's one-byte GO gate are withheld until validation;
+  - copied `GetAppContainerFolderPath` text is the sole cwd producer, while the
+    opened volume-GUID path remains a separate handle identity and round-trip is
+    a Windows kill fixture;
+  - security evidence is explicitly OWNER/GROUP/DACL only; SACL-class metadata
+    is excluded rather than silently claimed;
+  - final-path, file-information, stream, hard-link, module-path, process-image,
+    cwd, and security APIs have exact capacities, return laws, termination,
+    replay, cleanup, and reconciliation rules;
+  - all sixteen fixed layouts pass exact size/contiguity checks, all 14 sections
+    exist, and the candidate is ASCII-clean without stale V19 magic/domains.
+- Boundary:
+  - independent GO is requested only for permission to create later pre-code
+    authority and inert fixtures;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V20 deterministic-path rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Audited immutable V20 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V20_PARENT_ROLE_IDENTITY_HANDSHAKE_2026-08-01.md`;
+  - 99,612 bytes;
+  - SHA-256
+    `0766904d793768cf31df36aacee5b5c222e578b14554c764c463d843423ec4bb`.
+- Accepted evidence:
+  - parent/role evidence split, shared launch-target equality, one-way hash graph,
+    OWNER/GROUP/DACL scope, all sixteen layouts, and complete process/pipe/handle
+    counts are independently retained;
+  - loader/share behavior remains a future mandatory Windows kill fixture.
+- Boundary:
+  - V20 is rejected because helper does not observe EOF after GO, profile-root
+    grammar and per-leaf bounds are open, hard-link root/name joining is not
+    byte-exact, and helper source-delta scope contradicts its own handshake;
+  - V20 authority, fixtures, source, build, process, profile, and ACL actions are
+    forbidden;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+- Independent result:
+  [R-205 V20 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V20_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 record/state-matrix V21 deterministic path/gate candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V21 candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V21_DETERMINISTIC_PATH_GATE_CLOSURE_2026-08-01.md`;
+  - 106,632 bytes;
+  - SHA-256
+    `8fc01af59fa916eef945019011c3a31f4da7045390a7e753b3faf387fc142d56`.
+- Selected bounded remediation:
+  - each helper binds the exact one-byte grant and a second terminal
+    `ERROR_BROKEN_PIPE` read to a 128-byte completion record and a complete
+    controller/helper gate transcript;
+  - `profile_cwd_text` has one strict absolute-DOS grammar, checked root/leaf
+    addition, a 259-WCHAR non-NUL ceiling, and a named pre-populate rollback
+    boundary;
+  - the hard-link reopen path is the exact validated volume-root prefix plus the
+    exact returned link name after stripping exactly one root marker;
+  - the helper-only evidence source/API delta is enumerated once and admits no
+    unstated helper behavior;
+  - all seventeen fixed layouts pass exact size/contiguity checks, all 14
+    sections exist, and the candidate is ASCII-clean without stale V20 magic.
+- Boundary:
+  - independent GO is requested only for permission to create later pre-code
+    authority and inert fixtures;
+  - no source/build/process/profile/ACL/discovery/admission/S10/codec action is
+    authorized;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V21 state/evidence rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Audited immutable identity:
+  - 106,632 bytes;
+  - SHA-256
+    `8fc01af59fa916eef945019011c3a31f4da7045390a7e753b3faf387fc142d56`.
+- Accepted evidence:
+  - the two-read helper gate, controller/helper transcript, complete helper
+    source delta, 17 fixed layouts, process/resource counts, and deterministic
+    hard-link separator construction are retained;
+  - no new hash cycle was found.
+- Boundary:
+  - V21 is rejected because root validation requires rollback after entering an
+    irreversible poison state; the hard-link reopen bytes are not bound to a
+    domain-separated serialized evidence hash; and local named-pipe EOF behavior
+    lacks a mandatory real-Windows feasibility fixture;
+  - V22 must also clarify backslash grammar and apply the canary 520-byte fit to
+    both its profile and external source paths;
+  - no authority, fixture, source, build, process, profile, ACL, discovery,
+    admission, S10, or codec action is authorized;
+  - all nine Phase-A gates remain open and S09 remains active.
+- Independent result:
+  [R-205 V21 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V21_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 record/state-matrix V22 recoverable-root/bound-reopen candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V22 identity:
+  - 112,685 bytes;
+  - SHA-256
+    `185e42f2cb899bfedadb0c86f30a11250de47a85f4e7cfcbf2f0945cbc632f80`.
+- Selected bounded remediation:
+  - durable CREATE INTENT precedes profile creation, and root/path/handle checks
+    precede PROFILE_CREATE COMMITTED; a failed gate uses recoverable
+    uncommitted-create abort/NOT_APPLIED rather than irreversible poison;
+  - actual hard-link reopen input/name/path/raw-key evidence is domain-separated
+    inside runtime `LINK_STATE`; plan offset 296 contains only a static policy
+    template and predicts no future profile path;
+  - a mandatory pre-admission real-Windows x64/ARM64 fixture must reproduce the
+    exact local named-byte-pipe grant and EOF tuples or kill the design;
+  - backslash separator grammar and both 520-byte canary path fields are explicit;
+  - all seventeen fixed layouts are contiguous, all 14 sections exist, and the
+    candidate is ASCII-clean without stale V21 magic/domain.
+- Boundary:
+  - no authority, fixture, source, build, process, profile, ACL, discovery,
+    admission, S10, or codec action is authorized before a separate design GO;
+  - all nine Phase-A gates remain open and S09 remains active;
+  - the registered music/Opus comparison remains S12 after S11.
+
+### R-205 V26 record/state-matrix V22 commit-publication rejection
+
+- Status: **INDEPENDENT DESIGN NO-GO; NO AUTHORITY OR IMPLEMENTATION**
+- Audited immutable identity:
+  - 112,685 bytes;
+  - SHA-256
+    `185e42f2cb899bfedadb0c86f30a11250de47a85f4e7cfcbf2f0945cbc632f80`.
+- Accepted evidence:
+  - pre-COMMITTED root/canary validation, hard-link evidence binding, static
+    plan policy, Windows pipe feasibility gate, all 17 layouts, resource counts,
+    and authority boundary are retained.
+- Boundary:
+  - V22 is rejected only because a torn/unreadable/unflushed COMMITTED append is
+    routed through a recoverable branch that would append behind an uncertain
+    WAL tail;
+  - V23 must split the state at first COMMITTED issuance and make every uncertain
+    publication terminal/nonmutating;
+  - no authority, fixture, source, build, process, profile, ACL, discovery,
+    admission, S10, or codec action is authorized;
+  - all nine Phase-A gates remain open and S09 remains active.
+- Independent result:
+  [R-205 V22 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V22_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 record/state-matrix V23 commit-publication candidate
+
+- Status: **DESIGN CANDIDATE; INDEPENDENT GO/NO-GO IN PROGRESS**
+- Immutable V23 identity:
+  - 114,421 bytes;
+  - SHA-256
+    `411dc72617a5c67714ec36b45ee62e99e92c556c7f8568484e485dca0466cfc6`.
+- Selected sole remediation:
+  - recoverable root-gate abort is reachable only before COMMITTED issuance;
+  - the controller enters `COMMIT_PUBLICATION_IN_FLIGHT` before issuing the
+    append;
+  - only exact full write/readback/flush/readback reaches
+    PROFILE_CREATE_COMMITTED;
+  - every no/short/invalid/readback/flush/ambiguous outcome reaches terminal
+    `UNPROVEN_COMMIT_PUBLICATION` and permits no later persistent mutation;
+  - explicit transition mutants cover no-write, 1..511-byte tails, invalid full
+    records, both readbacks, flush ambiguity, and chain mismatch;
+  - all seventeen layouts and all prior accepted V22 mechanisms are unchanged.
+- Boundary:
+  - no authority, fixture, source, build, process, profile, ACL, discovery,
+    admission, S10, or codec action is authorized before design GO;
+  - all nine Phase-A gates remain open and S09 remains active.
+
+### R-205 V26 record/state-matrix V23 design admission
+
+- Status: **INDEPENDENT DESIGN GO; PRE-CODE AUTHORITY/FIXTURE DRAFT ONLY**
+- Audited immutable identity:
+  - 114,421 bytes;
+  - SHA-256
+    `411dc72617a5c67714ec36b45ee62e99e92c556c7f8568484e485dca0466cfc6`.
+- Accepted evidence:
+  - exact pre-issuance abort versus COMMIT_PUBLICATION_IN_FLIGHT split;
+  - terminal zero-mutation state for every uncertain COMMITTED result;
+  - retained root/canary, hard-link, named-pipe, layout, resource, hash-graph,
+    cleanup, and authority closures.
+- Authorization:
+  - one pre-code authority/schema draft and inert fixture/mutant definitions may
+    now be created and frozen;
+  - future source/image bytes may not be predicted;
+  - no implementation source edit, fixture executable, build, process, profile,
+    ACL, discovery, admission, S10, codec, or publication action is authorized;
+  - the frozen authority/fixture draft requires a separate independent GO;
+  - all nine Phase-A gates remain open and S09 remains active.
+- Independent result:
+  [R-205 V23 Audit Result](reviews/R205_V26_RECORD_STATE_MATRIX_V23_AUDIT_RESULT_2026-08-01.md).
+
+### R-205 V26 V23 pre-code authority and inert-fixture candidate
+
+- Status: **IMMUTABLE PRE-CODE CANDIDATE; INDEPENDENT AUTHORITY AUDIT IN PROGRESS**
+- Frozen inert fixture/mutant contract:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V23_INERT_FIXTURE_MUTANT_CONTRACT_2026-08-01.md`;
+  - 19,506 bytes;
+  - SHA-256
+    `6fccb932e0a5bb5239f9298b811c19c99fe2ef3b6b77d32fb1b35b376e855692`.
+- Frozen pre-code authority candidate:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V23_PRECODE_AUTHORITY_2026-08-01.md`;
+  - 28,381 bytes;
+  - SHA-256
+    `273f29d87dcffb811f24c2a90ac126dd766e2990e2a5682593bff4af2a458d42`.
+- Closed candidate surface:
+  - exact 17-layout and 52-domain registries;
+  - 22 closed fixture families, including all 1..511-byte COMMITTED tails,
+    hard-link reopen evidence, helper terminal EOF, sealed-loader/share, and
+    Windows x64/ARM64 feasibility kill gates;
+  - exact existing and future source paths without any future source/image
+    digest;
+  - one-way V23 -> fixture -> authority -> source -> toolchain receipt ->
+    post-code-manifest graph;
+  - exact four-role source contracts, source/AST/dataflow predicates, 16-command
+    toolchain order, 24 inspection outputs, and 32 bounded command streams.
+- Boundary:
+  - the same independent adversarial auditor must return a separate authority
+    GO before any source/vector implementation, build, fixture process, profile,
+    or ACL action;
+  - no runtime/post-code/Phase-A/discovery/admission/S10/codec/player/release or
+    publication authority is implied;
+  - S09 remains active and all nine Phase-A gates remain open.
+
+### R-205 V26 V23 pre-code authority rejection
+
+- Status: **INDEPENDENT PRE-CODE NO-GO; NO IMPLEMENTATION**
+- Audited immutable identities:
+  - inert contract: 19,506 bytes, SHA-256
+    `6fccb932e0a5bb5239f9298b811c19c99fe2ef3b6b77d32fb1b35b376e855692`;
+  - authority: 28,381 bytes, SHA-256
+    `273f29d87dcffb811f24c2a90ac126dd766e2990e2a5682593bff4af2a458d42`.
+- Seven independent blockers:
+  - the helper source closure omits the actual local stage-budget header;
+  - the claimed existing helper path/stdio semantic baseline does not exist;
+  - fixture families are prose-open rather than an immutable expanded oracle;
+  - no frozen producer exists for the mandatory AST/CFG/dataflow proof;
+  - the claimed PE import allowlist is absent;
+  - Windows ARM64 role/fixture build and receipt ownership are not closed;
+  - the integration fixture has no byte-exact authority-rooted plan/result
+    transport.
+- Boundary:
+  - V23 authority, source/vector generation, build, fixture execution, profile,
+    ACL, runtime, discovery, admission, S10, and codec work remain forbidden;
+  - V24 is design-only and must close all seven blockers before another
+    independent authority audit;
+  - S09 remains active and all nine Phase-A gates remain open.
+- Independent result:
+  [R-205 V23 Pre-code Authority Independent Audit](reviews/R205_V26_RECORD_STATE_MATRIX_V23_PRECODE_AUTHORITY_INDEPENDENT_AUDIT_2026-08-01.md).
+
+### R-205 V26 V24 byte-closed pre-code candidate
+
+- Status: **IMMUTABLE DESIGN/AUTHORITY CANDIDATE; INDEPENDENT AUDIT IN PROGRESS**
+- Frozen V24 design:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V24_BYTE_CLOSED_PRECODE_REMEDIATION_2026-08-01.md`;
+  - 27,965 bytes;
+  - SHA-256
+    `8f76b8e5bd0e37e75c0084f1117410f9d82a6c80da600b0436e5a7e97b13b204`.
+- Frozen inert manifest:
+  - `native/tests/r205_v24_fixture_vectors_v1.json`;
+  - 2,077,815 bytes;
+  - SHA-256
+    `c28c364ce30ed5e060833530edc67f297d1508d472bda43762e20cbbb0f4c37c`;
+  - 4,896 fixed records, seven compact ranges, ten exact post-build prefix
+    formulas, 7,224 known expanded IDs, ID SHA-256
+    `faef90ca341ed7f53418a4b7c61007ba65b98790e501f45afdb63c9aa46cb9c6`.
+- Frozen V24 pre-code authority:
+  - `docs/reviews/R205_V26_RECORD_STATE_MATRIX_V24_PRECODE_AUTHORITY_2026-08-01.md`;
+  - 22,046 bytes;
+  - SHA-256
+    `c6f58500f3f65d0a5ba6685d803762760026bab2892b86f2eec1e98f390cbb6e`.
+- Selected remediation:
+  - new honest five-partition helper and complete five-file local closure;
+  - exact 192-row semantic commitment and no fictional path mode;
+  - pinned Clang AST/CFG source-proof producer, six-source receipt, and 22
+    uniquely anchored source mutants;
+  - finite 20-name PE import set;
+  - primary x64 plus six-image x64/ARM64 build graph;
+  - fixed 4,096-byte integration plan, 512-byte native-runner record, and
+    2,048-byte result through inherited pipes.
+- Boundary:
+  - design and authority both require independent GO before future sources,
+    build, fixtures, profiles, or ACLs;
+  - runtime/post-code/Phase-A/discovery/admission/S10/codec/player/release and
+    publication remain closed;
+  - S09 remains active and all nine Phase-A gates remain open.
+
+### R-205 V26 V24 design and pre-code authority rejection
+
+- Status: **INDEPENDENT DUAL NO-GO; NO IMPLEMENTATION**
+- Audited immutable identities:
+  - design: 27,965 bytes, SHA-256
+    `8f76b8e5bd0e37e75c0084f1117410f9d82a6c80da600b0436e5a7e97b13b204`;
+  - inert manifest: 2,077,815 bytes, SHA-256
+    `c28c364ce30ed5e060833530edc67f297d1508d472bda43762e20cbbb0f4c37c`;
+  - pre-code authority: 22,046 bytes, SHA-256
+    `c6f58500f3f65d0a5ba6685d803762760026bab2892b86f2eec1e98f390cbb6e`.
+- Eight independent blockers:
+  - all 192 runtime rows omit concrete production-call tuples;
+  - source, integration, layout, and domain operators remain symbolic rather
+    than byte-exact inputs or deterministic formal transforms;
+  - the modified Python validator is excluded from the source proof and the
+    receipt has a temporal self-proof contradiction;
+  - Clang proof flags do not match `-DNDEBUG` executable behavior and omit the
+    ARM64 parsed configuration;
+  - the integration plan omits path counts, exact timeout/policy preimages,
+    runner transport, and a consistent named-pipe grammar;
+  - the x64 sealed plan does not bind primary x64 build-receipt provenance;
+  - post-build ranges enumerate artifacts rather than all four V23 mapping/copy
+    operations;
+  - per-case and aggregate/post-build results have no canonical serialization,
+    path, ordering, hash, or ceiling contract.
+- Retained positive evidence:
+  - the five-file helper closure, honest new-helper baseline, physical manifest
+    identities/counts, finite import commitment, real x64/ARM64 wrappers, and
+    one-way absence of predicted future hashes remain useful inputs.
+- Boundary:
+  - V24 remains immutable negative evidence and authorizes no source edit,
+    build, fixture, profile, ACL, runtime, discovery, admission, S10, codec,
+    player, release, or publication action;
+  - V25 must resolve B1 through B8 together and receive a fresh independent
+    verdict;
+  - S09 remains active and all nine Phase-A gates remain open.
+- Independent result:
+  [R-205 V24 Dual Independent Audit](reviews/R205_V26_RECORD_STATE_MATRIX_V24_PRECODE_DUAL_INDEPENDENT_AUDIT_2026-08-01.md).
+
+### R-205 V26 V25-A V1 staged-authority early rejection
+
+- Status: **EARLY INDEPENDENT NO-GO; ORACLE/AUTHORITY NOT AUTHORIZED**
+- Audited V1 design:
+  - 16,453 bytes;
+  - SHA-256
+    `44de3a408532ecb8d7a274580fc78ae261d2127a1ddbab15df8ce8a452e3c759`.
+- Blocking result:
+  - helper-visible expected values created a self-oracle;
+  - instruction bytes and range construction were incomplete;
+  - post-source mutation-manifest authority and exact source-freeze
+    publication were absent;
+  - the property/mutant map and Python-adapter contract were incomplete;
+  - future checkers were not independently closed;
+  - nominal sources remained under active build/import roots.
+- Boundary:
+  - V1 is immutable negative design evidence;
+  - no oracle, authority, staged source, patch, import, build, or runtime action
+    is authorized under it;
+  - S09 remains active.
+- Independent result:
+  [R-205 V25-A V1 Early Red-Team](reviews/R205_V26_RECORD_STATE_MATRIX_V25A_V1_EARLY_REDTEAM_2026-08-01.md).
+
+### R-205 V26 V25-A V2 split-oracle inert-staging candidate
+
+- Status: **DESIGN REMEDIATION CANDIDATE; INDEPENDENT REVIEW REQUIRED**
+- Immutable V2 identity:
+  - 23,712 bytes;
+  - SHA-256
+    `bf1c062695233fa56bede7304f7a027b60b3ac47658767f33aca0bd97c46d751`.
+- Selected correction:
+  - helper receives stimulus bytes only; expectations remain outer-oracle-only;
+  - all program/instruction headers, opcodes, operands, hashes, states, pointer,
+    write, and residue registries are finite and byte-defined;
+  - forty source-independent predicates and negative directions are frozen
+    before source;
+  - Stage A writes only `.candidate.txt` payloads under a non-build docs root;
+  - exact source inventory, independent byte-patch manifest, and terminal
+    inventory use an explicit FROZEN transaction;
+  - Python facts come from pinned Python 3.14 built-in AST/dis tools and are
+    checked with independently retained raw outputs plus a bounded native
+    checker;
+  - V24 B4 through B8 remain mandatory actual oracle values, not deferred
+    prose.
+- Boundary:
+  - V2 authorizes only creation of a complete non-source oracle candidate and
+    design validation receipt;
+  - it authorizes no staging/source/patch/import/proof/build/runtime action;
+  - S09 and all nine Phase-A gates remain open.
+
+### R-205 V26 V25-A V2 early independent rejection
+
+- Status: **INDEPENDENT NO-GO BEFORE ORACLE AUTHORING**
+- Frozen audit identity:
+  - 6,014 bytes;
+  - SHA-256
+    `5645dfcd0f807d45402cc5b1a1c91abe2fbbaf3f0d0687114a3107ccb6f0d033`.
+- Blocking findings:
+  - stimulus and expectations are logically but not physically separated, and
+    helper-visible ordinal/partition/hash bytes still permit keyed imitation;
+  - exact production-call and observation provenance is not proven;
+  - BEGIN has a 193/192-byte contradiction, operand combinations and raw
+    observation bytes are incomplete, and the fabricated pointer is unsafe;
+  - typed-mutant, source-inventory, no-reference, and receipt authority is not
+    closed;
+  - the adapter AST delta, original-validator identity, Python runtime closure,
+    and a genuinely independent semantic verifier are not frozen;
+  - the oracle itself is proposed under an active test root.
+- Decision:
+  - V2 is immutable negative design evidence;
+  - no V2 oracle may be authored;
+  - create a V3 design with physically separate artifacts, no helper-visible
+    case identity, post-source unpredictable challenges, exact ABI-call
+    provenance, valid owned pointer cases, explicit typed/source inventories,
+    complete Python closure, and inert oracle placement;
+  - obtain another independent GO before oracle creation.
+- Evidence:
+  [R-205 V25-A V2 Early Red-Team](reviews/R205_V26_RECORD_STATE_MATRIX_V25A_V2_EARLY_REDTEAM_2026-08-01.md).
+
+### R-206 S09 compact-conformance scope correction
+
+- Status: **ACCEPTED EXECUTION CORRECTION; S09 REMAINS ACTIVE**
+- Problem and measured baseline:
+  - R-205 review/result history contains 76 files, 1,426,165 bytes, and
+    24,813 lines; the decision log has also grown by 2,289 working-tree lines;
+  - the LPAC, randomized-oracle, recursively checked authority branch defends
+    against a deliberately colluding test author rather than the production
+    behavior that S09 must admit;
+  - this is disproportionate test-of-tests recursion and delays the MAF work.
+- Alternatives:
+  - continue V25-A V3 with a sandboxed randomized ABI VM: rejected for scope;
+  - rely only on the existing replay: rejected because the record/state matrix
+    and caller-buffer effects still need direct coverage;
+  - use one direct bounded C++ state-matrix test plus independent review:
+    selected as the smallest coherent gate;
+  - make no change: rejected because it preserves the stalled recursion.
+- Accepted compact gate:
+  - freeze expected status, state, and write effects from the ABI contract,
+    never from production output;
+  - execute a generic table loop against the actual production ABI;
+  - compare complete caller-owned buffers before and after every call;
+  - cover every state and operation equivalence class, null/alias/capacity
+    boundaries, invalid transitions, finish, reset, and failure atomicity;
+  - include a deliberately wrong synthetic expectation proving comparator
+    rejection;
+  - run MSVC and Clang x64, ARM64 compile/run where available, sanitizer and
+    repeated replay, followed by the retained R-203 exact-small,
+    candidate-rich, and complete corpus gates;
+  - obtain one independent source/result GO before S09 completes.
+- Claims explicitly dropped:
+  - no defense against a malicious or colluding test author, compromised
+    compiler/OS/framework, or hostile third-party fixture execution;
+  - no cryptographic function-call provenance, formal state-space completeness,
+    recursive checker-independence proof, or sandbox certification.
+- Hard budget from this decision forward:
+  - at most five changed/new human-authored files and 1,000 non-generated lines;
+  - C++ test at most 500 lines, scope records at most 200 combined, final audit
+    report at most 250 lines, and one index row;
+  - at most two repair iterations and no further preflight version series;
+  - if the compact gate cannot pass inside the budget, leave the sub-gate
+    NO-GO instead of rebuilding an oracle-authority hierarchy.
+- Evidence-first result:
+  - an independent scope audit concluded that this compact gate honestly
+    satisfies S09/R-203 if production never generates expectations, the
+    independent candidate-rich oracle is retained, and final toolchain/corpus
+    replay remains mandatory.
+- Boundary:
+  - all R-205 V1-V25 artifacts remain immutable negative/research evidence;
+  - this correction changes no production source, ABI, codec syntax, bitstream,
+    or PCM and therefore does not trigger the R-198 music/Opus gate;
+  - the next action is the compact C++ test, not V25-A V3.
+
+### R-207 S09 unimplemented private-ABI withdrawal and closure
+
+- Status: **INDEPENDENT GO; S09 COMPLETE; S10 ACTIVE**
+- New falsification result:
+  - the proposed `r205_record_*`, semantic-probe, typed-probe, telemetry macro,
+    and operation-tuple symbols have zero definitions in compiled native C/C++
+    source;
+  - R-205 was evidence-only, and its preliminary scaffold was already removed
+    without a retained production implementation;
+  - the first compact-test proposal was rejected because it tested the
+    unrelated `work_ledger_v1` bookkeeping state rather than the proposed
+    private record lifecycle.
+- Decision:
+  - withdraw, do not implement, and do not claim passage of the entire R-205
+    private telemetry ABI, record-ID grammar, operation-tuple, LPAC harness,
+    randomized oracle, and recursive authority chain;
+  - retain every R-205 artifact as immutable negative research evidence;
+  - make no source change and proceed directly to S10 public-ABI conformance.
+- Honest claim boundary:
+  - no private-state, record-ID, sandbox, anti-hardcoding, hostile test-author,
+    cryptographic call-provenance, or formal state-space claim is permitted;
+  - S09 is complete only as an independently reviewed remediation-design and
+    scope-correction step;
+  - R-191/R-203 admission, public failure atomicity, determinism, portability,
+    and resource claims remain blocked until S10 evidence and final audit pass;
+  - no codec, syntax, bitrate, quality, bitstream, PCM, or player improvement is
+    implied.
+- S10 minimum:
+  - freeze actual source/header/corpus/toolchain/command identities;
+  - run retained exact-small, candidate-rich, finite, hostile, boundary,
+    two-pass, allocation/OOM, concurrency, CPU/CUDA, public-ABI, and available
+    sanitizer/platform gates;
+  - retain commands, raw outputs, hashes, time, memory, cleanup, released
+    bitstream and decoded-PCM identity;
+  - obtain one independent final source/result GO/NO-GO.
+- Independent verdict: **GO**. Implementing a private ABI solely to test it was
+  rejected as disproportionate test-of-tests recursion.
+
+### R-208 S10 structural parity correction
+
+- Status: **INDEPENDENT NO-GO FOR S10 CLOSURE; LOCAL PASS RETAINED**
+- Evidence retained:
+  - two-pass exact-small and candidate-rich public-ABI replay agrees across
+    Clang 22 and GCC 16;
+  - focused native and Python gates pass;
+  - a narrow 32-case CUDA CPU/GPU parity run passes on RTX 2080 Super;
+  - retained speech and Mozart 3-second bitstreams and decoded WAVs are
+    byte-identical to their frozen counterparts.
+- Falsification and correction:
+  - the inherited `10,000` CPU plus six `10,000` CUDA campaign has no recorded
+    power analysis, coverage-convergence evidence, mutation-score relation, or
+    defect-detection rationale;
+  - it is superseded rather than treated as a proof obligation;
+  - the 32-case CUDA result remains a narrow local result and is not relabeled
+    as complete coverage.
+- Replacement CUDA admission gate:
+  - twice-run CPU equality to all 288 frozen canonical unions;
+  - twice-run CUDA parity at all six thread values for the 252 nonzero cases,
+    with expected `INVALID_ARGUMENT` for the 36 zero-edge cases;
+  - CPU-produced public-valid boundary unions around each tile boundary,
+    using exact reachable or deterministic nearest lower/upper counts and a
+    structural cap of 2049 rather than an undefined maximum;
+  - no-match, single-chain, branch/merge, ownership-conflict, phase, protected,
+    threads `0/1025`, capacity-precedence, malformed-input, and valid
+    candidate-permutation profiles;
+  - twice-run bit-exact outputs, stable hashes, and an honest status/failure-
+    mutation reachability registry;
+  - the true resource maximum remains a separate resource-limit gate.
+- Remaining S10 blockers:
+  - current-source remote MSVC x64, Windows/Linux ARM64, Apple ARM64, Android
+    ARM64, and iOS simulator public-ABI evidence;
+  - Linux ASan/UBSan/TSan/libFuzzer evidence;
+  - the replacement structural CUDA campaign;
+  - explicit ABI-layout, v2 no-write, fingerprint-mutation, and
+    publication-atomicity obligation evidence;
+  - final independently audited artifact inventory and GO/NO-GO.
+- Boundary:
+  - no production or codec algorithm changed, so R-198 is not triggered;
+  - no private R-205 ABI is authorized;
+  - S10 remains active and S11 remains blocked.
+
+### R-209 R-208 structural CUDA admission
+
+- Status: **INDEPENDENT GO; CUDA STRUCTURAL OBLIGATION COMPLETE**
+- Result:
+  - the 495-line standalone evidence harness passed locally in 19.264 seconds;
+  - an independent clean rerun passed in 16.557 seconds and reproduced every
+    semantic hash;
+  - all 288 CPU/frozen cases, 252 nonzero all-six-thread CUDA cases, 36
+    zero-edge failures, 33 public-CPU boundary pairs, negative precedence,
+    mutation laws, and status reachability passed as frozen by R-208;
+  - batching preserved all 936 nonzero original edges without cross-case edges.
+- Scope:
+  - production source and codec outputs are unchanged;
+  - the random `10,000 + 6 x 10,000` target remains superseded;
+  - S10 remains active for remote platform, sanitizer/fuzzer, explicit ABI
+    obligations, final inventory, and independent final admission.
+
+### R-210 focused local ABI obligation admission
+
+- Status: **INDEPENDENT GO; LOCAL S10 OBLIGATIONS COMPLETE**
+- Existing coverage, without new test code, proves:
+  - C/C++/Python ABI size and offset agreement;
+  - all 8192 retired-v2 pointer/count/capacity no-write combinations;
+  - missing/stale/changed-input fingerprint behavior;
+  - failure publication atomicity and successful bit-exact replay.
+- Results:
+  - Clang 7/7, GCC 7/7, Python layout 1/1;
+  - the earlier incomplete GCC attempt is rejected evidence.
+- Remaining S10 scope:
+  - current-source remote platform and Linux sanitizer/fuzzer receipts;
+  - final bound artifact inventory;
+  - one final independent source/result GO/NO-GO.
+
+### R-211 minimal sufficient evidence and anti-recursion rule
+
+- Status: **ACCEPTED OWNER REQUIREMENT; INDEPENDENT PRE-EDIT GO**
+- Problem:
+  - S09 expanded into recursive authority and harness validation for an
+    unimplemented private ABI;
+  - the resulting file, line, storage, and elapsed-time cost was not
+    proportional to the production claim being tested;
+  - arbitrary round case counts were retained without coverage, convergence,
+    mutation, statistical, or defect-detection justification.
+- Alternatives:
+  - retain unrestricted evidence depth: rejected as test-of-tests recursion;
+  - weaken conformance, comparison, security, release, or platform gates:
+    rejected because those gates control real production risks;
+  - require the minimum sufficient evidence tied to exact production identity:
+    accepted.
+- Rule:
+  - every evidence gate requires a pre-code claim ledger mapping each test to
+    an existing production claim or public behavior, controlled risk, current
+    evidence, expected result, and failure consequence;
+  - reuse identity-current public-ABI, conformance, comparison, security,
+    release, and platform gates before creating infrastructure;
+  - a new harness requires a written public-observability gap;
+  - private/test-only ABI, semantic backdoors, friend hooks, patched production
+    binaries, and a harness whose sole purpose is checking another harness are
+    prohibited;
+  - independent hashes, schema validation, and repeated public execution are
+    the terminal integrity checks and do not create a new meta-gate;
+  - freeze one cumulative budget for changed/generated lines and files,
+    runtime, peak memory, retained storage, CI/device/cloud/API cost, and all
+    remediation iterations; splitting or renaming does not reset it;
+  - every numeric case/run count requires structural, boundary, mutation,
+    convergence, or statistical rationale;
+  - direct structural public-ABI evidence is preferred but cannot replace a
+    required dynamic concurrency, runtime, security, or platform observation.
+- Admission and kill rule:
+  - admit only when the ledger is covered within budget, reproducibly, against
+    the exact source/binary/command/input identity;
+  - the first budget breach or remediation permits one bounded redesign;
+  - a repeated breach or second remediation cycle for the same claim/gate
+    stops that gate for independent redesign or scope reduction;
+  - changing names, files, generations, or harnesses does not reset the count;
+  - negative evidence blocks only explicitly dependent claims.
+- Non-regression boundary:
+  - R-198 comparisons and mandatory release, security, compatibility, and
+    platform gates remain fully binding.
+
+### R-214 S10 final admission and S11 authorization
+
+- Status: **INDEPENDENT GO; S10 COMPLETE; S11 AUTHORIZED**
+- Audited head: `1d0f6e86cded81fd156895574150b4f8f8e4d67b`.
+- GitHub evidence:
+  - Tests run `30724305949`: success;
+  - Mobile Core run `30724305951`: success, all nine evidence jobs;
+  - five valid R-203 replays agree on portable semantic identity;
+  - 2,000,000 sanitizer-fuzz inputs completed with zero findings;
+  - adjusted coverage is 96.3512% lines / 92.4779% branches;
+  - TSan passed eight threads and 100,000 sequences;
+  - Android, iOS, macOS, Windows and Linux obligations passed.
+- Workflow integrity:
+  - R-213 installs the frozen replay environment on Unix;
+  - every Bash replay pipeline is fail-closed with `pipefail`;
+  - Windows explicitly propagates piped native-process failures.
+- Evidence root:
+  `G:\Resonith\artifacts\r213-s10-final`.
+- Disposition:
+  - S10 has no remaining accepted blocker;
+  - S11 anonymous multi-partial MAF predictor is the next active step;
+  - R-185 preflight and independent red-team remain mandatory before source
+    changes;
+  - R-198 is not triggered by the workflow-only R-213 remediation.
+
+### R-215 frozen S11 persistent multi-partial predictor
+
+- Status: **FOCUSED S11 COMPLETE; INDEPENDENT GO; S12 AUTHORIZED**
+- Problem and complete objective:
+  - R-191/R-203 provides bounded anonymous complex-partial paths but no
+    synthesis or actual-byte selection;
+  - minimize complete container, one frozen Basis, independent per-channel
+    lifetimes, and final Truth bytes under actual decoder quality, work,
+    memory, startup, and fallback costs;
+  - direct lapped Truth remains the complete incumbent.
+- Sources of truth:
+  - McAulay/Quatieri sinusoidal analysis-synthesis, global partial-tracking
+    literature, MPEG-4 parametric audio/HILN, spectral-modeling residual
+    practice, DDSP physical priors, R-180/R-183 negative byte evidence, and
+    the admitted R-191/R-203 native paths;
+  - sinusoidal tracking, parametric lines, and line-plus-residual synthesis are
+    prior art and are not claimed as Resonith novelty.
+- Alternatives:
+  - no change/direct Truth: retained as fallback and RDO incumbent;
+  - frame-local fundamental plus harmonics: rejected for polyphony,
+    inharmonicity, crossings, and phase cancellation;
+  - a new persistent oscillator opcode: rejected until existing MFT1 type-8
+    and CBF1 transport prove complete-byte benefit;
+  - independent anonymous persistent lanes: accepted as the smallest coherent
+    test;
+  - source-filter, phase anchors, stochastic/transient paths, latent
+    separation, harmonic grouping, cross-channel reuse, learned proposals,
+    and public syntax: deferred to their existing later panel steps.
+- Frozen S11 language:
+  - frozen used-only cosine family `{16,32,64,128,256}`, complete fixture
+    SHA-256
+    `9880c8f4ad2ac36e5af5302299a8a6dbbe7416b8243f48c786db3a375c40a87c`;
+  - unchanged MFT1 type-8 piecewise-linear Q16 step and signed Q15 gain,
+    arbitrary birth/death, one initial phase, continuous one-past phase carry,
+    independent per-channel emitters, static one-hot mix, one final Truth, and
+    direct Truth fallback;
+  - one length is selected once per lane; length 16 maps the existing
+    inclusive `+/-8 * 2^16` step range to the full signed Nyquist interval,
+    while longer admitted lengths reduce interpolation error;
+  - aggregate observations may propose paths but cannot share channel law,
+    phase, gain, emitter, or record cost in S11.
+- Reproducible in-language lower bound:
+  - actual native decode of a 12-second changing/overlapping four-lane field;
+  - complete CBF1 candidate `4,768` bytes versus direct Truth `119,854` bytes,
+    ratio `3.9782%`, with bit-exact final PCM;
+  - two runs produced receipt SHA-256
+    `0b86b51d90e1be8c335103bdfb746ea408970706d88654c1452ea407bdd31668`;
+  - this proves only bounded representational capacity, not analyzer recovery,
+    real-audio gain, Opus gain, novelty, or promotion.
+- Retained negative evidence:
+  - a read-only 997 Hz diagnostic exposed 16-point interpolation residual RMS
+    307.74 PCM and increased lapped Truth from 572 to 8,126 bytes;
+  - final Truth and direct fallback price this error; the failed 16-only
+    language was revised before the focused S11 gate rather than hidden by a
+    threshold change.
+- Falsifiable prediction and kill gates:
+  - automatically recovered lanes must make a new complete Pareto point, with
+    the predeclared focused synthetic threshold passing on at least two of
+    crossing, birth/death overlap, and gap/reappearance cases;
+  - path identity, channel phase, continuous split carry, CBF1/MFT1 PCM
+    identity, final decoder loop, bounds, and direct fallback must remain
+    exact and deterministic;
+  - noise, transients, over-bound candidates, or uneconomic lanes must fall
+    back explicitly rather than force model activation;
+  - S12 must run the complete registered long-first comparison against the
+    preceding Resonith generation and maximum-effort official Opus before any
+    S13 algorithm work or promotion.
+- Independent audit:
+  - final **GO with no blockers** for the frozen S11 implementation;
+  - signed `+/-Nyquist` edges, beyond-range rejection, all artifact hashes,
+    byte closure, `2^20` phase modulus, exact split carry, and claim boundary
+    were independently checked;
+  - public syntax, S13+, promotion, release, novelty, and compression claims
+    remain unauthorized until focused S11 evidence and S12.
+- Dominated cycle-offset implementation rule:
+  - S11 uses `cycle_offsets=(0,)`; nonzero duplicates change no phase or
+    topology term and add only nonnegative offset cost;
+  - frozen crossing evidence preserves the same selected 122-observation
+    semantic sequence while reducing edges `4,755 -> 951` and native work
+    `170,645,887 -> 26,757,175` units;
+  - semantic identity means the ordered observation evidence, not candidate,
+    incoming-edge, path, rank, or packed IDs across manifests;
+  - universal bounded-frontier equivalence is not claimed because duplicate
+    IDs can consume top-K state under ties or saturation;
+  - the encoder work cap is frozen at `250,000,000` units; exhaustion is an
+    explicit fallback, not authority to expand the cap silently.
+- Basis-resolution remediation before the focused S11 gate:
+  - the analyzer-recovered 16-only clean-tone candidate improved SSE sharply
+    but lost rate at both 64 and 128 coefficients/frame, exposing material
+    interpolation residual rather than a threshold problem;
+  - alternatives were direct Truth only, 256 only with fallback above
+    `sample_rate/32`, a frozen power-of-two family, or a new oscillator opcode;
+    direct Truth remains fallback, 256 only loses high partials, and a new
+    opcode remains deferred to S51;
+  - independent audit returned **GO** for the smallest coherent frozen family
+    `{16,32,64,128,256}` and **NO-GO** for adding 512/1024 in S11;
+  - one length is selected once per lane as the longest member whose raw,
+    corrected, interpolated, split, and tail endpoint steps all fit existing
+    type-8 bounds; the length never changes inside that lane;
+  - every phase mapping, distance, correction, modulo, one-past carry, split,
+    and tail operation uses that length; a hard-coded 16 is a blocker;
+  - only used tables are packed once in ascending-length order and their full
+    byte/header cost participates in complete RDO;
+  - native one-law evidence at 128 coefficients/frame gives length-128
+    `3,719` bytes/SSE `0` versus direct Truth `4,229` bytes/SSE `15,724,667`,
+    a 12.06% byte reduction with exact PCM; this is a focused lower bound, not
+    analyzer recovery or a real-audio claim.
+- Final decoder-coordinate phase-fit remediation:
+  - the unchanged analyzer path remains authoritative; measured frequency may
+    select only an unwrapped integer cycle and cannot change path identity;
+  - a frozen Q12 weighted two-parameter integer solve proposes type-8 endpoint
+    steps, with endpoint-prior weight one, exact ties-even division, fixed
+    conditioning and signed 512-bit accumulator gates;
+  - the actual half-away-rounded native type-8 coordinates rescore every
+    observation and split; ambiguous aliases, insufficient data, range or
+    conditioning failures retain the previous endpoint fitter or direct Truth;
+  - no phase reset, interior anchor, per-knot phase record, or opcode is added;
+    those remain S13/S51 scope;
+  - the historical 4,412-byte/SSE-915,414 diagnostic is explicitly
+    non-authoritative because its exact input, command, and artifact identities
+    were not persisted; it is neither an admission baseline nor a passed gate;
+  - the executable admission gate is the reproducible predeclared two-of-three
+    structural Pareto threshold plus explicit noise/transient fallback,
+    executed transport/decoder evidence, and deterministic repetition of an
+    actually model-active candidate.
+- Boundary-valid paid-lifetime rule:
+  - an independent audit returned **GO** for excluding centered observations
+    whose frozen FFT window extends beyond source bounds;
+  - the complete native path and ordered IDs remain unchanged evidence; one
+    deterministic maximal valid run defines separate retained-support IDs;
+  - run selection maximizes covered sample span, then observation count, then
+    earliest center, then lexicographic IDs, without bridging invalid rows;
+  - rejected prefix, suffix, and gaps remain final Truth and no edge-padding
+    extrapolation is allowed;
+  - the rule changes paid S11 birth/death only and makes no unbiased-gain
+    claim; complete decoder-domain RDO remains authoritative.
+ - Exact constant-span tail fusion:
+  - independent **GO** permits fusing an adjacent tail into a constant law only
+    under identical emitter/Basis/circular/gain, 65,535-sample, frozen
+    frequency/type-8, old-boundary one-past-phase, and support-contiguity gates;
+  - it is not a PCM-identical refactor: the tail prediction, Truth, and complete
+    RDO are recomputed and the fused form is never forced;
+  - the focused receipt must expose before/after placements, boundary phase,
+    complete bytes/SSE, executed CBF1/MFT1 identity, and model-active repeat
+    hashes before S11 can close.
+- Focused closeout evidence:
+  - authoritative receipt
+    `G:\Resonith\artifacts\r215-s11-focused-v3\r215_s11_focused_gate.json`,
+    SHA-256
+    `afcdea6a9277182b53f32b1c0777e904fe1a58c5a52ccdcd9f26e5cf462ecc95`;
+  - predeclared structural Pareto threshold passed on birth/death and
+    gap/reappearance; noise and transient explicitly selected direct Truth;
+  - the model-active delayed/antiphase stereo candidate selected CBF1 + Truth
+    at 14,051 bytes/SSE 132,190,200 versus direct Truth 15,813
+    bytes/SSE 154,475,295, with identical repeated stream, PCM, lane evidence,
+    and metric hashes;
+  - all 16 evaluated subsets proved parser-derived S11-only records,
+    CBF1/MFT1 predictor identity, and independent complete-decode identity;
+  - independent final verdict is **GO with no blocking findings** and an
+    independent 24/24 relevant-test pass in 6.61 seconds;
+  - this closes focused S11 and authorizes only the complete S12 registered
+    long-first comparison. S13, promotion, release, novelty, and compression
+    claims remain blocked.
+
+## R-217 — Owner-directed fixed official Opus direct anchor
+
+- Status: **NORMATIVE EVIDENCE POLICY; INDEPENDENT CONDITIONAL GO CLOSED**
+- The owner stopped the R-216 exhaustive Opus-frontier search during the first
+  long item and narrowed S12 to a direct current-Resonith-versus-Opus
+  comparison. The preceding Resonith generation is excluded from R-217.
+- R-217 uses one official Opus 1.6.1 point at maximum `opusenc` complexity,
+  true VBR, 20 ms, zero expected loss, 1000 ms maximum delay, default phase
+  inversion, zero padding, discarded comments/pictures, and deterministic
+  serial. The exact registered token `speech` selects `--speech`; every other
+  item uses `--music`.
+- R-217 is not the R-166 maximum-effort frontier and cannot support a general
+  "better than Opus" claim. R-166 remains authoritative for any later broad
+  Opus claim.
+- Exactly four bitrate-feedback attempts are generated. Before any quality
+  metric is inspected, one attempt is selected by absolute complete-byte
+  delta, then smaller complete bytes, q5, and attempt index. Failure to enter
+  `max(64, target_bytes // 1000)` is `UNMATCHED` and forbids equal-rate claims.
+- The selected Ogg is decoded by official `opusdec`; current Resonith is
+  decoded by the Golden Core. Each receives one common metric pass from
+  identical PCM.
+- Partial R-216 staging has diagnostic value only and cannot seed R-217.
+  R-217 receives a new run identity, output schema, long-first atomic receipts,
+  frozen path/process/time/RSS/disk bounds, and fresh S11 and Opus encodes.
+- Independent red-team initially returned NO-GO and then authorized the
+  smallest coherent implementation after the claim, selection, container, and
+  authority remediations above were incorporated in
+  `docs/reviews/R217_S12_FIXED_OPUS_DIRECT_PREFLIGHT_2026-08-02.md`.
+- S13 remains blocked until all 19 R-217 receipts and the aggregate direct
+  report pass. This is an explicit owner-directed S12 evidence amendment, not
+  a silent modification of the stable 63-step panel.
+- First full-run incident and sole bounded redesign:
+  - full Mozart committed in 356.707504 seconds with receipt SHA-256
+    `99a0fcf1624860554331dfea6119918d77636586bf2b12c1cfa9b5fbe61123ef`;
+  - `ebu-claves` then failed closed at its exact 420-second S11 child ceiling,
+    without a stream, receipt, RSS/disk breach, orphan, or blind retry;
+  - the 2,998-byte failed staging was atomically quarantined with both file
+    hashes preserved;
+  - independent GO permits one change only: short S11 900 seconds and short
+    worker 1,200 seconds, with every other algorithm, identity, corpus and
+    resource bound unchanged;
+  - the redesigned run uses a new output root and repeats Mozart; any second
+    budget breach stops R-217 instead of expanding the limit again;
+  - complete evidence is in
+    `docs/reviews/R217_S12_SHORT_TIMEOUT_INCIDENT_2026-08-02.md`.
+- Second full-run stop:
+  - the new run identity
+    `68ee12a3560fab4bbe16969dc85488bdddace28913d4330e08770a10f558a6c3`
+    independently repeated Mozart and committed `ebu-claves` in 800.877559
+    seconds;
+  - `ebu-cymbal` then exceeded the redesigned exact 900-second S11 ceiling
+    without an output, receipt, RSS/disk breach, orphan, or retry;
+  - its 3,009-byte request-only staging was atomically quarantined with both
+    hashes preserved;
+  - R-211 now forbids another ceiling increase. R-217 is stopped until an
+    independently audited, output-identical S11 performance redesign fits the
+    existing bound, or the owner explicitly reduces scope;
+  - partial Mozart/claves evidence is retained but does not close S12 or
+    authorize S13/promotion;
+  - exact evidence is in
+    `docs/reviews/R217_S12_SECOND_TIMEOUT_STOP_2026-08-02.md`.
+
+## R-218 — Output-identical S11 analyzer performance remediation
+
+- Status: **INDEPENDENT GO; BASELINE FINGERPRINTING AUTHORIZED**
+- Problem: the fixed R-217 direct comparison stopped twice because the frozen
+  S11 analyzer used 792.173 seconds on `ebu-claves` and exceeded 900 seconds on
+  `ebu-cymbal`, despite both inputs containing only 529,200 stereo frames.
+- Objective: make the existing 900-second S11 ceiling sufficient without
+  changing the S11 candidate language, observation values/order, native graph,
+  selected payload, decoded PCM, resource/security behavior, or R-217 Opus
+  anchor.
+- Measured focused profile:
+  - 42.579 seconds total under `cProfile`;
+  - 29.592 seconds in `observe_complex_partials`;
+  - 11.921 seconds in `_candidate_peaks`;
+  - 8.120 seconds in `_direct_dtft`;
+  - 5.488 seconds in `_assign_conflict_groups`.
+- The independently reviewed remediation is sequential A, then B, then C:
+  remove the tail-list copy; prove identity; hoist one immutable PCM16-to-
+  float64 conversion; prove identity; then hoist only exact DTFT constants and
+  the identical per-frame window product; prove identity. The generation may
+  be admitted only if every checkpoint passes independently.
+- The first audit returned NO-GO because selected fallback bytes alone could
+  hide changed search state, stable source ownership was unstated, runtime
+  admission was ambiguous, and raw-PCM/resource gates were incomplete. The
+  revised preflight requires a pre-edit byte-level fingerprint of observations,
+  graph inputs/edges/paths, lowered lanes/subsets and RDO ledger; stable
+  non-concurrently-mutated PCM; exact <=475-second claves and <=600-second
+  cymbal limits; raw PCM identity; and unchanged RSS/disk ceilings.
+- No timeout increase, candidate pruning, approximate search, reordered
+  floating reduction, new Opus search, or new codec algorithm is authorized.
+- Implementation was blocked until the independent auditor issued binary GO
+  on the revised remediation and identity gates recorded in
+  `docs/reviews/R218_S11_OUTPUT_IDENTICAL_PERFORMANCE_PREFLIGHT_2026-08-02.md`.
+- Final independent re-audit verdict: **GO** on preflight SHA-256
+  `9900e569df3fd6f33ef637a0d4f0c525196664fb8eee756b1e4c6abb768641b7`.
+  Authorization is limited to sequential A -> exact identity gate -> B ->
+  exact identity gate -> C -> exact identity gate. Any mismatch kills that
+  checkpoint; no tolerance, timeout increase, pruning, reordered arithmetic,
+  GPU path, or comparison-scope change is authorized.
+- Implementation evidence status: **INDEPENDENT FINAL CLOSEOUT GO; IMMUTABLE
+  COMMIT PREPARATION**.
+  - A removed only quadratic suffix-list allocation and reduced full claves
+    encode from 774.105972 to 237.670336 seconds while preserving the complete
+    internal SHA-256
+    `79c11ca6b160d80330c30944e82d59207b8b7e4157d5984d3b7826f019a34a2b`.
+  - B hoisted the stable PCM16-to-float64 snapshot and preserved every named
+    internal identity; full claves fell to 220.386926 seconds.
+  - C reused the identical windowed frame and immutable DTFT constants while
+    retaining the same `np.exp` and axis-0 `np.sum` order; full claves fell to
+    196.590282 seconds, a 3.9377x speedup over baseline.
+  - full cymbal, which previously exceeded 900 seconds, completed in
+    233.343736 seconds and repeated in 239.125873 seconds with identical
+    internal, payload, and decoded-PCM hashes.
+  - all seven focused cases, both active real prefixes, and full claves kept
+    identical observation/graph/lane/subset/RDO, payload, and PCM hashes after
+    each A/B/C checkpoint. No Opus point was searched or encoded by R-218.
+  - detailed retained evidence is in
+    `docs/results/R218_S11_OUTPUT_IDENTICAL_PERFORMANCE_2026-08-02.md`.
+  - the independent closeout audit reproduced all reported hashes, all 30
+    baseline/A/B/C semantic identity comparisons, both C-repeat payload/PCM
+    identities and the 16-test gate, but rejected the resource-evidence
+    contract: historical checkpoint JSON files omitted externally measured
+    resource fields and the C-repeat helper asserted zero temporary bytes;
+  - A and B are proof checkpoints rather than retained generations, so they
+    will not be rerun solely for telemetry. Their resource-admission claim is
+    withdrawn. Final C must instead repeat full claves and cymbal under a
+    fail-closed parent monitor that creates a suspended child inside an
+    active-process-limit-1 Windows Job Object, hashes authorities before and
+    after, and records operating-system peak working set plus staging byte
+    high-water under the unchanged 8 GiB/2 GiB/600 s limits. This supersedes
+    original gate 8 only for historical A/B resource admission;
+  - R-217 itself must not be bypassed: it correctly rejects the dirty changed
+    analyzer, pins the pre-R-218 revision, and omits the analyzer from run
+    identity. After R-218 closes, selected R-218 files require an immutable
+    commit and a new independently audited direct-comparison identity that
+    explicitly hashes the analyzer while preserving the single fixed official
+    Opus 1.6.1 point;
+  - exact remediation scope and kill gates are appended to the R-218
+    preflight. S12 remains blocked until the auditor authorizes and closes both
+    evidence gaps.
+  - first monitor-code audit: **NO-GO for real repeats**. Job structure layouts,
+    active-process enforcement and the eight focused tests passed, but four
+    closeout gaps remain: the parent gate needs an externally supplied audited
+    self-hash; receipt-inclusive disk bytes need a final limit check; failure
+    cleanup needs checked `TerminateJobObject` plus verified child death and
+    checked handles; and the receipt needs observed sample count/maximum gap,
+    not only a configured interval;
+  - selected smallest remediation: require and record an audited parent-gate
+    SHA-256 argument; target 10 ms sampling and fail if observed start-to-start
+    gap exceeds 25 ms; reject receipt-inclusive bytes above 2 GiB; check every
+    monitor-owned handle operation; on any monitor failure terminate the Job,
+    wait for and verify child exit, with an explicit process-kill fallback if
+    Job termination itself fails. Focused mutants must cover wrong gate hash,
+    receipt overflow, sampling overrun, and child cleanup before any real C
+    repeat.
+  - first independently authorized full-claves resource launch failed closed
+    in 0.9 seconds before encoding because the helper was invoked by script
+    path without `PYTHONPATH`; its absolute import of `experiments` failed.
+    The fresh staging root is empty and no child survived. A no-encode `--help`
+    probe reproduced the exact `ModuleNotFoundError`;
+  - a non-encoding test falsified module-only launch: the existing dependency
+    graph also imports top-level `cibs0` from `reference`. Retry remains
+    blocked. The selected correction is pinned Python `-I -c` with a recorded
+    bootstrap that inserts only the resolved repository and `reference` roots,
+    then runs the same hashed module; inherited `PYTHONPATH` remains excluded.
+    The new gate must also expose bounded child error evidence, pass focused
+    tests, receive a fresh external parent hash and independent GO, then use a
+    new empty staging root. Full evidence is in
+    `docs/reviews/R218_S11_RESOURCE_GATE_LAUNCH_INCIDENT_2026-08-02.md`.
+  - the remediated parent gate received independent GO at SHA-256
+    `3128e5f75dc5bf1955aec9515ba35c1cd8672aced3c86137cd1a84ce9436d198`;
+    its 13 focused fail-closed tests independently passed;
+  - authoritative final-C resource repeats both pass with frozen internal,
+    payload and PCM identities unchanged:
+    - claves: 193.272769-second encode, 256.040667-second parent wall,
+      782,192,640-byte peak working set, 10.6424-ms maximum observed sample
+      gap, 9,995-byte receipt-inclusive disk high-water, parent receipt
+      SHA-256 `d0a3193b4d3845e6dd15e9bec379902e8dc56a6c64da63a77ef373b0f867ee6b`;
+    - cymbal: 229.107934-second encode, 302.371870-second parent wall,
+      848,003,072-byte peak working set, 11.0230-ms maximum observed sample
+      gap, 9,973-byte receipt-inclusive disk high-water, parent receipt
+      SHA-256 `923f22901a173cfc01a98e7e3ad856b53794fb83adc56786c09c0a48bc5a1527`;
+  - both remain below the unchanged 600-second, 8 GiB and 2 GiB ceilings;
+  - independent final closeout recomputed receipt hashes and fixed-point sizes,
+    every pre/post authority, frozen internal/payload/PCM identities, runtime,
+    RSS, disk, sample counts/gaps, report arithmetic and the empty failed root.
+    Verdict: **GO for narrow immutable-commit preparation only**. Commit scope
+    requires a separate staged-index audit; pushing, old-R-217 reuse, a new
+    runner, Opus and corpus work remain unauthorized at this boundary.
+
+## R-219 — Post-R-218 fixed-Opus direct comparison identity
+
+- Status: **PRE-CODE; INDEPENDENT GO/NO-GO REQUIRED**
+- R-218 is immutable at revision
+  `64521b19551d4b9688de10fe01c5302607a5beb1`, but R-217 intentionally pins the
+  preceding source revision and lacks explicit analyzer identity. It must fail
+  rather than be bypassed.
+- Owner scope remains direct current Resonith versus one fixed official Opus
+  1.6.1 maximum-complexity point. No Opus-frontier search and no preceding-
+  Resonith comparison column are authorized.
+- Selected smallest change: a new R-219 controller generation preserving every
+  R-217 algorithm, command, metric, byte-selection, corpus, ordering, atomicity,
+  time and resource rule while changing only schemas/error labels, source and
+  preflight identities, and explicit analyzer authority.
+- The analyzer must be hashed in controller material and worker requests before
+  and during work. Old R-217 output remains diagnostic and cannot seed R-219.
+- Pre-code model, alternatives, fixed authorities and kill gates are in
+  `docs/reviews/R219_S12_POST_R218_DIRECT_IDENTITY_PREFLIGHT_2026-08-02.md`.
+  Controller code remains blocked pending an independent verdict.
+- First independent pre-code verdict: **NO-GO**. The R-217-shaped request was
+  mutable after creation and `item_id` did not bind every algorithmic field;
+  analyzer pre/post hashes also could not exclude change-use-restore ABA during
+  the nested S11 child.
+- Revised design seals exact request bytes through out-of-band argv SHA plus a
+  canonical manifest-item hash, verifies both in receipt and index, and holds
+  Windows deny-write/delete handles over the complete frozen imported execution
+  set and current source throughout worker execution and final verification.
+  First start requires a nonexistent reparse-free root; resume is explicit and
+  accepts only an exact indexed R-219 tree. Old R-217 schemas/tree adoption,
+  analyzer/dependency ABA and unchanged-id request mutants are mandatory
+  negative tests. Code remains blocked pending re-audit.
+- Second independent pre-code verdict: **NO-GO**. The allowed-diff gate had not
+  been expanded to the required controls; file handles alone did not prevent
+  ancestor-directory path swap; authority hashes and locks could diverge across
+  hand-maintained lists; and request bytes would still have been deleted.
+- Revised closure uses one canonical sorted declared project/tool/input
+  authority set for hashes, locks, material, request and receipt; holds both
+  file and ancestor-directory deny-delete handles; retains exact sealed request
+  bytes in every completed item; and quarantines rather than adopts an
+  unindexed rename-before-index crash product. Python site-packages and Windows
+  remain an explicitly version-pinned frozen-host assumption, not a false
+  whole-OS byte-lock claim. The allowed diff and required cross-process mutants
+  now enumerate these controls. Code remains blocked pending another verdict.
+- Third independent pre-code verdict: **NO-GO**. A singular authority digest
+  ambiguously included a different current WAV for each item, and the stated
+  hash/lock order left a mutation window between observation and lock.
+- Finalized identity model separates one run-wide static
+  `base_authority_set_sha256` from nineteen manifest-bound
+  `item_authority_set_sha256` values formed by adding exactly one source WAV.
+  Paths and ancestors are validated first; all directory/file handles are then
+  acquired in sorted order; hashes and digests are computed and compared only
+  while every lock is live; request creation/worker launch follows; postflight
+  hashes are checked before release. A synchronized hash-before-lock mutant is
+  mandatory. Code remains blocked pending re-audit.
+- Fourth independent pre-code verdict: **NO-GO** solely because stale
+  singular-digest wording contradicted the normative base-plus-nineteen-item
+  model and did not state when run identity becomes immutable.
+- The stale wording is removed. Run identity/material is computed once before
+  item execution from expected static rows plus the ordered nineteen manifest
+  source hashes. Under-lock observations must equal those precommitted base and
+  item values before request creation and can never redefine the run. Code
+  remains blocked pending final pre-code re-audit.
+- Final implementation audit: **GO for the exact R-219 direct gate**.
+  - runner SHA-256:
+    `e5f17b7a036cf83b408eebe0b65fb8c21be6da41c3b8343b4d1f2654ab989f54`;
+  - focused-test SHA-256:
+    `9d441eec34cd8f4a872da26942e941f4d8a1741e679e57808a7d20dadbcbde30`;
+  - 27/27 focused tests independently passed in 2.63 seconds;
+  - exact prefix resume, request retention/sealing, base-plus-nineteen item
+    authorities, Windows file/ancestor locking, R-217 rejection, emitted
+    two-codec output and pinned host identity all passed;
+  - AST comparison confirmed the computation-critical S11 and fixed-Opus
+    functions remain R-217-equivalent after label normalization;
+  - the authorized execution is current Resonith versus one fixed official
+    Opus 1.6.1 point only. No frontier search, preceding-generation column,
+    S13, promotion or release is authorized by this verdict;
+  - complete verdict:
+    `docs/reviews/R219_S12_DIRECT_IMPLEMENTATION_AUDIT_2026-08-02.md`.
+
+## R-221 — Bounded rate-only matching for direct comparison
+
+- Status: **IMPLEMENTED; COMPLETE CORPUS ADMITTED BY R-223**.
+- R-219 stopped correctly on `ebu-female-speech-en`: the four fixed Opus
+  attempts bracketed the 94,816-byte target but missed the 94-byte tolerance.
+  Repeating them is a blind retry; searching other Opus configurations is
+  outside owner scope.
+- Selected remediation preserves the first four attempts and every Opus
+  configuration coordinate, then permits at most eight integer-bitrate
+  bisection attempts inside the observed byte bracket. Quality is unavailable
+  to the controller until one point has been selected.
+- If twelve attempts still do not match, the nearest actual point is retained
+  with explicit `UNMATCHED_NEAREST` and byte/rate delta. It cannot support an
+  equal-rate winner claim but no longer prevents reporting the rest of the
+  corpus.
+- No R-219 output may seed R-221. S11, metrics, decoders, corpus/order and all
+  resource/time bounds remain unchanged.
+- Preflight and gates:
+  `docs/reviews/R221_S12_BOUNDED_RATE_MATCH_PREFLIGHT_2026-08-02.md`.
+- First independent pre-code verdict: **NO-GO**. The no-bracket path was
+  undefined, VBR nonmonotonicity made the bracket rule ambiguous, and unmatched
+  rows were not mechanically excluded from equal-rate aggregate claims.
+- Remediation forbids extrapolation. A legal bracket is an observed
+  q5-ordered sign-changing pair outside the strict tolerance; the minimum-span
+  pair is recomputed from every unique observation with a fixed tie order.
+  Missing, duplicate or non-shrinking brackets terminate immediately to the
+  quality-blind nearest point. Aggregate status/counts exclude every unmatched
+  row from all equal-rate statistics and claims. Code remains blocked pending
+  re-audit.
+- Second independent pre-code verdict: **NO-GO** on three deterministic details:
+  midpoint rounding, terminal fallback coverage and repeated-q5 handling.
+- The exact midpoint is now `q_low + (q_high - q_low) // 2` and must remain
+  strictly internal. Every no-match terminal condition selects nearest with no
+  further encode. Equal-q5 observations must have identical bytes and
+  normalized Ogg hash or fail determinism; agreeing duplicates collapse to the
+  earliest attempt only for bracket construction. Code remains blocked pending
+  final re-audit.
+- Final independent pre-code re-audit of exact preflight SHA-256
+  `a97c1da031e905e4ac55d16f13f069f12cc330a2a657951e7824eadf1ca2c755`:
+  **GO with no blocking findings**. It authorizes only the exact bounded
+  controller implementation and focused validation. Corpus execution still
+  requires post-implementation identity audit.
+- Final post-implementation audit: **GO for one fresh complete corpus run**.
+  Runner SHA-256 is
+  `830ed4ac12b369bcf9de7308fa18bfb5b31c0989c11aaa665f052a9d87d869a3`;
+  focused-test SHA-256 is
+  `76f51f610927169bbe0cb1a51b30e1d7e53c5c496f2d099d09bec2e26a2e3947`;
+  the independent rerun passed 32/32 in 2.71 seconds. No R-219 reuse,
+  admission, S13, version promotion, release, or general Opus claim is
+  authorized. Full verdict:
+  `docs/reviews/R221_S12_BOUNDED_RATE_IMPLEMENTATION_AUDIT_2026-08-02.md`.
+
+## R-222 — Durable GitHub history and checkpoint versioning
+
+- Status: **OWNER-ACCEPTED PROCESS REQUIREMENT**.
+- Every coherent externally synchronized change must update the English
+  changelog and durable all-63-step R-204 checkpoint, then use explicit-file
+  staging and an immutable commit SHA. Experimental identities are R-number
+  plus commit SHA; `VERSION` changes only for an admitted generation or
+  release.
+- A commit or push is repository synchronization only. It cannot admit an
+  experiment, imply compatibility, create a release, or establish a quality or
+  compression claim.
+
+## R-223 — S12 complete direct-comparison admission
+
+- Status: **INDEPENDENT GO; S12 COMPLETE IN THE DECLARED NARROW SCOPE**.
+- The preserved R-221 run identity is
+  `470603e2f8fed8957e0eade645bd78fbab1b50fd35aad624b9be473dd23dc73c`
+  at source revision `1c45376eebe7daa49904acae885c47d6d571cf87`.
+- Nineteen registered inputs completed. Sixteen are `STRICT_MATCH`; female EBU
+  speech, male EBU speech, and sustained sine are `UNMATCHED_NEAREST` and are
+  mechanically excluded from all equal-rate statistics and claims.
+- The strict rows cover 570.628 seconds and total 9,602,867 Resonith bytes
+  versus 9,602,500 Opus bytes, a difference of 367 bytes or about 0.0038%.
+- Resonith wins waveform SNR on 13/16 strict rows, registered channel-0 phase
+  MAE on 15/16, mean pre-echo on 14/16, magnitude cosine on 11/16, and log-mel
+  RMSE on 9/16. Opus wins detailed log-spectrum distance on 11/16.
+- The result identifies a stable split: current Resonith commonly preserves
+  waveform timing, channel-0 phase and attacks much more accurately, but loses
+  important low-energy spectral detail and speech-critical envelopes on
+  several classes.
+  Later MAF work must repair that allocation without discarding the temporal
+  advantage.
+- Independent audit closed all 19 authority chains, re-decoded every Opus and
+  Resonith artifact, replayed every metric and q5 transition, and found zero
+  blocking issues. Three ESTOI differences of `2.22e-16` through `9.99e-16`
+  are non-decision-changing floating-point rounding.
+- Machine evidence SHA-256 identities:
+  - `aggregate.json`:
+    `f8aeed2a205e7c802fd093d9de90bf1b4df9b751b1225d5b00592020889acfcf`;
+  - `REPORT.md`:
+    `a89dddd2f578712063973024cbcd0da2809f21189f11cf11ce8aa4fcc57ea534`;
+  - `run-index.json`:
+    `ed1d8e5505ccf0fe0af4b59725e1f5e1c30fefc67218aff9b3608b9046140ecd`.
+- Detailed result:
+  `docs/results/R221_S12_FIXED_OPUS_DIRECT_2026-08-02.md`.
+- Independent verdict:
+  `docs/reviews/R223_S12_COMPLETE_CORPUS_AUDIT_2026-08-02.md`.
+- This admission does not authorize an Opus frontier, a full-19 equal-rate
+  claim, general superiority, a release, or a `VERSION` increment. S13 is the
+  next step and requires its own evidence-first preflight.
+
+## R-224 — S13 phase-economy oracle and syntax hold
+
+- Status: **PREDECESSOR COMPARISON PRE-CODE GO; S13 SYNTAX NO-GO**.
+- The S13 objective is corrected from generic phase improvement to a narrower
+  economic question: can objective phase evidence reduce complete final-Truth
+  cost while preserving the incumbent decoded quality? R-221 already reports
+  strong phase and transient accuracy, but all nineteen retained Resonith
+  streams selected `truth-fallback`; those results do not prove that the S11
+  persistent-partial model was active or that a phase-anchor law is needed.
+- Prior art is explicit. McAulay--Quatieri tracks sinusoidal amplitude,
+  frequency and phase with birth/death handling and cubic phase interpolation;
+  MPEG-4 HILN carries phase-continuous parametric lines; PARSHL and spectral
+  modeling retain sinusoidal trajectories plus residual. S13 claims no novelty
+  for phase continuity, phase locking, cubic interpolation, or line-plus-
+  residual synthesis.
+- Frozen alternatives, all charged through actual complete bytes and one final
+  decoded Truth, are:
+  - no change and direct Truth;
+  - the exact S11 incumbent, including its decoder-coordinate phase fit and
+    endpoint phase correction through frequency steps;
+  - a pure phase-blind continuous arm whose post-birth fit, thinning and knot
+    selection cannot observe phase;
+  - denser phase-blind frequency knots;
+  - the smallest existing-syntax triangular frequency bridge;
+  - split/rebirth with deterministic crossfade;
+  - a sparse phase-innovation bridge; and
+  - a zero-byte exact-phase oracle that is an upper bound only.
+- A cubic smoothstep correction is not equivalent to existing type-8 linear
+  frequency interpolation: it creates cubic phase and quadratic instantaneous-
+  frequency correction, while type-8 creates quadratic phase. No new cubic
+  decoder law or opcode is authorized unless it materially beats both the
+  triangular existing-syntax control and the best type-8 approximation.
+- Phase gauge is frozen before any experiment. The non-phase base law cannot
+  change after anchor fitting; signed gain versus phase-plus-pi, shortest-turn
+  half-cycle ties, analysis-window origin, amplitude nulls, beating, crossings,
+  gap/reappearance and route delay remain explicit ambiguities. Phase events
+  are forbidden below a frozen amplitude/confidence floor. Identity changes
+  choose rebirth or fallback rather than an anchor.
+- S13 cannot import S35 shared-route syntax. Experimental selection may jointly
+  protect channels, but every channel remains independently paid. Evidence must
+  report every channel, mid/side error, interchannel phase, delay/correlation,
+  antiphase cancellation and the existing channel-0 metric.
+- Existing MFT1 type-8 placements carry absolute source position. S13 therefore
+  has no existing persistent phase state whose lost event would corrupt all
+  future phase. Stateful anchor/checkpoint syntax remains S51 scope. S13 may
+  first evaluate only an encoder-side oracle and existing-syntax experiments;
+  corruption or checkpoint claims cannot exceed the current absolute-record
+  container.
+- Mandatory baseline closure precedes the oracle. R-221 deliberately omitted
+  the preceding-Resonith column under the then-active owner scope. The current
+  candidate closure is a machine proof that every retained R-221 stream selected
+  the unchanged direct-Truth fallback and is bitstream/decoded-PCM identical to
+  the pre-S11 direct-Truth generation. If complete recursive code/configuration,
+  native-decoder, input, payload and PCM identity cannot be proven for all
+  nineteen items, run the missing preceding-generation comparison instead.
+- The first baseline-proof re-audit returned **NO-GO** on authority closure,
+  not on the derivation principle. The proof is revised to bind the exact
+  `ca87dec` `encode_lapped_stream` producer blobs and current on-disk blobs;
+  every explicit/default call argument; PCM layout and registered order; the
+  loaded DLL, ABI/header, dependency and stateless-call contract; pinned Python,
+  NumPy, module origins, package roots and dynamic import closure; fallback
+  payload/reconstruction non-mutation; every receipt/index/artifact/replay; and
+  per-item derived preceding/current rows with the derivation stated. Merely
+  copying a current hash into a `preceding` field is forbidden. A final binary
+  GO remains mandatory before this proof tool is implemented.
+- The derived static proof is rejected as unnecessarily complex after that
+  audit. The selected smaller authority is an actual counterfactual execution
+  of the exact pre-S11 `ca87dec` direct-Truth producer on all nineteen frozen
+  R-221 inputs, followed by actual native decode and byte-for-byte/PCM-for-PCM
+  comparison with sealed R-221 outputs. Opus is not rerun. Duplicate historical
+  streams and WAVs are omitted only after equality; any mismatch is retained
+  and terminates the gate.
+- Independent re-audit returned **GO** for this actual-run replacement,
+  conditional on the exact archive/extraction, isolated runtime/module origin,
+  native DLL/source/ABI, per-item PCM/configuration, sealed receipt, process
+  bound, mismatch-retention, nineteen-row aggregate and negative-test fields
+  frozen in the R-224 preflight before implementation.
+- Final independent verification bound the exact amended preflight SHA-256
+  `a92b3ad2f04719c59cb1364294db1e4dc8d05a0872d1d590c85ef7920e1ca134`
+  and returned **GO with no blocking findings** for implementing and executing
+  only the bounded nineteen-item `ca87dec` predecessor comparison. Stage-1
+  oracle code, S13 behavior, syntax, Opus reruns, promotion and release remain
+  unauthorized.
+- Stage-1 oracle inputs, in order, are full 400.773-second Mozart,
+  319.38-second single-speaker LibriSpeech, full 658.32-second *Elephants
+  Dream*, and 600-second bounded synthetic vibrato. Freeze exact S11 paths,
+  supports, observations, Basis lengths, gain/frequency laws, source hashes,
+  decoder, Truth settings, candidate order, time, memory and retained-storage
+  budgets before the first run.
+- Kill S13 before syntax unless the free exact-phase oracle reduces compressed
+  final-Truth bytes by at least 10% on at least three deterministically eligible
+  complete inputs and creates a decoder-domain quality Pareto point. Real-audio
+  files are not silently labelled coherent; eligibility is numeric and label-
+  free.
+- If and only if the free oracle passes, one focused existing-syntax experiment
+  compares the eight frozen arms on stationary tone, linear chirp, one known
+  phase innovation, close-tone crossing with an amplitude null,
+  gap/reappearance, delayed/antiphase stereo, and the strongest qualifying real
+  long input. Tone and linear chirp must select zero anchors; bounded vibrato
+  uses at most one anchor per second.
+- A paid phase candidate is killed unless it beats exact S11, pure continuous,
+  dense-frequency and rebirth/crossfade by at least 3% complete bytes at the
+  frozen quality floor on at least two long real inputs, while preserving all-
+  channel quality, CBF1/MFT1 decoder identity, callback partition identity,
+  random-slice identity and existing bounded-resource limits.
+- S14 full registered comparison remains blocked until an S13 candidate passes
+  both gates. Failure is a valid S13 no-change result and advances the plan to
+  source-filter S15 without adding decoder complexity.
+
+## R-225 — R-224 controller independent minimal redesign
+
+- Status: **INDEPENDENT REDESIGN GO; CORPUS EXECUTION NO-GO**.
+- The first implementation audit rejected seven authority gaps. One bounded
+  remediation closed current-artifact TOCTOU, symmetric atomic mismatch
+  retention, fail-closed resource sampling, aggregate time/storage bounds,
+  complete module inventory, strict receipt validation and direct production
+  validators. The second audit still returned NO-GO on four residual gaps.
+- R-211 therefore forbids another ad-hoc patch cycle. A second independent
+  auditor designed the only authorized replacement, limited to the existing
+  controller and focused test module:
+  1. inspect the lexical drive-root-to-leaf path with `lstat` before any
+     resolution or traversal, reject every reparse component, and recursively
+     recheck the final evidence root after publication;
+  2. duplicate the exact Windows child-process handle once, retain it through
+     termination, and use one mandatory post-exit lifetime
+     `PeakWorkingSetSize`/CPU sample as the authoritative resource value;
+  3. construct one full absolute argv before request publication, execute that
+     list unchanged, compare it with `sys.orig_argv`, and retain the full list
+     plus canonical digest in request, receipt and aggregate;
+  4. exercise payload-only and PCM-only mismatch paths through the real
+     isolated historical worker, actual `ca87dec` tree, frozen native Core and
+     frozen short speech source. Either mismatch must retain both historical
+     artifacts atomically, publish a canonical MISMATCH receipt and terminate
+     nonzero without an aggregate.
+- Rejected substitutes are resolve-then-lstat, reopening by PID, faster polling
+  without a final lifetime counter, recording only an argv digest, helper-only
+  mismatch tests, monkeypatches, request flags, environment triggers and a
+  test-only codec ABI.
+- Admission remains blocked until the existing focused tests plus the lexical
+  junction/final-root checks, post-exit resource checks, complete argv
+  equality/mutation checks and two real mismatch executions pass, followed by
+  a fresh independent implementation GO. The nineteen-item predecessor run,
+  Stage-1 phase oracle, syntax, version, release and Opus rerun remain blocked.
+
+## R-226 — R-224 predecessor aggregate admission
+
+- Status: **INDEPENDENT AGGREGATE GO; STAGE-1 PRE-CODE GO ONLY**.
+- The redesigned controller passed 49/49 focused tests and a final independent
+  implementation audit. Its frozen identities are controller SHA-256
+  `f4ed3b6197338918da381604dfc561038a6cfcdcd2cf0952929cefc3982e57c4`
+  and test-module SHA-256
+  `5034aa835fe4aa40e4cd8e8e524163b72f240f8cbcea2f3c04adc9d241527b41`.
+- The only authorized fresh execution completed all nineteen registered inputs.
+  Historical/current payload identity is 19/19 and native decoded-PCM identity
+  is 19/19, with zero skips, duplicates, quarantines or mismatch artifacts.
+- Independent recomputation confirmed aggregate file SHA-256
+  `4f3ee90bda70b573d95250cd05fcac0cdf70b8cff6f3221f1491d46f93fa6864`,
+  aggregate material SHA-256
+  `90629dfa11f20ae346ae6a11365c623c6e2eb66199f54159c0952ddc73713d12`,
+  historical archive SHA-256
+  `6232d28b8ac4306821f58ed6be94de2db342814f0d7dc1c7f38adc94530752a6`,
+  and identical 572-entry archive/extracted inventories with digest
+  `72fd4991bae9c651e92bc5430afc11b9a67e8cc95a6a4542af9346d7876d4f7f`.
+- Controller wall before aggregate was 339.6762922 seconds. Maximum child peak
+  working set was 2,493,497,344 bytes, retained bytes before aggregate were
+  16,389,899, and the final evidence package was 16,705,533 bytes. Every frozen
+  time, memory and retention bound passed.
+- R-224 therefore proves that every registered R-221 Resonith output is the
+  unchanged pre-S11 direct-Truth result. The R-221 quality comparison cannot be
+  attributed to an active S11 persistent-partial lane.
+- The independent auditor returned GO only for Stage-1 pre-code planning and a
+  bounded encoder-side free-phase oracle. Before execution, a Stage-1-specific
+  record must freeze the exact four source PCM identities, S11 observations,
+  paths and supports, Basis and gain/frequency laws, lane caps, decoder/Truth
+  settings, entropy backend, candidate order, resource ceilings, runner and
+  focused tests. A separate implementation GO is mandatory.
+- Paid phase syntax, decoder or bitstream changes, Opus reruns, product/API or
+  version changes, promotion and release remain **NO-GO**.
+- Detailed result:
+  `docs/results/R224_S13_PREDECESSOR_COMPARISON_2026-08-02.md`.
+- Independent verdict:
+  `docs/reviews/R226_R224_PREDECESSOR_AGGREGATE_AUDIT_2026-08-02.md`.
+
+## R-227 — S13 phase-poisoned tiled shadow amendment
+
+- Status: **PRE-CODE GO; SMALLEST IMPLEMENTATION AUTHORIZED; LONG EXECUTION
+  NO-GO PENDING IMPLEMENTATION AUDIT**.
+- R-224/R-226 closed the predecessor baseline but exposed three contradictions
+  in the first Stage-1 wording. Phase cannot vary on a continuous lane while
+  frequency remains fixed except through a discontinuous reset; exact S11 uses
+  observed phase in graph/path/thinning decisions; and all four declared long
+  inputs exceed the frozen 3,500,000-observation monolithic S11 cap. Their
+  calculated upper bounds are 28,405,440 for Mozart, 5,030,688 for long
+  LibriSpeech, 46,659,024 for full *Elephants Dream*, and 28,350,336 for the
+  synthetic positive control.
+- Rejected alternatives are raising the monolithic cap, reusing phase-informed
+  S11 paths, allowing an unbounded per-sample phase oracle, changing frequency
+  through an undisclosed phase bridge, or treating a reference-only waveform as
+  native-decoder evidence.
+- The selected smallest falsifiable correction is a conservative twelve-second
+  tiled shadow proposer. It uses only a frozen existing R-186 resolution,
+  centered 4096-sample halo, half-open core ownership and no cross-tile edges.
+  Phase-free observation records drive path, support, knot, gain, frequency,
+  Basis and lane ordering. Exact phase values live in a separate sealed table
+  that those stages cannot access.
+- The shadow phase-blind arm uses observed phase only at lane birth and then
+  carries phase continuously. The reset arm may replace only the existing
+  fixed-size MFT1 type-8 `source_position_q16` value at an already sealed
+  retained-knot placement start. Automatic placement splits must carry phase
+  and create no reset degree of freedom. Frequency, gain, Basis, support,
+  knots, placement count, route, Truth coder and decoder remain identical.
+- Both arms are actual existing-syntax MFT1/CBF1 candidates and must be decoded
+  through the frozen native Core. Every predictor, container and final-Truth
+  byte is charged. The four-byte phase-position field may be reported as an
+  attribution but is never subtracted from complete size or called free in a
+  codec-rate claim.
+- Eligibility and its digest are sealed before the phase table or savings is
+  read. Phase usability may reject a complete sealed lane but may not prune,
+  split, rerank or change it. The three real long inputs must all qualify and
+  pass; the 600-second synthetic signal is a positive control only and cannot
+  satisfy the real-audio count.
+- The exact input identities, generator, tile geometry, phase-free matcher,
+  knot DP, candidate order, byte ledger, quality directions/tolerances,
+  resource bounds and negative tests must be frozen in one R-227 record before
+  code. A fresh independent binary GO is mandatory before implementation and a
+  separate implementation GO before the first four-input execution.
+- The exact pre-code candidate is
+  `docs/reviews/R227_S13_PHASE_POISONED_TILED_SHADOW_PREFLIGHT_2026-08-02.md`.
+  It binds the local source-identity manifest SHA-256
+  `173b3c8c773a3152358dbe542bca53aa839999a2813fe3a8dbaeec63ac376f88`,
+  the twelve-second target tile law, the integer phase-free tracker, the paired
+  carry/reset arms, actual existing-syntax byte accounting, native decode,
+  metric tolerances, resource ceilings and the one-shot kill gate.
+- New phase syntax, decoder behavior, an Opus rerun, product/version changes,
+  promotion and release remain **NO-GO**.
+- R-228 records the audit sequence. The first independent pass rejected
+  preflight SHA-256
+  `5846b8f5db651aa8ba89a9bf6511af83b1c89a11da9331423ad19cec083d0c33`.
+  After the four-input authority, exact bound-rejection status, canonical
+  phase-free identities/arithmetic, paired subset/transport rule and delay axis
+  were closed, the auditor returned binary GO on preflight SHA-256
+  `957c4edd16267893b34cce37e4522eb92bde0017576cf17a901bf112983c627a`.
+
+## R-229 — R-227 implementation NO-GO and capability-bound remediation
+
+- Status: **REMEDIATED IMPLEMENTATION CANDIDATE; LONG EXECUTION NO-GO PENDING
+  COMMIT-BOUND INDEPENDENT AUDIT**.
+- The initial runner cleared the S11, direct-Truth, tiling, paired-arm, byte,
+  resource and atomic-output findings, but independent audit rejected a
+  forgeable textual phase seal, nonspecific synthetic detection and incomplete
+  loaded-module/commit authority.
+- The replacement `PhaseEvidenceVault` exposes no raw mapping and creates a
+  read capability only after the exact eligibility file has been atomically
+  committed. The frozen 600-placement MFT1 is hashed, parsed, schedule-checked
+  and natively decoded; only scheduled one-eighth-cycle crossings can satisfy
+  its aggregate control. Every file-backed loaded module is now hashed before
+  and after execution.
+- The focused gate passes 17/17 and a fresh-process inventory diagnostic is
+  exactly stable at 974 modules across synthetic native decode and speech
+  metrics. These are implementation checks, not compression results.
+- Detailed audit and remediation record:
+  `docs/reviews/R229_R227_IMPLEMENTATION_AUDIT_2026-08-02.md`.
+- The exact candidate must be committed and independently re-audited before
+  the one-shot four-input run. Syntax, decoder behavior, versioning, Opus
+  reruns, promotion and release remain blocked.
+
+## R-230 — R-227 commit-bound implementation GO
+
+- Date: 2026-08-02
+- Status: **INDEPENDENT GO FOR ONE FROZEN FOUR-INPUT EXECUTION**.
+- Exact commit `5d720128ccbd77091ac613274df135b503af028c` matches local
+  HEAD and the public `codex/maf-r193-alpha` branch. The runner and focused
+  test SHA-256 values are respectively
+  `320307dc8fd0c9bead47fd2dd998734f17bbed232632be1615d121db3b02eef6`
+  and
+  `50153bfb914069493c5d5a93095f6e5a7ae9e24ecee7fc8ef3c106e3d89af3d9`.
+- The independent auditor passed 17/17 focused tests and confirmed the durable
+  object-identity phase capability, exact synthetic schedule/native decode,
+  full loaded-module inventory and every previously cleared bound.
+- This GO authorized one execution only. It did not authorize syntax, decoder,
+  version, Opus rerun, promotion or release changes.
+
+## R-231 — R-227 terminal result and S13 rejection
+
+- Date: 2026-08-02
+- Status: **INDEPENDENT GO TO REJECT; MEASURED NO-CHANGE**.
+- Full Mozart and long LibriSpeech completed atomically but produced zero
+  eligible phase-free lanes. Their eligibility stages did not access phase.
+  Either result independently fails the frozen all-three-real kill gate.
+- Full *Elephants Dream* stopped before candidate publication with
+  `MemoryError: native lapped analysis exceeds the configured host ceiling`.
+  Its staging directory is empty and no final item exists. The synthetic
+  positive control was not executed after this terminal resource failure.
+- The terminal record SHA-256 is
+  `75445b6fdbc90d0ae3ded651a0e239dde4bcb8a1f1c9a48c8f438374726b7db5`.
+  Independent audit confirmed the index, receipt, eligibility and resource
+  identities, absence of retry, and fail-closed disposition with no blockers.
+- S13 is closed as rejected/no-change. S14 is not applicable because no new
+  Resonith generation exists to compare. S15 begins from the unchanged S12
+  accepted baseline. No phase syntax, decoder/default/version, Opus anchor,
+  product or release behavior changes.
+- Detailed result:
+  `docs/results/R227_S13_PHASE_POISONED_SHADOW_RESULT_2026-08-02.md`.
+- Independent verdict:
+  `docs/reviews/R231_R227_RESULT_AUDIT_2026-08-02.md`.
+
+## R-232 — S15 decoder-domain source-filter candidate rescoring
+
+- Date: 2026-08-02
+- Status: **FROZEN HYPOTHESIS; PRE-CODE AUDIT COMPLETE**.
+- R-120's EPV1 encoder ranks final candidates in excitation space, while the
+  independent decoder passes the selected excitation through a recursive
+  quantized source filter. The smallest S15 test therefore re-ranks only the
+  already realized PVQ, Basis, stochastic and ZERO candidates after exact
+  decoder-domain short-filter synthesis.
+- Source-filter coding, LPC/LTP, sinusoidal/HILN decomposition and vocoders are
+  prior art. R-232 claims no new physical-source recovery and no complete
+  closed-loop RDO: adaptive pitch, pulse shape, Basis shortlist, gains and
+  candidate proposal remain the existing R-120 law.
+- The exact configuration, local waveform/log-mel functional, incremental-bit
+  cost, deterministic tie breaks, fallback, long-first order, quality/rate
+  gates and resource ceilings are frozen in
+  `docs/reviews/R232_S15_DECODER_CLOSED_SOURCE_FILTER_PREFLIGHT_2026-08-02.md`
+  and `experiments/fixtures/r232_s15_frozen_configuration.json`.
+- The experiment changes no syntax or decoder. A different winner may alter
+  later arm state and candidates; that causal divergence is part of the A/B,
+  not a parameter change.
+
+## R-233 — R-232 independent pre-code GO
+
+- Date: 2026-08-02
+- Status: **GO FOR SMALLEST IMPLEMENTATION; LONG EXECUTION NO-GO**.
+- Two hostile audits rejected ambiguous drafts. The final preflight SHA-256 is
+  `28f5cddd49a9a1c97c50054533ea85c1d7370da6ff7cdf4051b6d57e5ef32310`
+  and the canonical configuration SHA-256 is
+  `b89cae2d09c2c45ba1488e573009a7d822e15998ad4816c7bb45d65ad3cf5d24`.
+- The final reviewer confirmed that scope, causal state, local metric,
+  arithmetic, configuration, no-tuning order, residual proxy and admission
+  gates are executable and returned binary GO.
+- Authorization is limited to one rescoring option, one focused test module
+  and one runner. A separate implementation audit is mandatory before long
+  speech. Syntax, SFT2, global DP, Opus rerun, versioning, promotion and release
+  remain blocked.
+- Detailed verdict:
+  `docs/reviews/R233_S15_SOURCE_FILTER_PRECODE_AUDIT_2026-08-02.md`.
+
+## R-234 through R-240 — S15 implementation closure and exact execution authority
+
+- Date: 2026-08-02
+- Status: **CONTROL AUTHORITY CLOSED; EXECUTED ONCE**.
+- Two implementation-audit passes rejected incomplete executable closure,
+  parent-side transaction validation, retained resource evidence and live
+  state witnesses. The final controller binds 66 local sources, 84 existing
+  local bytecode files, complete Python runtime trees and every frozen file;
+  it revalidates authority after each bounded child and before trusting its
+  exact retained-file transaction.
+- Focused evidence passes 16/16. The direct command first exposed and rejected
+  a missing explicit `importlib.util` bootstrap import. The next exact run
+  rejected a stale historical EPV1-v2 stream baseline. A clean archive of
+  pre-S15 commit `5aff74dbce41d7dece102a10f7ff326d7a700dda` proved that the
+  incumbent already emitted EPV1-v3: three bounded uint16 fields add exactly
+  six bytes while decoded WAV remains bit-identical.
+- R-240 received two independent GO verdicts for one exact incumbent plus
+  four-control execution. Real audio, Opus comparison and S15 admission
+  remained blocked.
+
+## R-241 — S15 decoder-domain rescoring terminal rejection
+
+- Date: 2026-08-02
+- Status: **MEASURED REJECTION; NO ADMITTED GENERATION**.
+- The corrected incumbent identity passed in 41.904462 seconds. The first
+  120-second `stable-ar-periodic` control reached the unchanged 900-second
+  worker limit and was terminated. The atomic failure receipt SHA-256 is
+  `02b32e80fefcb9f64f25a3b3b8551fa3c4d69504801823f955282c8edfb415f3`.
+- Stop-on-first-failure prevented all three later controls. No retry, larger
+  limit, reduced candidate lattice, real audio or Opus comparison is allowed.
+- A separate 5.855-second diagnostic attributes 15.156 seconds to analysis,
+  10.580 seconds to legacy encode and 38.799 seconds to rescored encode. It
+  observed 40 changed choices and 12,371 bytes versus 12,554 bytes, but is not
+  an admitted quality or compression result.
+- R-242 independently verified the receipt, identities, task order, cleanup,
+  reconstructed run-index and kill clauses and returned GO-to-reject.
+- Accepted S12 remains unchanged. Any new S15 attempt is a new hypothesis and
+  must remove the per-candidate Python synthesis/FFT cost structurally under a
+  new audited preflight; it may not rescue R-232 by relaxing its limits.
+
+## R-243 through R-252 — exact LPC-lifetime Phase-A evidence closure
+
+- Date: 2026-08-02
+- Status: **PHASE-A EVIDENCE ACCEPTED; SOURCE CHANGE STILL NO-GO**.
+- R-243 selected one bounded, output-identical mechanical hypothesis: prepare
+  the Q14 LPC tuple once for every persistent FilterLaw touched by a subframe,
+  then reuse the immutable tuple in desired-excitation and candidate synthesis.
+  Global caching, whole-file preparation, CUDA, approximate arithmetic, larger
+  timeouts and shorter controls were rejected for this gate.
+- R-244 through R-248 closed the runner, runtime, import, resource, authority,
+  atomic-publication and dual-audit contracts without changing codec or oracle
+  behavior. R-246 then failed once after successful expensive work because
+  Python 3.14 `pstats.Stats` rejected a `WindowsPath`; R-249 closed that exact
+  transaction with no retry.
+- R-250 changed only the profile filename argument to `str(profile_path)`.
+  R-251 and the final commit-bound dual review authorized exactly one new
+  invocation. It published the canonical receipt SHA-256
+  `b28f8d264d183d34a817f0523ec274cb2ac057df66413235e578d295ffedba8d`.
+- Two independent result audits returned GO. The 29-file/four-directory
+  closure, all authority and manifest identities, 128 golden cases, resource
+  bounds, stream/PCM/report cross-identities, counters and three predicates
+  pass.
+- The frozen rescored arm is 12,371 bytes versus 12,554 bytes for legacy and
+  has 0.50634% lower waveform SSE, but uses 3.68981 times median CPU. The
+  profile records 648,120 `_lpc_q14` calls and a 0.6097914076 cumulative-time
+  share. These are pre-change diagnostic facts, not a codec generation or Opus
+  claim.
+- R-252 admits only the immutable Phase-A evidence. R-198 is not triggered.
+  Oracle and test edits remain blocked until a separate Phase-B preflight and
+  independent binary GO bind the exact helper scope and post-change gates.
+
+## R-253 — bounded exact LPC-lifetime Phase-B preflight
+
+- Date: 2026-08-02
+- Status: **PRE-CODE DRAFT; IMPLEMENTATION NO-GO PENDING DUAL AUDIT**.
+- The frozen R-250 profile proves that 648,120 repeated reflection-to-Q14 LPC
+  conversions consume 58.5003879 cumulative seconds, or 0.6097914076 of the
+  profiled rescored encode. A FilterLaw is stable for its block, while the
+  current candidate path recomputes the identical tuple per sample and per
+  candidate.
+- Selected hypothesis: one local helper prepares exactly the FilterLaw blocks
+  touched by the current subframe, returns an immutable `(first_block, laws)`
+  value, and both desired-excitation callers plus realized-candidate synthesis
+  reuse it. This explicitly includes Basis-training subframes as well as the
+  main encoder loop.
+  The existing integer coefficient, accumulation, rounding, clipping,
+  candidate, metric, selection, trace, stream and commit orders do not change.
+- Rejected alternatives are no change, global memoization, whole-file
+  preparation, a single-law shortcut, hidden state in FilterLaw, approximate
+  or vectorized arithmetic, native C++23 batching, and CUDA. The last two stay
+  eligible only for a later structural S15 gate after this measured redundancy
+  is either removed exactly or rejected.
+- The helper may prepare at most nine laws and retain at most 16 KiB. It has no
+  global cache, file lifetime, cross-encode state, public ABI, syntax, decoder,
+  product or player effect.
+- The first draft was withdrawn before audit or code because self-red-team
+  found the separate `_collect_closed_loop_excitation_targets` desired-target
+  caller. The amended contract covers every direct caller and validates the
+  complete law count, 64-to-8192 block range, and 1-to-512 region length.
+- Admission requires exact equality to all 128 frozen pre-change cases and the
+  complete short-run stream, decoded PCM, semantic report and candidate trace;
+  helper conversions must equal touched laws and stop scaling with candidate
+  evaluations. Neither timing arm may regress by more than 2% median CPU, at
+  least one must improve by 10%, wall may not regress by more than 10%, and
+  peak memory may not grow by more than 8 MiB.
+- Any exactness or bound failure is terminal NO-GO for this implementation.
+  No tolerance, reduced candidate set, relaxed limit or repeated rescue is
+  permitted. Passing is an output-identical mechanical refactor under the
+  R-198 focused exception, not a new codec generation or compression claim.
+
+## R-254 — R-253 independent dual pre-code GO
+
+- Date: 2026-08-02
+- Status: **DUAL GO FOR EXACT R-253 IMPLEMENTATION ONLY**.
+- Both independent auditors reviewed exact R-253 SHA-256
+  `38dfc62cd8ac68e912a6b5c83b9bb4323ae523dd37aaaf023fae657947dfc277`
+  without editing files or executing codec work.
+- The withdrawn first draft was correctly NO-GO because it omitted the
+  Basis-training desired-target caller. The amended record covers both direct
+  desired-target callers, the main candidate-synthesis caller, and the direct
+  tests that must adopt the prepared region.
+- Both auditors independently proved the exact law-count mapping and nine-law
+  maximum, reproduced the 56,229-byte deterministic gzip identity, and found
+  no remaining ownership, state, resource, scope, or evidence blocker.
+- Implementation is authorized only within R-253's line/file/resource budget.
+  The focused R-198 exception is conditional on exact post-change payload,
+  PCM, report, trace and golden equality plus the stated conversion, timing,
+  wall and memory gates. Any mismatch is terminal NO-GO.
+
+## R-255 through R-256 — exact LPC-lifetime implementation freeze
+
+- Date: 2026-08-02
+- Status: **SUPERSEDED NO-GO; BYTECODE AUTHORITY WAS STALE**.
+- R-253 is implemented as one local immutable LPC preparation value per
+  touched subframe. Basis training, main desired excitation and all realized
+  candidates reuse that value; scalar integer arithmetic and every codec
+  output decision remain unchanged by construction.
+- R-255 freshly closes the changed oracle, focused test, compressed independent
+  golden fixture, 66 local modules, 84 local bytecode entries, runtime trees,
+  native core and frozen configuration. Historical R-234 remains unchanged.
+- The final focused module passes 18/18 in 22.48 seconds. Its negative bounds,
+  nine-law witness, both desired contexts, candidate mapping, immutability,
+  transactional behavior, imports and runtime closure are executable.
+- Two independent auditors returned GO to freeze exact hashes recorded in
+  `docs/reviews/R256_R253_IMPLEMENTATION_DUAL_AUDIT_2026-08-02.md`.
+- Authorization now extends only to creating one at-most-700-line/72-KiB
+  post-change runner and one separate authority. The runner must preserve the
+  R-250 transaction and externally prove output identity, helper-count law,
+  CPU, wall and process peak-working-set gates. Execution remains blocked
+  until another read-only dual audit returns GO.
+- This is not a codec generation or compression claim. R-198's focused
+  mechanical exception is still conditional on the unexecuted post-change
+  transaction.
+- A pre-commit reproduction without pre-exported bytecode-write suppression
+  legitimately regenerated one unchanged-source CPython 3.14 cache. R-255 then
+  failed 2/18 focused tests. All 84 declared caches were timestamp-based; 18
+  were foreign CPython 3.12 files that the frozen interpreter cannot select.
+  R-256's earlier GO is therefore superseded before commit or benchmark.
+
+## R-257 — isolated source-execution authority remediation
+
+- Date: 2026-08-02
+- Status: **PREFLIGHT DRAFT; IMPLEMENTATION NO-GO PENDING DUAL AUDIT**.
+- Official Python 3.14 documentation confirms that a non-`None`
+  `sys.pycache_prefix` reads and writes only a parallel cache tree and ignores
+  source-tree `__pycache__`; `PYTHONDONTWRITEBYTECODE` then keeps a fresh owned
+  prefix empty.
+- The selected remedy starts every authority-bound process under a distinct
+  absolute empty non-reparse prefix before local imports, binds source and
+  non-cache runtime bytes, and rejects redirected, sourceless or drifted local
+  module origins before trusting evidence.
+- Restoring stale bytes, source-only validation under default imports,
+  regenerating project caches and deleting caches are rejected. R-234 and
+  R-255 remain immutable negative history. The oracle, golden fixture, native
+  core, codec workload and all output expectations remain unchanged.
+- Implementation and post-change execution remain blocked until two
+  independent read-only audits approve the exact R-257 preflight.
+- The first R-257 draft SHA-256 `e7c1fac9...e2df61` received two independent
+  NO-GO verdicts. The amended design freezes an isolated two-stage startup,
+  pre-execution local import allowlist, handle-bound per-process prefixes,
+  canonical cache-excluding runtime hashing, exact loader/origin checks and
+  temp-only executable mutants. The first draft authorized no code.
+- V2 SHA-256 `68189aa2...e09890e` also received two independent NO-GO
+  verdicts. V3 adds a frozen-only Stage-0 prologue and separate prefix, removes
+  project roots from every search path, makes the guard terminal for all local
+  origins, authenticates production flags at the parent, and imports every
+  controller/worker target under one reserved normal module identity. V2
+  authorized no code.
+- V3 SHA-256 `4df8611a...192498e9` also received two independent NO-GO
+  verdicts. CPython loaded source-backed encoding modules before its in-script
+  prefix assignment; the named `experiments.*` target was not a regular
+  package and legacy path inserts remained. V4 moves the Stage-0 prefix into
+  the outer `-X` command through an explicitly untrusted path proposer, uses
+  the existing top-level controller identity, and removes/guards all project
+  path mutation. V3 authorized no code.
+- V4 SHA-256 `cbd53f3c...e659d99b` received one independent GO and one
+  independent NO-GO, therefore no implementation authority. The blocker was
+  exact value immutability of `sys.path_importer_cache`, which normal
+  `PathFinder` resolution must populate. V5 keeps its object identity fixed and
+  admits only guard-owned, bound-path, exact-FileFinder deltas recorded in the
+  append-only import ledger; external deletions, replacements and insertions
+  remain fail-closed.
+
+## R-258 — R-257 V5 independent dual pre-code GO
+
+- Date: 2026-08-02
+- Status: **DUAL GO FOR EVIDENCE REMEDIATION ONLY**.
+- Both independent auditors approved exact V5 SHA-256
+  `4c933257e53fe67605a612403ad0c82f43902a9ec1a21344ebdae9fa655e8538`.
+- Exact-runtime probes independently confirm alternate-prefix isolation before
+  user code and legitimate add-only FileFinder cache evolution. All startup,
+  path, loader, alias, cache, runtime, ownership, mutant and budget contracts
+  are coherent and falsifiable.
+- Implementation remains restricted to the declared evidence files and one
+  new authority. The oracle, golden fixture, native core, configuration and
+  codec/output laws remain immutable.
+- Post-change codec execution remains NO-GO. Two isolated focused runs and a
+  separate dual implementation audit are mandatory first.
+
+## R-259 through R-262 — source-execution implementation and bounded failures
+
+- Date: 2026-08-03
+- Status: **R-262 TERMINAL RUNTIME FAIL; NO ADMISSION**.
+- R-259 implemented the dual-audited R-257 source-only execution boundary.
+  R-260 then admitted the exact CPython startup cache sentinel after the first
+  focused launch failed before tests. R-261 retained a second fail-closed
+  result when its hostile constructor accessed guarded import state through a
+  forbidden interface, then moved that construction through Guard-owned
+  references without weakening the AST gate.
+- R-262 added exact one-location bound namespace-package handling for the real
+  SciPy `_external` package, bidirectional namespace ledger/loaded validation,
+  distinct raw/resolved uniqueness and no-descendant-touch reparse tests. Two
+  independent static auditors approved exact V5 implementation identities.
+- The first R-262 runtime admission exceeded the declared limit. The outside
+  wrapper returned after 94 seconds without enforcing its 75-second claim;
+  the exact two-process tree was then terminated and a read-only check found no
+  survivors. The immutable terminal receipt is
+  `artifacts/r262-s15-focused-admission-v1/run-1.stage-minus1.json`, SHA-256
+  `9c18f53340a627a2f325e5cc022648ab8f5ce7464800edb8a180f83147880508`.
+  Both prefixes were empty, no second run occurred, and R-262 is not admitted.
+- These are evidence-infrastructure changes only. No codec, audio, Opus,
+  syntax, version, player or release behavior changed.
+
+## R-263 — bounded transactional hostile-gate redesign
+
+- Date: 2026-08-03
+- Status: **FROZEN PRE-CODE PLAN**.
+- The exact 422-line plan SHA-256 is
+  `dcb8ecc6f8936dbcc40c3e88d57ab64fcc95311f8b81c09327df396850a0ea10`.
+- Selected design replaces fifteen full hostile interpreter launches with
+  reversible in-process mutations that call shared narrow production
+  validators. Source drift, true post-exit drift and irreversible importer
+  invalidation remain three isolated processes.
+- It removes only duplicate authority/runtime traversals, preserves one real
+  gate-validator closure, freezes ordered state restoration and canonical
+  authority-content checks, and uses a single framed progress relay.
+- A self-bound inline verifier executes before the gate, while the gate owns an
+  eight-process, 512-MiB-per-process/2-GiB-total no-breakaway Job. Work ends at
+  68 seconds; process-list/accounting queries, kill-on-close containment and a
+  stage-minus-one receipt complete by the absolute 75-second limit.
+- Exact closure is 82 bindings and the complete executable change remains at
+  or below 720 added lines including the one-line launcher. Any first-run
+  failure closes the mechanism without retry, a larger cap or a second
+  remediation.
+
+## R-264 — R-263 independent dual pre-code GO
+
+- Date: 2026-08-03
+- Status: **DUAL GO FOR EXACT EVIDENCE IMPLEMENTATION ONLY**.
+- Both independent auditors reviewed exact R-263 SHA-256
+  `dcb8ecc6f8936dbcc40c3e88d57ab64fcc95311f8b81c09327df396850a0ea10`
+  without editing files or executing project work and returned binary GO.
+- The authorization is limited to the exact three-file implementation, inline
+  launcher, authority update and frozen 720-line/resource limits. Two fresh
+  independent static implementation GO verdicts remain mandatory before Run
+  1. Codec/audio/Opus/player execution remains blocked.
+
+## R-265 — R-263 post-implementation dual static GO
+
+- Date: 2026-08-03
+- Status: **DUAL STATIC GO; EXACTLY ONE RUN 1 AUTHORIZED**.
+- The first exact implementation review found two blocking cleanup defects:
+  mutator failures were not externally recorded as terminal harness errors,
+  and an unassigned process could be marked terminated before kill success.
+  No project code or tests executed under that candidate.
+- The corrected candidate records a serialized `HARNESS_ERROR` only after
+  complete restoration and uses separate termination-attempt/success state,
+  one caught kill, one bounded wait and unconditional Job close/receipt flow.
+- Both independent auditors returned GO for bootstrap
+  `463002769637422d4dc4b6de32056212d5623313779530bcc4699dd5fdb62a7f`,
+  gate `c4529ffaee118d8fd51360babda6e88d7051b0c1fdeabacca200d11ff04ea908`,
+  test `ab70ba0f807ec4f7f3332a852c06e1ac5a9b8462889c232ac504258dddf81ede`
+  and authority
+  `1fe9e4b8a2c1afd5b52643ecbcd76ee187e888d4220f4b8173072e2f5aad7c02`.
+- Static closure is 82 bindings, 26 tests, a 1,014-byte newline-free launcher
+  and exactly 720 executable added lines. Run 1 may execute once; failure is
+  terminal and Run 2 remains conditional on a pass. No codec algorithm changed,
+  so R-198 audio/Opus comparison is not triggered.
+
+## R-266 — R-263 Run 1 terminal failure and quarantine
+
+- Date: 2026-08-03
+- Status: **TERMINAL FAIL; RUN 2 AND R-263 REMEDIATION FORBIDDEN**.
+- The one authorized Run 1 failed before tests started. Stage 1 ordinary stderr
+  was parsed as a framed length by Stage 0, producing `MemoryError`; the outer
+  monitor then fail-closed on Stage 0's ordinary traceback.
+- Receipt SHA-256 is
+  `9864dccc649846fceceea8c6fc7b4a7179697d4994baeb7755ef47fcd03a22f2`;
+  stderr SHA-256 is
+  `53c31f1bf1148b81536ae02915dcc96212f71258c6a9331d7ddf42c44b9d3d29`;
+  stdout is empty. Runtime was 7.207277 seconds, peak Job memory was
+  77,963,264 bytes and retained evidence peaked at 1,624 bytes.
+- Cleanup is proven: one successful termination, final Job active count zero,
+  empty PID set, absent Stage prefixes and no matching Python survivor. Two
+  independent read-only audits validated the result.
+- R-253 through R-263 remain unadmitted negative evidence. They are excluded
+  from admission, performance lineage and release claims. The active project
+  must hand off to accepted S12 identities before a genuinely new S15 proposal;
+  this is not an R-263 retry. No algorithm generation was accepted, so R-198
+  comparison is not triggered.

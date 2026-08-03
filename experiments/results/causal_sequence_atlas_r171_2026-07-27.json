@@ -1,0 +1,411 @@
+{
+  "claim_boundary": "sequence-discovery diagnostic; no bitrate or Opus claim",
+  "long_frontier_frozen": true,
+  "long_results": [
+    {
+      "atlas_report": {
+        "candidate_class_count": 681,
+        "covered_repeated_candidate_length_count": 681,
+        "covered_repeated_length_interval_count": 681,
+        "event_count": 20849,
+        "every_event_origin_indexed": true,
+        "preferred_length_sampling": false,
+        "schema": "resonith-r171-causal-sequence-atlas-1",
+        "status": "exact declared canonical event-language index; complete stream RDO pending",
+        "streams": [
+          {
+            "event_origin_offset": 0,
+            "mode": "literal",
+            "repeated_end_position_class_count": 0,
+            "suffix_state_count": 20850,
+            "suffix_transition_count": 41697,
+            "token_count": 20849
+          },
+          {
+            "event_origin_offset": 1,
+            "mode": "constant-offset/first-difference",
+            "repeated_end_position_class_count": 1,
+            "suffix_state_count": 21730,
+            "suffix_transition_count": 42576,
+            "token_count": 20848
+          },
+          {
+            "event_origin_offset": 2,
+            "mode": "bounded-second-difference",
+            "repeated_end_position_class_count": 680,
+            "suffix_state_count": 21528,
+            "suffix_transition_count": 42373,
+            "token_count": 20847
+          }
+        ]
+      },
+      "atlas_wall_seconds": 0.36255370001890697,
+      "candidate_classes_by_mode": {
+        "bounded-second-difference": {
+          "candidate_class_count": 680,
+          "covered_candidate_length_count": 680,
+          "maximum_event_count": 4,
+          "maximum_occurrence_count": 6
+        },
+        "constant-offset/first-difference": {
+          "candidate_class_count": 1,
+          "covered_candidate_length_count": 1,
+          "maximum_event_count": 3,
+          "maximum_occurrence_count": 2
+        }
+      },
+      "causal_event_count": 20849,
+      "causal_quantization": {
+        "envelope_bins": 256,
+        "gain_step_db": 0.25,
+        "phase_bins": 256,
+        "pitch_step_cents": 5.0,
+        "role": "exact finite proposer alphabet; original parameters and audio remain decoder-verified by bounded laws plus Truth"
+      },
+      "channels": 2,
+      "duration_seconds": 120.0,
+      "exact_reconstruction": true,
+      "frames": 5760000,
+      "id": "mozart-original",
+      "lane_report": {
+        "coefficient_ownership_fraction": {
+          "coherent_harmonic": 0.09316640291403987,
+          "deterministic_inharmonic": 0.032219750597179436,
+          "sparse_transient": 0.05999733345184659,
+          "stochastic": 0.8146165130369342
+        },
+        "complex_mixture_phase_preserved": true,
+        "exact_integer_reconstruction": true,
+        "lane_energy_fraction": {
+          "coherent_harmonic": 0.8995816148339773,
+          "deterministic_inharmonic": 0.01248051116260458,
+          "sparse_transient": 0.020098512253284476,
+          "stochastic": 0.010807664866394964
+        },
+        "one_final_mixture_truth": true,
+        "partial_basis_count": 1,
+        "partial_observation_count": 20849,
+        "reconstruction_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+        "schema": "resonith-r169-causal-lane-field-1",
+        "semantic_labels": false,
+        "shared_cross_channel_ownership_masks": true,
+        "single_primary_lane_ownership": true,
+        "source_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+        "status": "encoder-side analytic proposer; normative PartialBasis transport and complete RDO pending",
+        "transient_frame_count": 1350
+      },
+      "lane_wall_seconds": 38.330903499998385,
+      "partial_language": {
+        "fft_samples": 1024,
+        "hop_samples": 256,
+        "maximum_fundamental_hz": 1800.0,
+        "maximum_partials": 24,
+        "minimum_fundamental_hz": 50.0
+      },
+      "path": "G:\\Orkela\\comparison\\public-benchmark-2026-07-26\\mozart-original.wav",
+      "reconstruction_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+      "sample_rate": 48000,
+      "source_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+      "status": "Real PCM / Fast analytic sequence diagnostic / not complete-stream compression",
+      "total_wall_seconds": 38.69345720001729
+    }
+  ],
+  "schema": "resonith-r171-causal-sequence-atlas-gate-1",
+  "short_results": [
+    {
+      "atlas_report": {
+        "candidate_class_count": 11,
+        "covered_repeated_candidate_length_count": 11,
+        "covered_repeated_length_interval_count": 11,
+        "event_count": 1216,
+        "every_event_origin_indexed": true,
+        "preferred_length_sampling": false,
+        "schema": "resonith-r171-causal-sequence-atlas-1",
+        "status": "exact declared canonical event-language index; complete stream RDO pending",
+        "streams": [
+          {
+            "event_origin_offset": 0,
+            "mode": "literal",
+            "repeated_end_position_class_count": 0,
+            "suffix_state_count": 1217,
+            "suffix_transition_count": 2431,
+            "token_count": 1216
+          },
+          {
+            "event_origin_offset": 1,
+            "mode": "constant-offset/first-difference",
+            "repeated_end_position_class_count": 0,
+            "suffix_state_count": 1219,
+            "suffix_transition_count": 2432,
+            "token_count": 1215
+          },
+          {
+            "event_origin_offset": 2,
+            "mode": "bounded-second-difference",
+            "repeated_end_position_class_count": 11,
+            "suffix_state_count": 1226,
+            "suffix_transition_count": 2438,
+            "token_count": 1214
+          }
+        ]
+      },
+      "atlas_wall_seconds": 0.021061600011307746,
+      "candidate_classes_by_mode": {
+        "bounded-second-difference": {
+          "candidate_class_count": 11,
+          "covered_candidate_length_count": 11,
+          "maximum_event_count": 3,
+          "maximum_occurrence_count": 2
+        }
+      },
+      "causal_event_count": 1216,
+      "causal_quantization": {
+        "envelope_bins": 256,
+        "gain_step_db": 0.25,
+        "phase_bins": 256,
+        "pitch_step_cents": 5.0,
+        "role": "exact finite proposer alphabet; original parameters and audio remain decoder-verified by bounded laws plus Truth"
+      },
+      "channels": 1,
+      "duration_seconds": 12.0,
+      "exact_reconstruction": true,
+      "frames": 529200,
+      "id": "ebu-female-speech-en",
+      "lane_report": {
+        "coefficient_ownership_fraction": {
+          "coherent_harmonic": 0.06270321095688042,
+          "deterministic_inharmonic": 0.039886112359465875,
+          "sparse_transient": 0.06041565973900435,
+          "stochastic": 0.8369950169446494
+        },
+        "complex_mixture_phase_preserved": true,
+        "exact_integer_reconstruction": true,
+        "lane_energy_fraction": {
+          "coherent_harmonic": 0.9044445259145568,
+          "deterministic_inharmonic": 0.01664095191088091,
+          "sparse_transient": 0.0032806834497820948,
+          "stochastic": 0.032979776900645394
+        },
+        "one_final_mixture_truth": true,
+        "partial_basis_count": 1,
+        "partial_observation_count": 1216,
+        "reconstruction_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+        "schema": "resonith-r169-causal-lane-field-1",
+        "semantic_labels": false,
+        "shared_cross_channel_ownership_masks": true,
+        "single_primary_lane_ownership": true,
+        "source_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+        "status": "encoder-side analytic proposer; normative PartialBasis transport and complete RDO pending",
+        "transient_frame_count": 125
+      },
+      "lane_wall_seconds": 2.5279437999997754,
+      "partial_language": {
+        "fft_samples": 1024,
+        "hop_samples": 256,
+        "maximum_fundamental_hz": 1800.0,
+        "maximum_partials": 24,
+        "minimum_fundamental_hz": 50.0
+      },
+      "path": "G:\\Resonith\\artifacts\\corpus\\prepared-r111\\ebu-female-speech-en.wav",
+      "reconstruction_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+      "sample_rate": 44100,
+      "source_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+      "status": "Real PCM / Fast analytic sequence diagnostic / not complete-stream compression",
+      "total_wall_seconds": 2.549005400011083
+    },
+    {
+      "atlas_report": {
+        "candidate_class_count": 0,
+        "covered_repeated_candidate_length_count": 0,
+        "covered_repeated_length_interval_count": 0,
+        "event_count": 8,
+        "every_event_origin_indexed": true,
+        "preferred_length_sampling": false,
+        "schema": "resonith-r171-causal-sequence-atlas-1",
+        "status": "exact declared canonical event-language index; complete stream RDO pending",
+        "streams": [
+          {
+            "event_origin_offset": 0,
+            "mode": "literal",
+            "repeated_end_position_class_count": 0,
+            "suffix_state_count": 9,
+            "suffix_transition_count": 15,
+            "token_count": 8
+          },
+          {
+            "event_origin_offset": 1,
+            "mode": "constant-offset/first-difference",
+            "repeated_end_position_class_count": 0,
+            "suffix_state_count": 8,
+            "suffix_transition_count": 13,
+            "token_count": 7
+          },
+          {
+            "event_origin_offset": 2,
+            "mode": "bounded-second-difference",
+            "repeated_end_position_class_count": 0,
+            "suffix_state_count": 7,
+            "suffix_transition_count": 11,
+            "token_count": 6
+          }
+        ]
+      },
+      "atlas_wall_seconds": 0.00020370000856928527,
+      "candidate_classes_by_mode": {},
+      "causal_event_count": 8,
+      "causal_quantization": {
+        "envelope_bins": 256,
+        "gain_step_db": 0.25,
+        "phase_bins": 256,
+        "pitch_step_cents": 5.0,
+        "role": "exact finite proposer alphabet; original parameters and audio remain decoder-verified by bounded laws plus Truth"
+      },
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "exact_reconstruction": true,
+      "frames": 529200,
+      "id": "ebu-dense-orchestra",
+      "lane_report": {
+        "coefficient_ownership_fraction": {
+          "coherent_harmonic": 0.0003693245788333677,
+          "deterministic_inharmonic": 0.03600066704541279,
+          "sparse_transient": 0.06041565973900435,
+          "stochastic": 0.9032143486367495
+        },
+        "complex_mixture_phase_preserved": true,
+        "exact_integer_reconstruction": true,
+        "lane_energy_fraction": {
+          "coherent_harmonic": 6.886703949405828e-05,
+          "deterministic_inharmonic": 0.10999032732152952,
+          "sparse_transient": 0.03985355333088112,
+          "stochastic": 0.43454015913173805
+        },
+        "one_final_mixture_truth": true,
+        "partial_basis_count": 1,
+        "partial_observation_count": 8,
+        "reconstruction_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+        "schema": "resonith-r169-causal-lane-field-1",
+        "semantic_labels": false,
+        "shared_cross_channel_ownership_masks": true,
+        "single_primary_lane_ownership": true,
+        "source_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+        "status": "encoder-side analytic proposer; normative PartialBasis transport and complete RDO pending",
+        "transient_frame_count": 125
+      },
+      "lane_wall_seconds": 2.746836099977372,
+      "partial_language": {
+        "fft_samples": 1024,
+        "hop_samples": 256,
+        "maximum_fundamental_hz": 1800.0,
+        "maximum_partials": 24,
+        "minimum_fundamental_hz": 50.0
+      },
+      "path": "G:\\Resonith\\artifacts\\corpus\\prepared-r111\\ebu-dense-orchestra.wav",
+      "reconstruction_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+      "sample_rate": 44100,
+      "source_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+      "status": "Real PCM / Fast analytic sequence diagnostic / not complete-stream compression",
+      "total_wall_seconds": 2.7470397999859415
+    },
+    {
+      "atlas_report": {
+        "candidate_class_count": 0,
+        "covered_repeated_candidate_length_count": 0,
+        "covered_repeated_length_interval_count": 0,
+        "event_count": 1779,
+        "every_event_origin_indexed": true,
+        "preferred_length_sampling": false,
+        "schema": "resonith-r171-causal-sequence-atlas-1",
+        "status": "exact declared canonical event-language index; complete stream RDO pending",
+        "streams": [
+          {
+            "event_origin_offset": 0,
+            "mode": "literal",
+            "repeated_end_position_class_count": 0,
+            "suffix_state_count": 1780,
+            "suffix_transition_count": 3557,
+            "token_count": 1779
+          },
+          {
+            "event_origin_offset": 1,
+            "mode": "constant-offset/first-difference",
+            "repeated_end_position_class_count": 0,
+            "suffix_state_count": 1783,
+            "suffix_transition_count": 3559,
+            "token_count": 1778
+          },
+          {
+            "event_origin_offset": 2,
+            "mode": "bounded-second-difference",
+            "repeated_end_position_class_count": 0,
+            "suffix_state_count": 1778,
+            "suffix_transition_count": 3553,
+            "token_count": 1777
+          }
+        ]
+      },
+      "atlas_wall_seconds": 0.02413999999407679,
+      "candidate_classes_by_mode": {},
+      "causal_event_count": 1779,
+      "causal_quantization": {
+        "envelope_bins": 256,
+        "gain_step_db": 0.25,
+        "phase_bins": 256,
+        "pitch_step_cents": 5.0,
+        "role": "exact finite proposer alphabet; original parameters and audio remain decoder-verified by bounded laws plus Truth"
+      },
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "exact_reconstruction": true,
+      "frames": 529200,
+      "id": "ebu-pink-noise",
+      "lane_report": {
+        "coefficient_ownership_fraction": {
+          "coherent_harmonic": 0.08314702227347542,
+          "deterministic_inharmonic": 0.04828730437338715,
+          "sparse_transient": 0.06041565973900435,
+          "stochastic": 0.8081500136141331
+        },
+        "complex_mixture_phase_preserved": true,
+        "exact_integer_reconstruction": true,
+        "lane_energy_fraction": {
+          "coherent_harmonic": 0.5010250695381632,
+          "deterministic_inharmonic": 0.04964702573167448,
+          "sparse_transient": 0.032358256530731586,
+          "stochastic": 0.23118343932523183
+        },
+        "one_final_mixture_truth": true,
+        "partial_basis_count": 1,
+        "partial_observation_count": 1779,
+        "reconstruction_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+        "schema": "resonith-r169-causal-lane-field-1",
+        "semantic_labels": false,
+        "shared_cross_channel_ownership_masks": true,
+        "single_primary_lane_ownership": true,
+        "source_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+        "status": "encoder-side analytic proposer; normative PartialBasis transport and complete RDO pending",
+        "transient_frame_count": 125
+      },
+      "lane_wall_seconds": 3.3172006999957375,
+      "partial_language": {
+        "fft_samples": 1024,
+        "hop_samples": 256,
+        "maximum_fundamental_hz": 1800.0,
+        "maximum_partials": 24,
+        "minimum_fundamental_hz": 50.0
+      },
+      "path": "G:\\Resonith\\artifacts\\corpus\\prepared-r111\\ebu-pink-noise.wav",
+      "reconstruction_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+      "sample_rate": 44100,
+      "source_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+      "status": "Real PCM / Fast analytic sequence diagnostic / not complete-stream compression",
+      "total_wall_seconds": 3.3413406999898143
+    }
+  ],
+  "status": "complete-fast-diagnostic",
+  "test_order": [
+    "long",
+    "freeze-long",
+    "short"
+  ]
+}

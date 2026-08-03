@@ -1,0 +1,51 @@
+{
+  "authority_sha256": "76b72af59f04cf87034218a9ad71c86b0285420ee9c18b6ef82b913e8cc6b165",
+  "codec_or_oracle_changed": false,
+  "controller_wall_seconds_before_receipt": 390.7651842000196,
+  "evidence": {
+    "bytes": 2307740,
+    "directories_including_root": 4,
+    "files": 29,
+    "path": "artifacts/r250-s15-short-baseline-prechange",
+    "receipt_sha256": "b28f8d264d183d34a817f0523ec274cb2ac057df66413235e578d295ffedba8d"
+  },
+  "git_commit": "4a74ee485ea0d1e207063920d45001ee6d4564ee",
+  "golden": {
+    "case_count": 128,
+    "maximum_touched_laws": 9,
+    "sha256": "8fe390457f9baf5226207f2d3c3ebb71c6ba5ac968921cb7e6e145f9b4e8ccf6"
+  },
+  "legacy": {
+    "decoded_pcm_sha256": "2ae63818e87e41c2e0acddd355828039338f9bc84b9e913947741179fa5681b4",
+    "median_cpu_seconds": 10.578125,
+    "median_wall_seconds": 10.6120175,
+    "stream_bytes": 12554,
+    "stream_sha256": "f0c3abf0a71ee7d40bdd4f5c022291264b8e39a40c2e9bdc58f14fd23f87a8a6",
+    "waveform_sse": 73327420909
+  },
+  "profile": {
+    "encode_cumulative_seconds": 95.9350807,
+    "lpc_calls": 648120,
+    "lpc_cumulative_ratio": 0.6097914076180061,
+    "lpc_cumulative_seconds": 58.50038790000001,
+    "raw_profile_sha256": "5fc50daa51662d1e9678c5d4c7092dfe88eba7a0443b55c76d009ab666b7dc5c"
+  },
+  "r198_triggered": false,
+  "rescored": {
+    "candidate_evaluations": 8642,
+    "decoded_pcm_sha256": "bcff64e10968a7050e7296f95d5a77491a034f1b47f013edc4e0d940ef5977a8",
+    "median_cpu_seconds": 39.03125,
+    "median_wall_seconds": 39.6908918,
+    "rejected_candidate_evaluations": 7041,
+    "stream_bytes": 12371,
+    "stream_sha256": "15415da9ba2e25ce48873c8a5dc1686f05efa62fb46f4e9b28c4a1c3bfe7532d",
+    "waveform_sse": 72956137926
+  },
+  "result_audit": {
+    "independent_auditors": 2,
+    "verdict": "GO"
+  },
+  "runner_sha256": "736c7aa6ccb5f6f562f091737a52a5b0dac0b963f9066bbd0247d1781dc7e8e5",
+  "schema": "resonith-r250-s15-phase-a-result-summary-1",
+  "status": "PASS"
+}

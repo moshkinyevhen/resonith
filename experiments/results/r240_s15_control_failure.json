@@ -1,0 +1,64 @@
+{
+  "authority_sha256": "bb14ad62772a7fe71530fe2a99ddbf127cd6a095b84a7aa1fc8006e7295cc29e",
+  "completed_runs": [
+    {
+      "kind": "legacy-identity",
+      "name": "legacy-identity",
+      "report_sha256": "61820bc40f8c0bc7e269622a407bdb4db9cc0aa02d667dfe381e318fc0a89732",
+      "request_sha256": "90f2dbf9a83784c7eb84a676b5649f2cead6648cc8455e3b38452a5d8683cb3c",
+      "resources": {
+        "authority_sha256": "bb14ad62772a7fe71530fe2a99ddbf127cd6a095b84a7aa1fc8006e7295cc29e",
+        "exit_code": 0,
+        "job_peak_memory_bytes": 115732480,
+        "memory_limit_bytes": 3221225472,
+        "process_peak_working_set_bytes": 138473472,
+        "request_sha256": "90f2dbf9a83784c7eb84a676b5649f2cead6648cc8455e3b38452a5d8683cb3c",
+        "retained_limit_bytes": 8589934592,
+        "run_index_sha256": null,
+        "runner_sha256": "53af4e1f85341b6d29661003d7e18144d40cc2cf64679463c2da9f20f738670e",
+        "staging_disk_high_water_bytes": 202231,
+        "stderr_bytes": 0,
+        "stderr_excerpt": "",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 0,
+        "stdout_excerpt": "",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "task_name": "legacy-identity",
+        "wall_limit_seconds": 900.0,
+        "wall_seconds": 41.90446209999209
+      },
+      "worker_receipt_sha256": "c3a7468ebdd155f052daf734d4cfb27e0d0db6f4c32643d12d28342c4f877896"
+    }
+  ],
+  "error": "_MonitoredFailure: TimeoutError: R-232 worker exceeded its wall ceiling",
+  "failing_task": {
+    "control": "stable-ar-periodic",
+    "kind": "synthetic-control",
+    "name": "stable-ar-periodic"
+  },
+  "resource_evidence": {
+    "authority_sha256": "bb14ad62772a7fe71530fe2a99ddbf127cd6a095b84a7aa1fc8006e7295cc29e",
+    "exit_code": 1,
+    "job_peak_memory_bytes": 278114304,
+    "memory_limit_bytes": 3221225472,
+    "process_peak_working_set_bytes": 290344960,
+    "request_sha256": "3925af0f9e057c986c370a9e3217bc4c15474befaa0eeec3f2c46d467d4e5ed4",
+    "retained_limit_bytes": 8589934592,
+    "run_index_sha256": "36d834b894379ae4d09611ef8ae2f050eaa744c75fd0278d77859079f0005dce",
+    "runner_sha256": "53af4e1f85341b6d29661003d7e18144d40cc2cf64679463c2da9f20f738670e",
+    "staging_disk_high_water_bytes": 7978108,
+    "stderr_bytes": 0,
+    "stderr_excerpt": "",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_bytes": 0,
+    "stdout_excerpt": "",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "task_name": "stable-ar-periodic",
+    "wall_limit_seconds": 900.0,
+    "wall_seconds": 900.0461295999994
+  },
+  "run_index_sha256": "36d834b894379ae4d09611ef8ae2f050eaa744c75fd0278d77859079f0005dce",
+  "runner_sha256": "53af4e1f85341b6d29661003d7e18144d40cc2cf64679463c2da9f20f738670e",
+  "schema": "resonith-r232-s15-control-suite-failure-2",
+  "status": "FAIL"
+}

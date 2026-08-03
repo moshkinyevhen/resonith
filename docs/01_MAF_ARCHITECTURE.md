@@ -23,6 +23,20 @@ RenderAcoustic(Emitters_t,Trajectories_t,RoomState_t)
 Transport remains packet, and DAC issues samples, but neither packet nor
 sample block is a unit of long-lived codec state.
 
+The governing MAF causal equation is:
+
+```text
+Pressure_c(t) =
+  sum_s Route_c,s(Resonator_s(Excitation_s, State_s))
+  + Truth_c(t)
+```
+
+`Excitation` may be coherent/quasiperiodic, impulsive, or stochastic.
+`Resonator` creates harmonic and bounded-inharmonic partial bundles, formants,
+decay, modulation, and body/room response. `Route` carries complex phase,
+delay, gain, channel covariance, and stable propagation. Each law persists
+until a real event changes it.
+
 ## 2. Not a classification of a piece, but a superposition
 
 The same interval MAY simultaneously contain:
@@ -462,6 +476,14 @@ observed region
     + objective Truth
 ```
 
+The full proposal union separates coherent harmonic, deterministic
+inharmonic, sparse transient, stochastic, and phase/room/channel route lanes.
+The lanes may overlap additively in time and frequency but have single
+rate-accounting ownership. They are rendered and summed before one final
+mixture-domain Truth. This prevents harmonic structure from paying for attacks
+or noise and prevents stochastic structure from becoming thousands of
+unprofitable sinusoids.
+
 The useful scale is discovered rather than declared semantically. A Basis may
 span a few samples, one oscillation, a transient attack, a room resonance, a
 phrase, or a complete repeated section. The encoder pays the dictionary,
@@ -630,3 +652,66 @@ one-time existing-Basis activation, overlapping direct large spans, and a
 global chart that rejects locally attractive but globally expensive merges.
 The normative decoder grammar remains prospective until its complete-byte
 stream gate passes.
+
+## 28. Minimum-description anonymous causal program
+
+The complete encoder object is one bounded causal program, not a sequence of
+content labels or a switch among isolated codecs:
+
+```text
+program =
+    immutable leaf and CompoundBasis memory
+    + persistent anonymous emitters
+    + excitation / resonator / partial / transient / stochastic laws
+    + independently indexed timing / phase / gain / envelope / route state
+    + one final mixture Truth
+```
+
+For a finite declared language, Foundry minimizes:
+
+```text
+actual program bytes
+    + actual event, route, and checkpoint bytes
+    + actual final-Truth bytes
+    + distortion cost
+    + bounded decode and seek cost
+```
+
+The program may contain several overlapping causes at once. A coherent
+partial bundle does not need to impersonate a transient; a transient does not
+need to carry stochastic ambience; a stochastic field does not need to become
+thousands of deterministic sinusoids. The perfect-reconstruction analysis
+domain assigns one primary owner, the bounded renderers are summed, and only
+then is the authoritative Truth computed.
+
+Source separation is not an end in itself. A latent emitter exists only when
+its immutable memory, state laws, events, routes, and reduced Truth make the
+complete program shorter or create an admitted matched-rate quality point.
+The factorization may differ from the physically real instruments while the
+decoded sum remains objective.
+
+The scalable solver uses column generation and deterministic add/remove/swap
+beam RDO; small declared candidate families retain a bounded exact oracle.
+Semantic or learned systems can add columns but never remove the
+deterministic candidate union or decide admission. This is the R-179 primary
+MAF compiler objective.
+
+## 29. Whole-track self-supervised causal Foundry
+
+R-182 makes the complete recording the training set for its own anonymous
+causal program. The Foundry learns vector partial shapes, excitation,
+resonator state, returns after gaps, hierarchical motifs, and cross-channel
+routes over the complete timeline. It is not trained to name a source.
+
+Learning alternates quantized parameter re-estimation with structural
+add/remove/split/merge/link/route-share edits. Every proposed frontier edit is
+packed, independently decoded, summed, followed by one final Truth, and
+charged in full. The decoder sees only the resulting bounded integer program;
+training code, gradients, separators, CUDA, and cloud systems remain outside
+the bitstream.
+
+This turns file-specific overfitting into a valid compression search without
+making model memory free. A learned law wins only when its reusable state
+removes more final-Truth bytes than the law, Basis, events, routes, and
+checkpoints add. The detailed algorithm and gates are in
+[22_PER_TRACK_CAUSAL_FOUNDRY.md](22_PER_TRACK_CAUSAL_FOUNDRY.md).

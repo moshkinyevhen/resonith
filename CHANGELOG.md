@@ -9,8 +9,275 @@ version.
 
 ## [Unreleased]
 
+### Evidence and repository history
+
+- Completed the output-identical R-218 S11 analyzer acceleration at commit
+  `64521b19551d4b9688de10fe01c5302607a5beb1`; codec payload and decoded PCM
+  identities are unchanged.
+- Added the audited R-219 direct comparison controller for current Resonith
+  versus one fixed official Opus 1.6.1 configuration. The partial long-first
+  run retained complete per-file bytes and actual-decoder quality metrics, then
+  failed closed when four bounded rate attempts missed the first registered
+  speech item.
+- Added R-220 short and 319.38-second LibriSpeech diagnostics. Resonith decoding
+  is faster than real time on both; the long encoder is 11.78 times real time,
+  while the short analyzer-rich path is not real time. At matched bytes,
+  Resonith has higher waveform SNR but lower STOI/ESTOI and worse log-mel than
+  Opus, so no speech-quality victory is claimed.
+- Completed and independently admitted the R-221 S12 direct comparison in its
+  narrow declared scope. All 19 registered inputs were decoded and audited;
+  16 are strict complete-byte matches and three are retained diagnostic
+  mismatches excluded from equal-rate claims. Resonith wins waveform SNR on
+  13/16 strict rows, registered channel-0 phase MAE on 15/16, pre-echo on
+  14/16, and log-mel on 9/16, while Opus wins detailed log-spectrum distance on
+  11/16. This is a measured error-profile diagnosis, not a general
+  better-than-Opus claim.
+- Made GitHub synchronization durable: every coherent pushed change now carries
+  an English changelog entry, R-number, validation record, updated all-63-step
+  checkpoint, and commit identity. Experimental commits do not increment the
+  product `VERSION` or imply release.
+- Closed the missing preceding-Resonith column with the audited R-224 actual
+  historical execution. All 19 frozen R-221 payloads and all 19 native decoded
+  PCM outputs are byte-identical to the exact pre-S11 `ca87dec` direct-Truth
+  producer. This proves that the registered R-221 result measured direct Truth,
+  not an active persistent-partial lane; no codec improvement, syntax, version,
+  Opus rerun, or release is claimed. The coherent evidence package is commit
+  `434d12fa3de72aacb3a2361bf99283f2caab42d0`.
+- Froze and independently audited the R-227 S13 phase-poisoned tiled-shadow
+  experiment. It uses a complete four-input authority, bounded twelve-second
+  target tiles, phase-free integer support and knot selection, paired existing-
+  syntax carry/reset arms, actual complete-byte/native-decode accounting and a
+  strict kill gate. R-228 authorizes only the smallest implementation; long
+  execution, syntax, versioning and release remain blocked. The public pre-code
+  checkpoint is commit `1c375d9f3ffe4f80b152e8015d0e25e9797f2ebf`.
+- Implemented the bounded R-227 runner and retained the independent R-229
+  NO-GO instead of hiding it. The bounded remediation replaces forgeable phase
+  strings with a durable capability vault, validates and natively decodes the
+  exact 600-placement periodic control, records the complete loaded-module
+  inventory, and passes 17/17 focused checks. Long execution remains blocked
+  until the committed bytes receive a fresh independent GO.
+- Closed R-227/S13 as an independently audited negative result. Full Mozart
+  and long LibriSpeech produced zero eligible phase-free lanes; full
+  *Elephants Dream* then stopped before candidate publication at the frozen
+  native lapped-analysis memory ceiling. No retry, threshold retuning, syntax,
+  version, decoder, Opus anchor or product behavior changed. S14 is not
+  applicable because no generation was admitted; S15 source-filter work starts
+  from the unchanged accepted S12 baseline.
+- Froze R-232/S15 as a narrow decoder-domain final-candidate rescoring
+  experiment over the existing rejected R-120 SFT1/EPV1 path. Two hostile
+  audits forced explicit candidate scope, causal state ownership, a 256/40
+  local mel guard, deterministic Q20 selection, one immutable configuration,
+  no long-to-short tuning and honest residual-energy terminology. R-233 grants
+  pre-code GO only; no syntax, decoder, version or codec generation changed.
+- Closed R-232/S15 as an independently audited negative result. The corrected
+  pre-S15 EPV1-v3 incumbent identity passed, but the first 120-second synthetic
+  control reached its frozen 900-second ceiling; stop-on-first-failure blocked
+  all later controls. No retry, larger limit, real-audio run, Opus rerun,
+  syntax/default/version change or generation admission occurred. R-241/R-242
+  retain the atomic failure evidence; S12 remains the accepted frontier.
+- Completed the dual-audited R-250 Phase-A pre-change baseline for the exact
+  LPC-lifetime hoist. Its sole PASS transaction retained 29 files and 128
+  golden cases and measured 648,120 `_lpc_q14` calls consuming 60.9791% of the
+  profiled encode cumulative time. Rescoring saves 1.45770% complete bytes and
+  0.50634% waveform SSE versus its legacy arm but costs 3.68981 times median
+  CPU. This is evidence for an output-identical mechanical refactor, not a new
+  codec generation, Opus comparison, version, or release.
+- Froze R-253 as the pre-code Phase-B contract for one bounded per-subframe
+  immutable LPC preparation helper. The selected change may only remove
+  repeated pure conversion; 128 frozen scalar cases and every stream, PCM,
+  candidate, metric, trace and report identity must remain exact. Global or
+  whole-file caches, approximation, native batching and CUDA are excluded from
+  this mechanical gate. Implementation remains blocked pending two independent
+  binary GO verdicts.
+  Its initial draft was withdrawn before audit or code after self-red-team found
+  a second desired-target caller in Basis training; the amended scope covers
+  every caller and exact profile/law-count bounds.
+- Recorded the R-254 independent dual GO for exact revised R-253 SHA-256
+  `38dfc62c...c277`. It authorizes only the bounded helper, direct private tests,
+  deterministic compressed golden fixture, and one post-change evidence
+  runner. No algorithm generation or product behavior is admitted.
+- Implemented and dual-audited the exact R-253 LPC-lifetime hoist. One local
+  immutable preparation now serves Basis training, main desired excitation and
+  every candidate in the same subframe; the focused module passes 18/18,
+  including all 128 independent pre-change golden cases and adversarial bounds.
+  R-256 authorizes freezing these bytes and creating one bounded post-change
+  runner, but execution and any codec-generation claim remain blocked pending
+  a separate read-only audit.
+- Retained a pre-commit falsification of that implementation audit: an ordinary
+  CPython 3.14 import regenerated stale timestamp bytecode from unchanged
+  source, and R-255 failed 2/18 authority tests. R-256 is superseded before any
+  benchmark. R-257 instead isolates every authority-bound process behind a
+  fresh empty `PYTHONPYCACHEPREFIX`, disables writes, binds source/non-cache
+  runtime bytes and rejects redirected or sourceless imports; code remains
+  blocked pending a fresh dual audit.
+  Two auditors rejected the first R-257 draft as underclosed. Its amended
+  no-code contract now specifies `-I/-S/-P/-B` startup isolation, an exact
+  source loader allowlist, handle-bound distinct prefixes, canonical filtered
+  runtime hashing and executable temporary mutants.
+  A second dual NO-GO then closed three remaining holes: Stage-0 cache reads,
+  top-level alias fall-through and ambiguous target dispatch. V3 uses a
+  frozen-only prologue with its own prefix, no project paths, a terminal finder
+  and normal imported controller/worker identities.
+  V3 was also rejected before code because CPython loads file-backed encoding
+  modules before script execution and the proposed namespaced controller does
+  not exist. V4 supplies the nonexistent first prefix in the outer `-X`
+  command, treats its path proposer as untrusted, uses the real top-level
+  controller module and removes every legacy project-path insertion.
+  V4 received a split audit rather than implementation authority: normal
+  imports legitimately populate `sys.path_importer_cache`. V5 preserves its
+  object identity while allowing only terminal-guard-owned, path-bound,
+  exact-finder deltas captured in the import ledger.
+  R-258 records the final dual pre-code GO for exact R-257 V5. Authorization is
+  evidence-only: two isolated focused runs and another implementation audit
+  remain mandatory before any post-change codec timing transaction.
+- Closed R-259 through R-266 as immutable negative evidence. The final R-263
+  implementation retained 82 bindings, 26 tests and the exact 720-line budget,
+  but its sole authorized Run 1 failed before tests when ordinary Stage-1
+  stderr was treated as a framed length and raised `MemoryError`. Containment
+  ended with zero active Job processes and no survivors. Receipt SHA-256 is
+  `9864dccc...22f2`. Run 2, retry and R-263 remediation are forbidden; the
+  unadmitted R-253 path is excluded from release and performance lineage, and
+  S15 must restart as a genuinely new hypothesis from accepted S12 identities.
+
 ### Research
 
+- Accepted the R-190 edge analyzer contract and retained the remediated R-191
+  path ABI as quarantined infrastructure pending its final R-203 admission
+  gate. Existing evidence proves bit-exact Python/C++23 edge/path fixtures,
+  bounded transactional v3 safety, sanitizers, exhaustive allocation
+  failpoints, and broad platform compilation, but it does not yet execute the
+  frozen R-197 finite/10,000-case/six-tile corpus or admit R-191 output.
+  Predictor, syntax, compression, Opus, release, and player claims remain
+  blocked.
+- Accepted R-182 through R-189 as a quarantined whole-track causal-analysis
+  sequence: anonymous complex partials now precede source grouping; canonical
+  spectral peaks precede half-open band allocation; continuity, local
+  potential, and protected weak-line top-K families remain independent; proxy
+  values are never reported as Truth bits. The audited synthetic gate passes
+  clean 440.3 Hz phase, both crossing chirps, an approximately -47.6 dB weak
+  line, white-noise resource pruning, and exact-small disjoint selection.
+  Predictor, syntax, complete-byte, Opus, and release claims remain blocked
+  pending native C++23/CUDA parity and a second audit.
+- Accepted R-161 as the project priority lock. LSPF is now the only active
+  compression-architecture priority until its convolutive fields, bounded
+  transform laws, physical-law competition, long grammar, global
+  correction-entropy RDO, native Foundry, and full R-118 gates pass or are
+  explicitly rejected. Every material generation must retain original,
+  encoded Resonith, actual Resonith decode, official Opus, actual Opus decode,
+  preceding Resonith, metrics, hashes, and the exact tested Orkela package.
+- Accepted R-162: every LSPF package now runs short diagnostic and continuous
+  120-second-or-longer material simultaneously. One syntax/decoder serves all
+  durations; the encoder deterministically adapts scales, convolution/search
+  depth, dictionary lifetime, checkpoints, residency, and scheduling while
+  publishing the complete chosen plan and retaining every fallback/quality
+  invariant.
+- Accepted R-163 duration-Pareto preservation: a proven long-input mode remains
+  an explicit RDO candidate while short-input behavior is tuned, and vice
+  versa. New tuning may add specialized candidates but cannot silently replace
+  an incumbent. Per-input manifests retain all alternatives, quality
+  eligibility, complete bytes, rejection reasons, and the selected winner.
+- Accepted R-164 long-first testing and dual-axis success. Each generation now
+  freezes continuous 120-second-or-longer evidence before short tuning. A
+  candidate is retained when it either lowers complete bytes at the quality
+  floor or improves quality inside the declared matched-byte tolerance;
+  duration-specific wins are not erased by failure in another bucket.
+- Accepted R-165: a rate-only or quality-only result now triggers immediate
+  bounded optimization of the missing axis before the generation is fixed.
+  Two-axis wins may close after verification; one-axis wins close only after
+  the declared refinement budget is exhausted and remain retained Pareto
+  points with the complete refinement trace.
+- Accepted R-166 maximum-effort Opus anchoring. Every material real-audio gate
+  now uses official libopus at complexity 10 plus an applicable
+  application/signal/frame/VBR/bandwidth/bitrate search, official decode, full
+  container accounting, and retained candidate evidence rather than a single
+  convenient preset.
+- Accepted R-167 through R-169: coherent complex partial bundles and the causal
+  acoustic mechanism objective now separate harmonic, bounded-inharmonic,
+  transient, stochastic, and phase/room/channel-route lanes. Lanes may overlap
+  additively but have single rate ownership, are summed before one final Truth,
+  and require no semantic source labels.
+- Completed the R-165 long-first exact structural proxy. The 120-second Mozart
+  candidate lost 96 bytes (0.000483%) and selected independent Truth; short
+  speech found three fields and 144 placements but lost 0.485516%, while dense
+  orchestra and pink noise selected Truth. R-170 therefore retains
+  magnitude-CNMF only as a proposer and moves the primary path to
+  phase-aware/time-domain causal lanes.
+- Accepted R-171 Causal Sequence Atlas. Pattern discovery now indexes
+  canonical causal event transitions rather than relying on whole-waveform
+  windows. Exact suffix-automaton states cover every origin and complete
+  repeated-length interval for literal, offset, first-difference, and bounded
+  second-difference pitch/gain/phase/route laws before global RDO.
+- Accepted R-172/R-173 all-lane factorized law atlases. Harmonic,
+  bounded-inharmonic, transient, stochastic, and route events remain separate;
+  timing, pitch, phase, gain, envelope, resonator, and route laws are indexed
+  independently before bounded synchronized composition. This prevents an
+  unrelated phase or route mismatch from erasing a reusable causal law.
+- Completed the R-171–R-173 long-first discovery diagnostic. The first 120
+  seconds of Mozart produced 681 transformed harmonic classes, the rejected
+  all-coordinate conjunction produced zero, and the corrected factorized-law
+  atlas covered 258,664 overlapping end-position classes across 64,501 lane
+  events in 69.576 seconds. Speech, dense orchestra, and pink noise produced
+  22,875, 12,238, and 22,511 factorized classes respectively. These are exact
+  reconstruction and search-coverage results, not bitrate or Opus claims.
+- Added R-174 exact byte-priced causal-law ledgers: literal, immutable token
+  dictionary, and bounded acyclic hierarchical pair grammar compete by actual
+  compressed payload bytes. The decoder verifies bounds, backward-only rules,
+  checksum, full expansion, and exact token round-trip. Corpus names remain
+  evidence labels only and never become transmitted source classes.
+- Completed R-174/R-175 long-first ledger gates. Mozart factorized-law tokens
+  decreased 15.761871%, then one shared timeline per causal lane reduced the
+  exact event ledger from 602,415 to 471,002 bytes (-21.814364%). The same
+  event-ledger selector reduced separate female-speech, dense-orchestra, and
+  pink-noise inputs by 8.105210%, 9.904385%, and 14.411588%. Short transient
+  and tiny harmonic lanes retained row fallback where column headers lost.
+  These are metadata-ledger results, not complete Resonith or Opus gains.
+- Added R-176 Causal Basis Field research transport and complete decoder-in-loop
+  candidate. CBF1 stores one immutable Basis dictionary and compressed
+  anonymous warp-event ledger per emitter, reconstructs a sample-identical
+  native MFT1 DSP program, and adds one final lapped Truth. CBF1, direct MFT1,
+  and direct Truth remain actual-byte fallbacks; native direct CBF1 execution
+  and full R-118 evidence are pending.
+- Completed the R-176 long-first gate. CBF1 plus Truth lost by 2,188 bytes on
+  120 seconds of Mozart and fixed-block discovery covered only 2,048 samples;
+  speech, dense orchestra, and pink noise also selected Truth. CBF1 itself
+  remained sample-identical to native MFT1 and reduced the dense-orchestra
+  predictor from 133,804 to 52,968 bytes, isolating causal coverage and final
+  correction—not transport—as the blocker. R-177 therefore replaces the
+  primary fixed-block proposer with unnamed clustered partial-Basis
+  trajectories fitted only against their separately owned harmonic lane.
+- Added R-159/R-160 Latent Source Pattern Field and its
+  minimum-description anonymous field grammar. The exact research oracle now
+  uses non-circular finite alignment, batched similarity evaluation,
+  cross-channel occurrence reuse, one final Truth identity, global event
+  ledgers, and byte-selected sparse pair or multi-step motifs whose steps may
+  skip unrelated events. A perfect-reconstruction partial-spectrum wrapper
+  searches independently normalized lifting bands without losing discarded
+  coefficient bits. Focused tests include changing overlap, cross-channel
+  routes, arbitrary gaps, affine laws, partial-spectrum contamination, exact
+  CRC/decoder round-trips, and explicit uneconomic fallback.
+- Measured the first R-160 synthetic structural proxy at 1,815 bytes versus
+  2,491 independent proxy bytes (-27.14%) with exact PCM SHA-256; a short
+  candidate costing 49 extra bytes was rejected. These are Synthetic / Proxy
+  results, not full Resonith, FLAC, or Opus claims. The first real whole-band
+  diagnostic on speech, dense orchestra, and pink noise admitted no component,
+  correctly exposing partial-spectrum/source-field inference as the current
+  blocker rather than hiding the loss behind fallback.
+- The exact partial-spectrum R-160b diagnostic activated two anonymous Basis
+  entries and 1,082 occurrences on 12 seconds of dense orchestra. They
+  explained 55.24% of energy but reduced the exact structural proxy only 0.42%
+  (1,296,657 versus 1,302,123 bytes). A phase-preserving anonymous NMF proposer
+  found 40 speech occurrences but its complete candidate was 0.49% larger, so
+  RDO retained independent Truth. This establishes residual entropy—not source
+  discovery alone—as the next blocking metric.
+- Completed the R-156/R-157 gridless warp execution loop. Native every-origin
+  rolling hashes and arbitrary interval manifests now feed a C++23/CUDA
+  fractional-phase, forward/reverse, constant/linear pitch-time and signed
+  gain lattice. The RTX 2080 Super gate produced exact CPU/GPU parity for
+  6,912/6,912 candidates in unequal tiles. An integrated exact global RDO
+  diagnostic selected one Basis with eight arbitrary placements and reduced
+  a favorable lossless construction from 1,156 to 704 bytes (-39.10%) while
+  reconstructing PCM exactly. This is architecture evidence, not an Opus or
+  real-audio compression claim; the complete R-118 gate remains mandatory.
 - Added STEP M-151 Complete Pattern Field: the C++23/CUDA Foundry now searches
   every member of a declared finite multiscale/time/channel lattice, including
   forward/reverse circular Basis traversal and signed constant/linear Q1.15

@@ -1,0 +1,61 @@
+{
+  "component_count": 1,
+  "direct_proxy_bytes": 2491,
+  "event_ledger": {
+    "basis_grouped_event_bytes": 66,
+    "exact_event_roundtrip": true,
+    "flat_global_event_bytes": 168,
+    "legacy_component_event_map_bytes": 52,
+    "observation_count": 10,
+    "pair_candidate_bytes": 82,
+    "path_candidate_bytes": 116,
+    "saving_vs_flat_bytes": 116,
+    "saving_vs_legacy_bytes": 0,
+    "schema": "resonith-r160-lspf-event-ledger-1",
+    "selected_event_bytes": 52,
+    "selected_kind": "basis-coupled-delta-maps",
+    "standalone_event_bytes": 66,
+    "standalone_selected_kind": "basis-grouped-events",
+    "status": "event signalling only; audio payload RDO pending"
+  },
+  "no_direct_exact_mixed_group": true,
+  "occurrence_count": 10,
+  "oracle": {
+    "best_candidate_byte_delta": -676,
+    "bounded_non_circular_sample_alignment_verified": true,
+    "channels": 1,
+    "cross_channel_union": true,
+    "direct_exact_group_count": 0,
+    "direct_proxy_bytes": 2491,
+    "evaluated_cell_count": 409,
+    "evaluated_pair_count": 83436,
+    "event_map_bytes": 52,
+    "exact_integer_reconstruction": true,
+    "fitted_candidate_count": 12,
+    "fractional_phase_alignment_verified": false,
+    "frames": 1760,
+    "latent_component_count": 1,
+    "latent_occurrence_count": 10,
+    "origin_hop": 4,
+    "reconstruction_sha256": "8494f7c46c6b0b82352713609ee3420db8a10ad5fed1f2404785c06308c40fc7",
+    "scales": [
+      128
+    ],
+    "schema": "resonith-r159-latent-source-field-1",
+    "semantic_labels": false,
+    "similarity_batch_rows": 512,
+    "source_sha256": "8494f7c46c6b0b82352713609ee3420db8a10ad5fed1f2404785c06308c40fc7",
+    "status": "encoder-side oracle; complete-byte native RDO pending",
+    "structured_proxy_bytes": 1815
+  },
+  "saving_bytes": 676,
+  "saving_percent": 27.13769570453633,
+  "schema": "resonith-r160-changing-overlap-synthetic-1",
+  "short_candidate": {
+    "best_candidate_byte_delta": 49,
+    "exact_reconstruction": true,
+    "selected_component_count": 0
+  },
+  "status": "Synthetic / exact structural proxy / not full codec",
+  "structured_proxy_bytes": 1815
+}

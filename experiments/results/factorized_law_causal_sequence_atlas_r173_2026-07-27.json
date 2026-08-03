@@ -1,0 +1,2170 @@
+{
+  "claim_boundary": "all-lane sequence-discovery diagnostic; no bitrate or Opus claim",
+  "long_frontier_frozen": true,
+  "long_results": [
+    {
+      "atlas_report": {
+        "candidate_class_count": 258664,
+        "event_count": 64501,
+        "factorized_candidate_class_count": 258664,
+        "factorized_law_count": 27,
+        "factorized_laws": {
+          "coherent_harmonic/envelope": {
+            "candidate_class_count": 9969,
+            "covered_repeated_candidate_length_count": 10139,
+            "event_count": 20849
+          },
+          "coherent_harmonic/gain": {
+            "candidate_class_count": 14812,
+            "covered_repeated_candidate_length_count": 15832,
+            "event_count": 20849
+          },
+          "coherent_harmonic/phase": {
+            "candidate_class_count": 5881,
+            "covered_repeated_candidate_length_count": 5932,
+            "event_count": 20849
+          },
+          "coherent_harmonic/pitch": {
+            "candidate_class_count": 8686,
+            "covered_repeated_candidate_length_count": 8740,
+            "event_count": 20849
+          },
+          "coherent_harmonic/resonator": {
+            "candidate_class_count": 11255,
+            "covered_repeated_candidate_length_count": 11519,
+            "event_count": 20849
+          },
+          "coherent_harmonic/route": {
+            "candidate_class_count": 2776,
+            "covered_repeated_candidate_length_count": 2779,
+            "event_count": 20849
+          },
+          "coherent_harmonic/timing": {
+            "candidate_class_count": 38251,
+            "covered_repeated_candidate_length_count": 241510,
+            "event_count": 20849
+          },
+          "deterministic_inharmonic/envelope": {
+            "candidate_class_count": 8867,
+            "covered_repeated_candidate_length_count": 8982,
+            "event_count": 21151
+          },
+          "deterministic_inharmonic/gain": {
+            "candidate_class_count": 12342,
+            "covered_repeated_candidate_length_count": 12826,
+            "event_count": 21151
+          },
+          "deterministic_inharmonic/phase": {
+            "candidate_class_count": 5228,
+            "covered_repeated_candidate_length_count": 5247,
+            "event_count": 21151
+          },
+          "deterministic_inharmonic/pitch": {
+            "candidate_class_count": 8995,
+            "covered_repeated_candidate_length_count": 9130,
+            "event_count": 21151
+          },
+          "deterministic_inharmonic/resonator": {
+            "candidate_class_count": 10275,
+            "covered_repeated_candidate_length_count": 10489,
+            "event_count": 21151
+          },
+          "deterministic_inharmonic/route": {
+            "candidate_class_count": 1913,
+            "covered_repeated_candidate_length_count": 1913,
+            "event_count": 21151
+          },
+          "deterministic_inharmonic/timing": {
+            "candidate_class_count": 38299,
+            "covered_repeated_candidate_length_count": 242406,
+            "event_count": 21151
+          },
+          "sparse_transient/envelope": {
+            "candidate_class_count": 334,
+            "covered_repeated_candidate_length_count": 336,
+            "event_count": 1350
+          },
+          "sparse_transient/gain": {
+            "candidate_class_count": 225,
+            "covered_repeated_candidate_length_count": 225,
+            "event_count": 1350
+          },
+          "sparse_transient/phase": {
+            "candidate_class_count": 70,
+            "covered_repeated_candidate_length_count": 70,
+            "event_count": 1350
+          },
+          "sparse_transient/pitch": {
+            "candidate_class_count": 68,
+            "covered_repeated_candidate_length_count": 68,
+            "event_count": 1350
+          },
+          "sparse_transient/resonator": {
+            "candidate_class_count": 209,
+            "covered_repeated_candidate_length_count": 209,
+            "event_count": 1350
+          },
+          "sparse_transient/route": {
+            "candidate_class_count": 2,
+            "covered_repeated_candidate_length_count": 2,
+            "event_count": 1350
+          },
+          "sparse_transient/timing": {
+            "candidate_class_count": 675,
+            "covered_repeated_candidate_length_count": 700,
+            "event_count": 1350
+          },
+          "stochastic/envelope": {
+            "candidate_class_count": 12311,
+            "covered_repeated_candidate_length_count": 12731,
+            "event_count": 21151
+          },
+          "stochastic/gain": {
+            "candidate_class_count": 11417,
+            "covered_repeated_candidate_length_count": 11839,
+            "event_count": 21151
+          },
+          "stochastic/pitch": {
+            "candidate_class_count": 6849,
+            "covered_repeated_candidate_length_count": 6881,
+            "event_count": 21151
+          },
+          "stochastic/resonator": {
+            "candidate_class_count": 9090,
+            "covered_repeated_candidate_length_count": 9191,
+            "event_count": 21151
+          },
+          "stochastic/route": {
+            "candidate_class_count": 1566,
+            "covered_repeated_candidate_length_count": 1568,
+            "event_count": 21151
+          },
+          "stochastic/timing": {
+            "candidate_class_count": 38299,
+            "covered_repeated_candidate_length_count": 242406,
+            "event_count": 21151
+          }
+        },
+        "joint_candidate_class_count": 0,
+        "lane_count": 4,
+        "lanes": {
+          "coherent_harmonic": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 20849
+          },
+          "deterministic_inharmonic": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 21151
+          },
+          "sparse_transient": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 1350
+          },
+          "stochastic": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 21151
+          }
+        },
+        "one_final_mixture_truth": true,
+        "schema": "resonith-r173-factorized-law-atlas-1",
+        "simultaneous_lane_events_preserved": true,
+        "single_primary_lane_ownership": true,
+        "status": "exact per-lane/per-law sequence discovery; synchronized grammar and complete stream RDO pending",
+        "stochastic_realization_phase_is_not_predictive_state": true,
+        "unrelated_laws_do_not_prune_candidates": true
+      },
+      "atlas_wall_seconds": 19.545979899994563,
+      "candidate_classes_by_factorized_law_and_mode": {
+        "coherent_harmonic/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 4809,
+            "covered_candidate_length_count": 4888,
+            "maximum_event_count": 7,
+            "maximum_occurrence_count": 671
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 5160,
+            "covered_candidate_length_count": 5251,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 71
+          }
+        },
+        "coherent_harmonic/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 7364,
+            "covered_candidate_length_count": 7840,
+            "maximum_event_count": 14,
+            "maximum_occurrence_count": 2213
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 7448,
+            "covered_candidate_length_count": 7992,
+            "maximum_event_count": 14,
+            "maximum_occurrence_count": 595
+          }
+        },
+        "coherent_harmonic/phase": {
+          "bounded-second-difference": {
+            "candidate_class_count": 2957,
+            "covered_candidate_length_count": 2978,
+            "maximum_event_count": 7,
+            "maximum_occurrence_count": 268
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 2924,
+            "covered_candidate_length_count": 2954,
+            "maximum_event_count": 7,
+            "maximum_occurrence_count": 12
+          }
+        },
+        "coherent_harmonic/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 4512,
+            "covered_candidate_length_count": 4533,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 276
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 4174,
+            "covered_candidate_length_count": 4207,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 20
+          }
+        },
+        "coherent_harmonic/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 5599,
+            "covered_candidate_length_count": 5718,
+            "maximum_event_count": 8,
+            "maximum_occurrence_count": 1139
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 5656,
+            "covered_candidate_length_count": 5801,
+            "maximum_event_count": 8,
+            "maximum_occurrence_count": 173
+          }
+        },
+        "coherent_harmonic/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 2229,
+            "covered_candidate_length_count": 2231,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 76
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 547,
+            "covered_candidate_length_count": 548,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 8
+          }
+        },
+        "coherent_harmonic/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 19121,
+            "covered_candidate_length_count": 120747,
+            "maximum_event_count": 1117,
+            "maximum_occurrence_count": 18875
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 19130,
+            "covered_candidate_length_count": 120763,
+            "maximum_event_count": 1117,
+            "maximum_occurrence_count": 18746
+          }
+        },
+        "deterministic_inharmonic/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 4649,
+            "covered_candidate_length_count": 4701,
+            "maximum_event_count": 10,
+            "maximum_occurrence_count": 482
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 4218,
+            "covered_candidate_length_count": 4281,
+            "maximum_event_count": 10,
+            "maximum_occurrence_count": 52
+          }
+        },
+        "deterministic_inharmonic/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 6099,
+            "covered_candidate_length_count": 6317,
+            "maximum_event_count": 9,
+            "maximum_occurrence_count": 1674
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 6243,
+            "covered_candidate_length_count": 6509,
+            "maximum_event_count": 8,
+            "maximum_occurrence_count": 263
+          }
+        },
+        "deterministic_inharmonic/phase": {
+          "bounded-second-difference": {
+            "candidate_class_count": 2525,
+            "covered_candidate_length_count": 2537,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 199
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 2703,
+            "covered_candidate_length_count": 2710,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 7
+          }
+        },
+        "deterministic_inharmonic/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 4666,
+            "covered_candidate_length_count": 4715,
+            "maximum_event_count": 7,
+            "maximum_occurrence_count": 689
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 4329,
+            "covered_candidate_length_count": 4415,
+            "maximum_event_count": 7,
+            "maximum_occurrence_count": 68
+          }
+        },
+        "deterministic_inharmonic/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 5071,
+            "covered_candidate_length_count": 5179,
+            "maximum_event_count": 8,
+            "maximum_occurrence_count": 892
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 5204,
+            "covered_candidate_length_count": 5310,
+            "maximum_event_count": 7,
+            "maximum_occurrence_count": 83
+          }
+        },
+        "deterministic_inharmonic/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1881,
+            "covered_candidate_length_count": 1881,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 27
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 32,
+            "covered_candidate_length_count": 32,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 3
+          }
+        },
+        "deterministic_inharmonic/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 19145,
+            "covered_candidate_length_count": 121195,
+            "maximum_event_count": 1117,
+            "maximum_occurrence_count": 19178
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 19154,
+            "covered_candidate_length_count": 121211,
+            "maximum_event_count": 1117,
+            "maximum_occurrence_count": 19049
+          }
+        },
+        "sparse_transient/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 225,
+            "covered_candidate_length_count": 225,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 30
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 109,
+            "covered_candidate_length_count": 111,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 13
+          }
+        },
+        "sparse_transient/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 210,
+            "covered_candidate_length_count": 210,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 10
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 15,
+            "covered_candidate_length_count": 15,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 3
+          }
+        },
+        "sparse_transient/phase": {
+          "bounded-second-difference": {
+            "candidate_class_count": 70,
+            "covered_candidate_length_count": 70,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 3
+          }
+        },
+        "sparse_transient/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 68,
+            "covered_candidate_length_count": 68,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 3
+          }
+        },
+        "sparse_transient/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 202,
+            "covered_candidate_length_count": 202,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 7
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 7,
+            "covered_candidate_length_count": 7,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 2,
+            "covered_candidate_length_count": 2,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 350,
+            "covered_candidate_length_count": 358,
+            "maximum_event_count": 7,
+            "maximum_occurrence_count": 133
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 325,
+            "covered_candidate_length_count": 342,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 47
+          }
+        },
+        "stochastic/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 6045,
+            "covered_candidate_length_count": 6239,
+            "maximum_event_count": 10,
+            "maximum_occurrence_count": 1322
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 6266,
+            "covered_candidate_length_count": 6492,
+            "maximum_event_count": 10,
+            "maximum_occurrence_count": 262
+          }
+        },
+        "stochastic/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 5633,
+            "covered_candidate_length_count": 5831,
+            "maximum_event_count": 14,
+            "maximum_occurrence_count": 1134
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 5784,
+            "covered_candidate_length_count": 6008,
+            "maximum_event_count": 14,
+            "maximum_occurrence_count": 254
+          }
+        },
+        "stochastic/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 3882,
+            "covered_candidate_length_count": 3894,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 246
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 2967,
+            "covered_candidate_length_count": 2987,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 19
+          }
+        },
+        "stochastic/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 4602,
+            "covered_candidate_length_count": 4650,
+            "maximum_event_count": 8,
+            "maximum_occurrence_count": 506
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 4488,
+            "covered_candidate_length_count": 4541,
+            "maximum_event_count": 8,
+            "maximum_occurrence_count": 73
+          }
+        },
+        "stochastic/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1542,
+            "covered_candidate_length_count": 1543,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 15
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 24,
+            "covered_candidate_length_count": 25,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 3
+          }
+        },
+        "stochastic/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 19145,
+            "covered_candidate_length_count": 121195,
+            "maximum_event_count": 1117,
+            "maximum_occurrence_count": 19178
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 19154,
+            "covered_candidate_length_count": 121211,
+            "maximum_event_count": 1117,
+            "maximum_occurrence_count": 19049
+          }
+        }
+      },
+      "channels": 2,
+      "duration_seconds": 120.0,
+      "event_count_by_lane": {
+        "coherent_harmonic": 20849,
+        "deterministic_inharmonic": 21151,
+        "sparse_transient": 1350,
+        "stochastic": 21151
+      },
+      "exact_reconstruction": true,
+      "frames": 5760000,
+      "id": "mozart-original",
+      "lane_report": {
+        "coefficient_ownership_fraction": {
+          "coherent_harmonic": 0.09316640291403987,
+          "deterministic_inharmonic": 0.032219750597179436,
+          "sparse_transient": 0.05999733345184659,
+          "stochastic": 0.8146165130369342
+        },
+        "complex_mixture_phase_preserved": true,
+        "exact_integer_reconstruction": true,
+        "lane_energy_fraction": {
+          "coherent_harmonic": 0.8995816148339773,
+          "deterministic_inharmonic": 0.01248051116260458,
+          "sparse_transient": 0.020098512253284476,
+          "stochastic": 0.010807664866394964
+        },
+        "lane_observation_count": {
+          "coherent_harmonic": 20849,
+          "deterministic_inharmonic": 21151,
+          "sparse_transient": 1350,
+          "stochastic": 21151
+        },
+        "one_final_mixture_truth": true,
+        "partial_basis_count": 1,
+        "partial_observation_count": 20849,
+        "reconstruction_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+        "schema": "resonith-r169-causal-lane-field-1",
+        "semantic_labels": false,
+        "shared_cross_channel_ownership_masks": true,
+        "single_primary_lane_ownership": true,
+        "source_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+        "status": "encoder-side analytic proposer; normative PartialBasis transport and complete RDO pending",
+        "transient_frame_count": 1350
+      },
+      "lane_wall_seconds": 50.03051169999526,
+      "path": "G:\\Orkela\\comparison\\public-benchmark-2026-07-26\\mozart-original.wav",
+      "reconstruction_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+      "sample_rate": 48000,
+      "source_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+      "status": "Real PCM / Fast all-lane sequence diagnostic / not complete-stream compression",
+      "total_wall_seconds": 69.57649159998982
+    }
+  ],
+  "schema": "resonith-r173-factorized-law-atlas-gate-1",
+  "short_results": [
+    {
+      "atlas_report": {
+        "candidate_class_count": 22875,
+        "event_count": 5037,
+        "factorized_candidate_class_count": 22875,
+        "factorized_law_count": 27,
+        "factorized_laws": {
+          "coherent_harmonic/envelope": {
+            "candidate_class_count": 403,
+            "covered_repeated_candidate_length_count": 411,
+            "event_count": 1216
+          },
+          "coherent_harmonic/gain": {
+            "candidate_class_count": 735,
+            "covered_repeated_candidate_length_count": 790,
+            "event_count": 1216
+          },
+          "coherent_harmonic/phase": {
+            "candidate_class_count": 276,
+            "covered_repeated_candidate_length_count": 276,
+            "event_count": 1216
+          },
+          "coherent_harmonic/pitch": {
+            "candidate_class_count": 333,
+            "covered_repeated_candidate_length_count": 336,
+            "event_count": 1216
+          },
+          "coherent_harmonic/resonator": {
+            "candidate_class_count": 450,
+            "covered_repeated_candidate_length_count": 457,
+            "event_count": 1216
+          },
+          "coherent_harmonic/route": {
+            "candidate_class_count": 995,
+            "covered_repeated_candidate_length_count": 4658,
+            "event_count": 1216
+          },
+          "coherent_harmonic/timing": {
+            "candidate_class_count": 995,
+            "covered_repeated_candidate_length_count": 4658,
+            "event_count": 1216
+          },
+          "deterministic_inharmonic/envelope": {
+            "candidate_class_count": 683,
+            "covered_repeated_candidate_length_count": 690,
+            "event_count": 1848
+          },
+          "deterministic_inharmonic/gain": {
+            "candidate_class_count": 809,
+            "covered_repeated_candidate_length_count": 821,
+            "event_count": 1848
+          },
+          "deterministic_inharmonic/phase": {
+            "candidate_class_count": 392,
+            "covered_repeated_candidate_length_count": 392,
+            "event_count": 1848
+          },
+          "deterministic_inharmonic/pitch": {
+            "candidate_class_count": 354,
+            "covered_repeated_candidate_length_count": 354,
+            "event_count": 1848
+          },
+          "deterministic_inharmonic/resonator": {
+            "candidate_class_count": 651,
+            "covered_repeated_candidate_length_count": 657,
+            "event_count": 1848
+          },
+          "deterministic_inharmonic/route": {
+            "candidate_class_count": 3233,
+            "covered_repeated_candidate_length_count": 11962,
+            "event_count": 1848
+          },
+          "deterministic_inharmonic/timing": {
+            "candidate_class_count": 3233,
+            "covered_repeated_candidate_length_count": 11962,
+            "event_count": 1848
+          },
+          "sparse_transient/envelope": {
+            "candidate_class_count": 2,
+            "covered_repeated_candidate_length_count": 2,
+            "event_count": 125
+          },
+          "sparse_transient/gain": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 125
+          },
+          "sparse_transient/phase": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 125
+          },
+          "sparse_transient/pitch": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 125
+          },
+          "sparse_transient/resonator": {
+            "candidate_class_count": 1,
+            "covered_repeated_candidate_length_count": 1,
+            "event_count": 125
+          },
+          "sparse_transient/route": {
+            "candidate_class_count": 39,
+            "covered_repeated_candidate_length_count": 41,
+            "event_count": 125
+          },
+          "sparse_transient/timing": {
+            "candidate_class_count": 39,
+            "covered_repeated_candidate_length_count": 41,
+            "event_count": 125
+          },
+          "stochastic/envelope": {
+            "candidate_class_count": 862,
+            "covered_repeated_candidate_length_count": 871,
+            "event_count": 1848
+          },
+          "stochastic/gain": {
+            "candidate_class_count": 875,
+            "covered_repeated_candidate_length_count": 901,
+            "event_count": 1848
+          },
+          "stochastic/pitch": {
+            "candidate_class_count": 361,
+            "covered_repeated_candidate_length_count": 361,
+            "event_count": 1848
+          },
+          "stochastic/resonator": {
+            "candidate_class_count": 688,
+            "covered_repeated_candidate_length_count": 697,
+            "event_count": 1848
+          },
+          "stochastic/route": {
+            "candidate_class_count": 3233,
+            "covered_repeated_candidate_length_count": 11962,
+            "event_count": 1848
+          },
+          "stochastic/timing": {
+            "candidate_class_count": 3233,
+            "covered_repeated_candidate_length_count": 11962,
+            "event_count": 1848
+          }
+        },
+        "joint_candidate_class_count": 2,
+        "lane_count": 4,
+        "lanes": {
+          "coherent_harmonic": {
+            "candidate_class_count": 1,
+            "covered_repeated_candidate_length_count": 1,
+            "event_count": 1216
+          },
+          "deterministic_inharmonic": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 1848
+          },
+          "sparse_transient": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 125
+          },
+          "stochastic": {
+            "candidate_class_count": 1,
+            "covered_repeated_candidate_length_count": 1,
+            "event_count": 1848
+          }
+        },
+        "one_final_mixture_truth": true,
+        "schema": "resonith-r173-factorized-law-atlas-1",
+        "simultaneous_lane_events_preserved": true,
+        "single_primary_lane_ownership": true,
+        "status": "exact per-lane/per-law sequence discovery; synchronized grammar and complete stream RDO pending",
+        "stochastic_realization_phase_is_not_predictive_state": true,
+        "unrelated_laws_do_not_prune_candidates": true
+      },
+      "atlas_wall_seconds": 1.1584215000038967,
+      "candidate_classes_by_factorized_law_and_mode": {
+        "coherent_harmonic/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 221,
+            "covered_candidate_length_count": 222,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 45
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 182,
+            "covered_candidate_length_count": 189,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 7
+          }
+        },
+        "coherent_harmonic/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 379,
+            "covered_candidate_length_count": 403,
+            "maximum_event_count": 9,
+            "maximum_occurrence_count": 156
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 356,
+            "covered_candidate_length_count": 387,
+            "maximum_event_count": 8,
+            "maximum_occurrence_count": 30
+          }
+        },
+        "coherent_harmonic/phase": {
+          "bounded-second-difference": {
+            "candidate_class_count": 245,
+            "covered_candidate_length_count": 245,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 34
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 31,
+            "covered_candidate_length_count": 31,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 4
+          }
+        },
+        "coherent_harmonic/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 221,
+            "covered_candidate_length_count": 222,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 43
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 112,
+            "covered_candidate_length_count": 114,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 5
+          }
+        },
+        "coherent_harmonic/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 258,
+            "covered_candidate_length_count": 262,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 59
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 192,
+            "covered_candidate_length_count": 195,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 8
+          }
+        },
+        "coherent_harmonic/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 500,
+            "covered_candidate_length_count": 2329,
+            "maximum_event_count": 83,
+            "maximum_occurrence_count": 1090
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 495,
+            "covered_candidate_length_count": 2329,
+            "maximum_event_count": 83,
+            "maximum_occurrence_count": 1088
+          }
+        },
+        "coherent_harmonic/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 500,
+            "covered_candidate_length_count": 2329,
+            "maximum_event_count": 83,
+            "maximum_occurrence_count": 1090
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 495,
+            "covered_candidate_length_count": 2329,
+            "maximum_event_count": 83,
+            "maximum_occurrence_count": 1088
+          }
+        },
+        "deterministic_inharmonic/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 381,
+            "covered_candidate_length_count": 385,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 52
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 302,
+            "covered_candidate_length_count": 305,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 8
+          }
+        },
+        "deterministic_inharmonic/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 453,
+            "covered_candidate_length_count": 458,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 88
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 356,
+            "covered_candidate_length_count": 363,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 11
+          }
+        },
+        "deterministic_inharmonic/phase": {
+          "bounded-second-difference": {
+            "candidate_class_count": 374,
+            "covered_candidate_length_count": 374,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 13
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 18,
+            "covered_candidate_length_count": 18,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "deterministic_inharmonic/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 280,
+            "covered_candidate_length_count": 280,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 29
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 74,
+            "covered_candidate_length_count": 74,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 3
+          }
+        },
+        "deterministic_inharmonic/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 374,
+            "covered_candidate_length_count": 377,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 53
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 277,
+            "covered_candidate_length_count": 280,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 8
+          }
+        },
+        "deterministic_inharmonic/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1617,
+            "covered_candidate_length_count": 5980,
+            "maximum_event_count": 226,
+            "maximum_occurrence_count": 1675
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 1616,
+            "covered_candidate_length_count": 5982,
+            "maximum_event_count": 226,
+            "maximum_occurrence_count": 1671
+          }
+        },
+        "deterministic_inharmonic/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1617,
+            "covered_candidate_length_count": 5980,
+            "maximum_event_count": 226,
+            "maximum_occurrence_count": 1675
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 1616,
+            "covered_candidate_length_count": 5982,
+            "maximum_event_count": 226,
+            "maximum_occurrence_count": 1671
+          }
+        },
+        "sparse_transient/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 2,
+            "covered_candidate_length_count": 2,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/gain": {},
+        "sparse_transient/phase": {},
+        "sparse_transient/pitch": {},
+        "sparse_transient/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1,
+            "covered_candidate_length_count": 1,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 26,
+            "covered_candidate_length_count": 27,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 6
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 13,
+            "covered_candidate_length_count": 14,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 4
+          }
+        },
+        "sparse_transient/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 26,
+            "covered_candidate_length_count": 27,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 6
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 13,
+            "covered_candidate_length_count": 14,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 4
+          }
+        },
+        "stochastic/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 467,
+            "covered_candidate_length_count": 471,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 75
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 395,
+            "covered_candidate_length_count": 400,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 12
+          }
+        },
+        "stochastic/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 463,
+            "covered_candidate_length_count": 475,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 106
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 412,
+            "covered_candidate_length_count": 426,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 19
+          }
+        },
+        "stochastic/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 338,
+            "covered_candidate_length_count": 338,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 17
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 23,
+            "covered_candidate_length_count": 23,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "stochastic/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 379,
+            "covered_candidate_length_count": 382,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 64
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 309,
+            "covered_candidate_length_count": 315,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 8
+          }
+        },
+        "stochastic/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1617,
+            "covered_candidate_length_count": 5980,
+            "maximum_event_count": 226,
+            "maximum_occurrence_count": 1675
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 1616,
+            "covered_candidate_length_count": 5982,
+            "maximum_event_count": 226,
+            "maximum_occurrence_count": 1671
+          }
+        },
+        "stochastic/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1617,
+            "covered_candidate_length_count": 5980,
+            "maximum_event_count": 226,
+            "maximum_occurrence_count": 1675
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 1616,
+            "covered_candidate_length_count": 5982,
+            "maximum_event_count": 226,
+            "maximum_occurrence_count": 1671
+          }
+        }
+      },
+      "channels": 1,
+      "duration_seconds": 12.0,
+      "event_count_by_lane": {
+        "coherent_harmonic": 1216,
+        "deterministic_inharmonic": 1848,
+        "sparse_transient": 125,
+        "stochastic": 1848
+      },
+      "exact_reconstruction": true,
+      "frames": 529200,
+      "id": "ebu-female-speech-en",
+      "lane_report": {
+        "coefficient_ownership_fraction": {
+          "coherent_harmonic": 0.06270321095688042,
+          "deterministic_inharmonic": 0.039886112359465875,
+          "sparse_transient": 0.06041565973900435,
+          "stochastic": 0.8369950169446494
+        },
+        "complex_mixture_phase_preserved": true,
+        "exact_integer_reconstruction": true,
+        "lane_energy_fraction": {
+          "coherent_harmonic": 0.9044445259145568,
+          "deterministic_inharmonic": 0.01664095191088091,
+          "sparse_transient": 0.0032806834497820948,
+          "stochastic": 0.032979776900645394
+        },
+        "lane_observation_count": {
+          "coherent_harmonic": 1216,
+          "deterministic_inharmonic": 1848,
+          "sparse_transient": 125,
+          "stochastic": 1848
+        },
+        "one_final_mixture_truth": true,
+        "partial_basis_count": 1,
+        "partial_observation_count": 1216,
+        "reconstruction_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+        "schema": "resonith-r169-causal-lane-field-1",
+        "semantic_labels": false,
+        "shared_cross_channel_ownership_masks": true,
+        "single_primary_lane_ownership": true,
+        "source_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+        "status": "encoder-side analytic proposer; normative PartialBasis transport and complete RDO pending",
+        "transient_frame_count": 125
+      },
+      "lane_wall_seconds": 3.2021611999953166,
+      "path": "G:\\Resonith\\artifacts\\corpus\\prepared-r111\\ebu-female-speech-en.wav",
+      "reconstruction_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+      "sample_rate": 44100,
+      "source_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+      "status": "Real PCM / Fast all-lane sequence diagnostic / not complete-stream compression",
+      "total_wall_seconds": 4.360582699999213
+    },
+    {
+      "atlas_report": {
+        "candidate_class_count": 12238,
+        "event_count": 3837,
+        "factorized_candidate_class_count": 12238,
+        "factorized_law_count": 27,
+        "factorized_laws": {
+          "coherent_harmonic/envelope": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 8
+          },
+          "coherent_harmonic/gain": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 8
+          },
+          "coherent_harmonic/phase": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 8
+          },
+          "coherent_harmonic/pitch": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 8
+          },
+          "coherent_harmonic/resonator": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 8
+          },
+          "coherent_harmonic/route": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 8
+          },
+          "coherent_harmonic/timing": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 8
+          },
+          "deterministic_inharmonic/envelope": {
+            "candidate_class_count": 615,
+            "covered_repeated_candidate_length_count": 626,
+            "event_count": 1852
+          },
+          "deterministic_inharmonic/gain": {
+            "candidate_class_count": 570,
+            "covered_repeated_candidate_length_count": 579,
+            "event_count": 1852
+          },
+          "deterministic_inharmonic/phase": {
+            "candidate_class_count": 411,
+            "covered_repeated_candidate_length_count": 412,
+            "event_count": 1852
+          },
+          "deterministic_inharmonic/pitch": {
+            "candidate_class_count": 466,
+            "covered_repeated_candidate_length_count": 466,
+            "event_count": 1852
+          },
+          "deterministic_inharmonic/resonator": {
+            "candidate_class_count": 451,
+            "covered_repeated_candidate_length_count": 452,
+            "event_count": 1852
+          },
+          "deterministic_inharmonic/route": {
+            "candidate_class_count": 25,
+            "covered_repeated_candidate_length_count": 25,
+            "event_count": 1852
+          },
+          "deterministic_inharmonic/timing": {
+            "candidate_class_count": 3332,
+            "covered_repeated_candidate_length_count": 15890,
+            "event_count": 1852
+          },
+          "sparse_transient/envelope": {
+            "candidate_class_count": 15,
+            "covered_repeated_candidate_length_count": 15,
+            "event_count": 125
+          },
+          "sparse_transient/gain": {
+            "candidate_class_count": 2,
+            "covered_repeated_candidate_length_count": 2,
+            "event_count": 125
+          },
+          "sparse_transient/phase": {
+            "candidate_class_count": 1,
+            "covered_repeated_candidate_length_count": 1,
+            "event_count": 125
+          },
+          "sparse_transient/pitch": {
+            "candidate_class_count": 1,
+            "covered_repeated_candidate_length_count": 1,
+            "event_count": 125
+          },
+          "sparse_transient/resonator": {
+            "candidate_class_count": 2,
+            "covered_repeated_candidate_length_count": 2,
+            "event_count": 125
+          },
+          "sparse_transient/route": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 125
+          },
+          "sparse_transient/timing": {
+            "candidate_class_count": 56,
+            "covered_repeated_candidate_length_count": 57,
+            "event_count": 125
+          },
+          "stochastic/envelope": {
+            "candidate_class_count": 1414,
+            "covered_repeated_candidate_length_count": 1583,
+            "event_count": 1852
+          },
+          "stochastic/gain": {
+            "candidate_class_count": 645,
+            "covered_repeated_candidate_length_count": 657,
+            "event_count": 1852
+          },
+          "stochastic/pitch": {
+            "candidate_class_count": 449,
+            "covered_repeated_candidate_length_count": 449,
+            "event_count": 1852
+          },
+          "stochastic/resonator": {
+            "candidate_class_count": 449,
+            "covered_repeated_candidate_length_count": 452,
+            "event_count": 1852
+          },
+          "stochastic/route": {
+            "candidate_class_count": 2,
+            "covered_repeated_candidate_length_count": 2,
+            "event_count": 1852
+          },
+          "stochastic/timing": {
+            "candidate_class_count": 3332,
+            "covered_repeated_candidate_length_count": 15890,
+            "event_count": 1852
+          }
+        },
+        "joint_candidate_class_count": 0,
+        "lane_count": 4,
+        "lanes": {
+          "coherent_harmonic": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 8
+          },
+          "deterministic_inharmonic": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 1852
+          },
+          "sparse_transient": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 125
+          },
+          "stochastic": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 1852
+          }
+        },
+        "one_final_mixture_truth": true,
+        "schema": "resonith-r173-factorized-law-atlas-1",
+        "simultaneous_lane_events_preserved": true,
+        "single_primary_lane_ownership": true,
+        "status": "exact per-lane/per-law sequence discovery; synchronized grammar and complete stream RDO pending",
+        "stochastic_realization_phase_is_not_predictive_state": true,
+        "unrelated_laws_do_not_prune_candidates": true
+      },
+      "atlas_wall_seconds": 0.805798000015784,
+      "candidate_classes_by_factorized_law_and_mode": {
+        "coherent_harmonic/envelope": {},
+        "coherent_harmonic/gain": {},
+        "coherent_harmonic/phase": {},
+        "coherent_harmonic/pitch": {},
+        "coherent_harmonic/resonator": {},
+        "coherent_harmonic/route": {},
+        "coherent_harmonic/timing": {},
+        "deterministic_inharmonic/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 337,
+            "covered_candidate_length_count": 337,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 19
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 278,
+            "covered_candidate_length_count": 289,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 7
+          }
+        },
+        "deterministic_inharmonic/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 351,
+            "covered_candidate_length_count": 353,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 26
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 219,
+            "covered_candidate_length_count": 226,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 4
+          }
+        },
+        "deterministic_inharmonic/phase": {
+          "bounded-second-difference": {
+            "candidate_class_count": 372,
+            "covered_candidate_length_count": 373,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 18
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 39,
+            "covered_candidate_length_count": 39,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "deterministic_inharmonic/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 440,
+            "covered_candidate_length_count": 440,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 8
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 26,
+            "covered_candidate_length_count": 26,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "deterministic_inharmonic/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 407,
+            "covered_candidate_length_count": 407,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 11
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 44,
+            "covered_candidate_length_count": 45,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 3
+          }
+        },
+        "deterministic_inharmonic/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 25,
+            "covered_candidate_length_count": 25,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "deterministic_inharmonic/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1666,
+            "covered_candidate_length_count": 7944,
+            "maximum_event_count": 97,
+            "maximum_occurrence_count": 1634
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 1666,
+            "covered_candidate_length_count": 7946,
+            "maximum_event_count": 97,
+            "maximum_occurrence_count": 1632
+          }
+        },
+        "sparse_transient/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 13,
+            "covered_candidate_length_count": 13,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 3
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 2,
+            "covered_candidate_length_count": 2,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 2,
+            "covered_candidate_length_count": 2,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/phase": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1,
+            "covered_candidate_length_count": 1,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1,
+            "covered_candidate_length_count": 1,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 2,
+            "covered_candidate_length_count": 2,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/route": {},
+        "sparse_transient/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 34,
+            "covered_candidate_length_count": 34,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 7
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 22,
+            "covered_candidate_length_count": 23,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 4
+          }
+        },
+        "stochastic/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 671,
+            "covered_candidate_length_count": 741,
+            "maximum_event_count": 7,
+            "maximum_occurrence_count": 97
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 743,
+            "covered_candidate_length_count": 842,
+            "maximum_event_count": 7,
+            "maximum_occurrence_count": 33
+          }
+        },
+        "stochastic/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 329,
+            "covered_candidate_length_count": 334,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 26
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 316,
+            "covered_candidate_length_count": 323,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 5
+          }
+        },
+        "stochastic/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 441,
+            "covered_candidate_length_count": 441,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 9
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 8,
+            "covered_candidate_length_count": 8,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "stochastic/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 303,
+            "covered_candidate_length_count": 304,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 20
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 146,
+            "covered_candidate_length_count": 148,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 4
+          }
+        },
+        "stochastic/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 2,
+            "covered_candidate_length_count": 2,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "stochastic/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1666,
+            "covered_candidate_length_count": 7944,
+            "maximum_event_count": 97,
+            "maximum_occurrence_count": 1634
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 1666,
+            "covered_candidate_length_count": 7946,
+            "maximum_event_count": 97,
+            "maximum_occurrence_count": 1632
+          }
+        }
+      },
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "event_count_by_lane": {
+        "coherent_harmonic": 8,
+        "deterministic_inharmonic": 1852,
+        "sparse_transient": 125,
+        "stochastic": 1852
+      },
+      "exact_reconstruction": true,
+      "frames": 529200,
+      "id": "ebu-dense-orchestra",
+      "lane_report": {
+        "coefficient_ownership_fraction": {
+          "coherent_harmonic": 0.0003693245788333677,
+          "deterministic_inharmonic": 0.03600066704541279,
+          "sparse_transient": 0.06041565973900435,
+          "stochastic": 0.9032143486367495
+        },
+        "complex_mixture_phase_preserved": true,
+        "exact_integer_reconstruction": true,
+        "lane_energy_fraction": {
+          "coherent_harmonic": 6.886703949405828e-05,
+          "deterministic_inharmonic": 0.10999032732152952,
+          "sparse_transient": 0.03985355333088112,
+          "stochastic": 0.43454015913173805
+        },
+        "lane_observation_count": {
+          "coherent_harmonic": 8,
+          "deterministic_inharmonic": 1852,
+          "sparse_transient": 125,
+          "stochastic": 1852
+        },
+        "one_final_mixture_truth": true,
+        "partial_basis_count": 1,
+        "partial_observation_count": 8,
+        "reconstruction_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+        "schema": "resonith-r169-causal-lane-field-1",
+        "semantic_labels": false,
+        "shared_cross_channel_ownership_masks": true,
+        "single_primary_lane_ownership": true,
+        "source_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+        "status": "encoder-side analytic proposer; normative PartialBasis transport and complete RDO pending",
+        "transient_frame_count": 125
+      },
+      "lane_wall_seconds": 3.415156700008083,
+      "path": "G:\\Resonith\\artifacts\\corpus\\prepared-r111\\ebu-dense-orchestra.wav",
+      "reconstruction_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+      "sample_rate": 44100,
+      "source_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+      "status": "Real PCM / Fast all-lane sequence diagnostic / not complete-stream compression",
+      "total_wall_seconds": 4.220954700023867
+    },
+    {
+      "atlas_report": {
+        "candidate_class_count": 22511,
+        "event_count": 5606,
+        "factorized_candidate_class_count": 22511,
+        "factorized_law_count": 27,
+        "factorized_laws": {
+          "coherent_harmonic/envelope": {
+            "candidate_class_count": 893,
+            "covered_repeated_candidate_length_count": 905,
+            "event_count": 1779
+          },
+          "coherent_harmonic/gain": {
+            "candidate_class_count": 1120,
+            "covered_repeated_candidate_length_count": 1161,
+            "event_count": 1779
+          },
+          "coherent_harmonic/phase": {
+            "candidate_class_count": 387,
+            "covered_repeated_candidate_length_count": 387,
+            "event_count": 1779
+          },
+          "coherent_harmonic/pitch": {
+            "candidate_class_count": 333,
+            "covered_repeated_candidate_length_count": 334,
+            "event_count": 1779
+          },
+          "coherent_harmonic/resonator": {
+            "candidate_class_count": 901,
+            "covered_repeated_candidate_length_count": 916,
+            "event_count": 1779
+          },
+          "coherent_harmonic/route": {
+            "candidate_class_count": 9,
+            "covered_repeated_candidate_length_count": 9,
+            "event_count": 1779
+          },
+          "coherent_harmonic/timing": {
+            "candidate_class_count": 3257,
+            "covered_repeated_candidate_length_count": 9949,
+            "event_count": 1779
+          },
+          "deterministic_inharmonic/envelope": {
+            "candidate_class_count": 1343,
+            "covered_repeated_candidate_length_count": 1434,
+            "event_count": 1851
+          },
+          "deterministic_inharmonic/gain": {
+            "candidate_class_count": 1350,
+            "covered_repeated_candidate_length_count": 1466,
+            "event_count": 1851
+          },
+          "deterministic_inharmonic/phase": {
+            "candidate_class_count": 404,
+            "covered_repeated_candidate_length_count": 405,
+            "event_count": 1851
+          },
+          "deterministic_inharmonic/pitch": {
+            "candidate_class_count": 400,
+            "covered_repeated_candidate_length_count": 400,
+            "event_count": 1851
+          },
+          "deterministic_inharmonic/resonator": {
+            "candidate_class_count": 756,
+            "covered_repeated_candidate_length_count": 766,
+            "event_count": 1851
+          },
+          "deterministic_inharmonic/route": {
+            "candidate_class_count": 13,
+            "covered_repeated_candidate_length_count": 13,
+            "event_count": 1851
+          },
+          "deterministic_inharmonic/timing": {
+            "candidate_class_count": 3365,
+            "covered_repeated_candidate_length_count": 12771,
+            "event_count": 1851
+          },
+          "sparse_transient/envelope": {
+            "candidate_class_count": 2,
+            "covered_repeated_candidate_length_count": 2,
+            "event_count": 125
+          },
+          "sparse_transient/gain": {
+            "candidate_class_count": 7,
+            "covered_repeated_candidate_length_count": 7,
+            "event_count": 125
+          },
+          "sparse_transient/phase": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 125
+          },
+          "sparse_transient/pitch": {
+            "candidate_class_count": 1,
+            "covered_repeated_candidate_length_count": 1,
+            "event_count": 125
+          },
+          "sparse_transient/resonator": {
+            "candidate_class_count": 5,
+            "covered_repeated_candidate_length_count": 5,
+            "event_count": 125
+          },
+          "sparse_transient/route": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 125
+          },
+          "sparse_transient/timing": {
+            "candidate_class_count": 39,
+            "covered_repeated_candidate_length_count": 39,
+            "event_count": 125
+          },
+          "stochastic/envelope": {
+            "candidate_class_count": 1226,
+            "covered_repeated_candidate_length_count": 1286,
+            "event_count": 1851
+          },
+          "stochastic/gain": {
+            "candidate_class_count": 1415,
+            "covered_repeated_candidate_length_count": 1554,
+            "event_count": 1851
+          },
+          "stochastic/pitch": {
+            "candidate_class_count": 558,
+            "covered_repeated_candidate_length_count": 561,
+            "event_count": 1851
+          },
+          "stochastic/resonator": {
+            "candidate_class_count": 1349,
+            "covered_repeated_candidate_length_count": 1438,
+            "event_count": 1851
+          },
+          "stochastic/route": {
+            "candidate_class_count": 13,
+            "covered_repeated_candidate_length_count": 13,
+            "event_count": 1851
+          },
+          "stochastic/timing": {
+            "candidate_class_count": 3365,
+            "covered_repeated_candidate_length_count": 12771,
+            "event_count": 1851
+          }
+        },
+        "joint_candidate_class_count": 0,
+        "lane_count": 4,
+        "lanes": {
+          "coherent_harmonic": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 1779
+          },
+          "deterministic_inharmonic": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 1851
+          },
+          "sparse_transient": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 125
+          },
+          "stochastic": {
+            "candidate_class_count": 0,
+            "covered_repeated_candidate_length_count": 0,
+            "event_count": 1851
+          }
+        },
+        "one_final_mixture_truth": true,
+        "schema": "resonith-r173-factorized-law-atlas-1",
+        "simultaneous_lane_events_preserved": true,
+        "single_primary_lane_ownership": true,
+        "status": "exact per-lane/per-law sequence discovery; synchronized grammar and complete stream RDO pending",
+        "stochastic_realization_phase_is_not_predictive_state": true,
+        "unrelated_laws_do_not_prune_candidates": true
+      },
+      "atlas_wall_seconds": 1.2608416000148281,
+      "candidate_classes_by_factorized_law_and_mode": {
+        "coherent_harmonic/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 473,
+            "covered_candidate_length_count": 479,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 59
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 420,
+            "covered_candidate_length_count": 426,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 10
+          }
+        },
+        "coherent_harmonic/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 553,
+            "covered_candidate_length_count": 575,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 153
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 567,
+            "covered_candidate_length_count": 586,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 31
+          }
+        },
+        "coherent_harmonic/phase": {
+          "bounded-second-difference": {
+            "candidate_class_count": 368,
+            "covered_candidate_length_count": 368,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 13
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 19,
+            "covered_candidate_length_count": 19,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "coherent_harmonic/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 277,
+            "covered_candidate_length_count": 277,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 20
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 56,
+            "covered_candidate_length_count": 57,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 3
+          }
+        },
+        "coherent_harmonic/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 493,
+            "covered_candidate_length_count": 500,
+            "maximum_event_count": 6,
+            "maximum_occurrence_count": 81
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 408,
+            "covered_candidate_length_count": 416,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 13
+          }
+        },
+        "coherent_harmonic/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 9,
+            "covered_candidate_length_count": 9,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "coherent_harmonic/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1629,
+            "covered_candidate_length_count": 4974,
+            "maximum_event_count": 63,
+            "maximum_occurrence_count": 1506
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 1628,
+            "covered_candidate_length_count": 4975,
+            "maximum_event_count": 63,
+            "maximum_occurrence_count": 1500
+          }
+        },
+        "deterministic_inharmonic/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 646,
+            "covered_candidate_length_count": 683,
+            "maximum_event_count": 8,
+            "maximum_occurrence_count": 200
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 697,
+            "covered_candidate_length_count": 751,
+            "maximum_event_count": 8,
+            "maximum_occurrence_count": 71
+          }
+        },
+        "deterministic_inharmonic/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 664,
+            "covered_candidate_length_count": 712,
+            "maximum_event_count": 8,
+            "maximum_occurrence_count": 196
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 686,
+            "covered_candidate_length_count": 754,
+            "maximum_event_count": 8,
+            "maximum_occurrence_count": 79
+          }
+        },
+        "deterministic_inharmonic/phase": {
+          "bounded-second-difference": {
+            "candidate_class_count": 386,
+            "covered_candidate_length_count": 387,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 12
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 18,
+            "covered_candidate_length_count": 18,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "deterministic_inharmonic/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 280,
+            "covered_candidate_length_count": 280,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 20
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 120,
+            "covered_candidate_length_count": 120,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 3
+          }
+        },
+        "deterministic_inharmonic/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 372,
+            "covered_candidate_length_count": 374,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 46
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 384,
+            "covered_candidate_length_count": 392,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 6
+          }
+        },
+        "deterministic_inharmonic/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 13,
+            "covered_candidate_length_count": 13,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "deterministic_inharmonic/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1682,
+            "covered_candidate_length_count": 6385,
+            "maximum_event_count": 95,
+            "maximum_occurrence_count": 1624
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 1683,
+            "covered_candidate_length_count": 6386,
+            "maximum_event_count": 95,
+            "maximum_occurrence_count": 1618
+          }
+        },
+        "sparse_transient/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 2,
+            "covered_candidate_length_count": 2,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 7,
+            "covered_candidate_length_count": 7,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 3
+          }
+        },
+        "sparse_transient/phase": {},
+        "sparse_transient/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1,
+            "covered_candidate_length_count": 1,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 5,
+            "covered_candidate_length_count": 5,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "sparse_transient/route": {},
+        "sparse_transient/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 35,
+            "covered_candidate_length_count": 35,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 10
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 4,
+            "covered_candidate_length_count": 4,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "stochastic/envelope": {
+          "bounded-second-difference": {
+            "candidate_class_count": 598,
+            "covered_candidate_length_count": 617,
+            "maximum_event_count": 7,
+            "maximum_occurrence_count": 160
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 628,
+            "covered_candidate_length_count": 669,
+            "maximum_event_count": 7,
+            "maximum_occurrence_count": 42
+          }
+        },
+        "stochastic/gain": {
+          "bounded-second-difference": {
+            "candidate_class_count": 690,
+            "covered_candidate_length_count": 749,
+            "maximum_event_count": 9,
+            "maximum_occurrence_count": 234
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 725,
+            "covered_candidate_length_count": 805,
+            "maximum_event_count": 9,
+            "maximum_occurrence_count": 92
+          }
+        },
+        "stochastic/pitch": {
+          "bounded-second-difference": {
+            "candidate_class_count": 294,
+            "covered_candidate_length_count": 297,
+            "maximum_event_count": 5,
+            "maximum_occurrence_count": 32
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 264,
+            "covered_candidate_length_count": 264,
+            "maximum_event_count": 4,
+            "maximum_occurrence_count": 5
+          }
+        },
+        "stochastic/resonator": {
+          "bounded-second-difference": {
+            "candidate_class_count": 644,
+            "covered_candidate_length_count": 686,
+            "maximum_event_count": 9,
+            "maximum_occurrence_count": 215
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 705,
+            "covered_candidate_length_count": 752,
+            "maximum_event_count": 9,
+            "maximum_occurrence_count": 80
+          }
+        },
+        "stochastic/route": {
+          "bounded-second-difference": {
+            "candidate_class_count": 13,
+            "covered_candidate_length_count": 13,
+            "maximum_event_count": 3,
+            "maximum_occurrence_count": 2
+          }
+        },
+        "stochastic/timing": {
+          "bounded-second-difference": {
+            "candidate_class_count": 1682,
+            "covered_candidate_length_count": 6385,
+            "maximum_event_count": 95,
+            "maximum_occurrence_count": 1624
+          },
+          "constant-offset/first-difference": {
+            "candidate_class_count": 1683,
+            "covered_candidate_length_count": 6386,
+            "maximum_event_count": 95,
+            "maximum_occurrence_count": 1618
+          }
+        }
+      },
+      "channels": 2,
+      "duration_seconds": 12.0,
+      "event_count_by_lane": {
+        "coherent_harmonic": 1779,
+        "deterministic_inharmonic": 1851,
+        "sparse_transient": 125,
+        "stochastic": 1851
+      },
+      "exact_reconstruction": true,
+      "frames": 529200,
+      "id": "ebu-pink-noise",
+      "lane_report": {
+        "coefficient_ownership_fraction": {
+          "coherent_harmonic": 0.08314702227347542,
+          "deterministic_inharmonic": 0.04828730437338715,
+          "sparse_transient": 0.06041565973900435,
+          "stochastic": 0.8081500136141331
+        },
+        "complex_mixture_phase_preserved": true,
+        "exact_integer_reconstruction": true,
+        "lane_energy_fraction": {
+          "coherent_harmonic": 0.5010250695381632,
+          "deterministic_inharmonic": 0.04964702573167448,
+          "sparse_transient": 0.032358256530731586,
+          "stochastic": 0.23118343932523183
+        },
+        "lane_observation_count": {
+          "coherent_harmonic": 1779,
+          "deterministic_inharmonic": 1851,
+          "sparse_transient": 125,
+          "stochastic": 1851
+        },
+        "one_final_mixture_truth": true,
+        "partial_basis_count": 1,
+        "partial_observation_count": 1779,
+        "reconstruction_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+        "schema": "resonith-r169-causal-lane-field-1",
+        "semantic_labels": false,
+        "shared_cross_channel_ownership_masks": true,
+        "single_primary_lane_ownership": true,
+        "source_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+        "status": "encoder-side analytic proposer; normative PartialBasis transport and complete RDO pending",
+        "transient_frame_count": 125
+      },
+      "lane_wall_seconds": 4.2699082999897655,
+      "path": "G:\\Resonith\\artifacts\\corpus\\prepared-r111\\ebu-pink-noise.wav",
+      "reconstruction_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+      "sample_rate": 44100,
+      "source_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+      "status": "Real PCM / Fast all-lane sequence diagnostic / not complete-stream compression",
+      "total_wall_seconds": 5.530749900004594
+    }
+  ],
+  "status": "complete-fast-diagnostic",
+  "test_order": [
+    "long",
+    "freeze-long",
+    "short"
+  ]
+}

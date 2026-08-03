@@ -1,0 +1,42 @@
+{
+  "cumulative_sha256": "fad4b0e6814a89b28f075d87562acc9cce2ef25885b20ea567ae5d96ba5aade8",
+  "identity": {
+    "bytes": 12371,
+    "candidate_subframe_counters": {
+      "maf_cell.decoder_domain_candidate_evaluations": 8642,
+      "maf_cell.decoder_domain_rejected_candidate_evaluations": 7041,
+      "maf_cell.subframe_count": 1464,
+      "maf_cell.subframe_size": 64
+    },
+    "decoded_pcm_bytes": 187360,
+    "decoded_pcm_sha256": "bcff64e10968a7050e7296f95d5a77491a034f1b47f013edc4e0d940ef5977a8",
+    "report_bytes": 218916,
+    "report_sha256": "198ca97e66fbca44f00ace0ad2f57ca64be5fef6e1292b03edf44d397078d9b5",
+    "stream_sha256": "15415da9ba2e25ce48873c8a5dc1686f05efa62fb46f4e9b28c4a1c3bfe7532d",
+    "waveform_sse": 72956137926
+  },
+  "lpc_to_encode_cumulative_ratio": 0.6097914076180061,
+  "profile_functions": {
+    "_lpc_q14": {
+      "cumulative_seconds": 58.50038790000001,
+      "filename": "G:\\Resonith\\reference\\maf_p0\\maf_source_filter_oracle.py",
+      "line": 290,
+      "primitive_calls": 648120,
+      "self_seconds": 22.45595,
+      "total_calls": 648120
+    },
+    "encode_maf_source_filter_analysis": {
+      "cumulative_seconds": 95.9350807,
+      "filename": "G:\\Resonith\\reference\\maf_p0\\maf_source_filter_oracle.py",
+      "line": 2504,
+      "primitive_calls": 1,
+      "self_seconds": 0.0009032,
+      "total_calls": 1
+    }
+  },
+  "profile_sha256": "5fc50daa51662d1e9678c5d4c7092dfe88eba7a0443b55c76d009ab666b7dc5c",
+  "schema": "resonith-r250-s15-profile-worker-1",
+  "self_sha256": "f48340e7618e02f63b4724de51d0629cd70f41e37bf1e5aafd8f9148bc3cd501",
+  "source_sha256_after": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46",
+  "worker_process_cpu_seconds_proxy": 121.359375
+}

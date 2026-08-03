@@ -1,0 +1,154 @@
+{
+  "artifacts": {
+    "basis.pcm16le": {
+      "bytes": 32,
+      "file": "basis.pcm16le",
+      "sha256": "11989292026ed130c52b9b3be058460c2de11eece611e5639d410f93a2e96396"
+    },
+    "candidate-cbf1.resonith": {
+      "bytes": 4768,
+      "file": "candidate-cbf1.resonith",
+      "sha256": "b9a1e3d1f2fd032c1d111e9114043bdb01894a19f263b74a8a2a4bde21c462c1"
+    },
+    "candidate-decoded.wav": {
+      "bytes": 1152044,
+      "file": "candidate-decoded.wav",
+      "sha256": "3fad48de3d18ee67448eeaaa24a6b368ac5313b45ee77b36e681dcd9af70133c"
+    },
+    "candidate-mft1.resonith": {
+      "bytes": 5737,
+      "file": "candidate-mft1.resonith",
+      "sha256": "a1f236dba273ed90d604d8d968fe41a93dd6e6a93ca916645a0f26795e1237a5"
+    },
+    "direct-truth-decoded.wav": {
+      "bytes": 1152044,
+      "file": "direct-truth-decoded.wav",
+      "sha256": "2980f87f474ebae59a52b7993cbd43f4a8b7d14e3b2347a9b95985b731fa896a"
+    },
+    "direct-truth.resonith": {
+      "bytes": 119854,
+      "file": "direct-truth.resonith",
+      "sha256": "5d6d7e2ddbbc1d56ea9b93b35b702078370289a9992d4e1ca9d6deefa0131a36"
+    },
+    "predictor.cbf1": {
+      "bytes": 683,
+      "file": "predictor.cbf1",
+      "sha256": "836b8692da7a2c34302e159a0f8814e8ead0a40a4fcce226e59da625555c9cd3"
+    },
+    "predictor.mft1": {
+      "bytes": 1652,
+      "file": "predictor.mft1",
+      "sha256": "28226d168a2f34f22f403e7721e7a5ace27a465e9ad917c724c21fe2592662d3"
+    },
+    "source.wav": {
+      "bytes": 1152044,
+      "file": "source.wav",
+      "sha256": "3fad48de3d18ee67448eeaaa24a6b368ac5313b45ee77b36e681dcd9af70133c"
+    },
+    "zero-truth.mri1": {
+      "bytes": 3797,
+      "file": "zero-truth.mri1",
+      "sha256": "531064495dd47024e47001576d64519022e6870fbd536c6d4e5e0822249db31e"
+    }
+  },
+  "basis": {
+    "manifest_file": "experiments\\fixtures\\r215_cosine_basis_family.json",
+    "manifest_sha256": "9880c8f4ad2ac36e5af5302299a8a6dbbe7416b8243f48c786db3a375c40a87c",
+    "pcm16le_sha256": "11989292026ed130c52b9b3be058460c2de11eece611e5639d410f93a2e96396",
+    "sample_count": 16
+  },
+  "byte_ledger": {
+    "cbf1_complete_bytes": 4768,
+    "cbf1_container_bytes": 288,
+    "cbf1_predictor_bytes": 683,
+    "cbf1_ratio_vs_direct": 0.03978173444357301,
+    "cbf1_saving_bytes_vs_direct": 115086,
+    "direct_truth_bytes": 119854,
+    "mft1_complete_bytes": 5737,
+    "mft1_container_bytes": 288,
+    "mft1_predictor_bytes": 1652,
+    "zero_truth_bytes": 3797
+  },
+  "claim_boundary": "passes only the <=85% exact in-language R-186 structural threshold; does not prove analyzer recovery, real-audio gain, Opus gain, or novelty",
+  "command": "python experiments/r215_s11_free_oracle.py --native-core build/cpp23-clang22-ninja/libresonith_core_shared.dll --basis experiments/fixtures/r215_cosine_basis_family.json --basis-length 16 --output-directory artifacts/r215-s11-free-oracle --report experiments/results/r215_s11_free_oracle_2026-08-02.json",
+  "fixed_mapping": {
+    "frequency_step_q16": "round_even(freq_hz_q20 * 16 * 2^16 / (48000 * 2^20))",
+    "phase_position_q16": "round_even(phase_turn_u32 * 16 * 2^16 / 2^32) mod 1048576",
+    "rounding": "signed nearest; exact ties to even",
+    "split_carry": "constant: start+N*step; linear: position(N-1)+end_step; Euclidean modulo 1048576"
+  },
+  "generator": {
+    "file": "experiments\\r215_s11_free_oracle.py",
+    "sha256": "9bf6ed3e998a3077d5632555e72710f53f6535572ddb9e2be5d8e25fe3cec8f5"
+  },
+  "native_core": {
+    "file": "libresonith_core_shared.dll",
+    "sha256": "f12c6ad9061089d2d4088a5bfd2e20e845148ebcd303afaecc3bb2dc6be042ed"
+  },
+  "quality": {
+    "cbf1_exact": true,
+    "decoded_pcm_sha256": "b40210aa19a14ad1c2e75345d0412c48ec6eeebf2f44fc894c8288cca682fc1b",
+    "direct_truth_sse": 1343439379,
+    "source_pcm_sha256": "b40210aa19a14ad1c2e75345d0412c48ec6eeebf2f44fc894c8288cca682fc1b"
+  },
+  "runtime": {
+    "numpy": "2.5.1",
+    "python": "3.14.6",
+    "python_implementation": "CPython"
+  },
+  "schema": "resonith-r215-s11-free-oracle-2",
+  "source_program": {
+    "duration_seconds": 12.0,
+    "frames": 576000,
+    "maximum_segment_frames": 60000,
+    "path_count": 4,
+    "path_laws": [
+      [
+        0,
+        576000,
+        230686720,
+        249561088,
+        9000,
+        7000,
+        558345748
+      ],
+      [
+        48000,
+        552000,
+        347078656,
+        316669952,
+        6500,
+        8200,
+        1589137900
+      ],
+      [
+        96000,
+        576000,
+        468713472,
+        529530880,
+        5200,
+        3900,
+        3049426780
+      ],
+      [
+        24000,
+        432000,
+        768606208,
+        723517440,
+        3800,
+        2600,
+        3908420239
+      ]
+    ],
+    "placement_count": 34,
+    "sample_rate": 48000,
+    "static_mix_q15": [
+      32767,
+      32767,
+      32767,
+      32767
+    ]
+  },
+  "status": "in-language representational lower bound only",
+  "transport_selected_kind": "cbf1"
+}

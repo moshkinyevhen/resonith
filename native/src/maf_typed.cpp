@@ -17,6 +17,8 @@ constexpr std::size_t kRecordHeaderBytes =
     RESONITH_MAF_TYPED_RECORD_HEADER_BYTES;
 constexpr std::uint16_t kNoEmitter = 0xffffU;
 constexpr std::uint16_t kNoReference = 0xffffU;
+constexpr std::int64_t kWarpOneQ16 = 1LL << 16U;
+constexpr std::int32_t kWarpMaximumStepQ16 = 8 * (1 << 16U);
 
 struct Header {
     std::uint32_t sample_rate;
@@ -246,6 +248,94 @@ std::int32_t interpolate_gain_q15(
     return static_cast<std::int32_t>(start + quotient);
 }
 
+std::int64_t divide_round_away(
+    std::int64_t numerator,
+    std::int64_t denominator
+) noexcept {
+    std::int64_t quotient = numerator / denominator;
+    const std::int64_t remainder = numerator % denominator;
+    const std::int64_t magnitude = remainder < 0 ? -remainder : remainder;
+    if (2 * magnitude >= denominator) {
+        quotient += numerator < 0 ? -1 : 1;
+    }
+    return quotient;
+}
+
+std::int64_t warp_source_position_q16(
+    std::int32_t start_position_q16,
+    std::int32_t start_step_q16,
+    std::int32_t end_step_q16,
+    bool linear_step,
+    std::uint32_t output_index,
+    std::uint32_t output_count
+) noexcept {
+    std::int64_t position =
+        static_cast<std::int64_t>(start_position_q16)
+        + static_cast<std::int64_t>(start_step_q16) * output_index;
+    if (!linear_step || output_index < 2U) {
+        return position;
+    }
+    const std::int64_t numerator =
+        static_cast<std::int64_t>(end_step_q16 - start_step_q16)
+        * output_index
+        * (output_index - 1U);
+    const std::int64_t denominator =
+        2LL * static_cast<std::int64_t>(output_count - 2U);
+    return position + divide_round_away(numerator, denominator);
+}
+
+void split_q16_floor(
+    std::int64_t position_q16,
+    std::int64_t& sample,
+    std::uint32_t& fraction_q16
+) noexcept {
+    sample = position_q16 / kWarpOneQ16;
+    std::int64_t remainder = position_q16 % kWarpOneQ16;
+    if (remainder < 0) {
+        --sample;
+        remainder += kWarpOneQ16;
+    }
+    fraction_q16 = static_cast<std::uint32_t>(remainder);
+}
+
+std::uint32_t euclidean_sample_index(
+    std::int64_t sample,
+    std::uint32_t basis_samples
+) noexcept {
+    std::int64_t result = sample % basis_samples;
+    if (result < 0) {
+        result += basis_samples;
+    }
+    return static_cast<std::uint32_t>(result);
+}
+
+std::int32_t interpolate_basis_q16(
+    const std::int16_t* basis,
+    std::uint32_t basis_samples,
+    std::int64_t position_q16,
+    bool circular
+) noexcept {
+    std::int64_t whole = 0;
+    std::uint32_t fraction = 0U;
+    split_q16_floor(position_q16, whole, fraction);
+    const std::uint32_t left = circular
+        ? euclidean_sample_index(whole, basis_samples)
+        : static_cast<std::uint32_t>(whole);
+    if (fraction == 0U) {
+        return basis[left];
+    }
+    const std::uint32_t right = circular
+        ? (left + 1U) % basis_samples
+        : left + 1U;
+    const std::int64_t numerator =
+        static_cast<std::int64_t>(basis[left])
+            * (kWarpOneQ16 - fraction)
+        + static_cast<std::int64_t>(basis[right]) * fraction;
+    return static_cast<std::int32_t>(
+        divide_round_away(numerator, kWarpOneQ16)
+    );
+}
+
 resonith_status find_record(
     const Header& header,
     const std::uint8_t* data,
@@ -416,7 +506,10 @@ resonith_status calculate_requirements(
                 return RESONITH_STATUS_PROFILE_BOUND;
             }
             ++header.basis_count;
-        } else if (record.type == RESONITH_MAF_TYPED_BASIS_INSTANCE) {
+        } else if (
+            record.type == RESONITH_MAF_TYPED_BASIS_INSTANCE
+            || record.type == RESONITH_MAF_TYPED_BASIS_WARP_INSTANCE
+        ) {
             ++header.basis_instance_count;
         }
     }
@@ -487,7 +580,7 @@ resonith_status validate_records(
     std::array<std::int16_t, RESONITH_MAF_MAIN_MAX_FILTER_ORDER> reflection{};
     std::array<std::int32_t, RESONITH_MAF_MAIN_MAX_FILTER_ORDER> coefficients{};
     std::uint8_t previous_type = 0U;
-    std::uint16_t expected_id[8] = {};
+    std::uint16_t expected_id[9] = {};
     std::uint32_t mix_cursor = 0U;
     std::uint16_t previous_source_emitter = 0U;
     bool have_source = false;
@@ -501,7 +594,7 @@ resonith_status validate_records(
         }
         if (
             record.type < RESONITH_MAF_TYPED_FILTER
-            || record.type > RESONITH_MAF_TYPED_BASIS_INSTANCE
+            || record.type > RESONITH_MAF_TYPED_BASIS_WARP_INSTANCE
             || record.type < previous_type
             || record.payload_size < 2U
         ) {
@@ -744,7 +837,7 @@ resonith_status validate_records(
             ) {
                 return RESONITH_STATUS_MALFORMED;
             }
-        } else {
+        } else if (record.type == RESONITH_MAF_TYPED_BASIS_INSTANCE) {
             if (record.payload_size != 24U) {
                 return RESONITH_STATUS_MALFORMED;
             }
@@ -809,6 +902,112 @@ resonith_status validate_records(
             ) {
                 return RESONITH_STATUS_MALFORMED;
             }
+        } else {
+            if (record.payload_size != 36U) {
+                return RESONITH_STATUS_MALFORMED;
+            }
+            const std::uint16_t emitter = read_u16(record.payload + 2U);
+            const std::uint16_t basis_id = read_u16(record.payload + 4U);
+            const std::uint16_t flags = read_u16(record.payload + 6U);
+            const std::uint32_t start = read_u32(record.payload + 8U);
+            const std::uint32_t sample_count =
+                read_u32(record.payload + 12U);
+            const std::int32_t source_position_q16 =
+                read_i32(record.payload + 16U);
+            const std::int32_t start_step_q16 =
+                read_i32(record.payload + 20U);
+            const std::int32_t end_step_q16 =
+                read_i32(record.payload + 24U);
+            const std::int32_t start_gain =
+                read_i32(record.payload + 28U);
+            const std::int32_t end_gain =
+                read_i32(record.payload + 32U);
+            const bool circular =
+                (flags & RESONITH_MAF_TYPED_BASIS_WARP_CIRCULAR) != 0U;
+            const bool linear_gain =
+                (flags & RESONITH_MAF_TYPED_BASIS_WARP_LINEAR_GAIN) != 0U;
+            const bool linear_step =
+                (flags & RESONITH_MAF_TYPED_BASIS_WARP_LINEAR_STEP) != 0U;
+            Record basis{};
+            status = find_record(
+                header,
+                data,
+                RESONITH_MAF_TYPED_BASIS,
+                basis_id,
+                basis
+            );
+            const std::uint32_t basis_samples =
+                status == RESONITH_STATUS_OK
+                    ? read_u16(basis.payload + 2U)
+                    : 0U;
+            const bool bounded_steps =
+                start_step_q16 >= -kWarpMaximumStepQ16
+                && start_step_q16 <= kWarpMaximumStepQ16
+                && end_step_q16 >= -kWarpMaximumStepQ16
+                && end_step_q16 <= kWarpMaximumStepQ16;
+            const bool same_direction =
+                (
+                    start_step_q16 >= 0
+                    && end_step_q16 >= 0
+                )
+                || (
+                    start_step_q16 <= 0
+                    && end_step_q16 <= 0
+                );
+            const std::int64_t final_position_q16 =
+                sample_count == 0U
+                    ? source_position_q16
+                    : warp_source_position_q16(
+                        source_position_q16,
+                        start_step_q16,
+                        linear_step ? end_step_q16 : start_step_q16,
+                        linear_step,
+                        sample_count - 1U,
+                        sample_count
+                    );
+            const std::int64_t minimum_position_q16 = std::min<std::int64_t>(
+                source_position_q16,
+                final_position_q16
+            );
+            const std::int64_t maximum_position_q16 = std::max<std::int64_t>(
+                source_position_q16,
+                final_position_q16
+            );
+            const std::int64_t maximum_basis_position_q16 =
+                basis_samples == 0U
+                    ? -1
+                    : static_cast<std::int64_t>(basis_samples - 1U)
+                        * kWarpOneQ16;
+            if (
+                emitter >= header.emitter_count
+                || (flags & ~std::uint16_t{7U}) != 0U
+                || sample_count == 0U
+                || sample_count
+                    > RESONITH_MAF_TYPED_MAX_WARP_INSTANCE_SAMPLES
+                || start > header.total_frames
+                || sample_count > header.total_frames - start
+                || start_gain < -32768
+                || start_gain > 32768
+                || end_gain < -32768
+                || end_gain > 32768
+                || (!linear_gain && end_gain != 0)
+                || (linear_gain && sample_count < 2U)
+                || (!linear_step && end_step_q16 != 0)
+                || (linear_step && sample_count < 3U)
+                || !bounded_steps
+                || !same_direction
+                || (
+                    !circular
+                    && (
+                        minimum_position_q16 < 0
+                        || maximum_position_q16
+                            > maximum_basis_position_q16
+                    )
+                )
+                || status != RESONITH_STATUS_OK
+            ) {
+                return RESONITH_STATUS_MALFORMED;
+            }
         }
     }
     if (
@@ -822,8 +1021,12 @@ resonith_status validate_records(
             != header.transient_count
         || expected_id[RESONITH_MAF_TYPED_MIX] != header.mix_count
         || expected_id[RESONITH_MAF_TYPED_BASIS] != header.basis_count
-        || expected_id[RESONITH_MAF_TYPED_BASIS_INSTANCE]
-            != header.basis_instance_count
+        || (
+            static_cast<std::uint32_t>(
+                expected_id[RESONITH_MAF_TYPED_BASIS_INSTANCE]
+            )
+            + expected_id[RESONITH_MAF_TYPED_BASIS_WARP_INSTANCE]
+        ) != header.basis_instance_count
         || mix_cursor != header.total_frames
     ) {
         return RESONITH_STATUS_MALFORMED;
@@ -890,6 +1093,11 @@ std::uint32_t next_boundary(
         } else if (record.type == RESONITH_MAF_TYPED_BASIS_INSTANCE) {
             start = read_u32(record.payload + 8U);
             end = start + read_u16(record.payload + 18U);
+        } else if (
+            record.type == RESONITH_MAF_TYPED_BASIS_WARP_INSTANCE
+        ) {
+            start = read_u32(record.payload + 8U);
+            end = start + read_u32(record.payload + 12U);
         }
         if (start > cursor && start < result) {
             result = start;
@@ -1003,6 +1211,34 @@ std::uint64_t slice_operations(
                     != 0U
                         ? 9U
                         : 5U;
+                addition = frames
+                    + per_sample * (overlap_end - overlap_start);
+            }
+        } else if (
+            record.type == RESONITH_MAF_TYPED_BASIS_WARP_INSTANCE
+        ) {
+            const std::uint32_t onset = read_u32(record.payload + 8U);
+            const std::uint32_t sample_count =
+                read_u32(record.payload + 12U);
+            const std::uint32_t stop = onset + sample_count;
+            const std::uint32_t overlap_start = std::max(start, onset);
+            const std::uint32_t overlap_end = std::min(end, stop);
+            if (overlap_end > overlap_start) {
+                const std::uint16_t flags =
+                    read_u16(record.payload + 6U);
+                std::uint64_t per_sample = 17U;
+                if (
+                    (flags & RESONITH_MAF_TYPED_BASIS_WARP_LINEAR_STEP)
+                    != 0U
+                ) {
+                    per_sample += 6U;
+                }
+                if (
+                    (flags & RESONITH_MAF_TYPED_BASIS_WARP_LINEAR_GAIN)
+                    != 0U
+                ) {
+                    per_sample += 4U;
+                }
                 addition = frames
                     + per_sample * (overlap_end - overlap_start);
             }
@@ -1469,6 +1705,128 @@ resonith_status render_slice(
                 session.workspace.bases[
                     basis_offset + source_index
                 ],
+                gain
+            );
+            emitter_plane[local_slice] = static_cast<std::int16_t>(
+                std::clamp<std::int32_t>(
+                    static_cast<std::int32_t>(emitter_plane[local_slice])
+                        + scaled,
+                    -32768,
+                    32767
+                )
+            );
+        }
+    }
+
+    /*
+     * R-155 fractional Basis warps extend the immutable dictionary with a
+     * closed, bounded coordinate law. Source positions are derived from the
+     * absolute instance index, so callback partitioning cannot change PCM.
+     */
+    cursor = kHeaderBytes;
+    for (std::uint16_t index = 0U; index < header.record_count; ++index) {
+        Record record{};
+        (void)next_record(header, session.stream_data, cursor, record);
+        if (
+            record.type != RESONITH_MAF_TYPED_BASIS_WARP_INSTANCE
+        ) {
+            continue;
+        }
+        const std::uint32_t onset = read_u32(record.payload + 8U);
+        const std::uint32_t sample_count =
+            read_u32(record.payload + 12U);
+        if (!overlaps(start, end, onset, onset + sample_count)) {
+            continue;
+        }
+        Record basis_record{};
+        std::uint32_t basis_offset = 0U;
+        const resonith_status find_status = find_basis(
+            header,
+            session.stream_data,
+            read_u16(record.payload + 4U),
+            basis_offset,
+            basis_record
+        );
+        if (find_status != RESONITH_STATUS_OK) {
+            return find_status;
+        }
+        const std::uint32_t overlap_start = std::max(start, onset);
+        const std::uint32_t overlap_end =
+            std::min(end, onset + sample_count);
+        const std::uint16_t flags = read_u16(record.payload + 6U);
+        std::uint64_t per_sample = 17U;
+        if (
+            (flags & RESONITH_MAF_TYPED_BASIS_WARP_LINEAR_STEP) != 0U
+        ) {
+            per_sample += 6U;
+        }
+        if (
+            (flags & RESONITH_MAF_TYPED_BASIS_WARP_LINEAR_GAIN) != 0U
+        ) {
+            per_sample += 4U;
+        }
+        const std::uint64_t required_operations =
+            frames + per_sample * (overlap_end - overlap_start);
+        if (budget.remaining < required_operations) {
+            return RESONITH_STATUS_PROFILE_BOUND;
+        }
+        budget.remaining -= required_operations;
+
+        const std::uint16_t emitter = read_u16(record.payload + 2U);
+        const bool circular =
+            (flags & RESONITH_MAF_TYPED_BASIS_WARP_CIRCULAR) != 0U;
+        const bool linear_gain =
+            (flags & RESONITH_MAF_TYPED_BASIS_WARP_LINEAR_GAIN) != 0U;
+        const bool linear_step =
+            (flags & RESONITH_MAF_TYPED_BASIS_WARP_LINEAR_STEP) != 0U;
+        const std::int32_t source_position_q16 =
+            read_i32(record.payload + 16U);
+        const std::int32_t start_step_q16 =
+            read_i32(record.payload + 20U);
+        const std::int32_t end_step_q16 =
+            read_i32(record.payload + 24U);
+        const std::int32_t start_gain =
+            read_i32(record.payload + 28U);
+        const std::int32_t end_gain =
+            read_i32(record.payload + 32U);
+        const std::uint32_t basis_samples =
+            read_u16(basis_record.payload + 2U);
+        const std::int16_t* basis =
+            session.workspace.bases + basis_offset;
+        std::int16_t* emitter_plane =
+            session.workspace.planar_sources
+            + static_cast<std::size_t>(emitter) * frames;
+
+        for (
+            std::uint32_t position = overlap_start;
+            position < overlap_end;
+            ++position
+        ) {
+            const std::uint32_t local_instance = position - onset;
+            const std::uint32_t local_slice = position - start;
+            const std::int64_t source_q16 = warp_source_position_q16(
+                source_position_q16,
+                start_step_q16,
+                linear_step ? end_step_q16 : start_step_q16,
+                linear_step,
+                local_instance,
+                sample_count
+            );
+            const std::int32_t gain = linear_gain
+                ? interpolate_gain_q15(
+                    start_gain,
+                    end_gain,
+                    local_instance,
+                    sample_count
+                )
+                : start_gain;
+            const std::int32_t scaled = combine_gain_q15(
+                interpolate_basis_q16(
+                    basis,
+                    basis_samples,
+                    source_q16,
+                    circular
+                ),
                 gain
             );
             emitter_plane[local_slice] = static_cast<std::int16_t>(

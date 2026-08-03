@@ -1,0 +1,341 @@
+{
+  "claim_boundary": "real PCM complete-program fast gate; not R-118 or Opus evidence",
+  "long_frontier_frozen": true,
+  "long_results": [
+    {
+      "channels": 2,
+      "duration_seconds": 120.0,
+      "frames": 5760000,
+      "id": "mozart-120s",
+      "path": "G:\\Orkela\\comparison\\public-benchmark-2026-07-26\\mozart-original.wav",
+      "report": {
+        "baseline_bytes": 1883620,
+        "baseline_sse": 29026336157,
+        "best_program": {
+          "bytes": 1958037,
+          "families": [
+            "inharmonic"
+          ],
+          "program_bytes": 73820,
+          "residual_budget": 64,
+          "residual_clip_count": 0,
+          "sse": 29092981864,
+          "sse_ratio": 1.0022960426916963,
+          "truth_bytes": 1883929
+        },
+        "causal_field": {
+          "coefficient_ownership_fraction": {
+            "coherent_harmonic": 0.0931961178593492,
+            "deterministic_inharmonic": 0.03222260946946867,
+            "sparse_transient": 0.05999733345184659,
+            "stochastic": 0.8145839392193356
+          },
+          "complex_mixture_phase_preserved": true,
+          "exact_integer_reconstruction": true,
+          "lane_energy_fraction": {
+            "coherent_harmonic": 0.8995817223776632,
+            "deterministic_inharmonic": 0.012480500194064987,
+            "sparse_transient": 0.020098512253284476,
+            "stochastic": 0.010807617230507117
+          },
+          "lane_observation_count": {
+            "coherent_harmonic": 20856,
+            "deterministic_inharmonic": 21151,
+            "sparse_transient": 1350,
+            "stochastic": 21151
+          },
+          "one_final_mixture_truth": true,
+          "partial_basis_count": 15,
+          "partial_basis_observation_count": [
+            1140,
+            1279,
+            3277,
+            1357,
+            1350,
+            1029,
+            1223,
+            1548,
+            1305,
+            1546,
+            1236,
+            1259,
+            1041,
+            1292,
+            974
+          ],
+          "partial_observation_count": 20856,
+          "reconstruction_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+          "schema": "resonith-r169-causal-lane-field-1",
+          "semantic_labels": false,
+          "shared_cross_channel_ownership_masks": true,
+          "single_primary_lane_ownership": true,
+          "source_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+          "status": "encoder-side analytic proposer; normative PartialBasis transport and complete RDO pending",
+          "transient_frame_count": 1350
+        },
+        "column_count": 3,
+        "column_families": [
+          "coherent",
+          "inharmonic",
+          "transient"
+        ],
+        "independent_decode": true,
+        "objective": "complete program plus one final Truth bytes and decoded SSE",
+        "one_final_mixture_truth": true,
+        "pareto_frontier": [
+          {
+            "bytes": 1121844,
+            "families": [
+              "transient"
+            ],
+            "program_bytes": 56308,
+            "residual_budget": 32,
+            "residual_clip_count": 0,
+            "sse": 266571718590,
+            "sse_ratio": 9.183788031260482,
+            "truth_bytes": 1065248
+          },
+          {
+            "bytes": 1138147,
+            "families": [
+              "inharmonic"
+            ],
+            "program_bytes": 73820,
+            "residual_budget": 32,
+            "residual_clip_count": 0,
+            "sse": 265656395476,
+            "sse_ratio": 9.15225380286014,
+            "truth_bytes": 1064039
+          },
+          {
+            "bytes": 1941418,
+            "families": [
+              "transient"
+            ],
+            "program_bytes": 56308,
+            "residual_budget": 64,
+            "residual_clip_count": 0,
+            "sse": 29185634382,
+            "sse_ratio": 1.0054880582977601,
+            "truth_bytes": 1884822
+          },
+          {
+            "bytes": 1958037,
+            "families": [
+              "inharmonic"
+            ],
+            "program_bytes": 73820,
+            "residual_budget": 64,
+            "residual_clip_count": 0,
+            "sse": 29092981864,
+            "sse_ratio": 1.0022960426916963,
+            "truth_bytes": 1883929
+          }
+        ],
+        "schema": "resonith-r179-anonymous-causal-program-1",
+        "selected_bytes": 1883620,
+        "selected_kind": "truth-fallback",
+        "selected_sha256": "f6646d85309cb15f83fd10f110c4b707821bc18d82296db5397c3bf5f737ae9c",
+        "semantic_source_classes": false,
+        "status": "decoder-in-loop exact-subset fast gate; R-118 pending",
+        "tested_candidate_count": 14,
+        "tested_candidates": [
+          {
+            "bytes": 1124673,
+            "families": [
+              "coherent"
+            ],
+            "program_bytes": 60022,
+            "residual_budget": 32,
+            "residual_clip_count": 0,
+            "sse": 267517372229,
+            "sse_ratio": 9.216367190885903,
+            "truth_bytes": 1064363
+          },
+          {
+            "bytes": 1944134,
+            "families": [
+              "coherent"
+            ],
+            "program_bytes": 60022,
+            "residual_budget": 64,
+            "residual_clip_count": 0,
+            "sse": 29198752149,
+            "sse_ratio": 1.0059399846769301,
+            "truth_bytes": 1883824
+          },
+          {
+            "bytes": 1138147,
+            "families": [
+              "inharmonic"
+            ],
+            "program_bytes": 73820,
+            "residual_budget": 32,
+            "residual_clip_count": 0,
+            "sse": 265656395476,
+            "sse_ratio": 9.15225380286014,
+            "truth_bytes": 1064039
+          },
+          {
+            "bytes": 1958037,
+            "families": [
+              "inharmonic"
+            ],
+            "program_bytes": 73820,
+            "residual_budget": 64,
+            "residual_clip_count": 0,
+            "sse": 29092981864,
+            "sse_ratio": 1.0022960426916963,
+            "truth_bytes": 1883929
+          },
+          {
+            "bytes": 1121844,
+            "families": [
+              "transient"
+            ],
+            "program_bytes": 56308,
+            "residual_budget": 32,
+            "residual_clip_count": 0,
+            "sse": 266571718590,
+            "sse_ratio": 9.183788031260482,
+            "truth_bytes": 1065248
+          },
+          {
+            "bytes": 1941418,
+            "families": [
+              "transient"
+            ],
+            "program_bytes": 56308,
+            "residual_budget": 64,
+            "residual_clip_count": 0,
+            "sse": 29185634382,
+            "sse_ratio": 1.0054880582977601,
+            "truth_bytes": 1884822
+          },
+          {
+            "bytes": 1198327,
+            "families": [
+              "coherent",
+              "inharmonic"
+            ],
+            "program_bytes": 133750,
+            "residual_budget": 32,
+            "residual_clip_count": 0,
+            "sse": 267156425889,
+            "sse_ratio": 9.203932058251604,
+            "truth_bytes": 1064289
+          },
+          {
+            "bytes": 2018150,
+            "families": [
+              "coherent",
+              "inharmonic"
+            ],
+            "program_bytes": 133750,
+            "residual_budget": 64,
+            "residual_clip_count": 0,
+            "sse": 29265577607,
+            "sse_ratio": 1.0082422200551242,
+            "truth_bytes": 1884112
+          },
+          {
+            "bytes": 1181974,
+            "families": [
+              "coherent",
+              "transient"
+            ],
+            "program_bytes": 116238,
+            "residual_budget": 32,
+            "residual_clip_count": 0,
+            "sse": 268063544172,
+            "sse_ratio": 9.235183618148573,
+            "truth_bytes": 1065448
+          },
+          {
+            "bytes": 2001441,
+            "families": [
+              "coherent",
+              "transient"
+            ],
+            "program_bytes": 116238,
+            "residual_budget": 64,
+            "residual_clip_count": 0,
+            "sse": 29357222215,
+            "sse_ratio": 1.0113995116783006,
+            "truth_bytes": 1884915
+          },
+          {
+            "bytes": 1195456,
+            "families": [
+              "inharmonic",
+              "transient"
+            ],
+            "program_bytes": 130036,
+            "residual_budget": 32,
+            "residual_clip_count": 0,
+            "sse": 266215587755,
+            "sse_ratio": 9.171518799860635,
+            "truth_bytes": 1065132
+          },
+          {
+            "bytes": 2015404,
+            "families": [
+              "inharmonic",
+              "transient"
+            ],
+            "program_bytes": 130036,
+            "residual_budget": 64,
+            "residual_clip_count": 0,
+            "sse": 29252260218,
+            "sse_ratio": 1.0077834164042614,
+            "truth_bytes": 1885080
+          },
+          {
+            "bytes": 1255605,
+            "families": [
+              "coherent",
+              "inharmonic",
+              "transient"
+            ],
+            "program_bytes": 189966,
+            "residual_budget": 32,
+            "residual_clip_count": 0,
+            "sse": 267703503881,
+            "sse_ratio": 9.2227797002358,
+            "truth_bytes": 1065351
+          },
+          {
+            "bytes": 2075417,
+            "families": [
+              "coherent",
+              "inharmonic",
+              "transient"
+            ],
+            "program_bytes": 189966,
+            "residual_budget": 64,
+            "residual_clip_count": 0,
+            "sse": 29423972634,
+            "sse_ratio": 1.0136991618525064,
+            "truth_bytes": 1885163
+          }
+        ],
+        "tested_subset_count": 7
+      },
+      "sample_rate": 48000,
+      "selected_decoded_path": "G:\\Resonith\\experiments\\artifacts\\r179-causal-program\\mozart-120s-selected-decoded.wav",
+      "selected_decoded_sha256": "cafc50eee80231dc47ce9c46155009666e6135400d5d369ce6895dd1e5d88ea1",
+      "selected_encoded_path": "G:\\Resonith\\experiments\\artifacts\\r179-causal-program\\mozart-120s-selected.resonith",
+      "selected_encoded_sha256": "f6646d85309cb15f83fd10f110c4b707821bc18d82296db5397c3bf5f737ae9c",
+      "source_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+      "wall_seconds": 976.5371291000047
+    }
+  ],
+  "schema": "resonith-r179-anonymous-causal-program-gate-1",
+  "short_results": [],
+  "status": "long-complete",
+  "test_order": [
+    "long",
+    "freeze-long",
+    "short"
+  ]
+}

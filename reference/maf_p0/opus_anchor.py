@@ -135,6 +135,9 @@ def run_opus_anchor(
     mode: str = "vbr",
     application: str = "music",
     frame_size_ms: float = 20.0,
+    phase_inversion: bool = True,
+    maximum_container_delay_ms: int = 1000,
+    expected_loss_percent: int = 0,
     tools: OpusTools | None = None,
     tools_directory: str | Path | None = None,
 ) -> OpusAnchorResult:
@@ -155,6 +158,12 @@ def run_opus_anchor(
         raise ValueError("Opus mode must be vbr, cvbr or hard-cbr")
     if application not in {"music", "speech", "auto"}:
         raise ValueError("Opus application must be music, speech or auto")
+    if frame_size_ms not in {2.5, 5.0, 10.0, 20.0, 40.0, 60.0}:
+        raise ValueError("unsupported Opus frame size")
+    if not 0 <= maximum_container_delay_ms <= 1000:
+        raise ValueError("Opus container delay is outside [0, 1000]")
+    if not 0 <= expected_loss_percent <= 100:
+        raise ValueError("Opus expected loss is outside [0, 100]")
 
     resolved = tools or resolve_opus_tools(tools_directory)
     with tempfile.TemporaryDirectory(prefix="resonith-opus-anchor-") as directory:
@@ -174,12 +183,18 @@ def run_opus_anchor(
             f"{frame_size_ms:g}",
             "--comp",
             "10",
+            "--expect-loss",
+            str(expected_loss_percent),
+            "--max-delay",
+            str(maximum_container_delay_ms),
             "--discard-comments",
             "--padding",
             "0",
         ]
         if application != "auto":
             command.append(f"--{application}")
+        if not phase_inversion:
+            command.append("--no-phase-inv")
         command.extend((str(source_path), str(payload_path)))
         _run_checked(command)
         _run_checked(
@@ -220,6 +235,10 @@ def run_opus_anchor(
         "mode": mode,
         "application": application,
         "frame_size_ms": float(frame_size_ms),
+        "complexity": 10,
+        "phase_inversion": phase_inversion,
+        "maximum_container_delay_ms": maximum_container_delay_ms,
+        "expected_loss_percent": expected_loss_percent,
         "sample_rate": int(sample_rate),
         "sample_count": int(samples.size),
         "encoder_version": resolved.encoder_version,
@@ -238,6 +257,9 @@ def run_opus_multichannel_anchor(
     mode: str = "vbr",
     application: str = "music",
     frame_size_ms: float = 20.0,
+    phase_inversion: bool = True,
+    maximum_container_delay_ms: int = 1000,
+    expected_loss_percent: int = 0,
     tools: OpusTools | None = None,
     tools_directory: str | Path | None = None,
 ) -> OpusAnchorResult:
@@ -262,6 +284,12 @@ def run_opus_multichannel_anchor(
         raise ValueError("Opus mode must be vbr, cvbr or hard-cbr")
     if application not in {"music", "speech", "auto"}:
         raise ValueError("Opus application must be music, speech or auto")
+    if frame_size_ms not in {2.5, 5.0, 10.0, 20.0, 40.0, 60.0}:
+        raise ValueError("unsupported Opus frame size")
+    if not 0 <= maximum_container_delay_ms <= 1000:
+        raise ValueError("Opus container delay is outside [0, 1000]")
+    if not 0 <= expected_loss_percent <= 100:
+        raise ValueError("Opus expected loss is outside [0, 100]")
 
     resolved = tools or resolve_opus_tools(tools_directory)
     with tempfile.TemporaryDirectory(
@@ -282,12 +310,18 @@ def run_opus_multichannel_anchor(
             f"{frame_size_ms:g}",
             "--comp",
             "10",
+            "--expect-loss",
+            str(expected_loss_percent),
+            "--max-delay",
+            str(maximum_container_delay_ms),
             "--discard-comments",
             "--padding",
             "0",
         ]
         if application != "auto":
             command.append(f"--{application}")
+        if not phase_inversion:
+            command.append("--no-phase-inv")
         command.extend((str(source_path), str(payload_path)))
         _run_checked(command)
         _run_checked(
@@ -332,6 +366,10 @@ def run_opus_multichannel_anchor(
         "mode": mode,
         "application": application,
         "frame_size_ms": float(frame_size_ms),
+        "complexity": 10,
+        "phase_inversion": phase_inversion,
+        "maximum_container_delay_ms": maximum_container_delay_ms,
+        "expected_loss_percent": expected_loss_percent,
         "sample_rate": int(sample_rate),
         "frame_count": int(samples.shape[0]),
         "channel_count": int(samples.shape[1]),

@@ -1,0 +1,103 @@
+{
+  "receipts": [
+    {
+      "command": [
+        "G:\\Resonith\\artifacts\\tools\\python-3.14.6-amd64\\python.exe",
+        "-I",
+        "-S",
+        "-B",
+        "-X",
+        "pycache_prefix=G:\\Resonith\\artifacts\\r260-import-cache-startup-probe-v4\\isolated-pycache",
+        "G:\\Resonith\\experiments\\r260_import_cache_startup_probe.py",
+        "G:\\Resonith\\artifacts\\r260-import-cache-startup-probe-v4\\isolated.json"
+      ],
+      "cwd": "G:\\Resonith",
+      "environment_contract": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "0",
+        "PYTHONPYCACHEPREFIX": "G:\\Resonith\\artifacts\\r260-import-cache-startup-probe-v4\\isolated-pycache"
+      },
+      "exit_code": 0,
+      "name": "isolated",
+      "output_existed_before": false,
+      "output_sha256": "731e70bf5b7529aa20147aefcda29bc55c425f4f617ccca7b4235e04a124f0a1",
+      "prefix_entries_after": [],
+      "prefix_existed_before": false,
+      "probe_sha256": "63df2cef060307bc8b401b15b840e52438adca8bd249b71455f9b58dd0ba7c4e",
+      "python_sha256": "03168c01b7b7491423350e82c26fee71f35b43694d1319d3c668bda6903a0c38",
+      "schema": "resonith-r260-import-cache-probe-parent-receipt-1",
+      "source_absent_from_raw_sys_path": true,
+      "source_absent_from_resolved_sys_path": true,
+      "source_record": {
+        "key_type_module": "builtins",
+        "key_type_name": "str",
+        "lexical_key": "g:\\resonith\\experiments\\r260_import_cache_startup_probe.py",
+        "raw_key": "G:\\Resonith\\experiments\\r260_import_cache_startup_probe.py",
+        "resolved_target": "G:\\Resonith\\experiments\\r260_import_cache_startup_probe.py",
+        "value_is_none": true,
+        "value_type_module": "builtins",
+        "value_type_name": "NoneType"
+      },
+      "source_record_count": 1,
+      "source_reparse_entries": [],
+      "source_spelling_matches_bound_probe": true,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e4eeb45aac0ab1f19b4420a8d7f2a8f70b622a4ad7c92f0d716afdabb34ef7a6",
+      "timed_out": false
+    },
+    {
+      "command": [
+        "G:\\Resonith\\artifacts\\tools\\python-3.14.6-amd64\\python.exe",
+        "-S",
+        "-P",
+        "-B",
+        "-X",
+        "pycache_prefix=G:\\Resonith\\artifacts\\r260-import-cache-startup-probe-v4\\safe-path-pycache",
+        "G:\\Resonith\\experiments\\r260_import_cache_startup_probe.py",
+        "G:\\Resonith\\artifacts\\r260-import-cache-startup-probe-v4\\safe-path.json"
+      ],
+      "cwd": "G:\\Resonith",
+      "environment_contract": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "0",
+        "PYTHONPYCACHEPREFIX": "G:\\Resonith\\artifacts\\r260-import-cache-startup-probe-v4\\safe-path-pycache"
+      },
+      "exit_code": 0,
+      "name": "safe-path",
+      "output_existed_before": false,
+      "output_sha256": "e5d44a31ee5d95492e3bb11ccc90bf926e5f75ef83524a4c54db4e38a15be3dd",
+      "prefix_entries_after": [],
+      "prefix_existed_before": false,
+      "probe_sha256": "63df2cef060307bc8b401b15b840e52438adca8bd249b71455f9b58dd0ba7c4e",
+      "python_sha256": "03168c01b7b7491423350e82c26fee71f35b43694d1319d3c668bda6903a0c38",
+      "schema": "resonith-r260-import-cache-probe-parent-receipt-1",
+      "source_absent_from_raw_sys_path": true,
+      "source_absent_from_resolved_sys_path": true,
+      "source_record": {
+        "key_type_module": "builtins",
+        "key_type_name": "str",
+        "lexical_key": "g:\\resonith\\experiments\\r260_import_cache_startup_probe.py",
+        "raw_key": "G:\\Resonith\\experiments\\r260_import_cache_startup_probe.py",
+        "resolved_target": "G:\\Resonith\\experiments\\r260_import_cache_startup_probe.py",
+        "value_is_none": true,
+        "value_type_module": "builtins",
+        "value_type_name": "NoneType"
+      },
+      "source_record_count": 1,
+      "source_reparse_entries": [],
+      "source_spelling_matches_bound_probe": true,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "79949c6b092a5837e8452f37586e6968fa9cb7123d8c1b7392b152781aac006e",
+      "timed_out": false
+    }
+  ],
+  "schema": "resonith-r260-import-cache-probe-summary-1"
+}

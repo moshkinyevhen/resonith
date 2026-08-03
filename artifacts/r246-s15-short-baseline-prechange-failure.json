@@ -1,0 +1,61 @@
+{
+  "authority_sha256": "47ee9d8cd36e48097cd5ff50727806dfc0850d0ee2fdf2e9322993f65b922a40",
+  "controller_wall_seconds": 361.7872238000127,
+  "error": "_MonitoredFailure: R-232 worker exited 1",
+  "monitored_failure_evidence": {
+    "exit_code": 1,
+    "hard_cpu_limit_seconds": 180.0,
+    "job_peak_memory_bytes": 116846592,
+    "memory_limit_bytes": 536870912,
+    "mode": "profile",
+    "process_peak_working_set_bytes": 140308480,
+    "retained_limit_bytes": 33554432,
+    "staging_disk_high_water_bytes": 2271058,
+    "stderr_bytes": 1295,
+    "stderr_excerpt": "Traceback (most recent call last):\r\n  File \"G:\\Resonith\\experiments\\r243_s15_short_baseline.py\", line 640, in <module>\r\n    main()\r\n    ~~~~^^\r\n  File \"G:\\Resonith\\experiments\\r243_s15_short_baseline.py\", line 633, in main\r\n    _profile_worker(arguments.authority, arguments.authority_sha256, worker_output)\r\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"G:\\Resonith\\experiments\\r243_s15_short_baseline.py\", line 328, in _profile_worker\r\n    pstats.Stats(profile_path, stream=stream).strip_dirs().sort_stats(sort_key).print_stats()\r\n    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\n  File \"G:\\Resonith\\artifacts\\tools\\python-3.14.6-amd64\\Lib\\pstats.py\", line 114, in __init__\r\n    self.init(arg)\r\n    ~~~~~~~~~^^^^^\r\n  File \"G:\\Resonith\\artifacts\\tools\\python-3.14.6-amd64\\Lib\\pstats.py\", line 128, in init\r\n    self.load_stats(arg)\r\n    ~~~~~~~~~~~~~~~^^^^^\r\n  File \"G:\\Resonith\\artifacts\\tools\\python-3.14.6-amd64\\Lib\\pstats.py\", line 154, in load_stats\r\n    raise TypeError(\"Cannot create or construct a %r object from %r\"\r\n                    % (self.__class__, arg))\r\nTypeError: Cannot create or construct a <class 'pstats.Stats'> object from WindowsPath('G:/Resonith/artifacts/r246-s15-short-baseline-prechange.staging/profile/rescored.prof')\r\n",
+    "stderr_sha256": "4d1fc99eee586b1033fc9758eb7e58a0dc4f72f68ba52b2755c846322c306972",
+    "stdout_bytes": 0,
+    "stdout_excerpt": "",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wall_limit_seconds": 180.0,
+    "wall_seconds": 118.07314870000118
+  },
+  "phase_state": {
+    "completed_modes": [
+      "timing"
+    ],
+    "last_validated": {
+      "authority_sha256": "47ee9d8cd36e48097cd5ff50727806dfc0850d0ee2fdf2e9322993f65b922a40",
+      "git_commit": "ebfb185dd7c8de5240ff928a311226a29899a46b",
+      "source_sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46",
+      "stage": "timing"
+    },
+    "phase": "profile-worker",
+    "phase_at_failure": "profile-worker",
+    "resources": {
+      "timing": {
+        "exit_code": 0,
+        "hard_cpu_limit_seconds": 300.0,
+        "job_peak_memory_bytes": 117219328,
+        "memory_limit_bytes": 536870912,
+        "mode": "timing",
+        "process_cpu_proxy_seconds": 226.671875,
+        "process_peak_working_set_bytes": 140107776,
+        "retained_limit_bytes": 33554432,
+        "staging_disk_high_water_bytes": 1822785,
+        "stderr_bytes": 0,
+        "stderr_excerpt": "",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 0,
+        "stdout_excerpt": "",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wall_limit_seconds": 300.0,
+        "wall_seconds": 230.15138759999536
+      }
+    }
+  },
+  "schema": "resonith-r246-s15-phase-a-failure-1",
+  "staging_cleanup_error": null,
+  "status": "FAIL",
+  "traceback": "Traceback (most recent call last):\n  File \"G:\\Resonith\\experiments\\r243_s15_short_baseline.py\", line 548, in _controller\n    state[\"resources\"][mode] = gate._run_monitored(\n                               ~~~~~~~~~~~~~~~~~~~^\n        command, STAGING_OUTPUT, STAGING_OUTPUT / mode,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<2 lines>...\n        retained_limit=RETAINED_LIMIT, output_limit=LOG_LIMIT,\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"G:\\Resonith\\experiments\\r232_s15_source_filter_gate.py\", line 994, in _run_monitored\n    raise _MonitoredFailure(message, evidence) from caught\nr232_s15_source_filter_gate._MonitoredFailure: R-232 worker exited 1\n"
+}

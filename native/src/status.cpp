@@ -28,6 +28,8 @@ extern "C" const char* resonith_status_string(resonith_status status) {
         return "not found";
     case RESONITH_STATUS_UNSUPPORTED_FEATURE:
         return "unsupported feature";
+    case RESONITH_STATUS_OUT_OF_MEMORY:
+        return "out of memory";
     }
     return "unknown status";
 }

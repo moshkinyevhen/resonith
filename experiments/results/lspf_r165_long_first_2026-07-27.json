@@ -1,0 +1,1166 @@
+{
+  "generation_fixation": "not applicable: proxy diagnostic, no codec generation",
+  "long_frontier_frozen": true,
+  "long_results": [
+    {
+      "active_factor_count": 0,
+      "automatic_plan": {
+        "candidate_tile_bytes": 268435456,
+        "checkpoint_frames": 384000,
+        "convolution_depths": [
+          2,
+          4,
+          8,
+          16
+        ],
+        "decoder_profile": "Main-0 bounded integer",
+        "duration_class": "long",
+        "duration_pareto_preservation": true,
+        "encoder_level": "Foundry",
+        "exact_truth_fallback": true,
+        "factor_counts": [
+          2,
+          4,
+          6,
+          8
+        ],
+        "incumbent_candidate_required": true,
+        "maximum_dictionary_lifetime_frames": 5760000,
+        "maximum_parallel_fields": 8,
+        "quality_floors_required": true,
+        "reasons": [
+          "offline time budget admits Foundry search",
+          "long input enables amortization, drift, motif, and checkpoint gates"
+        ],
+        "scales_samples": [
+          64,
+          128,
+          256,
+          512,
+          2048,
+          8192,
+          32768,
+          65536,
+          131072
+        ],
+        "schema": "resonith-r162-lspf-analysis-plan-1",
+        "skipped_families": [],
+        "syntax_family": "Resonith/MAF"
+      },
+      "basis_zlib_bytes": 0,
+      "channels": 2,
+      "correction_storage": "signed-s16le",
+      "correction_zlib_bytes": 19874458,
+      "diagnostic_execution_plan": {
+        "factor_language": {
+          "factor_count": 2,
+          "fft_samples": 1024,
+          "hop_samples": 256,
+          "iterations": 8,
+          "kernel_frames": 4
+        },
+        "field_language": {
+          "maximum_components_per_factor": 1,
+          "origin_hop": 8192,
+          "scales": [
+            512,
+            2048,
+            8192
+          ]
+        },
+        "scope": "bounded CPU fast diagnostic; complete every-origin C++23/CUDA Foundry remains an R-161 milestone"
+      },
+      "duration_class": "long",
+      "duration_seconds": 120.0,
+      "event_bytes": 0,
+      "exact_reconstruction": true,
+      "explained_energy_fraction": 0.0,
+      "factor_count": 2,
+      "frames": 5760000,
+      "id": "mozart-original",
+      "independent_zlib_proxy_bytes": 19874458,
+      "latent_component_count": 0,
+      "latent_occurrence_count": 0,
+      "oracle": {
+        "active_factor_count": 0,
+        "exact_integer_reconstruction": true,
+        "factor_count": 2,
+        "fields": [
+          {
+            "best_candidate_byte_delta": 481,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 2,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 0,
+            "direct_proxy_bytes": 0,
+            "evaluated_cell_count": 4220,
+            "evaluated_pair_count": 2965958,
+            "event_map_bytes": 0,
+            "exact_integer_reconstruction": true,
+            "factor_index": 0,
+            "fitted_candidate_count": 17,
+            "fractional_phase_alignment_verified": false,
+            "frames": 5760000,
+            "latent_component_count": 0,
+            "latent_occurrence_count": 0,
+            "origin_hop": 8192,
+            "reconstruction_sha256": "2178d3b8f3276125941b82ea0b31db7ad015e379105a94191fb8cddcdb2fa7c5",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 128,
+            "source_sha256": "2178d3b8f3276125941b82ea0b31db7ad015e379105a94191fb8cddcdb2fa7c5",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 0
+          },
+          {
+            "best_candidate_byte_delta": 69,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 2,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 1,
+            "direct_proxy_bytes": 0,
+            "evaluated_cell_count": 4220,
+            "evaluated_pair_count": 2965958,
+            "event_map_bytes": 0,
+            "exact_integer_reconstruction": true,
+            "factor_index": 1,
+            "fitted_candidate_count": 46,
+            "fractional_phase_alignment_verified": false,
+            "frames": 5760000,
+            "latent_component_count": 0,
+            "latent_occurrence_count": 0,
+            "origin_hop": 8192,
+            "reconstruction_sha256": "73d2a51cafd6efc36a86ca62b8f9960aaf2d9b1d513a7bafea626a166dd2452f",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 128,
+            "source_sha256": "73d2a51cafd6efc36a86ca62b8f9960aaf2d9b1d513a7bafea626a166dd2452f",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 0
+          }
+        ],
+        "latent_component_count": 0,
+        "latent_occurrence_count": 0,
+        "one_final_mixture_truth": true,
+        "proposer": {
+          "exact_integer_reconstruction": true,
+          "factor_count": 2,
+          "fft_samples": 1024,
+          "finite_non_circular_kernel": true,
+          "hop_samples": 256,
+          "iterations": 8,
+          "kernel_frames": 4,
+          "mixture_phase_preserved": true,
+          "one_final_time_domain_truth": true,
+          "reconstruction_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+          "relative_magnitude_factorization_error": 0.5539756613432291,
+          "schema": "resonith-r161-convolutive-anonymous-field-1",
+          "semantic_labels": false,
+          "shared_cross_channel_masks": true,
+          "source_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+          "status": "encoder-side proposer; no convolutive syntax admitted"
+        },
+        "reconstruction_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+        "schema": "resonith-r161-convolutive-factorized-lspf-1",
+        "semantic_labels": false,
+        "source_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+        "status": "encoder-side convolutive proposer plus exact Basis oracle; complete stream RDO pending"
+      },
+      "path": "G:\\Orkela\\comparison\\public-benchmark-2026-07-26\\mozart-original.wav",
+      "proxy_header_bytes": 96,
+      "realtime_factor": 4.0398943441667745,
+      "reconstruction_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+      "sample_rate": 48000,
+      "selection": {
+        "axis_results": {
+          "convolutive-lspf": {
+            "dual_axis_refinement_required": false,
+            "dual_axis_success": false,
+            "matched_bytes": true,
+            "quality_improved": false,
+            "quality_success": false,
+            "rate_success": false,
+            "successful_pareto_candidate": false
+          },
+          "independent-truth": {
+            "dual_axis_refinement_required": false,
+            "dual_axis_success": false,
+            "matched_bytes": true,
+            "quality_improved": false,
+            "quality_success": false,
+            "rate_success": false,
+            "successful_pareto_candidate": false
+          }
+        },
+        "candidates": [
+          {
+            "bounded_decoder": true,
+            "candidate_id": "independent-truth",
+            "complete_bytes": 19874458,
+            "quality_eligible": true,
+            "quality_utility": 1.0
+          },
+          {
+            "bounded_decoder": true,
+            "candidate_id": "convolutive-lspf",
+            "complete_bytes": 19874554,
+            "quality_eligible": true,
+            "quality_utility": 1.0
+          }
+        ],
+        "cross_duration_averaging": false,
+        "dual_axis_refinement_completed": true,
+        "dual_axis_refinement_required_candidate_ids": [],
+        "duration_class": "long",
+        "fallback_candidate_id": "independent-truth",
+        "generation_fixation_allowed": true,
+        "incumbent_candidate_id": "independent-truth",
+        "matched_byte_tolerance": 19874,
+        "minimum_quality_delta": 0.0,
+        "rejected": {
+          "convolutive-lspf": "complete-bytes-or-equal-byte-quality"
+        },
+        "retained_pareto_candidate_ids": [
+          "independent-truth"
+        ],
+        "schema": "resonith-r165-duration-pareto-selection-1",
+        "selected_candidate_id": "independent-truth",
+        "selection_order": "quality eligibility, bounded decoder, complete bytes, equal-byte quality utility, stable candidate id",
+        "successful_candidate_ids": []
+      },
+      "source_pcm_bytes": 23040000,
+      "source_sha256": "e66204fb8d1d736f65ce8156a4af9aef0c67c944134b37c83754aa2ee8f5aa48",
+      "status": "Real PCM / exact lossless structural proxy / not complete Resonith or Opus comparable",
+      "structured_saving_bytes": -96,
+      "structured_saving_percent": -0.0004830320404209262,
+      "structured_zlib_proxy_bytes": 19874554,
+      "wall_seconds": 484.787321300013
+    }
+  ],
+  "schema": "resonith-r165-long-first-duration-gate-1",
+  "short_results": [
+    {
+      "active_factor_count": 3,
+      "automatic_plan": {
+        "candidate_tile_bytes": 268435456,
+        "checkpoint_frames": 88200,
+        "convolution_depths": [
+          2,
+          4,
+          8
+        ],
+        "decoder_profile": "Main-0 bounded integer",
+        "duration_class": "short",
+        "duration_pareto_preservation": true,
+        "encoder_level": "Foundry",
+        "exact_truth_fallback": true,
+        "factor_counts": [
+          2,
+          4,
+          6,
+          8
+        ],
+        "incumbent_candidate_required": true,
+        "maximum_dictionary_lifetime_frames": 529200,
+        "maximum_parallel_fields": 8,
+        "quality_floors_required": true,
+        "reasons": [
+          "offline time budget admits Foundry search",
+          "short input emphasizes local boundaries and transforms"
+        ],
+        "scales_samples": [
+          64,
+          128,
+          256,
+          512,
+          2048,
+          8192
+        ],
+        "schema": "resonith-r162-lspf-analysis-plan-1",
+        "skipped_families": [],
+        "syntax_family": "Resonith/MAF"
+      },
+      "basis_zlib_bytes": 3033,
+      "channels": 1,
+      "correction_storage": "signed-s16le",
+      "correction_zlib_bytes": 805119,
+      "diagnostic_execution_plan": {
+        "factor_language": {
+          "factor_count": 4,
+          "fft_samples": 1024,
+          "hop_samples": 256,
+          "iterations": 24,
+          "kernel_frames": 8
+        },
+        "field_language": {
+          "maximum_components_per_factor": 1,
+          "origin_hop": 512,
+          "scales": [
+            512,
+            2048,
+            8192
+          ]
+        },
+        "scope": "bounded CPU fast diagnostic; complete every-origin C++23/CUDA Foundry remains an R-161 milestone"
+      },
+      "duration_class": "short",
+      "duration_seconds": 12.0,
+      "event_bytes": 911,
+      "exact_reconstruction": true,
+      "explained_energy_fraction": 0.15514621430893583,
+      "factor_count": 4,
+      "frames": 529200,
+      "id": "ebu-female-speech-en",
+      "independent_zlib_proxy_bytes": 805329,
+      "latent_component_count": 3,
+      "latent_occurrence_count": 144,
+      "oracle": {
+        "active_factor_count": 3,
+        "exact_integer_reconstruction": true,
+        "factor_count": 4,
+        "fields": [
+          {
+            "best_candidate_byte_delta": -197,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 1,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 1,
+            "direct_proxy_bytes": 20111,
+            "evaluated_cell_count": 1033,
+            "evaluated_pair_count": 533028,
+            "event_map_bytes": 156,
+            "exact_integer_reconstruction": true,
+            "factor_index": 0,
+            "fitted_candidate_count": 24,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 1,
+            "latent_occurrence_count": 23,
+            "origin_hop": 512,
+            "reconstruction_sha256": "894f4a8c1ca2a9f0dd4bfee03825c36ce994d761371f687e372606dabf03e241",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "894f4a8c1ca2a9f0dd4bfee03825c36ce994d761371f687e372606dabf03e241",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 19914
+          },
+          {
+            "best_candidate_byte_delta": -76,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 1,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 1,
+            "direct_proxy_bytes": 2766,
+            "evaluated_cell_count": 1033,
+            "evaluated_pair_count": 533028,
+            "event_map_bytes": 25,
+            "exact_integer_reconstruction": true,
+            "factor_index": 1,
+            "fitted_candidate_count": 50,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 1,
+            "latent_occurrence_count": 3,
+            "origin_hop": 512,
+            "reconstruction_sha256": "84a2ecc573b204571b0dbb527779842f6579e82e07d3bd974e36f31667bc3d02",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "84a2ecc573b204571b0dbb527779842f6579e82e07d3bd974e36f31667bc3d02",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 2690
+          },
+          {
+            "best_candidate_byte_delta": 155,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 1,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 3,
+            "direct_proxy_bytes": 0,
+            "evaluated_cell_count": 3081,
+            "evaluated_pair_count": 1580616,
+            "event_map_bytes": 0,
+            "exact_integer_reconstruction": true,
+            "factor_index": 2,
+            "fitted_candidate_count": 175,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 0,
+            "latent_occurrence_count": 0,
+            "origin_hop": 512,
+            "reconstruction_sha256": "1792cfb85d04eec2c7869cd81d5d68a85342a8ce52f7bf80fb45e098fb20a8e5",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "1792cfb85d04eec2c7869cd81d5d68a85342a8ce52f7bf80fb45e098fb20a8e5",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 0
+          },
+          {
+            "best_candidate_byte_delta": -6813,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 1,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 1,
+            "direct_proxy_bytes": 100380,
+            "evaluated_cell_count": 1033,
+            "evaluated_pair_count": 533028,
+            "event_map_bytes": 730,
+            "exact_integer_reconstruction": true,
+            "factor_index": 3,
+            "fitted_candidate_count": 24,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 1,
+            "latent_occurrence_count": 118,
+            "origin_hop": 512,
+            "reconstruction_sha256": "b3bbb187041b645d879d88c022b2419e36d615d8a65282c79b0b234ac2c770bd",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "b3bbb187041b645d879d88c022b2419e36d615d8a65282c79b0b234ac2c770bd",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 93567
+          }
+        ],
+        "latent_component_count": 3,
+        "latent_occurrence_count": 144,
+        "one_final_mixture_truth": true,
+        "proposer": {
+          "exact_integer_reconstruction": true,
+          "factor_count": 4,
+          "fft_samples": 1024,
+          "finite_non_circular_kernel": true,
+          "hop_samples": 256,
+          "iterations": 24,
+          "kernel_frames": 8,
+          "mixture_phase_preserved": true,
+          "one_final_time_domain_truth": true,
+          "reconstruction_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+          "relative_magnitude_factorization_error": 0.48547207785189994,
+          "schema": "resonith-r161-convolutive-anonymous-field-1",
+          "semantic_labels": false,
+          "shared_cross_channel_masks": true,
+          "source_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+          "status": "encoder-side proposer; no convolutive syntax admitted"
+        },
+        "reconstruction_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+        "schema": "resonith-r161-convolutive-factorized-lspf-1",
+        "semantic_labels": false,
+        "source_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+        "status": "encoder-side convolutive proposer plus exact Basis oracle; complete stream RDO pending"
+      },
+      "path": "G:\\Resonith\\artifacts\\corpus\\prepared-r111\\ebu-female-speech-en.wav",
+      "proxy_header_bytes": 176,
+      "realtime_factor": 12.338404816667511,
+      "reconstruction_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+      "sample_rate": 44100,
+      "selection": {
+        "axis_results": {
+          "convolutive-lspf": {
+            "dual_axis_refinement_required": false,
+            "dual_axis_success": false,
+            "matched_bytes": false,
+            "quality_improved": false,
+            "quality_success": false,
+            "rate_success": false,
+            "successful_pareto_candidate": false
+          },
+          "independent-truth": {
+            "dual_axis_refinement_required": false,
+            "dual_axis_success": false,
+            "matched_bytes": true,
+            "quality_improved": false,
+            "quality_success": false,
+            "rate_success": false,
+            "successful_pareto_candidate": false
+          }
+        },
+        "candidates": [
+          {
+            "bounded_decoder": true,
+            "candidate_id": "independent-truth",
+            "complete_bytes": 805329,
+            "quality_eligible": true,
+            "quality_utility": 1.0
+          },
+          {
+            "bounded_decoder": true,
+            "candidate_id": "convolutive-lspf",
+            "complete_bytes": 809239,
+            "quality_eligible": true,
+            "quality_utility": 1.0
+          }
+        ],
+        "cross_duration_averaging": false,
+        "dual_axis_refinement_completed": true,
+        "dual_axis_refinement_required_candidate_ids": [],
+        "duration_class": "short",
+        "fallback_candidate_id": "independent-truth",
+        "generation_fixation_allowed": true,
+        "incumbent_candidate_id": "independent-truth",
+        "matched_byte_tolerance": 805,
+        "minimum_quality_delta": 0.0,
+        "rejected": {
+          "convolutive-lspf": "complete-bytes-or-equal-byte-quality"
+        },
+        "retained_pareto_candidate_ids": [
+          "independent-truth"
+        ],
+        "schema": "resonith-r165-duration-pareto-selection-1",
+        "selected_candidate_id": "independent-truth",
+        "selection_order": "quality eligibility, bounded decoder, complete bytes, equal-byte quality utility, stable candidate id",
+        "successful_candidate_ids": []
+      },
+      "source_pcm_bytes": 1058400,
+      "source_sha256": "2403c54eb923c09eda7f2ad7c0fec16642c4b510b131e66ac68289fe0f504e7f",
+      "status": "Real PCM / exact lossless structural proxy / not complete Resonith or Opus comparable",
+      "structured_saving_bytes": -3910,
+      "structured_saving_percent": -0.48551585749426635,
+      "structured_zlib_proxy_bytes": 809239,
+      "wall_seconds": 148.06085780001013
+    },
+    {
+      "active_factor_count": 0,
+      "automatic_plan": {
+        "candidate_tile_bytes": 268435456,
+        "checkpoint_frames": 88200,
+        "convolution_depths": [
+          2,
+          4,
+          8
+        ],
+        "decoder_profile": "Main-0 bounded integer",
+        "duration_class": "short",
+        "duration_pareto_preservation": true,
+        "encoder_level": "Foundry",
+        "exact_truth_fallback": true,
+        "factor_counts": [
+          2,
+          4,
+          6,
+          8
+        ],
+        "incumbent_candidate_required": true,
+        "maximum_dictionary_lifetime_frames": 529200,
+        "maximum_parallel_fields": 8,
+        "quality_floors_required": true,
+        "reasons": [
+          "offline time budget admits Foundry search",
+          "short input emphasizes local boundaries and transforms"
+        ],
+        "scales_samples": [
+          64,
+          128,
+          256,
+          512,
+          2048,
+          8192
+        ],
+        "schema": "resonith-r162-lspf-analysis-plan-1",
+        "skipped_families": [],
+        "syntax_family": "Resonith/MAF"
+      },
+      "basis_zlib_bytes": 0,
+      "channels": 2,
+      "correction_storage": "signed-s16le",
+      "correction_zlib_bytes": 1302123,
+      "diagnostic_execution_plan": {
+        "factor_language": {
+          "factor_count": 4,
+          "fft_samples": 1024,
+          "hop_samples": 256,
+          "iterations": 24,
+          "kernel_frames": 8
+        },
+        "field_language": {
+          "maximum_components_per_factor": 1,
+          "origin_hop": 512,
+          "scales": [
+            512,
+            2048,
+            8192
+          ]
+        },
+        "scope": "bounded CPU fast diagnostic; complete every-origin C++23/CUDA Foundry remains an R-161 milestone"
+      },
+      "duration_class": "short",
+      "duration_seconds": 12.0,
+      "event_bytes": 0,
+      "exact_reconstruction": true,
+      "explained_energy_fraction": 0.0,
+      "factor_count": 4,
+      "frames": 529200,
+      "id": "ebu-dense-orchestra",
+      "independent_zlib_proxy_bytes": 1302123,
+      "latent_component_count": 0,
+      "latent_occurrence_count": 0,
+      "oracle": {
+        "active_factor_count": 0,
+        "exact_integer_reconstruction": true,
+        "factor_count": 4,
+        "fields": [
+          {
+            "best_candidate_byte_delta": null,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 2,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 3,
+            "direct_proxy_bytes": 0,
+            "evaluated_cell_count": 6162,
+            "evaluated_pair_count": 6325545,
+            "event_map_bytes": 0,
+            "exact_integer_reconstruction": true,
+            "factor_index": 0,
+            "fitted_candidate_count": 0,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 0,
+            "latent_occurrence_count": 0,
+            "origin_hop": 512,
+            "reconstruction_sha256": "96d820541bfef7a94963e85c71a389762e2fa39231756841e85c1937254bc9a5",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "96d820541bfef7a94963e85c71a389762e2fa39231756841e85c1937254bc9a5",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 0
+          },
+          {
+            "best_candidate_byte_delta": null,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 2,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 3,
+            "direct_proxy_bytes": 0,
+            "evaluated_cell_count": 6162,
+            "evaluated_pair_count": 6325545,
+            "event_map_bytes": 0,
+            "exact_integer_reconstruction": true,
+            "factor_index": 1,
+            "fitted_candidate_count": 0,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 0,
+            "latent_occurrence_count": 0,
+            "origin_hop": 512,
+            "reconstruction_sha256": "200a610f13a4fe846b6ecef9cf1684354d2ba348645fdfb1e78946fd2a768747",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "200a610f13a4fe846b6ecef9cf1684354d2ba348645fdfb1e78946fd2a768747",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 0
+          },
+          {
+            "best_candidate_byte_delta": null,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 2,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 3,
+            "direct_proxy_bytes": 0,
+            "evaluated_cell_count": 6162,
+            "evaluated_pair_count": 6325545,
+            "event_map_bytes": 0,
+            "exact_integer_reconstruction": true,
+            "factor_index": 2,
+            "fitted_candidate_count": 0,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 0,
+            "latent_occurrence_count": 0,
+            "origin_hop": 512,
+            "reconstruction_sha256": "207e3dfa873ca5dc0265af18409506df07a3cefb96b11befa364e2c82219db79",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "207e3dfa873ca5dc0265af18409506df07a3cefb96b11befa364e2c82219db79",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 0
+          },
+          {
+            "best_candidate_byte_delta": null,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 2,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 3,
+            "direct_proxy_bytes": 0,
+            "evaluated_cell_count": 6162,
+            "evaluated_pair_count": 6325545,
+            "event_map_bytes": 0,
+            "exact_integer_reconstruction": true,
+            "factor_index": 3,
+            "fitted_candidate_count": 0,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 0,
+            "latent_occurrence_count": 0,
+            "origin_hop": 512,
+            "reconstruction_sha256": "c01a85708f0d1d65a27ec03061fb1ec5f7af5245a0d1397204d5450ebb32a326",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "c01a85708f0d1d65a27ec03061fb1ec5f7af5245a0d1397204d5450ebb32a326",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 0
+          }
+        ],
+        "latent_component_count": 0,
+        "latent_occurrence_count": 0,
+        "one_final_mixture_truth": true,
+        "proposer": {
+          "exact_integer_reconstruction": true,
+          "factor_count": 4,
+          "fft_samples": 1024,
+          "finite_non_circular_kernel": true,
+          "hop_samples": 256,
+          "iterations": 24,
+          "kernel_frames": 8,
+          "mixture_phase_preserved": true,
+          "one_final_time_domain_truth": true,
+          "reconstruction_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+          "relative_magnitude_factorization_error": 0.11274581038858356,
+          "schema": "resonith-r161-convolutive-anonymous-field-1",
+          "semantic_labels": false,
+          "shared_cross_channel_masks": true,
+          "source_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+          "status": "encoder-side proposer; no convolutive syntax admitted"
+        },
+        "reconstruction_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+        "schema": "resonith-r161-convolutive-factorized-lspf-1",
+        "semantic_labels": false,
+        "source_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+        "status": "encoder-side convolutive proposer plus exact Basis oracle; complete stream RDO pending"
+      },
+      "path": "G:\\Resonith\\artifacts\\corpus\\prepared-r111\\ebu-dense-orchestra.wav",
+      "proxy_header_bytes": 128,
+      "realtime_factor": 6.401654200000242,
+      "reconstruction_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+      "sample_rate": 44100,
+      "selection": {
+        "axis_results": {
+          "convolutive-lspf": {
+            "dual_axis_refinement_required": false,
+            "dual_axis_success": false,
+            "matched_bytes": true,
+            "quality_improved": false,
+            "quality_success": false,
+            "rate_success": false,
+            "successful_pareto_candidate": false
+          },
+          "independent-truth": {
+            "dual_axis_refinement_required": false,
+            "dual_axis_success": false,
+            "matched_bytes": true,
+            "quality_improved": false,
+            "quality_success": false,
+            "rate_success": false,
+            "successful_pareto_candidate": false
+          }
+        },
+        "candidates": [
+          {
+            "bounded_decoder": true,
+            "candidate_id": "independent-truth",
+            "complete_bytes": 1302123,
+            "quality_eligible": true,
+            "quality_utility": 1.0
+          },
+          {
+            "bounded_decoder": true,
+            "candidate_id": "convolutive-lspf",
+            "complete_bytes": 1302251,
+            "quality_eligible": true,
+            "quality_utility": 1.0
+          }
+        ],
+        "cross_duration_averaging": false,
+        "dual_axis_refinement_completed": true,
+        "dual_axis_refinement_required_candidate_ids": [],
+        "duration_class": "short",
+        "fallback_candidate_id": "independent-truth",
+        "generation_fixation_allowed": true,
+        "incumbent_candidate_id": "independent-truth",
+        "matched_byte_tolerance": 1302,
+        "minimum_quality_delta": 0.0,
+        "rejected": {
+          "convolutive-lspf": "complete-bytes-or-equal-byte-quality"
+        },
+        "retained_pareto_candidate_ids": [
+          "independent-truth"
+        ],
+        "schema": "resonith-r165-duration-pareto-selection-1",
+        "selected_candidate_id": "independent-truth",
+        "selection_order": "quality eligibility, bounded decoder, complete bytes, equal-byte quality utility, stable candidate id",
+        "successful_candidate_ids": []
+      },
+      "source_pcm_bytes": 2116800,
+      "source_sha256": "da554fb9f1d356b34563bd0a5e0e07d71b9ffb04464b81919e0ec528a457409f",
+      "status": "Real PCM / exact lossless structural proxy / not complete Resonith or Opus comparable",
+      "structured_saving_bytes": -128,
+      "structured_saving_percent": -0.009830100535817277,
+      "structured_zlib_proxy_bytes": 1302251,
+      "wall_seconds": 76.8198504000029
+    },
+    {
+      "active_factor_count": 0,
+      "automatic_plan": {
+        "candidate_tile_bytes": 268435456,
+        "checkpoint_frames": 88200,
+        "convolution_depths": [
+          2,
+          4,
+          8
+        ],
+        "decoder_profile": "Main-0 bounded integer",
+        "duration_class": "short",
+        "duration_pareto_preservation": true,
+        "encoder_level": "Foundry",
+        "exact_truth_fallback": true,
+        "factor_counts": [
+          2,
+          4,
+          6,
+          8
+        ],
+        "incumbent_candidate_required": true,
+        "maximum_dictionary_lifetime_frames": 529200,
+        "maximum_parallel_fields": 8,
+        "quality_floors_required": true,
+        "reasons": [
+          "offline time budget admits Foundry search",
+          "short input emphasizes local boundaries and transforms"
+        ],
+        "scales_samples": [
+          64,
+          128,
+          256,
+          512,
+          2048,
+          8192
+        ],
+        "schema": "resonith-r162-lspf-analysis-plan-1",
+        "skipped_families": [],
+        "syntax_family": "Resonith/MAF"
+      },
+      "basis_zlib_bytes": 0,
+      "channels": 2,
+      "correction_storage": "signed-s16le",
+      "correction_zlib_bytes": 1395427,
+      "diagnostic_execution_plan": {
+        "factor_language": {
+          "factor_count": 4,
+          "fft_samples": 1024,
+          "hop_samples": 256,
+          "iterations": 24,
+          "kernel_frames": 8
+        },
+        "field_language": {
+          "maximum_components_per_factor": 1,
+          "origin_hop": 512,
+          "scales": [
+            512,
+            2048,
+            8192
+          ]
+        },
+        "scope": "bounded CPU fast diagnostic; complete every-origin C++23/CUDA Foundry remains an R-161 milestone"
+      },
+      "duration_class": "short",
+      "duration_seconds": 12.0,
+      "event_bytes": 0,
+      "exact_reconstruction": true,
+      "explained_energy_fraction": 0.0,
+      "factor_count": 4,
+      "frames": 529200,
+      "id": "ebu-pink-noise",
+      "independent_zlib_proxy_bytes": 1395427,
+      "latent_component_count": 0,
+      "latent_occurrence_count": 0,
+      "oracle": {
+        "active_factor_count": 0,
+        "exact_integer_reconstruction": true,
+        "factor_count": 4,
+        "fields": [
+          {
+            "best_candidate_byte_delta": null,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 2,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 3,
+            "direct_proxy_bytes": 0,
+            "evaluated_cell_count": 6162,
+            "evaluated_pair_count": 6325545,
+            "event_map_bytes": 0,
+            "exact_integer_reconstruction": true,
+            "factor_index": 0,
+            "fitted_candidate_count": 0,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 0,
+            "latent_occurrence_count": 0,
+            "origin_hop": 512,
+            "reconstruction_sha256": "4d91f2d78d02538d5b603efbab9ffd189e76b4907c9b75142fd4467af96df779",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "4d91f2d78d02538d5b603efbab9ffd189e76b4907c9b75142fd4467af96df779",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 0
+          },
+          {
+            "best_candidate_byte_delta": null,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 2,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 3,
+            "direct_proxy_bytes": 0,
+            "evaluated_cell_count": 6162,
+            "evaluated_pair_count": 6325545,
+            "event_map_bytes": 0,
+            "exact_integer_reconstruction": true,
+            "factor_index": 1,
+            "fitted_candidate_count": 0,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 0,
+            "latent_occurrence_count": 0,
+            "origin_hop": 512,
+            "reconstruction_sha256": "5f77d2066b6f92bb94c944cc6b8b0cd3836c47ea4c859fce249650551a357ab8",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "5f77d2066b6f92bb94c944cc6b8b0cd3836c47ea4c859fce249650551a357ab8",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 0
+          },
+          {
+            "best_candidate_byte_delta": null,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 2,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 3,
+            "direct_proxy_bytes": 0,
+            "evaluated_cell_count": 6162,
+            "evaluated_pair_count": 6325545,
+            "event_map_bytes": 0,
+            "exact_integer_reconstruction": true,
+            "factor_index": 2,
+            "fitted_candidate_count": 0,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 0,
+            "latent_occurrence_count": 0,
+            "origin_hop": 512,
+            "reconstruction_sha256": "acc50519b96fb0b4a65663194686cb0395962707dd2b6768590ba640ceda6dc9",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "acc50519b96fb0b4a65663194686cb0395962707dd2b6768590ba640ceda6dc9",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 0
+          },
+          {
+            "best_candidate_byte_delta": null,
+            "bounded_non_circular_sample_alignment_verified": true,
+            "channels": 2,
+            "cross_channel_union": true,
+            "direct_exact_group_count": 3,
+            "direct_proxy_bytes": 0,
+            "evaluated_cell_count": 6162,
+            "evaluated_pair_count": 6325545,
+            "event_map_bytes": 0,
+            "exact_integer_reconstruction": true,
+            "factor_index": 3,
+            "fitted_candidate_count": 0,
+            "fractional_phase_alignment_verified": false,
+            "frames": 529200,
+            "latent_component_count": 0,
+            "latent_occurrence_count": 0,
+            "origin_hop": 512,
+            "reconstruction_sha256": "062979a39acaef7d3277169559a454785c0920af8dfda2fb329acb2b92cdca00",
+            "scales": [
+              512,
+              2048,
+              8192
+            ],
+            "schema": "resonith-r159-latent-source-field-1",
+            "semantic_labels": false,
+            "similarity_batch_rows": 256,
+            "source_sha256": "062979a39acaef7d3277169559a454785c0920af8dfda2fb329acb2b92cdca00",
+            "status": "encoder-side oracle; complete-byte native RDO pending",
+            "structured_proxy_bytes": 0
+          }
+        ],
+        "latent_component_count": 0,
+        "latent_occurrence_count": 0,
+        "one_final_mixture_truth": true,
+        "proposer": {
+          "exact_integer_reconstruction": true,
+          "factor_count": 4,
+          "fft_samples": 1024,
+          "finite_non_circular_kernel": true,
+          "hop_samples": 256,
+          "iterations": 24,
+          "kernel_frames": 8,
+          "mixture_phase_preserved": true,
+          "one_final_time_domain_truth": true,
+          "reconstruction_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+          "relative_magnitude_factorization_error": 0.3371418227859583,
+          "schema": "resonith-r161-convolutive-anonymous-field-1",
+          "semantic_labels": false,
+          "shared_cross_channel_masks": true,
+          "source_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+          "status": "encoder-side proposer; no convolutive syntax admitted"
+        },
+        "reconstruction_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+        "schema": "resonith-r161-convolutive-factorized-lspf-1",
+        "semantic_labels": false,
+        "source_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+        "status": "encoder-side convolutive proposer plus exact Basis oracle; complete stream RDO pending"
+      },
+      "path": "G:\\Resonith\\artifacts\\corpus\\prepared-r111\\ebu-pink-noise.wav",
+      "proxy_header_bytes": 128,
+      "realtime_factor": 42.21628349166713,
+      "reconstruction_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+      "sample_rate": 44100,
+      "selection": {
+        "axis_results": {
+          "convolutive-lspf": {
+            "dual_axis_refinement_required": false,
+            "dual_axis_success": false,
+            "matched_bytes": true,
+            "quality_improved": false,
+            "quality_success": false,
+            "rate_success": false,
+            "successful_pareto_candidate": false
+          },
+          "independent-truth": {
+            "dual_axis_refinement_required": false,
+            "dual_axis_success": false,
+            "matched_bytes": true,
+            "quality_improved": false,
+            "quality_success": false,
+            "rate_success": false,
+            "successful_pareto_candidate": false
+          }
+        },
+        "candidates": [
+          {
+            "bounded_decoder": true,
+            "candidate_id": "independent-truth",
+            "complete_bytes": 1395427,
+            "quality_eligible": true,
+            "quality_utility": 1.0
+          },
+          {
+            "bounded_decoder": true,
+            "candidate_id": "convolutive-lspf",
+            "complete_bytes": 1395555,
+            "quality_eligible": true,
+            "quality_utility": 1.0
+          }
+        ],
+        "cross_duration_averaging": false,
+        "dual_axis_refinement_completed": true,
+        "dual_axis_refinement_required_candidate_ids": [],
+        "duration_class": "short",
+        "fallback_candidate_id": "independent-truth",
+        "generation_fixation_allowed": true,
+        "incumbent_candidate_id": "independent-truth",
+        "matched_byte_tolerance": 1395,
+        "minimum_quality_delta": 0.0,
+        "rejected": {
+          "convolutive-lspf": "complete-bytes-or-equal-byte-quality"
+        },
+        "retained_pareto_candidate_ids": [
+          "independent-truth"
+        ],
+        "schema": "resonith-r165-duration-pareto-selection-1",
+        "selected_candidate_id": "independent-truth",
+        "selection_order": "quality eligibility, bounded decoder, complete bytes, equal-byte quality utility, stable candidate id",
+        "successful_candidate_ids": []
+      },
+      "source_pcm_bytes": 2116800,
+      "source_sha256": "69931a5839e40a583f5f52df5baed6223b05edc507df99ae77cd7305460541d0",
+      "status": "Real PCM / exact lossless structural proxy / not complete Resonith or Opus comparable",
+      "structured_saving_bytes": -128,
+      "structured_saving_percent": -0.009172819502560865,
+      "structured_zlib_proxy_bytes": 1395555,
+      "wall_seconds": 506.5954019000055
+    }
+  ],
+  "status": "complete-fast-diagnostic",
+  "test_order": [
+    "long",
+    "freeze-long",
+    "short",
+    "select"
+  ]
+}

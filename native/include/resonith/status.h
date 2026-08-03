@@ -32,7 +32,8 @@ typedef enum resonith_status {
     RESONITH_STATUS_SCRATCH_TOO_SMALL = 9,
     RESONITH_STATUS_HASH_MISMATCH = 10,
     RESONITH_STATUS_NOT_FOUND = 11,
-    RESONITH_STATUS_UNSUPPORTED_FEATURE = 12
+    RESONITH_STATUS_UNSUPPORTED_FEATURE = 12,
+    RESONITH_STATUS_OUT_OF_MEMORY = 13
 } resonith_status;
 
 /* Returns a static English description and never returns NULL. */

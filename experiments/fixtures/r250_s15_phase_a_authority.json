@@ -1,0 +1,111 @@
+{
+  "budgets": {
+    "controller_wall_seconds": 510.0,
+    "log_bytes_each": 1048576,
+    "profile_cpu_seconds": 180.0,
+    "profile_wall_seconds": 180.0,
+    "retained_bytes": 33554432,
+    "timing_cpu_seconds": 300.0,
+    "timing_wall_seconds": 300.0,
+    "worker_peak_memory_bytes": 536870912
+  },
+  "environment": {
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONHASHSEED": "0"
+  },
+  "files": {
+    "audit": {
+      "path": "docs/reviews/R251_R250_FOCUSED_DUAL_AUDIT_2026-08-02.md",
+      "sha256": "fe39d86a599499d0d6fd9a11b1f8bcc5b5c15bb0718c33a0836a00ae7252ff31"
+    },
+    "base_authority": {
+      "path": "experiments/fixtures/r234_s15_implementation_authority.json",
+      "sha256": "bb14ad62772a7fe71530fe2a99ddbf127cd6a095b84a7aa1fc8006e7295cc29e"
+    },
+    "configuration": {
+      "path": "experiments/fixtures/r232_s15_frozen_configuration.json",
+      "sha256": "5fea557eb517f0e02f318e87f205ba116b0032e61b852a0dd3a8fe06a194e0fc"
+    },
+    "implementation_audit": {
+      "path": "docs/reviews/R248_R246_IMPLEMENTATION_DUAL_AUDIT_2026-08-02.md",
+      "sha256": "84626a98215ad99aef0a564e9e20a06c7562723669e9cf5b9dad652cd90005a1"
+    },
+    "native_core": {
+      "path": "build/cpp23-clang22-ninja/libresonith_core_shared.dll",
+      "sha256": "f12c6ad9061089d2d4088a5bfd2e20e845148ebcd303afaecc3bb2dc6be042ed"
+    },
+    "numpy_binary": {
+      "path": "artifacts/tools/python-3.14.6-amd64/Lib/site-packages/numpy/_core/_multiarray_umath.cp314-win_amd64.pyd",
+      "sha256": "ab5cea76a0fad4fd1bc58667aefba1382a7ce8c147b51cf3bff53eec4efb4ab2"
+    },
+    "oracle": {
+      "path": "reference/maf_p0/maf_source_filter_oracle.py",
+      "sha256": "8a2f27e4357146edd0c1840268ec74bee3b59e43e6ca75a2d18902ef7d325007"
+    },
+    "preflight": {
+      "path": "docs/reviews/R250_R246_PSTATS_PATH_REMEDIATION_2026-08-02.md",
+      "sha256": "679b596411ace6d18621dc28c6c784acf0a25f31470b35d0db7a604a0aa5999f"
+    },
+    "r232_runner": {
+      "path": "experiments/r232_s15_source_filter_gate.py",
+      "sha256": "53af4e1f85341b6d29661003d7e18144d40cc2cf64679463c2da9f20f738670e"
+    },
+    "r243_closure": {
+      "path": "docs/reviews/R249_R246_TERMINAL_FAILURE_2026-08-02.md",
+      "sha256": "3287530dfe76810a0478276dd36d0c8ac025168cc7fe3f46f1cb16e704ba9e47"
+    },
+    "r243_preflight": {
+      "path": "docs/reviews/R246_S15_SELF_VERIFYING_PHASE_A_EVIDENCE_PREFLIGHT_2026-08-02.md",
+      "sha256": "9ef949d94beb4092c0c4539e1f0687769dea2d80e7008765d23c23493417010c"
+    },
+    "remediation": {
+      "path": "docs/reviews/R247_R246_IMPLEMENTATION_REMEDIATION_2026-08-02.md",
+      "sha256": "2279f7567c4572a82a4dc8e7ae88f03a66ecbcf2c1c59c6d7ca002e3865d0cac"
+    },
+    "runner": {
+      "path": "experiments/r243_s15_short_baseline.py",
+      "sha256": "736c7aa6ccb5f6f562f091737a52a5b0dac0b963f9066bbd0247d1781dc7e8e5"
+    },
+    "source": {
+      "path": "G:/Orkela/comparison/public-benchmark-2026-07-26/speech-original.wav",
+      "sha256": "799f78ed4beb4de7ceae3a809262d4ce242394342ccd1d58cef7d49dbc2def46"
+    },
+    "test_module": {
+      "path": "tests/test_maf_source_filter_oracle.py",
+      "sha256": "75e394bf1e6da57ce692a7747735c51c80559bb3acacb70be88226e057624483"
+    }
+  },
+  "git_commit": "4a74ee485ea0d1e207063920d45001ee6d4564ee",
+  "output_paths": {
+    "failure": "G:/Resonith/artifacts/r250-s15-short-baseline-prechange-failure.json",
+    "future_summary": "G:/Resonith/experiments/results/r250_s15_short_baseline_prechange.json",
+    "staging": "G:/Resonith/artifacts/r250-s15-short-baseline-prechange.staging",
+    "success": "G:/Resonith/artifacts/r250-s15-short-baseline-prechange"
+  },
+  "python": {
+    "path": "G:/Resonith/artifacts/tools/python-3.14.6-amd64/python.exe",
+    "sha256": "03168c01b7b7491423350e82c26fee71f35b43694d1319d3c668bda6903a0c38",
+    "version": "3.14.6"
+  },
+  "runner": {
+    "bytes": 50601,
+    "lines": 640,
+    "maximum_bytes": 65536,
+    "maximum_lines": 640
+  },
+  "runtime": {
+    "numpy": "2.5.1",
+    "windows_build": "10.0.22631"
+  },
+  "schema": "resonith-r250-s15-phase-a-authority-1",
+  "scope": "one immutable short pre-change timing/profile/golden transaction only",
+  "source": {
+    "channels": 1,
+    "sample_count": 93680,
+    "sample_rate": 16000
+  }
+}

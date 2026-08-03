@@ -77,6 +77,15 @@
         "CMAKE_OSX_ARCHITECTURES": "x86_64",
         "CMAKE_OSX_SYSROOT": "iphonesimulator"
       }
+    },
+    {
+      "name": "ios-simulator-arm64",
+      "displayName": "iOS simulator ARM64 static Core",
+      "inherits": "ios-common",
+      "cacheVariables": {
+        "CMAKE_OSX_ARCHITECTURES": "arm64",
+        "CMAKE_OSX_SYSROOT": "iphonesimulator"
+      }
     }
   ],
   "buildPresets": [
@@ -99,6 +108,12 @@
     {
       "name": "ios-simulator-x86_64",
       "configurePreset": "ios-simulator-x86_64",
+      "configuration": "Release",
+      "jobs": 4
+    },
+    {
+      "name": "ios-simulator-arm64",
+      "configurePreset": "ios-simulator-arm64",
       "configuration": "Release",
       "jobs": 4
     }

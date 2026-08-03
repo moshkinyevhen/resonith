@@ -10,11 +10,41 @@
 #include "resonith/maf.h"
 #include "resonith/maf_typed.h"
 #include "resonith/multichannel.h"
+#include "resonith/partial_graph.h"
 #include "resonith/seek.h"
 #include "resonith/stream.h"
 #include "resonith/trajectory.h"
 
 #include <stddef.h>
+
+/*
+ * Compile-time ABI guards avoid a runtime constant branch, which MSVC ARM64
+ * correctly diagnoses under the project's warnings-as-errors policy.
+ */
+typedef char resonith_manifest_size_must_match[
+    sizeof(resonith_partial_path_manifest) == 1224U ? 1 : -1
+];
+typedef char resonith_path_size_must_match[
+    sizeof(resonith_partial_path) == 136U ? 1 : -1
+];
+typedef char resonith_entry_size_must_match[
+    sizeof(resonith_partial_path_entry) == 48U ? 1 : -1
+];
+typedef char resonith_report_size_must_match[
+    sizeof(resonith_partial_path_report) == 336U ? 1 : -1
+];
+typedef char resonith_manifest_v3_size_must_match[
+    sizeof(resonith_partial_path_manifest_v3) == 1232U ? 1 : -1
+];
+typedef char resonith_path_v3_size_must_match[
+    sizeof(resonith_partial_path_v3) == 136U ? 1 : -1
+];
+typedef char resonith_entry_v3_size_must_match[
+    sizeof(resonith_partial_path_entry_v3) == 48U ? 1 : -1
+];
+typedef char resonith_report_v3_size_must_match[
+    sizeof(resonith_partial_path_report_v3) == 560U ? 1 : -1
+];
 
 int main(void) {
     resonith_container_view view = {
